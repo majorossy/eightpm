@@ -24,7 +24,7 @@ bin/dev-urn-catalog-generate
 
 echo ">>> Running final optimizations (compile, reindex, cache flush)..."
 bin/magento setup:di:compile
-bin/magento indexer:reindex
+bin/magento indexer:reindex design_config_grid_flat customer_grid_flat catalog_category_product catalog_product_category catalogrule_rule catalogrule_product catalog_product_flat catalog_product_price catalog_product_attribute cataloginventory_stock inventory catalog_category_flat
 bin/magento cache:flush
 
 echo ">>> Magento development environment initialized successfully! 🎉"

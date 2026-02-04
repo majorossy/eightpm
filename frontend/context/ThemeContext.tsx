@@ -41,11 +41,7 @@ function getInitialMode(): ModeType {
     return stored;
   }
 
-  // Fall back to system preference
-  if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-    return 'light';
-  }
-
+  // Default to dark mode
   return 'dark';
 }
 

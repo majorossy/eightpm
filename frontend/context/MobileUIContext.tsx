@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 
 interface MobileUIState {
@@ -33,6 +33,7 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
+  const isProgrammaticBackRef = useRef(false);
 
   // Handle hydration and media query
   useEffect(() => {
@@ -81,17 +82,26 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setIsPlayerExpanded(true);
+    // Push history state so Android back button collapses instead of navigating away
+    if (isMobile) {
+      window.history.pushState({ playerExpanded: true }, '');
+    }
     // Reset transition state after animation completes (300ms)
     setTimeout(() => setIsTransitioning(false), 300);
-  }, [isTransitioning]);
+  }, [isTransitioning, isMobile]);
 
   const collapsePlayer = useCallback(() => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setIsPlayerExpanded(false);
+    // Pop the history entry we pushed when expanding
+    if (isMobile) {
+      isProgrammaticBackRef.current = true;
+      window.history.back();
+    }
     // Reset transition state after animation completes (300ms)
     setTimeout(() => setIsTransitioning(false), 300);
-  }, [isTransitioning]);
+  }, [isTransitioning, isMobile]);
 
   const togglePlayer = useCallback(() => {
     if (isTransitioning) return;
@@ -99,6 +109,24 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
     setIsPlayerExpanded((prev) => !prev);
     setTimeout(() => setIsTransitioning(false), 300);
   }, [isTransitioning]);
+
+  // Handle Android back button: collapse player instead of navigating away
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handlePopState = () => {
+      if (isPlayerExpanded && !isProgrammaticBackRef.current) {
+        // User pressed back button while player is expanded — collapse it
+        setIsTransitioning(true);
+        setIsPlayerExpanded(false);
+        setTimeout(() => setIsTransitioning(false), 300);
+      }
+      isProgrammaticBackRef.current = false;
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isMobile, isPlayerExpanded]);
 
   // SSR: default to desktop (isMobile = false) until hydrated
   const value: MobileUIContextType = {

@@ -142,9 +142,21 @@ magento_cache_clean() {
 }
 
 magento_index() {
-  echo -e "${CYAN}🔄 Reindexing Magento...${NC}"
+  echo -e "${CYAN}🔄 Reindexing Magento (excluding catalogsearch - headless)...${NC}"
   check_docker_running
-  "$SCRIPT_DIR/magento" indexer:reindex
+  "$SCRIPT_DIR/magento" indexer:reindex \
+    design_config_grid_flat \
+    customer_grid_flat \
+    catalog_category_product \
+    catalog_product_category \
+    catalogrule_rule \
+    catalogrule_product \
+    catalog_product_flat \
+    catalog_product_price \
+    catalog_product_attribute \
+    cataloginventory_stock \
+    inventory \
+    catalog_category_flat
   echo -e "${GREEN}✅ Reindex complete${NC}"
 }
 
@@ -155,9 +167,21 @@ magento_index_status() {
 }
 
 magento_index_reset() {
-  echo -e "${CYAN}🔄 Resetting indexers...${NC}"
+  echo -e "${CYAN}🔄 Resetting indexers (excluding catalogsearch - headless)...${NC}"
   check_docker_running
-  "$SCRIPT_DIR/magento" indexer:reset
+  "$SCRIPT_DIR/magento" indexer:reset \
+    design_config_grid_flat \
+    customer_grid_flat \
+    catalog_category_product \
+    catalog_product_category \
+    catalogrule_rule \
+    catalogrule_product \
+    catalog_product_flat \
+    catalog_product_price \
+    catalog_product_attribute \
+    cataloginventory_stock \
+    inventory \
+    catalog_category_flat
   echo -e "${GREEN}✅ Indexers reset${NC}"
 }
 

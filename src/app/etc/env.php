@@ -80,7 +80,7 @@ return [
         ]
     ],
     'x-frame-options' => 'SAMEORIGIN',
-    'MAGE_MODE' => 'default',
+    'MAGE_MODE' => 'production',
     'session' => [
         'save' => 'redis',
         'redis' => [

@@ -52,7 +52,7 @@ export function useCrossfade({
     crossfadeProgress: 0,
   });
 
-  const crossfadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const crossfadeIntervalRef = useRef<number | null>(null);
   const preloadedSrcRef = useRef<string | null>(null);
   const originalVolumeRef = useRef<number>(0.7);
 
@@ -69,7 +69,7 @@ export function useCrossfade({
 
     return () => {
       if (crossfadeIntervalRef.current) {
-        clearInterval(crossfadeIntervalRef.current);
+        cancelAnimationFrame(crossfadeIntervalRef.current);
       }
       audioRefA.current?.pause();
       audioRefB.current?.pause();
@@ -112,6 +112,22 @@ export function useCrossfade({
   const startCrossfade = useCallback(() => {
     if (!activeAudioRef.current || !inactiveAudioRef.current) return;
 
+    // If the next track hasn't buffered enough, fall back to a hard cut (no fade)
+    const inactive = inactiveAudioRef.current;
+    const buffered = inactive.buffered;
+    const hasEnoughBuffer = buffered.length > 0 && buffered.end(0) >= 1;
+    if (!hasEnoughBuffer) {
+      // Hard cut: just swap tracks without crossfade
+      activeAudioRef.current.pause();
+      activeAudioRef.current.currentTime = 0;
+      inactive.currentTime = 0;
+      inactive.volume = originalVolumeRef.current;
+      inactive.play().catch(console.error);
+      swapActiveElement();
+      preloadedSrcRef.current = null;
+      return;
+    }
+
     setState(prev => ({ ...prev, isCrossfading: true, crossfadeProgress: 0 }));
 
     inactiveAudioRef.current.currentTime = 0;
@@ -120,9 +136,9 @@ export function useCrossfade({
 
     originalVolumeRef.current = activeAudioRef.current.volume;
 
-    let startTime = Date.now();
+    const startTime = Date.now();
 
-    crossfadeIntervalRef.current = setInterval(() => {
+    const tick = () => {
       const elapsed = (Date.now() - startTime) / 1000;
       const progress = Math.min(elapsed / crossfadeDuration, 1);
 
@@ -134,10 +150,7 @@ export function useCrossfade({
       setState(prev => ({ ...prev, crossfadeProgress: progress }));
 
       if (progress >= 1) {
-        if (crossfadeIntervalRef.current) {
-          clearInterval(crossfadeIntervalRef.current);
-          crossfadeIntervalRef.current = null;
-        }
+        crossfadeIntervalRef.current = null;
 
         if (activeAudioRef.current) {
           activeAudioRef.current.pause();
@@ -153,8 +166,12 @@ export function useCrossfade({
           isCrossfading: false,
           crossfadeProgress: 0,
         }));
+      } else {
+        crossfadeIntervalRef.current = requestAnimationFrame(tick);
       }
-    }, 50);
+    };
+
+    crossfadeIntervalRef.current = requestAnimationFrame(tick);
   }, [crossfadeDuration]);
 
   const preloadNextTrack = useCallback((src: string) => {
@@ -163,8 +180,20 @@ export function useCrossfade({
     // Allow preloading even when crossfade is disabled for instant playback
     if (preloadedSrcRef.current === src) return;
 
+    // Adapt preload strategy based on network quality
+    const connection = (navigator as any).connection;
+    const effectiveType: string | undefined = connection?.effectiveType;
+
+    if (effectiveType === '2g' || effectiveType === 'slow-2g') {
+      // Very slow network — skip preload entirely to save bandwidth
+      preloadedSrcRef.current = src;
+      inactiveAudioRef.current.src = src;
+      inactiveAudioRef.current.preload = 'none';
+      return;
+    }
+
     inactiveAudioRef.current.src = src;
-    inactiveAudioRef.current.preload = 'auto';
+    inactiveAudioRef.current.preload = effectiveType === '3g' ? 'metadata' : 'auto';
     inactiveAudioRef.current.load();
     preloadedSrcRef.current = src;
   }, []);
@@ -178,7 +207,7 @@ export function useCrossfade({
 
   const stopCrossfade = useCallback(() => {
     if (crossfadeIntervalRef.current) {
-      clearInterval(crossfadeIntervalRef.current);
+      cancelAnimationFrame(crossfadeIntervalRef.current);
       crossfadeIntervalRef.current = null;
     }
 

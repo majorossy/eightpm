@@ -2327,12 +2327,9 @@ select.metro-select:focus {
 
 /* Mobile Optimizations */
 @media (max-width: 767px) {
-  /* Reduce/disable glow orbs on mobile for performance */
+  /* Disable glow orbs on mobile for performance (blur(60px) forces GPU compositing even at low opacity) */
   .glow-orb {
-    opacity: 0.08 !important;
-    width: 200px !important;
-    height: 200px !important;
-    filter: blur(60px);
+    display: none !important;
   }
 
   .glow-orb.pink {

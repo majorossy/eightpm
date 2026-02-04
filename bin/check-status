@@ -74,7 +74,7 @@ trap cleanup EXIT
 echo -e "${DIM}Gathering data...${NC}"
 
 # Get metadata counts from filesystem first
-docker exec 8pm-phpfpm-1 bash -c '
+docker exec eightpm-phpfpm-1 bash -c '
 for dir in /var/www/html/var/archivedotorg/metadata/*/; do
     if [ -d "$dir" ]; then
         collection=$(basename "$dir")
@@ -88,7 +88,7 @@ done
 # NOTE: Artists are at level=3 in this Magento instance (level=2 is "Artists" parent)
 # Albums (shows) are at level=4, tracks are at level=5
 # collection_id mapping comes from archivedotorg_artist_status table
-docker compose exec -T db mysql -u magento -pmagento magento -N 2>/dev/null << 'SQL' > "$tmp_all_data"
+docker-compose exec -T db mysql -u magento -pmagento magento -N 2>/dev/null << 'SQL' > "$tmp_all_data"
 SELECT
     artist.entity_id AS cat_id,
     COALESCE(artist_name.value, 'Unknown') AS artist_name,
@@ -119,9 +119,9 @@ LEFT JOIN catalog_category_entity_varchar artist_name
     )
     AND artist_name.store_id = 0
 
--- Join to archivedotorg_artist_status to get collection_id
+-- Join to archivedotorg_artist_status to get collection_id (case-insensitive)
 LEFT JOIN archivedotorg_artist_status status
-    ON COALESCE(artist_name.value, '') = status.artist_name
+    ON LOWER(COALESCE(artist_name.value, '')) = LOWER(status.artist_name)
 
 -- CCP counts: products assigned through track categories (artist -> album -> track -> product)
 LEFT JOIN (
@@ -144,13 +144,13 @@ LEFT JOIN (
     GROUP BY category_id
 ) idx_counts ON artist.entity_id = idx_counts.category_id
 
--- Unmatched tracks by artist name
+-- Unmatched tracks by artist name (case-insensitive)
 LEFT JOIN (
     SELECT artist_name, COUNT(*) AS unmatched_count
     FROM archivedotorg_unmatched_track
     WHERE status = 'pending'
     GROUP BY artist_name
-) unmatched ON COALESCE(artist_name.value, '') = unmatched.artist_name
+) unmatched ON LOWER(COALESCE(artist_name.value, '')) = LOWER(unmatched.artist_name)
 
 WHERE artist.level = 3
 ORDER BY artist_name.value;
@@ -166,7 +166,7 @@ get_metadata_count() {
 # Function to query GraphQL for product count
 query_graphql() {
     local cat_id="$1"
-    local result=$(curl -s -k -X POST https://magento.test/graphql \
+    local result=$(curl -s -k -X POST https://magento.8pm.me/graphql \
         -H "Content-Type: application/json" \
         -d "{\"query\": \"{ products(filter: {category_id: {eq: \\\"${cat_id}\\\"}}, pageSize: 1) { total_count } }\"}" \
         2>/dev/null | grep -o '"total_count":[0-9]*' | cut -d':' -f2)

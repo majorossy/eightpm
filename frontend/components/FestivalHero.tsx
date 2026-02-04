@@ -367,7 +367,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
       </span>
 
       {/* Main content */}
-      <div className="flex flex-col items-center text-center z-10 max-w-[1400px] w-full">
+      <div className="flex flex-col items-center text-center z-10 max-w-[1190px] w-full">
         {/* Eyebrow with gradient lines */}
         <div className="flex items-center justify-center gap-3 mb-6">
           <div

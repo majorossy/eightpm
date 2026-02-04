@@ -216,9 +216,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = getAudio();
     if (audio && state.isPlaying) {
       console.log('[PlayerContext] Connecting analyzer to audio element');
-      connectAudioElement(audio);
-      // Set initial volume on the GainNode
-      setAnalyzerVolume(state.volume);
+      connectAudioElement(audio).then(() => {
+        // Set initial volume on the GainNode after connection
+        setAnalyzerVolume(state.volume);
+      });
     }
   }, [crossfade.state.activeElement, state.isPlaying, connectAudioElement, setAnalyzerVolume, state.volume]);
 
@@ -333,12 +334,23 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       console.log('[PlayerContext] Audio buffering...');
     };
 
+    // Sync isPlaying state with actual audio element (handles phone calls, Siri, alarms, etc.)
+    const handlePause = () => {
+      setState(prev => ({ ...prev, isPlaying: false }));
+    };
+
+    const handlePlay = () => {
+      setState(prev => ({ ...prev, isPlaying: true }));
+    };
+
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
     audio.addEventListener('stalled', handleStalled);
     audio.addEventListener('waiting', handleWaiting);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('play', handlePlay);
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
@@ -347,6 +359,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener('error', handleError);
       audio.removeEventListener('stalled', handleStalled);
       audio.removeEventListener('waiting', handleWaiting);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('play', handlePlay);
     };
   }, [crossfade.state.activeElement, currentSong, handlePlaybackError, clearPlaybackProgress]);
 
@@ -497,10 +511,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = getAudio();
     if (!audio) return;
 
-    // Connect to audio analyzer BEFORE playing
-    connectAudioElement(audio);
-    setAnalyzerVolume(state.volume);
-
     // Add to up-next (this song might not be part of current album)
     queueContext.addToUpNext(song);
 
@@ -513,10 +523,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     // Track analytics event
     trackSongPlay(song);
 
+    // Play first (synchronously in user gesture handler for mobile compatibility)
     audio.src = getStreamUrl(song);
     audio.play().catch(err => {
       console.error('Audio play error:', err);
       handlePlaybackError(song, err);
+    });
+
+    // Connect analyzer after play (audio plays via HTML element until context resumes)
+    connectAudioElement(audio).then(() => {
+      setAnalyzerVolume(state.volume);
     });
   }, [queueContext, crossfade, handlePlaybackError, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
 
@@ -540,19 +556,25 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (state.isPlaying) {
       audio.pause();
     } else {
-      // Ensure audio is connected before playing
-      connectAudioElement(audio);
-      setAnalyzerVolume(state.volume);
+      // Play first (synchronously in user gesture handler for mobile compatibility)
       audio.play().catch(console.error);
+      // Connect analyzer after play
+      connectAudioElement(audio).then(() => {
+        setAnalyzerVolume(state.volume);
+      });
     }
     setState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
   }, [state.isPlaying, currentSong, crossfade, connectAudioElement, setAnalyzerVolume, state.volume]);
 
+  const isIOS = typeof navigator !== 'undefined' && /(iPad|iPhone|iPod)/.test(navigator.userAgent);
+
   const setVolume = useCallback((volume: number) => {
-    // When using Web Audio API, set volume via GainNode instead of audio.volume
-    setAnalyzerVolume(volume);
+    // iOS Safari ignores programmatic volume changes — hardware buttons handle volume
+    if (!isIOS) {
+      setAnalyzerVolume(volume);
+    }
     setState(prev => ({ ...prev, volume }));
-  }, [setAnalyzerVolume]);
+  }, [setAnalyzerVolume, isIOS]);
 
   const seek = useCallback((time: number) => {
     const audio = getAudio();
@@ -565,12 +587,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const nextSong = queueContext.nextTrack();
     const audio = getAudio();
     if (nextSong && audio) {
-      // Connect audio analyzer before playing
-      connectAudioElement(audio);
-      setAnalyzerVolume(state.volume);
+      // Play first (synchronously in user gesture handler for mobile compatibility)
       audio.src = getStreamUrl(nextSong);
       audio.play().catch(console.error);
       setState(prev => ({ ...prev, isPlaying: true, activeSong: nextSong }));
+      // Connect analyzer after play
+      connectAudioElement(audio).then(() => {
+        setAnalyzerVolume(state.volume);
+      });
     }
   }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
 
@@ -630,10 +654,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       trackTitle: savedProgress.title,
     };
 
-    // Connect audio analyzer before playing
-    connectAudioElement(audio);
-    setAnalyzerVolume(state.volume);
-
+    // Play first (synchronously in user gesture handler for mobile compatibility)
     audio.src = savedProgress.streamUrl;
     audio.currentTime = savedProgress.position;
     audio.play().catch(console.error);
@@ -643,6 +664,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       isPlaying: true,
       activeSong: resumeSong,
     }));
+
+    // Connect analyzer after play
+    connectAudioElement(audio).then(() => {
+      setAnalyzerVolume(state.volume);
+    });
 
     // Clear saved progress after resuming
     setSavedProgress(null);
@@ -655,12 +681,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = getAudio();
 
     if (song && audio) {
-      // Connect audio analyzer before playing
-      connectAudioElement(audio);
-      setAnalyzerVolume(state.volume);
+      // Play first (synchronously in user gesture handler for mobile compatibility)
       audio.src = getStreamUrl(song);
       audio.play().catch(console.error);
       setState(prev => ({ ...prev, isPlaying: true, activeSong: song }));
+      // Connect analyzer after play
+      connectAudioElement(audio).then(() => {
+        setAnalyzerVolume(state.volume);
+      });
     }
   }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
 
@@ -681,12 +709,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const song = queueContext.getSongAtTrack(startIndex);
       const audio = getAudio();
       if (song && audio) {
-        // Connect audio analyzer before playing
-        connectAudioElement(audio);
-        setAnalyzerVolume(state.volume);
+        // Play first (for mobile compatibility)
         audio.src = getStreamUrl(song);
         audio.play().catch(console.error);
         setState(prev => ({ ...prev, isPlaying: true, activeSong: song }));
+        // Connect analyzer after play
+        connectAudioElement(audio).then(() => {
+          setAnalyzerVolume(state.volume);
+        });
       }
     }, 0);
   }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
@@ -724,15 +754,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     // Select the specific version for this track
     queueContext.selectVersion(trackIndex, song.id);
 
-    // Play the song
+    // Play the song first (synchronously in user gesture handler for mobile compatibility)
     const audio = getAudio();
     if (audio) {
-      // Connect audio analyzer before playing
-      connectAudioElement(audio);
-      setAnalyzerVolume(state.volume);
       audio.src = getStreamUrl(song);
       audio.play().catch(console.error);
       setState(prev => ({ ...prev, isPlaying: true, activeSong: song }));
+      // Connect analyzer after play
+      connectAudioElement(audio).then(() => {
+        setAnalyzerVolume(state.volume);
+      });
     }
   }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
 

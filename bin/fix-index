@@ -4,7 +4,7 @@
 
 echo "Adding new products to index..."
 
-docker compose exec -T db mysql -u magento -pmagento magento << 'SQL'
+docker-compose exec -T db mysql -u magento -pmagento magento << 'SQL'
 -- Step 1: Add products to their directly assigned categories
 INSERT IGNORE INTO catalog_category_product_index
 (category_id, product_id, position, is_parent, store_id, visibility)
@@ -77,5 +77,5 @@ SQL
 
 echo ""
 echo "Flushing cache..."
-docker compose exec -T phpfpm bin/magento cache:flush > /dev/null
+docker-compose exec -T phpfpm bin/magento cache:flush > /dev/null
 echo "✅ Done!"

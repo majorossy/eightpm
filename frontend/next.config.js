@@ -209,7 +209,7 @@ const nextConfig = {
               // - wikimedia/wikipedia: artist photos and album artwork fallback
               // - magento.test: backend-served images
               // - i.ytimg.com: YouTube video thumbnails
-              "img-src 'self' data: blob: https://*.archive.org https://archive.org https://upload.wikimedia.org https://*.wikipedia.org https://magento.test https://i.ytimg.com",
+              "img-src 'self' data: blob: https://*.archive.org https://archive.org https://upload.wikimedia.org https://*.wikipedia.org https://magento.test https://magento.8pm.me https://i.ytimg.com",
 
               // Fonts: self + data URIs + Google Fonts CDN
               // - data: for embedded base64 fonts (if any)
@@ -222,7 +222,7 @@ const nextConfig = {
               // - archive.org: Metadata API and audio streaming
               // - google-analytics.com: Analytics beacons
               // - ws/wss localhost: Next.js hot reload WebSocket (dev only)
-              "connect-src 'self' https://magento.test https://*.archive.org https://archive.org https://www.google-analytics.com https://analytics.google.com wss://localhost:* ws://localhost:*",
+              "connect-src 'self' https://magento.test https://magento.8pm.me https://*.archive.org https://archive.org https://www.google-analytics.com https://analytics.google.com wss://localhost:* ws://localhost:*",
 
               // Media (audio/video): Archive.org streaming and blob URLs
               // - archive.org: Audio files from ia*.us.archive.org subdomains
@@ -279,6 +279,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'magento.test',
+      },
+      {
+        protocol: 'https',
+        hostname: 'magento.8pm.me',
       },
       {
         protocol: 'https',

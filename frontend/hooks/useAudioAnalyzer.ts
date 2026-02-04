@@ -8,7 +8,7 @@ export interface AudioAnalyzerData {
 
 export interface UseAudioAnalyzerReturn {
   analyzerData: AudioAnalyzerData;
-  connectAudioElement: (audioElement: HTMLAudioElement | null) => void;
+  connectAudioElement: (audioElement: HTMLAudioElement | null) => Promise<void>;
   isConnected: boolean;
   setVolume: (volume: number) => void;
 }
@@ -107,7 +107,7 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
   }, []);
 
   // Connect to an audio element
-  const connectAudioElement = useCallback((audioElement: HTMLAudioElement | null) => {
+  const connectAudioElement = useCallback(async (audioElement: HTMLAudioElement | null) => {
     if (!audioElement) {
       cleanup();
       return;
@@ -128,11 +128,11 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
       }
 
       // Resume context if suspended (happens after page becomes visible again)
+      // MUST await before createMediaElementSource or audio routes through suspended context
       if (audioContextRef.current.state === 'suspended') {
         console.log('[useAudioAnalyzer] ⚠️ AudioContext suspended, resuming...');
-        audioContextRef.current.resume().then(() => {
-          console.log('[useAudioAnalyzer] ✅ AudioContext resumed, state:', audioContextRef.current!.state);
-        });
+        await audioContextRef.current.resume();
+        console.log('[useAudioAnalyzer] ✅ AudioContext resumed, state:', audioContextRef.current!.state);
       }
 
       console.log('[useAudioAnalyzer] AudioContext state:', audioContextRef.current.state);

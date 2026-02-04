@@ -33,6 +33,7 @@ export function useSleepTimer(options: SleepTimerOptions) {
 
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const oneMinuteWarningFiredRef = useRef(false);
+  const endTimeRef = useRef<number>(0);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -63,6 +64,8 @@ export function useSleepTimer(options: SleepTimerOptions) {
       duration = PRESET_DURATIONS[preset];
     }
 
+    endTimeRef.current = Date.now() + duration * 1000;
+
     setState({
       isActive: true,
       timeRemaining: duration,
@@ -71,13 +74,13 @@ export function useSleepTimer(options: SleepTimerOptions) {
 
     oneMinuteWarningFiredRef.current = false;
 
-    // Start countdown interval
+    // Start countdown interval (uses absolute end time to avoid drift from interval inaccuracy or OS suspension)
     timerIntervalRef.current = setInterval(() => {
       setState(prev => {
-        const newTimeRemaining = prev.timeRemaining - 1;
+        const newTimeRemaining = Math.ceil((endTimeRef.current - Date.now()) / 1000);
 
-        // Fire one-minute warning
-        if (newTimeRemaining === 60 && !oneMinuteWarningFiredRef.current && onOneMinuteWarning) {
+        // Fire one-minute warning (use range check in case we skip past exactly 60)
+        if (newTimeRemaining <= 60 && prev.timeRemaining > 60 && !oneMinuteWarningFiredRef.current && onOneMinuteWarning) {
           oneMinuteWarningFiredRef.current = true;
           onOneMinuteWarning();
         }

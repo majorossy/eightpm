@@ -30,7 +30,7 @@ bin/rs                # Interactive control center (arrow keys)
 | Redis | 6380 | 6379 | Valkey (Redis replacement) |
 | OpenSearch | 9201, 9301 | 9200, 9300 | Elasticsearch replacement |
 | RabbitMQ | 15673, 5673 | 15672, 5672 | Management UI + AMQP |
-| phpMyAdmin | 8080 | 80 | Dev only (compose.dev.yaml) |
+| phpMyAdmin | 8081 | 80 | Dev only (compose.dev.yaml) |
 | Mailcatcher | 1080 | 1080 | Dev only |
 
 ## bin/rs Control Center
@@ -335,7 +335,7 @@ tail -f src/var/log/exception.log
 | http://localhost:3001 | Frontend (Next.js) |
 | https://magento.test/graphql | GraphQL API |
 | https://magento.test/admin | Admin Panel |
-| http://localhost:8080 | phpMyAdmin |
+| http://localhost:8081 | phpMyAdmin |
 | http://localhost:1080 | Mailcatcher |
 
 ## Admin Credentials
@@ -413,3 +413,120 @@ See main `CLAUDE.md` for:
 - Full service architecture
 - Database access details
 - Import pipeline
+
+## Cache Management
+
+### Magento Cache Types
+
+| Type | Description |
+|------|-------------|
+| config | Configuration |
+| layout | Layout XML |
+| block_html | Block HTML output |
+| collections | Collection data |
+| reflection | API reflection |
+| db_ddl | Database schema |
+| compiled_config | Compiled config |
+| eav | EAV types/attributes |
+| full_page | Full page cache |
+| translate | Translations |
+| config_integration | Integration config |
+| config_integration_api | Integration API config |
+| config_webservice | Web service config |
+
+### Cache Operations
+- `cache:clean` — Invalidates specific cache types (leaves other entries)
+- `cache:flush` — Deletes ALL cache storage (clean slate)
+- Redis cache inspection via MCP tools: `magento_cache_stats`, `keys zc:k:*`
+
+### Frontend Cache
+- `frontend/bin/refresh` — Kill server + clean `.next/` + restart (safe to run anytime)
+- `frontend/bin/clean` — Clean `.next/` only (only when server is NOT running)
+- OPcache reset requires phpfpm container restart: `bin/rs phpfpm`
+
+## Index Management
+
+### Known store1 Index Bug
+The native Magento indexer populates `catalog_category_product_index` but NOT `catalog_category_product_index_store1` (which GraphQL queries use). This is a known Magento 2.4+ bug.
+
+### Fix
+- Run `bin/fix-index` after `archive:populate` — populates both tables
+- `bin/check-status` output columns: `IDX_STALE` = needs reindex, `GQL_BROKEN` = store1 empty
+
+### Indexer Commands
+```bash
+bin/magento indexer:status           # Check all indexer statuses
+bin/magento indexer:reindex           # Reindex all
+bin/magento indexer:reset             # Reset indexer state
+bin/fix-index                         # Fix store1 index (custom script)
+```
+
+## Production Deploy Pipeline
+
+```bash
+bin/magento maintenance:enable
+bin/composer install --no-dev
+bin/magento setup:upgrade
+bin/magento setup:di:compile
+bin/magento setup:static-content:deploy -f
+bin/magento cache:flush
+bin/magento indexer:reindex
+bin/magento maintenance:disable
+```
+
+## After-Pull Workflow
+
+When `bin/rs after-pull` fails, run manually:
+
+```bash
+bin/composer install
+bin/magento setup:upgrade
+bin/magento setup:di:compile
+bin/magento cache:flush
+bin/magento indexer:reindex
+cd /var/www/eightpm/frontend && npm install
+```
+
+## Troubleshooting Decision Trees
+
+### Site Not Loading
+1. Check containers: `bin/docker-compose ps`
+2. Check ports: `lsof -i :80 -i :443 -i :3001`
+3. Check Nginx logs: `bin/rs logs-app`
+4. Check PHP-FPM logs: `bin/rs logs-phpfpm`
+
+### GraphQL Returns 0 Products
+1. Check store1 index: `bin/fix-index`
+2. Check category assignments in admin
+3. Run `bin/check-status` for full diagnostics
+
+### Container Restart Loops
+1. Check logs: `bin/rs logs-phpfpm` (or relevant service)
+2. Check RAM: `docker stats`
+3. Check disk: `docker system df`
+
+### Slow Performance
+1. Restart phpfpm (clears OPcache): `bin/rs phpfpm`
+2. Check Redis memory via MCP `info` tool
+3. Check OpenSearch heap: `docker stats 8pm-opensearch-1`
+
+## Cron Management
+
+```bash
+bin/magento cron:install     # Enable cron jobs
+bin/magento cron:remove      # Disable cron jobs
+bin/magento cron:run         # Manual trigger
+```
+
+View cron schedule via MCP mysql tool: `SELECT * FROM cron_schedule ORDER BY scheduled_at DESC LIMIT 20`
+
+## Docker Resource Management
+
+```bash
+docker system df                # Disk usage by images, containers, volumes
+docker stats                    # Live CPU/memory per container
+docker system prune             # Clean unused (keeps pulled images)
+bin/rs docker-clean             # Clean volumes/orphans
+```
+
+Container stats also available via MCP `container_stats` tool.

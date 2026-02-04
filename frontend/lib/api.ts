@@ -174,15 +174,14 @@ const LOCAL_ALBUM_ART: Record<string, string> = {
   'risen': '/images/albums/risen.jpg',
 };
 
-// Get album cover art - check local first, then fallback to Magento
+// Get album cover art - check local mapping only, return undefined if not found
+// so components can show their proper fallback (vinyl icon) instead of a Magento placeholder
 function getAlbumCoverArt(urlKey: string): string | undefined {
   const slug = urlKey.toLowerCase();
-  console.log('[getAlbumCoverArt] urlKey:', urlKey, '-> slug:', slug, '-> match:', LOCAL_ALBUM_ART[slug] || 'none');
   if (LOCAL_ALBUM_ART[slug]) {
     return LOCAL_ALBUM_ART[slug];
   }
-  // Fallback to Magento media (may not exist)
-  return `${MAGENTO_MEDIA_URL}/catalog/category/${urlKey}.jpg`;
+  return undefined;
 }
 
 // Helper to construct category image URL from url_key (workaround for GraphQL placeholder issue)

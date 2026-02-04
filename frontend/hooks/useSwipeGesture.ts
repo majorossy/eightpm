@@ -68,9 +68,9 @@ export function useSwipeGesture(config: SwipeConfig): SwipeGestureReturn {
 
     const deltaX = dragOffset.x;
     const deltaY = dragOffset.y;
-    const deltaTime = Date.now() - touchStartRef.current.time;
-    const velocityX = Math.abs(deltaX) / deltaTime;
-    const velocityY = Math.abs(deltaY) / deltaTime;
+    const deltaTime = Math.max(Date.now() - touchStartRef.current.time, 10);
+    const velocityX = Math.min(Math.abs(deltaX) / deltaTime, 5.0);
+    const velocityY = Math.min(Math.abs(deltaY) / deltaTime, 5.0);
 
     // Determine if swipe threshold met
     const isSwipeX = Math.abs(deltaX) > threshold || velocityX > velocityThreshold;

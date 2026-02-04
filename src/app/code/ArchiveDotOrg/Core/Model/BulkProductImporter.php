@@ -37,7 +37,6 @@ class BulkProductImporter implements BulkProductImporterInterface
         'catalog_product_flat',
         'catalog_product_price',
         'catalog_product_attribute',
-        'catalogsearch_fulltext',
         'cataloginventory_stock'
     ];
 

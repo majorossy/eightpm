@@ -35,6 +35,13 @@ export function useMediaSession({
   onSeek,
 }: UseMediaSessionProps) {
   const artworkLoadedRef = useRef<Set<string>>(new Set());
+  const lastPositionUpdateRef = useRef<number>(0);
+  const currentTimeRef = useRef(currentTime);
+  const durationRef = useRef(duration);
+
+  // Keep refs in sync without triggering re-renders
+  currentTimeRef.current = currentTime;
+  durationRef.current = duration;
 
   // Feature detection
   const isSupported = typeof window !== 'undefined' && 'mediaSession' in navigator;
@@ -125,15 +132,15 @@ export function useMediaSession({
         }
       });
 
-      // Optional: seek forward/backward by 10 seconds
+      // Optional: seek forward/backward by 10 seconds (read from refs to avoid re-registering on every time update)
       navigator.mediaSession.setActionHandler('seekforward', (details) => {
         const skipTime = details.seekOffset || 10;
-        onSeek(Math.min(currentTime + skipTime, duration));
+        onSeek(Math.min(currentTimeRef.current + skipTime, durationRef.current));
       });
 
       navigator.mediaSession.setActionHandler('seekbackward', (details) => {
         const skipTime = details.seekOffset || 10;
-        onSeek(Math.max(currentTime - skipTime, 0));
+        onSeek(Math.max(currentTimeRef.current - skipTime, 0));
       });
     } catch (error) {
       console.error('[MediaSession] Failed to register action handlers:', error);
@@ -155,11 +162,15 @@ export function useMediaSession({
         // Ignore cleanup errors
       }
     };
-  }, [isSupported, onPlay, onPause, onNext, onPrevious, onSeek, currentTime, duration]);
+  }, [isSupported, onPlay, onPause, onNext, onPrevious, onSeek]);
 
-  // Update position state (progress bar in lock screen)
+  // Update position state (progress bar in lock screen) - throttled to max 1x/second
   useEffect(() => {
     if (!isSupported || !currentSong || !duration || duration <= 0) return;
+
+    const now = Date.now();
+    if (now - lastPositionUpdateRef.current < 1000) return;
+    lastPositionUpdateRef.current = now;
 
     try {
       navigator.mediaSession.setPositionState({
