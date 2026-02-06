@@ -62,9 +62,14 @@ interface PolaroidCardProps {
     instagram?: string;
     twitter?: string;
   };
+  wikipediaThumbnail?: { source: string; width: number; height: number } | null;
+  imageAttribution?: { artist: string; license: string; licenseUrl: string } | null;
 }
 
-export default function PolaroidCard({ imageUrl, artistName, caption, socialLinks }: PolaroidCardProps) {
+export default function PolaroidCard({ imageUrl, artistName, caption, socialLinks, wikipediaThumbnail, imageAttribution }: PolaroidCardProps) {
+  // Prefer Wikipedia thumbnail, fallback to imageUrl
+  const displayImageUrl = wikipediaThumbnail?.source || imageUrl;
+  const showAttribution = !!wikipediaThumbnail && !!imageAttribution;
   const [isFlipped, setIsFlipped] = useState(false);
 
   // Build social links array from props
@@ -172,14 +177,14 @@ export default function PolaroidCard({ imageUrl, artistName, caption, socialLink
                 justifyContent: 'center',
                 position: 'relative',
                 overflow: 'hidden',
-                background: imageUrl
+                background: displayImageUrl
                   ? undefined
                   : 'linear-gradient(135deg, #2a2825 0%, #1e1c1a 50%, #252220 100%)',
               }}
             >
-              {imageUrl ? (
+              {displayImageUrl ? (
                 <Image
-                  src={imageUrl}
+                  src={displayImageUrl}
                   alt={artistName || 'Artist'}
                   fill
                   sizes="300px"
@@ -214,12 +219,39 @@ export default function PolaroidCard({ imageUrl, artistName, caption, socialLink
                 }}
               />
 
+              {/* Image attribution overlay */}
+              {showAttribution && (
+                <a
+                  href={imageAttribution.licenseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    padding: '4px 8px',
+                    background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                    fontSize: 9,
+                    color: 'rgba(255,255,255,0.7)',
+                    fontFamily: 'system-ui',
+                    textDecoration: 'none',
+                    zIndex: 2,
+                  }}
+                >
+                  Photo: {imageAttribution.artist.length > 25
+                    ? imageAttribution.artist.slice(0, 25) + '...'
+                    : imageAttribution.artist} · {imageAttribution.license}
+                </a>
+              )}
+
               {/* Tap hint */}
               {hasSocials && (
                 <div
                   style={{
                     position: 'absolute',
-                    bottom: 8,
+                    bottom: showAttribution ? 24 : 8,
                     right: 8,
                     fontSize: 12,
                     color: '#6a6458',

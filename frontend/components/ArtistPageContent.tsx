@@ -307,6 +307,8 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
                 instagram: bandData?.socialLinks?.instagram,
                 twitter: bandData?.socialLinks?.twitter,
               }}
+              wikipediaThumbnail={artist.wikipediaSummary?.thumbnail}
+              imageAttribution={artist.wikipediaSummary?.thumbnailAttribution}
             />
           </div>
         </div>
@@ -351,7 +353,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
               </p>
               <ExpandedBiography
                 artistName={artist.name}
-                extendedBio={artist.extendedBio}
+                extendedBio={artist.wikipediaSummary?.extendedBio || artist.extendedBio}
                 wikipediaExtract={artist.wikipediaSummary?.extract}
                 wikipediaUrl={artist.wikipediaSummary?.url}
                 totalShows={artist.totalShows || artist.albums.length}

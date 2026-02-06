@@ -122,6 +122,13 @@ export interface BandMember {
   bio?: string;                  // Brief biography
 }
 
+// Image attribution from Wikimedia Commons
+export interface ImageAttribution {
+  artist: string;
+  license: string;
+  licenseUrl: string;
+}
+
 // Wikipedia summary data
 export interface WikipediaSummary {
   title: string;                 // Wikipedia page title
@@ -133,6 +140,8 @@ export interface WikipediaSummary {
     height: number;
   } | null;
   url: string | null;            // Wikipedia page URL
+  extendedBio?: string;          // 3-5 paragraphs from TextExtracts API
+  thumbnailAttribution?: ImageAttribution | null;  // Wikimedia Commons metadata
 }
 
 // Band member and career data
