@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Album, Track, Song, formatDuration } from '@/lib/api';
+import { Album, Track, Song, Artist, formatDuration } from '@/lib/api';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
@@ -33,6 +33,8 @@ interface RelatedShow {
 interface AlbumPageContentProps {
   album: AlbumWithTracks;
   moreFromVenue?: RelatedShow[];
+  artistAlbums?: Album[];
+  artist?: Artist;
 }
 
 // Format hours from seconds
@@ -178,10 +180,12 @@ function CassetteTape({
   album,
   isPlaying,
   volume = 0,
+  artistImageUrl,
 }: {
   album: AlbumWithTracks;
   isPlaying: boolean;
   volume?: number;
+  artistImageUrl?: string;
 }) {
   const year = album.showDate?.split('-')[0] || '';
   const formattedDate = album.showDate
@@ -270,8 +274,8 @@ function CassetteTape({
           </div>
         </div>
 
-        {/* Album artwork with packing tape */}
-        {album.coverArt ? (
+        {/* Artist photo polaroid (prioritize artist image over album cover) */}
+        {(artistImageUrl || album.coverArt) ? (
           <div
             className="absolute top-[8px] right-[8px] sm:top-[10px] sm:right-[12px] h-16 w-16 sm:h-20 sm:w-20 z-50"
           >
@@ -294,8 +298,8 @@ function CassetteTape({
               style={{ transform: 'rotate(6deg)' }}
             >
               <Image
-                src={album.coverArt || '/images/default-album.jpg'}
-                alt={`${album.name} cover`}
+                src={artistImageUrl || album.coverArt || '/images/default-album.jpg'}
+                alt={`${album.artistName}`}
                 fill
                 sizes="200px"
                 quality={85}
@@ -323,7 +327,7 @@ function CassetteTape({
             </div>
           </div>
         ) : (
-          // Fallback: Vinyl icon with packing tape when no coverArt
+          // Fallback: Vinyl icon with packing tape when no image
           <div
             className="absolute top-[8px] right-[8px] sm:top-[10px] sm:right-[12px] h-16 w-16 sm:h-20 sm:w-20 z-50"
           >
@@ -352,6 +356,21 @@ function CassetteTape({
                 </svg>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Artist logo sticker on cassette body */}
+        {artistImageUrl && (
+          <div
+            className="absolute bottom-2 left-16 sm:left-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-white shadow-lg z-10"
+            style={{ transform: 'rotate(-8deg)' }}
+          >
+            <Image
+              src={artistImageUrl}
+              alt={album.artistName}
+              fill
+              className="object-cover"
+            />
           </div>
         )}
 
@@ -747,7 +766,7 @@ function SideDivider({ side }: { side: 'A' | 'B' }) {
   );
 }
 
-export default function AlbumPageContent({ album, moreFromVenue = [] }: AlbumPageContentProps) {
+export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbums = [], artist }: AlbumPageContentProps) {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { currentSong, isPlaying, togglePlay, playAlbum, playAlbumFromTrack, analyzerData, volume, setVolume } = usePlayer();
   const { queue, setShuffle } = useQueue();
@@ -849,6 +868,63 @@ export default function AlbumPageContent({ album, moreFromVenue = [] }: AlbumPag
       <div className="firefly-2 fixed top-[60%] left-[85%] w-1 h-1" />
       <div className="firefly-3 fixed top-[40%] left-[75%] w-1.5 h-1.5" />
 
+      {/* Artist discography header - compact carousel at top */}
+      {artistAlbums && artistAlbums.length > 1 && (
+        <div className="bg-[#1a1815]/80 border-b border-[#2a2520]">
+          <div className="max-w-[1000px] mx-auto px-4 sm:px-8 py-4">
+            {/* Artist name row */}
+            <div className="flex items-center justify-between mb-3">
+              <Link
+                href={`/artists/${album.artistSlug}`}
+                className="text-2xl sm:text-3xl font-serif text-[var(--text)] hover:text-[var(--neon-pink)] transition-colors"
+              >
+                {album.artistName}
+              </Link>
+              <Link
+                href={`/artists/${album.artistSlug}`}
+                className="text-sm text-[var(--text-subdued)] hover:text-[var(--text)] flex items-center gap-1"
+              >
+                All shows <span className="text-[var(--neon-pink)]">→</span>
+              </Link>
+            </div>
+
+            {/* Compact album carousel */}
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-[#4a4038] scrollbar-track-transparent">
+              {artistAlbums.map((a) => (
+                <Link
+                  key={a.id}
+                  href={`/artists/${a.artistSlug}/album/${a.slug}`}
+                  className={`flex-shrink-0 group ${
+                    a.slug === album.slug ? 'pointer-events-none' : ''
+                  }`}
+                >
+                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden relative ${
+                    a.slug === album.slug
+                      ? 'ring-2 ring-[#d4a060] ring-offset-2 ring-offset-[#1a1815]'
+                      : 'opacity-70 hover:opacity-100 transition-opacity'
+                  }`}>
+                    {a.coverArt ? (
+                      <Image src={a.coverArt} alt={a.name} fill sizes="80px" className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#2a2520] flex items-center justify-center">
+                        <span className="text-[#4a4038] text-xs">♫</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className={`text-[10px] mt-1 text-center truncate w-16 sm:w-20 ${
+                    a.slug === album.slug
+                      ? 'text-[#d4a060]'
+                      : 'text-[var(--text-subdued)] group-hover:text-[var(--text)]'
+                  }`}>
+                    {a.showDate || a.name.slice(0, 10)}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Vault header badge */}
       <div className="text-center pt-8 pb-4">
         <div className="text-[var(--text-subdued)] text-[11px] tracking-[4px]">
@@ -863,7 +939,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [] }: AlbumPag
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-12 items-center lg:items-start justify-center">
           {/* Cassette tape */}
           <div className="flex flex-col items-center gap-6">
-            <CassetteTape album={album} isPlaying={albumIsPlaying} volume={analyzerData.volume} />
+            <CassetteTape album={album} isPlaying={albumIsPlaying} volume={analyzerData.volume} artistImageUrl={artist?.image} />
           </div>
 
           {/* Album info */}
@@ -983,6 +1059,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [] }: AlbumPag
             showVenue={album.showVenue}
           />
         )}
+
 
         {/* More from this Venue - Internal Linking for SEO */}
         {moreFromVenue.length > 0 && album.showVenue && (

@@ -108,6 +108,9 @@ export default async function AlbumPage({ params }: AlbumPageProps) {
     notFound();
   }
 
+  // Fetch artist albums for discography section
+  const artistResult = await getArtistAlbums(slug);
+
   const baseUrl = getBaseUrl();
 
   // Generate Schema.org structured data using centralized utilities
@@ -135,7 +138,11 @@ export default async function AlbumPage({ params }: AlbumPageProps) {
   return (
     <>
       <StructuredData data={combinedSchema} />
-      <AlbumPageContent album={album} />
+      <AlbumPageContent
+        album={album}
+        artistAlbums={artistResult?.albums}
+        artist={artistResult?.artist}
+      />
     </>
   );
 }
