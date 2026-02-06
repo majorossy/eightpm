@@ -50,6 +50,7 @@ class TrackImporter implements TrackImporterInterface
     private ProductRepositoryInterface $productRepository;
     private ProductInterfaceFactory $productFactory;
     private AttributeOptionManagerInterface $attributeOptionManager;
+    private RecordingTypeDetector $recordingTypeDetector;
     private Config $config;
     private Logger $logger;
 
@@ -57,6 +58,7 @@ class TrackImporter implements TrackImporterInterface
      * @param ProductRepositoryInterface $productRepository
      * @param ProductInterfaceFactory $productFactory
      * @param AttributeOptionManagerInterface $attributeOptionManager
+     * @param RecordingTypeDetector $recordingTypeDetector
      * @param Config $config
      * @param Logger $logger
      */
@@ -64,12 +66,14 @@ class TrackImporter implements TrackImporterInterface
         ProductRepositoryInterface $productRepository,
         ProductInterfaceFactory $productFactory,
         AttributeOptionManagerInterface $attributeOptionManager,
+        RecordingTypeDetector $recordingTypeDetector,
         Config $config,
         Logger $logger
     ) {
         $this->productRepository = $productRepository;
         $this->productFactory = $productFactory;
         $this->attributeOptionManager = $attributeOptionManager;
+        $this->recordingTypeDetector = $recordingTypeDetector;
         $this->config = $config;
         $this->logger = $logger;
     }
@@ -310,6 +314,31 @@ class TrackImporter implements TrackImporterInterface
         }
         if ($show->getLastUpdatedTimestamp()) {
             $product->setData('show_last_updated', date('Y-m-d H:i:s', $show->getLastUpdatedTimestamp()));
+        }
+
+        // Recording restriction and classification attributes
+        $isStreamable = !$show->isAccessRestricted();
+        $product->setData('is_streamable', $isStreamable ? 1 : 0);
+
+        if (!$isStreamable) {
+            $product->setData('access_restriction', 'stream_only');
+        }
+
+        $recordingType = $this->recordingTypeDetector->detect(
+            $show->getSource(),
+            $show->getLineage(),
+            $show->getSubjectTags()
+        );
+        $product->setData('recording_type', $recordingType);
+
+        $identifier = $show->getIdentifier();
+        if ($identifier) {
+            $product->setData('archive_detail_url', 'https://archive.org/details/' . $identifier);
+        }
+
+        $licenseUrl = $show->getLicenseUrl();
+        if ($licenseUrl) {
+            $product->setData('archive_license_url', $licenseUrl);
         }
 
         // Build multi-quality song URLs

@@ -3,6 +3,11 @@ interface ProductInterface {
     song_url_high: String @doc(description: "High quality URL (FLAC or best available)") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongUrlHigh")
     song_url_medium: String @doc(description: "Medium quality URL (MP3 320k)") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongUrlMedium")
     song_url_low: String @doc(description: "Low quality URL (MP3 128k)") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongUrlLow")
+    is_streamable: Boolean @doc(description: "Whether this recording can be streamed (not access-restricted)")
+    recording_type: String @doc(description: "Recording type: SBD, AUD, MX, FM, WEBCAST, or UNKNOWN")
+    archive_detail_url: String @doc(description: "Archive.org detail page URL")
+    archive_license_url: String @doc(description: "Creative Commons license URL if available")
+    access_restriction: String @doc(description: "Access restriction type, e.g. stream_only")
 }
 
 interface CategoryInterface {

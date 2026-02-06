@@ -382,6 +382,11 @@ const GET_SONGS_BY_CATEGORY_QUERY = `
         archive_downloads
         archive_downloads_week
         archive_downloads_month
+        is_streamable
+        recording_type
+        archive_detail_url
+        archive_license_url
+        access_restriction
         categories {
           uid
           name
@@ -419,6 +424,11 @@ const GET_SONGS_BY_SEARCH_QUERY = `
         archive_downloads
         archive_downloads_week
         archive_downloads_month
+        is_streamable
+        recording_type
+        archive_detail_url
+        archive_license_url
+        access_restriction
         categories {
           uid
           name
@@ -456,6 +466,11 @@ const GET_ALL_SONGS_QUERY = `
         archive_downloads
         archive_downloads_week
         archive_downloads_month
+        is_streamable
+        recording_type
+        archive_detail_url
+        archive_license_url
+        access_restriction
         categories {
           uid
           name
@@ -493,6 +508,11 @@ const GET_SONG_BY_ID_QUERY = `
         archive_downloads
         archive_downloads_week
         archive_downloads_month
+        is_streamable
+        recording_type
+        archive_detail_url
+        archive_license_url
+        access_restriction
         categories {
           uid
           name
@@ -668,6 +688,11 @@ interface MagentoProduct {
   archive_downloads?: number;   // Archive.org total downloads
   archive_downloads_week?: number;  // Archive.org downloads this week
   archive_downloads_month?: number; // Archive.org downloads this month
+  is_streamable?: boolean;          // Whether track can be streamed
+  recording_type?: string;          // SBD, AUD, MX, FM, WEBCAST, UNKNOWN
+  archive_detail_url?: string;      // Archive.org detail page URL
+  archive_license_url?: string;     // Creative Commons license URL
+  access_restriction?: string;      // Restriction reason
   categories?: Array<{ uid: string; name: string; url_key: string }>;
 }
 
@@ -817,6 +842,12 @@ function productToSong(product: MagentoProduct, albumIdentifier?: string): Song 
     downloads: product.archive_downloads || undefined,
     downloadsWeek: product.archive_downloads_week || undefined,
     downloadsMonth: product.archive_downloads_month || undefined,
+    // Availability & recording type
+    isStreamable: product.is_streamable !== undefined ? product.is_streamable : true,
+    recordingType: product.recording_type || undefined,
+    archiveDetailUrl: product.archive_detail_url || undefined,
+    archiveLicenseUrl: product.archive_license_url || undefined,
+    accessRestriction: product.access_restriction || undefined,
   };
 }
 

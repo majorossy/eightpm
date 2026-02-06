@@ -59,38 +59,47 @@ export function formatLineage(lineage?: string, maxLength: number = 50): string 
   return trimmed.substring(0, maxLength - 3) + '...';
 }
 
-/**
- * Get badge configuration for recording type
- * Returns null if no badge should be shown
- */
-export function getRecordingBadge(lineage?: string): {
+interface RecordingBadgeConfig {
   show: boolean;
   text: string;
   bgColor: string;
   textColor: string;
-} | null {
+}
+
+/**
+ * Badge config lookup by recording type code
+ */
+const BADGE_CONFIG: Record<string, RecordingBadgeConfig> = {
+  SBD: { show: true, text: 'SBD', bgColor: '#d4a060', textColor: '#1c1a17' },
+  MX: { show: true, text: 'MX', bgColor: '#e8a050', textColor: '#1c1a17' },
+  FM: { show: true, text: 'FM', bgColor: '#8a8478', textColor: '#1c1a17' },
+  WEBCAST: { show: true, text: 'WEB', bgColor: '#8a8478', textColor: '#1c1a17' },
+};
+
+/**
+ * Get badge configuration for recording type
+ * Uses backend recordingType field if available, falls back to lineage parsing
+ * Returns null if no badge should be shown (AUD, UNKNOWN, or undetected)
+ */
+export function getRecordingBadge(lineage?: string, recordingType?: string): RecordingBadgeConfig | null {
+  // Prefer backend-computed recordingType when available
+  if (recordingType && recordingType !== 'AUD' && recordingType !== 'UNKNOWN') {
+    return BADGE_CONFIG[recordingType] || null;
+  }
+
+  // Fall back to lineage-based detection
   const type = getRecordingType(lineage);
 
   if (!type || type === 'audience') {
-    return null; // No badge for audience or unknown
+    return null;
   }
 
   if (type === 'soundboard') {
-    return {
-      show: true,
-      text: 'SBD',
-      bgColor: '#d4a060', // Gold matching Campfire theme
-      textColor: '#1c1a17', // Dark text for contrast
-    };
+    return BADGE_CONFIG.SBD;
   }
 
   if (type === 'matrix') {
-    return {
-      show: true,
-      text: 'MATRIX',
-      bgColor: '#e8a050', // Lighter gold
-      textColor: '#1c1a17',
-    };
+    return BADGE_CONFIG.MX;
   }
 
   return null;

@@ -285,10 +285,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       // Clear saved progress - track completed normally
       clearPlaybackProgress();
 
-      // Get next song from queue context
-      const nextSong = queueContext.nextTrack();
+      // Get next song from queue context, skipping unavailable tracks
+      let nextSong = queueContext.nextTrack();
+      let skipped = 0;
+      while (nextSong && nextSong.isStreamable === false && skipped < 20) {
+        nextSong = queueContext.nextTrack();
+        skipped++;
+      }
 
-      if (nextSong) {
+      if (nextSong && nextSong.isStreamable !== false) {
         // Play the next song
         const currentAudio = getAudio();
         if (currentAudio) {
@@ -508,6 +513,24 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [currentSong, state.isPlaying, savePlaybackProgress]);
 
   const playSong = useCallback((song: Song) => {
+    // Skip unavailable tracks
+    if (song.isStreamable === false) {
+      if (toast) {
+        toast.showInfo('This recording is stream-only on Archive.org');
+      }
+      // Try to skip to next available track in queue
+      const nextSong = queueContext.nextTrack();
+      if (nextSong) {
+        const audio = getAudio();
+        if (audio) {
+          audio.src = getStreamUrl(nextSong);
+          audio.play().catch(console.error);
+          setState(prev => ({ ...prev, isPlaying: true, activeSong: nextSong }));
+        }
+      }
+      return;
+    }
+
     const audio = getAudio();
     if (!audio) return;
 
@@ -534,7 +557,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     connectAudioElement(audio).then(() => {
       setAnalyzerVolume(state.volume);
     });
-  }, [queueContext, crossfade, handlePlaybackError, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
+  }, [queueContext, crossfade, handlePlaybackError, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl, toast]);
 
   const pause = useCallback(() => {
     const audio = getAudio();
@@ -584,9 +607,20 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [crossfade]);
 
   const playNext = useCallback(() => {
-    const nextSong = queueContext.nextTrack();
+    let nextSong = queueContext.nextTrack();
     const audio = getAudio();
-    if (nextSong && audio) {
+
+    // Skip unavailable tracks
+    let skipped = 0;
+    while (nextSong && nextSong.isStreamable === false && skipped < 20) {
+      if (toast) {
+        toast.showInfo('This recording is stream-only on Archive.org');
+      }
+      nextSong = queueContext.nextTrack();
+      skipped++;
+    }
+
+    if (nextSong && nextSong.isStreamable !== false && audio) {
       // Play first (synchronously in user gesture handler for mobile compatibility)
       audio.src = getStreamUrl(nextSong);
       audio.play().catch(console.error);
@@ -596,7 +630,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         setAnalyzerVolume(state.volume);
       });
     }
-  }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
+  }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl, toast]);
 
   const playPrev = useCallback(() => {
     const audio = getAudio();
@@ -610,8 +644,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     queueContext.prevTrack();
 
     // Get the new current song after prevTrack
-    const newSong = queueContext.getSongAtTrack(queueContext.queue.currentTrackIndex - 1);
-    if (newSong && audio) {
+    let newSong = queueContext.getSongAtTrack(queueContext.queue.currentTrackIndex - 1);
+
+    // Skip unavailable tracks when going backwards
+    let skipped = 0;
+    while (newSong && newSong.isStreamable === false && skipped < 20) {
+      queueContext.prevTrack();
+      newSong = queueContext.getSongAtTrack(queueContext.queue.currentTrackIndex - 1);
+      skipped++;
+    }
+
+    if (newSong && newSong.isStreamable !== false && audio) {
       audio.src = getStreamUrl(newSong);
       audio.play().catch(console.error);
       setState(prev => ({ ...prev, isPlaying: true, activeSong: newSong }));

@@ -44,6 +44,10 @@ class Show implements ShowInterface
     private ?string $uploader = null;
     private ?int $createdTimestamp = null;
     private ?int $lastUpdatedTimestamp = null;
+    private bool $accessRestricted = false;
+    private ?string $licenseUrl = null;
+    /** @var string[] */
+    private array $subjectTags = [];
 
     /** @var TrackInterface[] */
     private array $tracks = [];
@@ -564,6 +568,57 @@ class Show implements ShowInterface
     public function setLastUpdatedTimestamp(?int $lastUpdatedTimestamp): ShowInterface
     {
         $this->lastUpdatedTimestamp = $lastUpdatedTimestamp;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isAccessRestricted(): bool
+    {
+        return $this->accessRestricted;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAccessRestricted(bool $restricted): ShowInterface
+    {
+        $this->accessRestricted = $restricted;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLicenseUrl(): ?string
+    {
+        return $this->licenseUrl;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setLicenseUrl(?string $licenseUrl): ShowInterface
+    {
+        $this->licenseUrl = $licenseUrl;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSubjectTags(): array
+    {
+        return $this->subjectTags;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSubjectTags(array $subjectTags): ShowInterface
+    {
+        $this->subjectTags = $subjectTags;
         return $this;
     }
 }

@@ -43,6 +43,7 @@ class BulkProductImporter implements BulkProductImporterInterface
     private ProductResource $productResource;
     private ProductCollectionFactory $productCollectionFactory;
     private AttributeOptionManagerInterface $attributeOptionManager;
+    private RecordingTypeDetector $recordingTypeDetector;
     private IndexerRegistry $indexerRegistry;
     private ResourceConnection $resourceConnection;
     private Config $config;
@@ -59,6 +60,7 @@ class BulkProductImporter implements BulkProductImporterInterface
      * @param ProductResource $productResource
      * @param ProductCollectionFactory $productCollectionFactory
      * @param AttributeOptionManagerInterface $attributeOptionManager
+     * @param RecordingTypeDetector $recordingTypeDetector
      * @param IndexerRegistry $indexerRegistry
      * @param ResourceConnection $resourceConnection
      * @param Config $config
@@ -68,6 +70,7 @@ class BulkProductImporter implements BulkProductImporterInterface
         ProductResource $productResource,
         ProductCollectionFactory $productCollectionFactory,
         AttributeOptionManagerInterface $attributeOptionManager,
+        RecordingTypeDetector $recordingTypeDetector,
         IndexerRegistry $indexerRegistry,
         ResourceConnection $resourceConnection,
         Config $config,
@@ -76,6 +79,7 @@ class BulkProductImporter implements BulkProductImporterInterface
         $this->productResource = $productResource;
         $this->productCollectionFactory = $productCollectionFactory;
         $this->attributeOptionManager = $attributeOptionManager;
+        $this->recordingTypeDetector = $recordingTypeDetector;
         $this->indexerRegistry = $indexerRegistry;
         $this->resourceConnection = $resourceConnection;
         $this->config = $config;
@@ -588,6 +592,31 @@ class BulkProductImporter implements BulkProductImporterInterface
                 date('Y-m-d H:i:s', $show->getLastUpdatedTimestamp()),
                 'datetime'
             );
+        }
+
+        // Recording restriction and classification attributes
+        $isStreamable = !$show->isAccessRestricted();
+        $this->saveAttribute($entityId, 'is_streamable', $isStreamable ? 1 : 0, 'int');
+
+        if (!$isStreamable) {
+            $this->saveAttribute($entityId, 'access_restriction', 'stream_only', 'varchar');
+        }
+
+        $recordingType = $this->recordingTypeDetector->detect(
+            $show->getSource(),
+            $show->getLineage(),
+            $show->getSubjectTags()
+        );
+        $this->saveAttribute($entityId, 'recording_type', $recordingType, 'varchar');
+
+        $identifier = $show->getIdentifier();
+        if ($identifier) {
+            $this->saveAttribute($entityId, 'archive_detail_url', 'https://archive.org/details/' . $identifier, 'varchar');
+        }
+
+        $licenseUrl = $show->getLicenseUrl();
+        if ($licenseUrl) {
+            $this->saveAttribute($entityId, 'archive_license_url', $licenseUrl, 'varchar');
         }
 
         // Text attributes (description, meta_keyword)

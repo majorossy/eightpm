@@ -39,6 +39,9 @@ interface ShowInterface
     public const DOWNLOADS = 'downloads';
     public const DOWNLOADS_WEEK = 'downloads_week';
     public const DOWNLOADS_MONTH = 'downloads_month';
+    public const ACCESS_RESTRICTED = 'access_restricted';
+    public const LICENSE_URL = 'license_url';
+    public const SUBJECT_TAGS = 'subject_tags';
 
     /**
      * Get show identifier (unique ID on Archive.org)
@@ -422,4 +425,49 @@ interface ShowInterface
      * @return ShowInterface
      */
     public function setDownloadsMonth(?int $downloadsMonth): ShowInterface;
+
+    /**
+     * Check if access is restricted (e.g., stream_only collection)
+     *
+     * @return bool
+     */
+    public function isAccessRestricted(): bool;
+
+    /**
+     * Set access restricted flag
+     *
+     * @param bool $restricted
+     * @return ShowInterface
+     */
+    public function setAccessRestricted(bool $restricted): ShowInterface;
+
+    /**
+     * Get license URL (Creative Commons, etc.)
+     *
+     * @return string|null
+     */
+    public function getLicenseUrl(): ?string;
+
+    /**
+     * Set license URL
+     *
+     * @param string|null $licenseUrl
+     * @return ShowInterface
+     */
+    public function setLicenseUrl(?string $licenseUrl): ShowInterface;
+
+    /**
+     * Get subject tags from Archive.org metadata
+     *
+     * @return array
+     */
+    public function getSubjectTags(): array;
+
+    /**
+     * Set subject tags
+     *
+     * @param array $subjectTags
+     * @return ShowInterface
+     */
+    public function setSubjectTags(array $subjectTags): ShowInterface;
 }

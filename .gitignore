@@ -6,6 +6,7 @@ node_modules/
 .next/
 frontend/.next/
 frontend/node_modules/
+frontend/tsconfig.tsbuildinfo
 
 # Magento core (installed via composer, not tracked)
 src/vendor/

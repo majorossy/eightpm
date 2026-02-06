@@ -10,6 +10,7 @@ import { AddToPlaylistModal } from '@/components/Playlists/AddToPlaylistModal';
 import VersionCarousel from './VersionCarousel';
 import { useShare } from '@/hooks/useShare';
 import ShareModal from '@/components/ShareModal';
+import { getRecordingBadge } from '@/lib/lineageUtils';
 
 interface TrackCardProps {
   track: Track;
@@ -43,8 +44,16 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
   const isSelectedPlaying = currentSong?.id === selectedSong?.id;
   const hasMultipleVersions = track.songCount > 1;
 
+  // Check if the selected song is streamable
+  const isUnavailable = selectedSong?.isStreamable === false;
+
+  // Get recording type badge for the selected song
+  const recordingBadge = selectedSong
+    ? getRecordingBadge(selectedSong.lineage, selectedSong.recordingType)
+    : null;
+
   const handlePlayClick = () => {
-    if (!selectedSong) return;
+    if (!selectedSong || isUnavailable) return;
 
     // If this track is from an album and we have album context, load the album
     if (album && index !== undefined) {
@@ -59,8 +68,22 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
 
   const handleAddToQueue = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (selectedSong) {
+    if (selectedSong && !isUnavailable) {
       addToUpNext(selectedSong);
+    }
+  };
+
+  const handleArchiveLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedSong?.archiveDetailUrl) {
+      window.open(selectedSong.archiveDetailUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleLicenseClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedSong?.archiveLicenseUrl) {
+      window.open(selectedSong.archiveLicenseUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -69,6 +92,7 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
   };
 
   const handleVersionPlay = (song: Song) => {
+    if (song.isStreamable === false) return;
     if (currentSong?.id === song.id && isPlaying) {
       togglePlay();
     } else {
@@ -89,6 +113,7 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
             : 'hover:bg-[#2d2a26] border-l-2 border-transparent'
           }
           ${isExpanded ? 'bg-[#2d2a26]' : ''}
+          ${isUnavailable ? 'opacity-60' : ''}
         `}
       >
         {/* Main track row */}
@@ -96,9 +121,15 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
           className="grid grid-cols-[24px_1fr_auto_auto_auto_auto] gap-4 items-center px-4 py-2 cursor-pointer group"
           onClick={toggleExpanded}
         >
-          {/* Track number or play icon / EQ bars */}
+          {/* Track number, play icon, or lock icon for unavailable */}
           <div className="w-6 flex items-center justify-center">
-            {isSelectedPlaying && isPlaying ? (
+            {isUnavailable ? (
+              /* Lock icon for unavailable tracks */
+              <svg className="w-4 h-4 text-[#8a8478]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="5" y="11" width="14" height="10" rx="2" strokeWidth={2} />
+                <path d="M8 11V7a4 4 0 018 0v4" strokeWidth={2} strokeLinecap="round" />
+              </svg>
+            ) : isSelectedPlaying && isPlaying ? (
               /* Animated EQ bars for playing track */
               <span className="jamify-eq-bars">
                 <span /><span /><span />
@@ -133,9 +164,37 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
 
           {/* Track info */}
           <div className="flex flex-col min-w-0">
-            <span className={`text-base truncate ${isCurrentTrack ? 'text-[#d4a060]' : 'text-white'}`}>
-              {track.title}
-            </span>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`text-base truncate ${isUnavailable ? 'text-[#8a8478]' : isCurrentTrack ? 'text-[#d4a060]' : 'text-white'}`}>
+                {track.title}
+              </span>
+              {/* Recording type badge */}
+              {recordingBadge && (
+                <span
+                  className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-full"
+                  style={{ backgroundColor: recordingBadge.bgColor, color: recordingBadge.textColor }}
+                  title={`${recordingBadge.text} Recording`}
+                >
+                  {recordingBadge.text}
+                </span>
+              )}
+              {/* CC license badge */}
+              {selectedSong?.archiveLicenseUrl && (
+                <button
+                  onClick={handleLicenseClick}
+                  className="flex-shrink-0 px-1 py-0.5 text-[9px] font-bold rounded border border-[#8a8478]/40 text-[#8a8478] hover:text-white hover:border-white transition-colors"
+                  title="Creative Commons Licensed"
+                >
+                  CC
+                </button>
+              )}
+              {/* Unavailable pill */}
+              {isUnavailable && (
+                <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] rounded bg-[#3a3632] text-[#8a8478]">
+                  Unavailable
+                </span>
+              )}
+            </div>
             {hasMultipleVersions && (
               <span className="text-xs text-[#8a8478] flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-[#d4a060] rounded-full" />
@@ -144,44 +203,69 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
             )}
           </div>
 
-          {/* Add to playlist */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowPlaylistModal(true);
-            }}
-            className="text-[#8a8478] hover:text-white opacity-0 group-hover:opacity-100 transition-all focus:outline-none focus:opacity-100"
-            aria-label={`Add ${track.title} to playlist`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </button>
+          {/* Unavailable: show Archive.org link instead of action buttons */}
+          {isUnavailable ? (
+            <>
+              {/* Archive.org link button */}
+              {selectedSong?.archiveDetailUrl && (
+                <button
+                  onClick={handleArchiveLink}
+                  className="col-span-3 flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border border-[#d4a060] text-[#d4a060] hover:bg-[#d4a060]/10 transition-colors"
+                  aria-label="Stream on Archive.org"
+                >
+                  {/* External link icon */}
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Archive.org
+                </button>
+              )}
+              {!selectedSong?.archiveDetailUrl && (
+                <span className="col-span-3" />
+              )}
+            </>
+          ) : (
+            <>
+              {/* Add to playlist */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPlaylistModal(true);
+                }}
+                className="text-[#8a8478] hover:text-white opacity-0 group-hover:opacity-100 transition-all focus:outline-none focus:opacity-100"
+                aria-label={`Add ${track.title} to playlist`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </button>
 
-          {/* Add to queue */}
-          <button
-            onClick={handleAddToQueue}
-            className="text-[#8a8478] hover:text-white opacity-0 group-hover:opacity-100 transition-all focus:outline-none focus:opacity-100"
-            aria-label={`Add ${track.title} to queue`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
+              {/* Add to queue */}
+              <button
+                onClick={handleAddToQueue}
+                className="text-[#8a8478] hover:text-white opacity-0 group-hover:opacity-100 transition-all focus:outline-none focus:opacity-100"
+                aria-label={`Add ${track.title} to queue`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
 
-          {/* Share */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              openShareModal(shareableTrack(track));
-            }}
-            className="text-[#8a8478] hover:text-white opacity-0 group-hover:opacity-100 transition-all focus:outline-none focus:opacity-100"
-            aria-label={`Share ${track.title}`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-            </svg>
-          </button>
+              {/* Share */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openShareModal(shareableTrack(track));
+                }}
+                className="text-[#8a8478] hover:text-white opacity-0 group-hover:opacity-100 transition-all focus:outline-none focus:opacity-100"
+                aria-label={`Share ${track.title}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              </button>
+            </>
+          )}
 
           {/* Duration and expand chevron */}
           <div className="flex items-center gap-4">

@@ -41,6 +41,12 @@ export interface Song {
   downloads?: number;            // Total download count
   downloadsWeek?: number;        // Downloads this week
   downloadsMonth?: number;       // Downloads this month
+  // Availability & recording type (copyright restrictions)
+  isStreamable?: boolean;        // Whether the track can be streamed (false = restricted)
+  archiveDetailUrl?: string;     // Direct link to Archive.org detail page
+  archiveLicenseUrl?: string;    // Creative Commons license URL
+  recordingType?: string;        // 'SBD' | 'AUD' | 'MX' | 'FM' | 'WEBCAST' | 'UNKNOWN'
+  accessRestriction?: string;    // Restriction reason (e.g., 'stream_only', 'no_derive')
 }
 
 // Track - a unique song title within an album (may have multiple recordings)

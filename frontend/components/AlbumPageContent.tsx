@@ -484,7 +484,7 @@ function RecordingCard({
           </span>
           <div className="flex items-center gap-2">
             {(() => {
-              const recordingBadge = getRecordingBadge(song.lineage);
+              const recordingBadge = getRecordingBadge(song.lineage, song.recordingType);
               return recordingBadge ? (
                 <span
                   className={`recording-badge px-2 py-0.5 text-xs font-bold rounded-full ${

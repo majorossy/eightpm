@@ -398,6 +398,28 @@ class TrackPopulatorService implements TrackPopulatorServiceInterface
         $show->setCreatedTimestamp(isset($data['created']) ? (int) $data['created'] : null);
         $show->setLastUpdatedTimestamp(isset($data['item_last_updated']) ? (int) $data['item_last_updated'] : null);
 
+        // Extract restriction data
+        $accessRestricted = isset($metadata['access-restricted-item'])
+            && $metadata['access-restricted-item'] === 'true';
+
+        $collectionArray = $metadata['collection'] ?? [];
+        if (is_string($collectionArray)) {
+            $collectionArray = [$collectionArray];
+        }
+        $isStreamOnly = in_array('stream_only', $collectionArray, true);
+
+        $show->setAccessRestricted($accessRestricted && $isStreamOnly);
+
+        // License URL
+        $show->setLicenseUrl($metadata['licenseurl'] ?? null);
+
+        // Subject tags for recording type detection
+        $subject = $metadata['subject'] ?? [];
+        if (is_string($subject)) {
+            $subject = [$subject];
+        }
+        $show->setSubjectTags($subject);
+
         // Parse tracks from files
         $audioFormat = $this->config->getAudioFormat();
         $tracks = [];

@@ -64,7 +64,7 @@ function VersionCard({
   onQueue: () => void;
 }) {
   const year = song.showDate?.split('-')[0] || '--';
-  const recordingBadge = getRecordingBadge(song.lineage);
+  const recordingBadge = getRecordingBadge(song.lineage, song.recordingType);
 
   return (
     <div
