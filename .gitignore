@@ -54,3 +54,7 @@ mcp/*/dist/
 
 *storybook.log
 storybook-static
+
+# Frontend environment files (per-environment, not shared)
+frontend/.env.local
+frontend/.env*.local

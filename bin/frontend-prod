@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Build and start frontend in production mode
+# Uses PM2 if available (production), otherwise direct node (fallback)
+set -e
+
+cd "$(dirname "$0")/../frontend" || { echo "✗ Frontend directory not found"; exit 1; }
+
+SKIP_BUILD=false
+for arg in "$@"; do
+  case $arg in
+    --skip-build) SKIP_BUILD=true ;;
+  esac
+done
+
+# Stop any existing frontend
+../bin/frontend-stop
+
+# Clean build cache (unless skipping build)
+if [ "$SKIP_BUILD" = false ]; then
+  echo "Cleaning .next cache..."
+  rm -rf .next tsconfig.tsbuildinfo node_modules/.cache 2>/dev/null || true
+fi
+
+# Install dependencies if needed
+if [ ! -d "node_modules" ] || [ "package.json" -nt "node_modules" ]; then
+  echo "Installing dependencies..."
+  npm install || { echo "✗ npm install failed"; exit 1; }
+fi
+
+# Build unless skipped
+if [ "$SKIP_BUILD" = false ]; then
+  echo "Building frontend for production..."
+  if ! NODE_TLS_REJECT_UNAUTHORIZED=0 npm run build; then
+    echo "✗ Build failed"
+    exit 1
+  fi
+
+  # Verify build output exists
+  if [ ! -f ".next/prerender-manifest.json" ]; then
+    echo "✗ Build incomplete: missing prerender-manifest.json"
+    exit 1
+  fi
+  echo "✓ Build completed successfully"
+fi
+
+# Start production server
+if command -v pm2 &> /dev/null; then
+  echo "Starting production server via PM2..."
+
+  # Use ecosystem config if exists, otherwise use CLI
+  if [ -f "ecosystem.config.js" ]; then
+    pm2 start ecosystem.config.js --only 8pm-frontend 2>/dev/null || \
+    pm2 restart ecosystem.config.js --only 8pm-frontend
+  elif pm2 list 2>/dev/null | grep -q '8pm-frontend'; then
+    pm2 restart 8pm-frontend --update-env
+  else
+    # Register new PM2 process with proper syntax
+    NODE_TLS_REJECT_UNAUTHORIZED=0 pm2 start npm --name 8pm-frontend -- start -- -p 3001
+  fi
+
+  pm2 save 2>/dev/null || true
+else
+  # Development fallback: use nohup
+  echo "Starting production server (nohup)..."
+  NODE_TLS_REJECT_UNAUTHORIZED=0 nohup npm start -- -p 3001 > /tmp/frontend-prod.log 2>&1 &
+fi
+
+# Wait for startup with retry
+echo "Waiting for frontend to start..."
+for i in {1..10}; do
+  sleep 2
+  if ss -tlnp 2>/dev/null | grep -q ':3001 '; then
+    echo "✓ Frontend running on http://localhost:3001"
+    if command -v pm2 &> /dev/null; then
+      echo "  Logs: pm2 logs 8pm-frontend"
+    else
+      echo "  Logs: /tmp/frontend-prod.log"
+    fi
+    exit 0
+  fi
+  echo "  Waiting... ($i/10)"
+done
+
+echo "✗ Frontend failed to start within 20 seconds"
+if command -v pm2 &> /dev/null; then
+  pm2 logs 8pm-frontend --lines 20 --nostream 2>/dev/null
+else
+  tail -20 /tmp/frontend-prod.log 2>/dev/null
+fi
+exit 1

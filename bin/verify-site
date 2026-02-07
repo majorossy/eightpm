@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Verify the site is working end-to-end
+# Usage: bin/verify-site [--prod|--dev]
+set -e
+
+MODE="prod"
+for arg in "$@"; do
+  case $arg in
+    --prod) MODE="prod" ;;
+    --dev) MODE="dev" ;;
+  esac
+done
+
+echo "=== Site Verification ==="
+ERRORS=0
+
+# 1. Check Docker containers
+echo ""
+echo "1. Docker Containers:"
+HEALTHY=$(docker ps --filter "name=eightpm" --filter "health=healthy" --format "{{.Names}}" 2>/dev/null | wc -l)
+TOTAL=$(docker ps --filter "name=eightpm" --format "{{.Names}}" 2>/dev/null | wc -l)
+# phpfpm has no healthcheck, so we expect 5-6 healthy out of 6-7 total
+if [ "$HEALTHY" -ge 5 ]; then
+  echo "   ✓ $HEALTHY/$TOTAL containers healthy"
+else
+  echo "   ✗ Only $HEALTHY/$TOTAL containers healthy"
+  docker ps --filter "name=eightpm" --format "{{.Names}}: {{.Status}}" 2>/dev/null | head -10
+  ERRORS=$((ERRORS + 1))
+fi
+
+# 2. Check GraphQL
+echo ""
+echo "2. GraphQL API:"
+GRAPHQL_RESPONSE=$(docker exec eightpm-app-1 curl -sk --connect-timeout 5 --max-time 10 \
+  https://localhost:8443/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ products(filter: {}, pageSize: 1) { total_count } }"}' 2>/dev/null || echo "")
+
+COUNT=$(echo "$GRAPHQL_RESPONSE" | grep -oE '"total_count":[0-9]+' | grep -oE '[0-9]+' || echo "0")
+if [ -z "$COUNT" ]; then COUNT="0"; fi
+
+if [ "$COUNT" -gt 0 ]; then
+  echo "   ✓ GraphQL returning $COUNT products"
+else
+  echo "   ✗ GraphQL not returning products"
+  echo "   Response: $GRAPHQL_RESPONSE" | head -c 200
+  ERRORS=$((ERRORS + 1))
+fi
+
+# 3. Check Frontend
+echo ""
+echo "3. Frontend (port 3001):"
+if ss -tlnp 2>/dev/null | grep -q ':3001 '; then
+  # Check HTTP status code first
+  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/ 2>/dev/null || echo "000")
+
+  if [ "$HTTP_STATUS" = "200" ]; then
+    # Check for actual content (look for common page elements)
+    CONTENT=$(curl -s --max-time 5 http://localhost:3001/ 2>/dev/null | head -c 5000)
+    if echo "$CONTENT" | grep -qE '(Grateful Dead|Phish|STS9|Railroad Earth|8PM|artists)'; then
+      echo "   ✓ Frontend serving content (HTTP $HTTP_STATUS)"
+    else
+      echo "   ⚠ Frontend responding but content may be incomplete (HTTP $HTTP_STATUS)"
+    fi
+  else
+    echo "   ✗ Frontend returning HTTP $HTTP_STATUS"
+    ERRORS=$((ERRORS + 1))
+  fi
+else
+  echo "   ✗ Frontend not running on port 3001"
+  ERRORS=$((ERRORS + 1))
+fi
+
+# 4. Summary
+echo ""
+echo "=== Summary ==="
+if [ $ERRORS -eq 0 ]; then
+  echo "✓ All checks passed!"
+  echo ""
+  echo "URLs:"
+  echo "  Frontend:  http://localhost:3001"
+  echo "  GraphQL:   https://localhost:8443/graphql"
+  if [ "$MODE" = "dev" ]; then
+    echo "  Admin:     https://localhost:8443/admin"
+    echo "  phpMyAdmin: http://localhost:8080"
+  fi
+  exit 0
+else
+  echo "✗ $ERRORS check(s) failed"
+  exit 1
+fi

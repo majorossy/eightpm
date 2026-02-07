@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Master script to start 8PM in production mode
+# Handles everything: pre-flight check, Docker, GraphQL, frontend
+set -e
+
+echo "=== 8PM Production Startup ==="
+echo ""
+
+# Pre-flight check: is site already running?
+echo "Checking if site is already running..."
+if bin/verify-site --prod 2>/dev/null; then
+  echo ""
+  echo "✓ Site is already running! No action needed."
+  exit 0
+fi
+
+echo ""
+echo "Site not fully operational. Starting services..."
+echo ""
+
+# Step 1: Start Docker
+echo "Step 1/4: Starting Docker containers..."
+bin/start --no-dev
+
+# Step 2: Wait for containers
+echo ""
+echo "Step 2/4: Waiting for containers to be healthy..."
+bin/wait-containers --no-dev --timeout=90
+
+# Step 3: Wait for GraphQL
+echo ""
+echo "Step 3/4: Waiting for GraphQL API..."
+bin/wait-graphql --timeout=120
+
+# Step 4: Start frontend
+echo ""
+echo "Step 4/4: Starting frontend..."
+if [ -f frontend/.next/prerender-manifest.json ]; then
+  echo "  Using existing build..."
+  bin/frontend-prod --skip-build
+else
+  echo "  Building frontend (this takes ~3 minutes)..."
+  bin/frontend-prod
+fi
+
+# Final verification
+echo ""
+echo "=== Final Verification ==="
+bin/verify-site --prod
+
+echo ""
+echo "✓ Production startup complete!"
