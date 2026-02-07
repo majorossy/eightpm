@@ -38,6 +38,7 @@ export const WithIcon: Story = {
 };
 
 export const Group: Story = {
+  args: {},
   render: () => (
     <AccordionGroup>
       <Accordion id="faq-1" title="How do I search for shows?">
@@ -54,6 +55,7 @@ export const Group: Story = {
 };
 
 export const GroupMultiple: Story = {
+  args: {},
   render: () => (
     <AccordionGroup allowMultiple>
       <Accordion id="multi-1" title="Section One">

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Start frontend in development mode with HMR
+# Uses PM2 if available, otherwise direct node
+set -e
+
+cd "$(dirname "$0")/../frontend"
+
+# Stop any existing frontend
+../bin/frontend-stop
+
+# Install dependencies if needed
+if [ ! -d "node_modules" ] || [ "package.json" -nt "node_modules" ]; then
+  echo "Installing dependencies..."
+  npm install
+fi
+
+# Start dev server
+if command -v pm2 &> /dev/null && [ -n "$USE_PM2" ]; then
+  # If PM2 is available and USE_PM2 is set, use it
+  echo "Starting development server via PM2..."
+  if pm2 list 2>/dev/null | grep -q '8pm-frontend'; then
+    pm2 delete 8pm-frontend 2>/dev/null || true
+  fi
+  pm2 start "npm run dev" --name 8pm-frontend
+  pm2 save 2>/dev/null || true
+else
+  # Default: use nohup for dev (simpler, shows HMR better)
+  echo "Starting development server on port 3001..."
+  nohup npm run dev > /tmp/frontend-dev.log 2>&1 &
+fi
+
+# Wait for startup
+sleep 3
+
+# Verify it's running
+if ss -tlnp 2>/dev/null | grep -q ':3001'; then
+  echo "✓ Frontend dev server running on http://localhost:3001"
+  echo "  Logs: /tmp/frontend-dev.log"
+else
+  echo "✗ Frontend failed to start"
+  tail -20 /tmp/frontend-dev.log 2>/dev/null || echo "No log available"
+  exit 1
+fi

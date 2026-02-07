@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Wait for Docker containers to be healthy
+# Usage: bin/wait-containers [--no-dev] [--timeout=60]
+set -e
+
+NO_DEV=""
+TIMEOUT=60
+
+for arg in "$@"; do
+  case $arg in
+    --no-dev) NO_DEV="--no-dev" ;;
+    --timeout=*) TIMEOUT="${arg#*=}" ;;
+  esac
+done
+
+echo "Waiting for containers to be healthy (timeout: ${TIMEOUT}s)..."
+
+ELAPSED=0
+while [ $ELAPSED -lt $TIMEOUT ]; do
+  # Count healthy containers (production: 6, dev: 8)
+  HEALTHY=$(bin/docker-compose $NO_DEV ps 2>/dev/null | grep -c "(healthy)" || echo "0")
+
+  # phpfpm has no healthcheck, so we expect 1 fewer healthy container
+  if [ "$NO_DEV" = "--no-dev" ]; then
+    EXPECTED=5  # app, db, redis, opensearch, rabbitmq (not phpfpm, mailcatcher)
+  else
+    EXPECTED=6  # app, db, redis, opensearch, rabbitmq, mailcatcher (not phpfpm)
+  fi
+
+  if [ "$HEALTHY" -ge "$EXPECTED" ]; then
+    echo "✓ All $HEALTHY containers healthy"
+    exit 0
+  fi
+
+  echo "  $HEALTHY/$EXPECTED healthy (${ELAPSED}s elapsed)..."
+  sleep 3
+  ELAPSED=$((ELAPSED + 3))
+done
+
+echo "✗ Timeout: Only $HEALTHY containers healthy after ${TIMEOUT}s"
+bin/docker-compose $NO_DEV ps
+exit 1

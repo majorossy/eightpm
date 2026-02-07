@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Master script to start 8PM in development mode (Mac local)
+# Handles everything: pre-flight check, Docker, GraphQL, frontend
+set -e
+
+echo "=== 8PM Development Startup ==="
+echo ""
+
+# Pre-flight check: is site already running?
+echo "Checking if site is already running..."
+if bin/verify-site --dev 2>/dev/null; then
+  echo ""
+  echo "✓ Site is already running! No action needed."
+  exit 0
+fi
+
+echo ""
+echo "Site not fully operational. Starting services..."
+echo ""
+
+# Step 1: Start Docker (dev mode includes phpMyAdmin)
+echo "Step 1/4: Starting Docker containers..."
+bin/start
+
+# Step 2: Wait for containers
+echo ""
+echo "Step 2/4: Waiting for containers to be healthy..."
+bin/wait-containers --timeout=90
+
+# Step 3: Wait for GraphQL
+echo ""
+echo "Step 3/4: Waiting for GraphQL API..."
+bin/wait-graphql --timeout=120
+
+# Step 4: Start frontend dev server
+echo ""
+echo "Step 4/4: Starting frontend dev server..."
+bin/frontend-dev
+
+# Final verification
+echo ""
+echo "=== Final Verification ==="
+bin/verify-site --dev
+
+echo ""
+echo "✓ Development startup complete!"
+echo ""
+echo "URLs:"
+echo "  Frontend:   http://localhost:3001"
+echo "  GraphQL:    https://magento.test/graphql"
+echo "  Admin:      https://magento.test/admin"
+echo "  phpMyAdmin: http://localhost:8080"
+echo "  Mailcatcher: http://localhost:1080"

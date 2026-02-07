@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Wait for Magento GraphQL to return products
+# Usage: bin/wait-graphql [--timeout=90]
+set -e
+
+TIMEOUT=90
+for arg in "$@"; do
+  case $arg in
+    --timeout=*) TIMEOUT="${arg#*=}" ;;
+  esac
+done
+
+echo "Waiting for GraphQL to be ready (timeout: ${TIMEOUT}s)..."
+
+# Determine the right GraphQL URL based on environment
+# In production, we curl from inside the container to avoid SSL issues
+QUERY='{"query":"{ products(filter: {}, pageSize: 1) { total_count } }"}'
+
+ELAPSED=0
+while [ $ELAPSED -lt $TIMEOUT ]; do
+  # Try to get product count from GraphQL (via container to avoid SSL cert issues)
+  COUNT=$(docker exec eightpm-app-1 curl -sk --connect-timeout 5 --max-time 10 \
+    https://localhost:8443/graphql \
+    -H "Content-Type: application/json" \
+    -d "$QUERY" 2>/dev/null \
+    | grep -oE '"total_count":[0-9]+' \
+    | grep -oE '[0-9]+' || echo "0")
+
+  # Ensure COUNT is a valid number
+  if [ -z "$COUNT" ]; then COUNT="0"; fi
+
+  if [ "$COUNT" -gt 0 ]; then
+    echo "✓ GraphQL ready: $COUNT products available"
+    exit 0
+  fi
+
+  echo "  Waiting... (${ELAPSED}s elapsed)"
+  sleep 3
+  ELAPSED=$((ELAPSED + 3))
+done
+
+echo "✗ Timeout: GraphQL not returning products after ${TIMEOUT}s"
+echo "Debug: Checking Magento status..."
+docker exec eightpm-phpfpm-1 bin/magento deploy:mode:show 2>/dev/null || echo "Could not check deploy mode"
+exit 1
