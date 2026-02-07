@@ -220,6 +220,8 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
               offsetX={15}
               offsetY={0}
               isTop={true}
+              imageUrl={artist.wikipediaSummary?.thumbnail?.source}
+              artistImageUrl={artist.image}
             />
 
             {/* Fire glow beneath cassettes */}

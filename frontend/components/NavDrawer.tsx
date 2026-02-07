@@ -4,6 +4,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import * as Dialog from '@radix-ui/react-dialog';
 import { useMobileUI } from '@/context/MobileUIContext';
 
 interface NavItem {
@@ -76,113 +77,111 @@ export default function NavDrawer() {
   const { isSidebarOpen, closeSidebar, isMobile } = useMobileUI();
   const pathname = usePathname();
 
-  if (!isSidebarOpen) return null;
-
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className={`fixed z-40 bg-black/60 ${
-          isMobile ? 'inset-0' : 'inset-0'
-        }`}
-        onClick={closeSidebar}
-        aria-hidden="true"
-      />
+    <Dialog.Root open={isSidebarOpen} onOpenChange={(open) => { if (!open) closeSidebar(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          className="fixed inset-0 z-40 bg-black/60"
+          aria-hidden="true"
+        />
 
-      {/* Drawer - slides from left */}
-      <aside
-        className={`fixed z-50 left-0 top-0 bottom-0 flex flex-col ${
-          isMobile
-            ? 'w-[280px] bg-gradient-to-b from-[#3a3632] to-[#1c1a17] safe-top safe-bottom'
-            : 'w-72 bg-[#1c1a17] border-r border-[#2d2a26]'
-        }`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Navigation menu"
-      >
-        {/* Header */}
-        <div className={`flex items-center justify-between px-4 ${isMobile ? 'py-4' : 'p-4 border-b border-[#2d2a26]'}`}>
-          <Link
-            href="/"
-            onClick={closeSidebar}
-            className="text-xl font-bold text-[#d4a060] hover:text-[#e8c090] transition-colors"
+        <Dialog.Content asChild>
+          <aside
+            className={`fixed z-50 left-0 top-0 bottom-0 flex flex-col ${
+              isMobile
+                ? 'w-[280px] bg-gradient-to-b from-[#3a3632] to-[#1c1a17] safe-top safe-bottom'
+                : 'w-72 bg-[#1c1a17] border-r border-[#2d2a26]'
+            }`}
+            aria-label="Navigation menu"
           >
-            8pm.me
-          </Link>
-          <button
-            onClick={closeSidebar}
-            className="p-2 text-[#8a8478] hover:text-white transition-colors"
-            aria-label="Close menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+            {/* Header */}
+            <div className={`flex items-center justify-between px-4 ${isMobile ? 'py-4' : 'p-4 border-b border-[#2d2a26]'}`}>
+              <Link
+                href="/"
+                onClick={closeSidebar}
+                className="text-xl font-bold text-[#d4a060] hover:text-[#e8c090] transition-colors"
+              >
+                8pm.me
+              </Link>
+              <Dialog.Close asChild>
+                <button
+                  className="p-2 text-[#8a8478] hover:text-white transition-colors"
+                  aria-label="Close menu"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </Dialog.Close>
+            </div>
 
-        {/* Navigation items */}
-        <nav className="flex-1 overflow-y-auto py-4">
-          <ul className="space-y-1 px-2">
-            {navItems.map((item) => {
-              const active = isActive(item.href);
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={closeSidebar}
-                    className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${
-                      active
-                        ? 'bg-[#2d2a26] text-white'
-                        : 'text-[#8a8478] hover:text-white hover:bg-[#2d2a26]/50'
-                    }`}
-                  >
-                    <span className={active ? 'text-[#d4a060]' : ''}>{item.icon}</span>
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+            <Dialog.Title className="sr-only">Navigation menu</Dialog.Title>
 
-          {/* Divider */}
-          <div className="my-4 mx-4 border-t border-[#2d2a26]" />
+            {/* Navigation items */}
+            <nav className="flex-1 overflow-y-auto py-4">
+              <ul className="space-y-1 px-2">
+                {navItems.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={closeSidebar}
+                        className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${
+                          active
+                            ? 'bg-[#2d2a26] text-white'
+                            : 'text-[#8a8478] hover:text-white hover:bg-[#2d2a26]/50'
+                        }`}
+                      >
+                        <span className={active ? 'text-[#d4a060]' : ''}>{item.icon}</span>
+                        <span className="font-medium">{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
 
-          {/* Bottom nav items */}
-          <ul className="space-y-1 px-2">
-            {bottomNavItems.map((item) => {
-              const active = isActive(item.href);
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={closeSidebar}
-                    className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${
-                      active
-                        ? 'bg-[#2d2a26] text-white'
-                        : 'text-[#8a8478] hover:text-white hover:bg-[#2d2a26]/50'
-                    }`}
-                  >
-                    <span className={active ? 'text-[#d4a060]' : ''}>{item.icon}</span>
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+              {/* Divider */}
+              <div className="my-4 mx-4 border-t border-[#2d2a26]" />
 
-        {/* Footer */}
-        <div className="px-4 py-4 border-t border-[#2d2a26]">
-          <p className="text-xs text-[#6a6458] text-center">
-            Please copy freely - never sell
-          </p>
-        </div>
-      </aside>
-    </>
+              {/* Bottom nav items */}
+              <ul className="space-y-1 px-2">
+                {bottomNavItems.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={closeSidebar}
+                        className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${
+                          active
+                            ? 'bg-[#2d2a26] text-white'
+                            : 'text-[#8a8478] hover:text-white hover:bg-[#2d2a26]/50'
+                        }`}
+                      >
+                        <span className={active ? 'text-[#d4a060]' : ''}>{item.icon}</span>
+                        <span className="font-medium">{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+
+            {/* Footer */}
+            <div className="px-4 py-4 border-t border-[#2d2a26]">
+              <p className="text-xs text-[#6a6458] text-center">
+                Please copy freely - never sell
+              </p>
+            </div>
+          </aside>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

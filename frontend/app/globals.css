@@ -2401,6 +2401,95 @@ html, body {
 }
 
 /* ========================================
+   Radix UI Component Animations
+   Data-state driven enter/exit animations
+   ======================================== */
+
+/* Dialog overlay */
+[data-radix-dialog-overlay][data-state="open"] {
+  animation: radix-fade-in 0.2s ease-out;
+}
+[data-radix-dialog-overlay][data-state="closed"] {
+  animation: radix-fade-out 0.15s ease-in;
+}
+
+@keyframes radix-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes radix-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Dialog content - scale in (desktop) */
+[data-radix-dialog-content][data-state="open"] {
+  animation: radix-scale-in 0.2s ease-out;
+}
+[data-radix-dialog-content][data-state="closed"] {
+  animation: radix-scale-out 0.15s ease-in;
+}
+
+@keyframes radix-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes radix-scale-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+/* Dialog content - slide up (mobile) */
+@media (max-width: 767px) {
+  [data-radix-dialog-content][data-state="open"] {
+    animation: radix-slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  [data-radix-dialog-content][data-state="closed"] {
+    animation: radix-slide-down 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@keyframes radix-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes radix-slide-down {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(16px); }
+}
+
+/* Select / Dropdown / Popover content */
+[data-radix-select-content][data-state="open"],
+[data-radix-dropdown-menu-content][data-state="open"],
+[data-radix-popover-content][data-state="open"] {
+  animation: radix-dropdown-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes radix-dropdown-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Accordion content */
+[data-radix-accordion-content][data-state="open"] {
+  animation: radix-accordion-expand 0.3s ease-out;
+  overflow: hidden;
+}
+[data-radix-accordion-content][data-state="closed"] {
+  animation: radix-accordion-collapse 0.2s ease-in;
+  overflow: hidden;
+}
+
+@keyframes radix-accordion-expand {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+@keyframes radix-accordion-collapse {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+/* ========================================
    Reduced Motion for Battery/Accessibility
    Disable animations when battery is low
    or user prefers reduced motion
@@ -2440,6 +2529,15 @@ html, body {
   animation: none !important;
 }
 
+.reduce-motion [data-radix-dialog-overlay],
+.reduce-motion [data-radix-dialog-content],
+.reduce-motion [data-radix-select-content],
+.reduce-motion [data-radix-dropdown-menu-content],
+.reduce-motion [data-radix-popover-content],
+.reduce-motion [data-radix-accordion-content] {
+  animation: none !important;
+}
+
 .reduce-motion .blink-dot {
   animation: none !important;
   opacity: 1 !important;
@@ -2464,6 +2562,15 @@ html, body {
 
   .glow-orb {
     opacity: 0 !important;
+  }
+
+  [data-radix-dialog-overlay],
+  [data-radix-dialog-content],
+  [data-radix-select-content],
+  [data-radix-dropdown-menu-content],
+  [data-radix-popover-content],
+  [data-radix-accordion-content] {
+    animation: none !important;
   }
 }
 

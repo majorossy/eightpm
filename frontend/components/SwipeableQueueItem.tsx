@@ -97,14 +97,14 @@ export default function SwipeableQueueItem({
         touchAction: isDragging ? 'none' : 'auto',
       }}
     >
-      {/* Delete button underneath */}
-      <div className="absolute inset-0 flex items-center justify-end bg-red-600">
+      {/* Delete button underneath — only visible when swiped */}
+      <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center">
         <button
           onClick={handleDelete}
-          className="flex items-center justify-center w-20 h-full text-white"
+          className="flex items-center justify-center w-full h-full text-red-400 hover:text-red-300"
           aria-label="Delete"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -120,7 +120,7 @@ export default function SwipeableQueueItem({
         onTouchStart={onTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative bg-[#1c1a17] touch-none"
+        className="relative rounded-[inherit] bg-[#252220] touch-none"
         style={{
           transform: getTransform(),
           transition: isDragging ? 'none' : isDeleting ? 'transform 300ms ease-out, opacity 300ms ease-out' : 'transform 250ms ease-out',

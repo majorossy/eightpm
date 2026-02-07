@@ -18,6 +18,7 @@ import { useStreamingStats } from '@/hooks/useStreamingStats';
 import ShareButton from '@/components/ShareButton';
 import DownloadButton from '@/components/DownloadButton';
 import QueuePreview from '@/components/QueuePreview';
+import TicketStubCard from '@/components/TicketStubCard';
 import type { QueueItem } from '@/lib/queueTypes';
 import type { Song } from '@/lib/types';
 import {
@@ -69,301 +70,49 @@ function usePlayerAnnouncements(
   return announcement;
 }
 
-// Expanded detail panel — library catalog card with left/right version carousel
-function QueueChipDetail({
+// Sortable ticket stub chip for the queue strip (both mobile and desktop)
+function SortableTicketChip({
   item,
+  chipIndex,
   absoluteIndex,
   onPlay,
   onSelectVersion,
-  compact,
 }: {
   item: QueueItem;
+  chipIndex: number;
   absoluteIndex: number;
   onPlay: (index: number) => void;
-  onSelectVersion?: (song: Song) => void;
-  compact?: boolean;
-}) {
-  const versions = item.availableVersions;
-  const hasVersions = !item.played && versions.length > 1 && onSelectVersion;
-  const vIdx = versions.findIndex((v) => v.id === item.song.id);
-
-  const song = item.song;
-  const badge = getRecordingBadge(song.lineage, song.recordingType);
-
-  const goPrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!hasVersions || vIdx <= 0) return;
-    onSelectVersion(versions[vIdx - 1]);
-  };
-  const goNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!hasVersions || vIdx >= versions.length - 1) return;
-    onSelectVersion(versions[vIdx + 1]);
-  };
-
-  const year = song.showDate?.split('-')[0] || '—';
-  let formattedDate = song.showDate || null;
-  if (formattedDate && formattedDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    const [y, m, d] = formattedDate.split('-');
-    formattedDate = `${m}/${d}/${y.slice(-2)}`;
-  }
-
-  // Catalog card row helper
-  const Row = ({ label, value, truncLen }: { label: string; value?: string | null; truncLen?: number }) => {
-    if (!value) return null;
-    const display = truncLen && value.length > truncLen ? value.slice(0, truncLen) + '\u2026' : value;
-    return (
-      <div className="flex justify-between gap-2">
-        <span className="text-[#d4a060] flex-shrink-0">{label}</span>
-        <span className="text-[#a89a8c] truncate text-right" title={value}>{display}</span>
-      </div>
-    );
-  };
-
-  const arrowBtn = `flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full
-    bg-[#1c1a17] border border-[#3a3632] text-[#8a8478]
-    hover:border-[#d4a060] hover:text-[#d4a060] transition-colors
-    disabled:opacity-20 disabled:border-[#3a3632] disabled:text-[#3a3632] disabled:cursor-default`;
-
-  return (
-    <div className="border-t border-[#3a3632]/50">
-      <div className={`${compact ? 'px-1 py-1.5' : 'px-1.5 py-1.5'} flex items-stretch gap-1`}>
-        {/* Left arrow — big, always-visible when versions exist */}
-        {hasVersions && (
-          <button
-            onClick={goPrev}
-            disabled={vIdx <= 0}
-            className="flex-shrink-0 w-7 flex items-center justify-center rounded-l-lg bg-[#252220] hover:bg-[#2d2a26] text-[#8a8478] hover:text-[#d4a060] transition-colors disabled:opacity-15 disabled:text-[#3a3632]"
-            aria-label="Previous version"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
-          </button>
-        )}
-
-        {/* Card */}
-        <div className="flex-1 min-w-0 bg-[#1c1a17] rounded-lg border border-[#3a3632]/60 overflow-hidden">
-          {/* Card header — year + badge + counter */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#252220] border-b border-[#3a3632]/40">
-            <span className="text-lg font-bold text-white leading-none tracking-tight">{year}</span>
-            {badge && badge.show && (
-              <span
-                className="px-1.5 py-0.5 text-[8px] font-bold rounded uppercase tracking-wider"
-                style={{ backgroundColor: badge.bgColor, color: badge.textColor }}
-              >
-                {badge.text}
-              </span>
-            )}
-            {song.duration > 0 && (
-              <span className="text-[10px] text-[#6a6458] font-mono">{formatDuration(song.duration)}</span>
-            )}
-            {hasVersions && (
-              <span className="text-[10px] text-[#6a6458] tabular-nums ml-auto">{vIdx + 1} / {versions.length}</span>
-            )}
-          </div>
-
-          {/* Card body — structured metadata rows */}
-          <div className={`px-3 ${compact ? 'py-1.5' : 'py-2'} text-[10px] space-y-1`}>
-            <Row label="Venue" value={song.showVenue} truncLen={compact ? 18 : 24} />
-            <Row label="Location" value={song.showLocation} truncLen={compact ? 18 : 24} />
-            <Row label="Date" value={formattedDate} />
-            <Row label="Taper" value={song.taper} truncLen={compact ? 16 : 22} />
-            <Row label="Source" value={song.source} truncLen={compact ? 20 : 30} />
-            <Row label="Lineage" value={song.lineage ? formatLineage(song.lineage, compact ? 24 : 34) : undefined} />
-            {song.avgRating && (
-              <div className="flex justify-between gap-2">
-                <span className="text-[#d4a060] flex-shrink-0">Rating</span>
-                <span className="text-[#a89a8c]">
-                  {'★'.repeat(Math.round(song.avgRating))}{'☆'.repeat(5 - Math.round(song.avgRating))}
-                  <span className="text-[#6a6458] ml-1">{song.avgRating.toFixed(1)}{song.numReviews ? ` (${song.numReviews})` : ''}</span>
-                </span>
-              </div>
-            )}
-            {song.downloads && (
-              <Row label="Downloads" value={song.downloads.toLocaleString()} />
-            )}
-          </div>
-
-          {/* Card footer — play action */}
-          <div className="px-3 pb-2">
-            <button
-              onClick={(e) => { e.stopPropagation(); onPlay(absoluteIndex); }}
-              className="w-full py-1.5 bg-[#d4a060] hover:bg-[#c08a40] text-[#1c1a17] rounded-md text-[10px] font-bold uppercase tracking-wider transition-colors"
-            >
-              Play This Version
-            </button>
-          </div>
-        </div>
-
-        {/* Right arrow — big, always-visible when versions exist */}
-        {hasVersions && (
-          <button
-            onClick={goNext}
-            disabled={vIdx >= versions.length - 1}
-            className="flex-shrink-0 w-7 flex items-center justify-center rounded-r-lg bg-[#252220] hover:bg-[#2d2a26] text-[#8a8478] hover:text-[#d4a060] transition-colors disabled:opacity-15 disabled:text-[#3a3632]"
-            aria-label="Next version"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Sortable queue chip for mobile (small art)
-function SortableMobileChip({
-  item,
-  absoluteIndex,
-  onPlay,
-  onSelectVersion,
-  onToggleExpand,
-  isExpanded,
-}: {
-  item: QueueItem;
-  absoluteIndex: number;
-  onPlay: (index: number) => void;
-  onSelectVersion: (song: Song) => void;
-  onToggleExpand: (queueId: string) => void;
-  isExpanded: boolean;
+  onSelectVersion: (queueId: string, song: Song) => void;
 }) {
   const {
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
   } = useSortable({ id: item.queueId });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: transform ? `translate3d(${transform.x}px, 0, 0)` : undefined,
     transition,
     opacity: isDragging ? 0.4 : 1,
     zIndex: isDragging ? 10 : undefined,
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onClick={() => onToggleExpand(item.queueId)}
-      className={`flex-shrink-0 rounded-md transition-all cursor-grab active:cursor-grabbing touch-none ${
-        isExpanded
-          ? 'bg-[#3a3632]/80 ring-1 ring-[#d4a060]/30 w-[280px]'
-          : 'bg-[#1c1a17]/60 hover:bg-[#3a3632]/60 active:scale-95 max-w-[200px]'
-      }`}
-    >
-      <div className="flex items-center gap-2 px-2 py-1.5">
-        <div className="w-8 h-8 bg-[#2d2a26] flex-shrink-0 rounded overflow-hidden">
-          {item.albumSource?.coverArt ? (
-            <Image
-              src={item.albumSource.coverArt}
-              alt=""
-              width={32}
-              height={32}
-              quality={60}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <svg className="w-3 h-3 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-              </svg>
-            </div>
-          )}
-        </div>
-        <div className="min-w-0 flex-1 text-left">
-          <p className="text-[11px] text-white/90 truncate">{item.albumSource ? <><span className="text-[#6a6458]">{(item.albumSource.originalTrackIndex ?? 0) + 1}.</span> {item.trackTitle}</> : item.trackTitle}</p>
-          {item.albumSource?.showDate && (
-            <p className="text-[9px] text-[#8a8478] truncate">{item.albumSource.showDate}</p>
-          )}
-          {item.albumSource?.showVenue && (
-            <p className="text-[9px] text-[#6a6458] truncate">{item.albumSource.showVenue}</p>
-          )}
-        </div>
-      </div>
-      {isExpanded && <QueueChipDetail item={item} absoluteIndex={absoluteIndex} onPlay={onPlay} onSelectVersion={onSelectVersion} compact />}
-    </div>
-  );
-}
-
-// Sortable queue chip for desktop (larger art)
-function SortableDesktopChip({
-  item,
-  absoluteIndex,
-  onPlay,
-  onSelectVersion,
-  onToggleExpand,
-  isExpanded,
-}: {
-  item: QueueItem;
-  absoluteIndex: number;
-  onPlay: (index: number) => void;
-  onSelectVersion: (song: Song) => void;
-  onToggleExpand: (queueId: string) => void;
-  isExpanded: boolean;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.queueId });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-    zIndex: isDragging ? 10 : undefined,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onClick={() => onToggleExpand(item.queueId)}
-      className={`flex-shrink-0 rounded-md transition-all cursor-grab active:cursor-grabbing touch-none ${
-        isExpanded
-          ? 'bg-[#3a3632]/80 ring-1 ring-[#d4a060]/30 w-[320px]'
-          : 'bg-[#1c1a17]/60 hover:bg-[#3a3632]/60 max-w-[240px]'
-      }`}
-    >
-      <div className="flex items-center gap-2.5 px-2.5 py-1.5">
-        <div className="w-10 h-10 bg-[#2d2a26] flex-shrink-0 rounded overflow-hidden">
-          {item.albumSource?.coverArt ? (
-            <Image
-              src={item.albumSource.coverArt}
-              alt=""
-              width={40}
-              height={40}
-              quality={60}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <svg className="w-4 h-4 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-              </svg>
-            </div>
-          )}
-        </div>
-        <div className="min-w-0 flex-1 text-left">
-          <p className="text-xs text-white/90 truncate">{item.albumSource ? <><span className="text-[#6a6458]">{(item.albumSource.originalTrackIndex ?? 0) + 1}.</span> {item.trackTitle}</> : item.trackTitle}</p>
-          {item.albumSource?.showDate && (
-            <p className="text-[10px] text-[#8a8478] truncate">{item.albumSource.showDate}</p>
-          )}
-          {item.albumSource?.showVenue && (
-            <p className="text-[10px] text-[#6a6458] truncate">{item.albumSource.showVenue}</p>
-          )}
-        </div>
-      </div>
-      {isExpanded && <QueueChipDetail item={item} absoluteIndex={absoluteIndex} onPlay={onPlay} onSelectVersion={onSelectVersion} />}
+    <div ref={setNodeRef} style={style}>
+      <TicketStubCard
+        item={item}
+        index={chipIndex}
+        absoluteIndex={absoluteIndex}
+        onPlay={onPlay}
+        onSelectVersion={onSelectVersion}
+        variant="horizontal"
+        dragHandleRef={setActivatorNodeRef}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
     </div>
   );
 }
@@ -434,14 +183,6 @@ export default function BottomPlayer() {
     }
   }, [currentSong?.id, reducedMotion]);
 
-  // Expanded chip detail state (must be before any early returns that skip hooks)
-  const [expandedChipId, setExpandedChipId] = useState<string | null>(null);
-
-  // Collapse expanded chip when track changes
-  useEffect(() => {
-    setExpandedChipId(null);
-  }, [currentSong?.id]);
-
   // Close quality popup when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -500,6 +241,11 @@ export default function BottomPlayer() {
     return upcoming;
   }, [queue.items, queue.cursorIndex, isMobile]);
 
+  // Total upcoming count (not capped by maxChips)
+  const totalUpcoming = queue.cursorIndex >= 0
+    ? queue.items.length - queue.cursorIndex - 1
+    : 0;
+
   // DnD for reordering queue chips
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
@@ -534,21 +280,18 @@ export default function BottomPlayer() {
     }
   }, [upcomingTracks, moveItem]);
 
-  const handleChipClick = useCallback((queueId: string) => {
-    vibrate(BUTTON_PRESS);
-    setExpandedChipId(prev => prev === queueId ? null : queueId);
-  }, [vibrate, BUTTON_PRESS]);
-
   const handleChipPlay = useCallback((index: number) => {
     vibrate(BUTTON_PRESS);
-    setExpandedChipId(null);
     playFromQueue(index);
   }, [vibrate, BUTTON_PRESS, playFromQueue]);
 
   // Show resume UI when there's saved progress but no current song
   if (!currentSong && savedProgress) {
     return (
-      <div className={`fixed ${isMobile ? 'bottom-0 left-0 right-0' : 'bottom-0 left-0 right-0'} z-50`}>
+      <div
+        className={`fixed left-0 right-0 z-30 ${isMobile ? '' : 'bottom-0'}`}
+        style={isMobile ? { bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' } : undefined}
+      >
         <div className={`${isMobile ? 'border-t border-[#d4a060]/20 bg-gradient-to-b from-[#2d2a26] to-[#252220] backdrop-blur-lg px-3 pt-3' : 'bg-[#252220] border-t border-[#2d2a26] px-4'}`}>
           <div className={`flex items-center gap-4 ${isMobile ? '' : 'max-w-xl mx-auto h-[90px]'}`}>
             {/* Resume info */}
@@ -584,8 +327,6 @@ export default function BottomPlayer() {
               </svg>
             </button>
           </div>
-          {/* Spacer for nav overlay */}
-          {isMobile && <div className="h-[50px]" />}
         </div>
       </div>
     );
@@ -637,7 +378,7 @@ export default function BottomPlayer() {
           {announcement}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-50">
+        <div className="fixed left-0 right-0 z-30" style={{ bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}>
           <div className={`border-t border-[#d4a060]/20 bg-gradient-to-b from-[#2d2a26] to-[#252220] backdrop-blur-lg ${reducedMotion ? 'reduce-motion' : ''}`}>
             {/* Mini player card with swipe gesture */}
             <div
@@ -826,14 +567,14 @@ export default function BottomPlayer() {
               <div className="px-2 pb-1">
                 <div className="flex items-center gap-2 mb-1 px-1">
                   <span className="text-[10px] text-[#8a8478] uppercase tracking-wider font-medium">Up next</span>
-                  <span className="text-[10px] text-[#6a6458]">{upcomingTracks.length}</span>
+                  <span className="text-[10px] text-[#6a6458]">{totalUpcoming}</span>
                 </div>
                 <div className="relative">
                   <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                     <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
                       <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-                        {upcomingTracks.map(({ item, absoluteIndex }) => (
-                          <SortableMobileChip key={item.queueId} item={item} absoluteIndex={absoluteIndex} onPlay={handleChipPlay} onSelectVersion={(song) => selectVersion(item.queueId, song)} onToggleExpand={handleChipClick} isExpanded={expandedChipId === item.queueId} />
+                        {upcomingTracks.map(({ item, absoluteIndex }, i) => (
+                          <SortableTicketChip key={item.queueId} item={item} chipIndex={i + 1} absoluteIndex={absoluteIndex} onPlay={handleChipPlay} onSelectVersion={(queueId, song) => selectVersion(queueId, song)} />
                         ))}
                       </div>
                     </SortableContext>
@@ -861,9 +602,6 @@ export default function BottomPlayer() {
                 </div>
               </div>
             )}
-
-            {/* Spacer for nav overlay */}
-            <div className="h-[50px]" />
           </div>
         </div>
       </>
@@ -885,7 +623,7 @@ export default function BottomPlayer() {
         {announcement}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#d4a060]/20 bg-gradient-to-b from-[#2d2a26] to-[#252220] backdrop-blur-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#d4a060]/20 bg-gradient-to-b from-[#2d2a26] to-[#252220] backdrop-blur-lg">
         {/* Progress bar — full width at the very top */}
         <div
           className="h-1 bg-[#3a3632] cursor-pointer group relative"
@@ -1285,10 +1023,10 @@ export default function BottomPlayer() {
 
         {/* Queue strip — simplified chips: art + title + duration */}
         {upcomingTracks.length > 0 && (
-          <div className="px-4 pb-2">
+          <div className="px-4 pb-14">
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-[10px] text-[#d4a060] uppercase tracking-widest font-bold">Up Next</span>
-              <span className="text-[10px] text-[#6a6458]">{upcomingTracks.length} tracks</span>
+              <span className="text-[10px] text-[#6a6458]">{totalUpcoming} tracks</span>
             </div>
             <div className="relative">
               <DndContext
@@ -1299,15 +1037,14 @@ export default function BottomPlayer() {
               >
                 <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
                   <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-                    {upcomingTracks.map(({ item, absoluteIndex }) => (
-                      <SortableDesktopChip
+                    {upcomingTracks.map(({ item, absoluteIndex }, i) => (
+                      <SortableTicketChip
                         key={item.queueId}
                         item={item}
+                        chipIndex={i + 1}
                         absoluteIndex={absoluteIndex}
                         onPlay={handleChipPlay}
-                        onSelectVersion={(song) => selectVersion(item.queueId, song)}
-                        onToggleExpand={handleChipClick}
-                        isExpanded={expandedChipId === item.queueId}
+                        onSelectVersion={(queueId, song) => selectVersion(queueId, song)}
                       />
                     ))}
                   </div>

@@ -2,7 +2,7 @@
 
 // EightPmFullPlayer - Spotify-style full-screen mobile player
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
@@ -19,6 +19,72 @@ import Link from 'next/link';
 import ShareModal from '@/components/ShareModal';
 import { formatLineage } from '@/lib/lineageUtils';
 import { useStreamingStats } from '@/hooks/useStreamingStats';
+import TicketStubCard from '@/components/TicketStubCard';
+import type { QueueItem } from '@/lib/queueTypes';
+import {
+  DndContext,
+  closestCenter,
+  TouchSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  DragStartEvent,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable mini queue track for the full-screen player — uses ticket stub flip card
+function SortableMiniQueueTrack({
+  item,
+  index,
+  absoluteIndex,
+  onPlay,
+  onSelectVersion,
+}: {
+  item: QueueItem;
+  index: number;
+  absoluteIndex: number;
+  onPlay: (index: number) => void;
+  onSelectVersion?: (queueId: string, song: import('@/lib/types').Song) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.queueId });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <TicketStubCard
+        item={item}
+        index={index + 1}
+        absoluteIndex={absoluteIndex}
+        onPlay={onPlay}
+        onSelectVersion={onSelectVersion}
+        variant="vertical-compact"
+        dragHandleRef={setActivatorNodeRef}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
+    </div>
+  );
+}
 
 export default function EightPmFullPlayer() {
   const { isPlayerExpanded, collapsePlayer, isTransitioning } = useMobileUI();
@@ -55,6 +121,8 @@ export default function EightPmFullPlayer() {
     isFirstItem,
     isLastItem,
     setRepeat,
+    moveItem,
+    selectVersion,
   } = useQueue();
 
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlist } = useWishlist();
@@ -135,6 +203,52 @@ export default function EightPmFullPlayer() {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showQualityPopup]);
+
+  // DnD for mini queue reordering
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const miniQueuePointerSensor = useSensor(PointerSensor, {
+    activationConstraint: { distance: 8 },
+  });
+  const miniQueueTouchSensor = useSensor(TouchSensor, {
+    activationConstraint: { delay: 200, tolerance: 5 },
+  });
+  const miniQueueSensors = useSensors(miniQueuePointerSensor, miniQueueTouchSensor);
+
+  const upcomingForDnd = useMemo(() => {
+    if (queue.cursorIndex < 0) return [];
+    const items: { item: QueueItem; absoluteIndex: number }[] = [];
+    const max = isQueueExpanded ? 10 : 3;
+    for (let i = queue.cursorIndex + 1; i < queue.items.length && items.length < max; i++) {
+      items.push({ item: queue.items[i], absoluteIndex: i });
+    }
+    return items;
+  }, [queue.items, queue.cursorIndex, isQueueExpanded]);
+
+  const miniQueueSortableIds = useMemo(
+    () => upcomingForDnd.map(({ item }) => item.queueId),
+    [upcomingForDnd],
+  );
+
+  const activeDragItem = useMemo(() => {
+    if (!activeDragId) return null;
+    return upcomingForDnd.find(({ item }) => item.queueId === activeDragId) ?? null;
+  }, [activeDragId, upcomingForDnd]);
+
+  const handleMiniDragStart = useCallback((event: DragStartEvent) => {
+    setActiveDragId(String(event.active.id));
+  }, []);
+
+  const handleMiniDragEnd = useCallback((event: DragEndEvent) => {
+    setActiveDragId(null);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const fromEntry = upcomingForDnd.find(({ item }) => item.queueId === String(active.id));
+    const toEntry = upcomingForDnd.find(({ item }) => item.queueId === String(over.id));
+    if (fromEntry && toEntry) {
+      moveItem(fromEntry.absoluteIndex, toEntry.absoluteIndex);
+    }
+  }, [upcomingForDnd, moveItem]);
 
   if (!currentSong || !isPlayerExpanded) return null;
 
@@ -516,12 +630,10 @@ export default function EightPmFullPlayer() {
 
       {/* Mini Queue / Up Next */}
       {(() => {
-        // Get upcoming items from flat queue
-        const upcomingItems = queue.items.slice(queue.cursorIndex + 1);
-        const displayItems = isQueueExpanded ? upcomingItems.slice(0, 10) : upcomingItems.slice(0, 3);
-        const hasMoreItems = upcomingItems.length > displayItems.length;
+        const totalUpcoming = queue.cursorIndex >= 0 ? queue.items.length - queue.cursorIndex - 1 : 0;
+        const hasMoreItems = totalUpcoming > upcomingForDnd.length;
 
-        if (upcomingItems.length === 0) return null;
+        if (totalUpcoming === 0) return null;
 
         return (
           <div className="px-4 pb-4">
@@ -532,8 +644,8 @@ export default function EightPmFullPlayer() {
               }}
               className="w-full flex items-center justify-between py-2 text-left"
             >
-              <span className="text-xs text-[#8a8478] uppercase tracking-wider">
-                Up Next ({upcomingItems.length})
+              <span className="text-xs text-[#8a8478] uppercase tracking-[0.15em]">
+                Up Next <span className="text-[#d4a060]">&middot; {totalUpcoming} tracks</span>
               </span>
               <svg
                 className={`w-4 h-4 text-[#8a8478] transition-transform ${isQueueExpanded ? 'rotate-180' : ''}`}
@@ -543,33 +655,52 @@ export default function EightPmFullPlayer() {
               </svg>
             </button>
 
-            <div className={`space-y-1 overflow-hidden transition-all duration-300 ${isQueueExpanded ? 'max-h-80' : 'max-h-32'}`}>
-              {displayItems.map((item, index) => (
-                <button
-                  key={item.queueId}
-                  onClick={() => {
-                    vibrate(BUTTON_PRESS);
-                    const actualIndex = queue.cursorIndex + 1 + index;
-                    playFromQueue(actualIndex);
-                  }}
-                  className="w-full flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-[#2d2a26] active:bg-[#3a3632] transition-colors text-left"
-                >
-                  <span className="text-xs text-[#6a6458] w-5 text-center font-mono">
-                    {item.albumSource ? (item.albumSource.originalTrackIndex ?? 0) + 1 : index + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate">{item.albumSource ? <><span className="text-[#6a6458]">{(item.albumSource.originalTrackIndex ?? 0) + 1}.</span> {item.trackTitle}</> : item.trackTitle}</p>
-                    <p className="text-xs text-[#8a8478] truncate">{item.song.artistName}</p>
+            <div className={`overflow-hidden transition-all duration-300 ${isQueueExpanded ? 'max-h-[400px] overflow-y-auto' : 'max-h-40'}`}>
+              <DndContext
+                sensors={miniQueueSensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleMiniDragStart}
+                onDragEnd={handleMiniDragEnd}
+              >
+                <SortableContext items={miniQueueSortableIds} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-2">
+                    {upcomingForDnd.map(({ item, absoluteIndex }, index) => (
+                      <SortableMiniQueueTrack
+                        key={item.queueId}
+                        item={item}
+                        index={index}
+                        absoluteIndex={absoluteIndex}
+                        onPlay={(idx) => {
+                          vibrate(BUTTON_PRESS);
+                          playFromQueue(idx);
+                        }}
+                        onSelectVersion={selectVersion}
+                      />
+                    ))}
                   </div>
-                  <span className="text-xs text-[#6a6458] font-mono flex-shrink-0">
-                    {formatDuration(item.song.duration)}
-                  </span>
-                </button>
-              ))}
+                </SortableContext>
+                <DragOverlay dropAnimation={null}>
+                  {activeDragItem && (
+                    <div className="flex items-center gap-3 py-3 px-3 rounded-xl bg-[#2d2a26] shadow-lg shadow-black/50 border border-[#d4a060]/30">
+                      {activeDragItem.item.albumSource?.coverArt ? (
+                        <Image src={activeDragItem.item.albumSource.coverArt} alt="" width={40} height={40} quality={60} className="object-cover rounded-md flex-shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 bg-[#2d2a26] rounded-md flex items-center justify-center flex-shrink-0">
+                          <svg className="w-5 h-5 text-[#3a3632]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{activeDragItem.item.trackTitle}</p>
+                        <p className="text-xs text-[#8a8478] truncate">{activeDragItem.item.song.artistName}</p>
+                      </div>
+                    </div>
+                  )}
+                </DragOverlay>
+              </DndContext>
 
               {hasMoreItems && !isQueueExpanded && (
-                <p className="text-[10px] text-[#6a6458] text-center py-1 italic">
-                  +{upcomingItems.length - 3} more • tap to expand
+                <p className="text-[10px] text-[#6a6458] text-center py-1 italic mt-2">
+                  +{totalUpcoming - upcomingForDnd.length} more &middot; tap to expand
                 </p>
               )}
             </div>

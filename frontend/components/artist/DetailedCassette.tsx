@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 interface DetailedCassetteProps {
   artistName: string;
   artistFullName?: string;
@@ -9,6 +11,8 @@ interface DetailedCassetteProps {
   offsetX?: number;
   offsetY?: number;
   isTop?: boolean;
+  imageUrl?: string;
+  artistImageUrl?: string;
 }
 
 export default function DetailedCassette({
@@ -20,6 +24,8 @@ export default function DetailedCassette({
   offsetX = 0,
   offsetY = 0,
   isTop = false,
+  imageUrl,
+  artistImageUrl,
 }: DetailedCassetteProps) {
   return (
     <div
@@ -63,6 +69,60 @@ export default function DetailedCassette({
             <div className="absolute inset-[3px] rounded-full bg-[#2a2622]" />
           </div>
         </div>
+
+        {/* Polaroid stamp (upper right) — only on top cassette */}
+        {isTop && imageUrl && (
+          <div
+            className="absolute top-[4px] right-[4px] h-14 w-14 z-50"
+          >
+            {/* Packing tape strip */}
+            <div
+              className="absolute -top-0.5 h-3 z-10"
+              style={{
+                left: '73%',
+                width: '40%',
+                background: 'linear-gradient(180deg, rgba(255, 248, 220, 0.92) 0%, rgba(255, 240, 195, 0.85) 100%)',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                borderRadius: '1px',
+                transform: 'translateX(-50%) rotate(12deg)'
+              }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{ transform: 'rotate(6deg)' }}
+            >
+              <Image
+                src={imageUrl}
+                alt={artistName}
+                fill
+                sizes="56px"
+                className="object-cover rounded-sm"
+                style={{
+                  border: '2px solid white',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.2)'
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Artist circle sticker (bottom-left on body) — only on top cassette */}
+        {isTop && artistImageUrl && (
+          <div
+            className="absolute bottom-2 left-14 w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-lg z-10"
+            style={{ transform: 'rotate(-8deg)' }}
+          >
+            <Image
+              src={artistImageUrl}
+              alt={artistName}
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
 
         {/* Label area */}
         <div

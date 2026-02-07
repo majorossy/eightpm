@@ -2,24 +2,24 @@
 
 // Queue drawer - card-stack layout with expand/collapse detail panels (Campfire theme)
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { useMobileUI } from '@/context/MobileUIContext';
 import { formatDuration } from '@/lib/api';
-import { getRecordingBadge } from '@/lib/lineageUtils';
-import { formatLineage } from '@/lib/lineageUtils';
 import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
 import type { Song } from '@/lib/types';
-import SwipeableQueueItem from '@/components/SwipeableQueueItem';
+import TicketStubCard from '@/components/TicketStubCard';
+
 import { VALIDATION_LIMITS } from '@/lib/validation';
 import {
   DndContext,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragOverlay,
@@ -43,6 +43,8 @@ export default function Queue() {
     isQueueOpen,
     toggleQueue,
     playFromQueue,
+    currentTime,
+    duration,
   } = usePlayer();
 
   const {
@@ -52,7 +54,6 @@ export default function Queue() {
     totalItems,
     albumGroups,
     removeItem,
-    clearQueue,
     clearUpcoming,
     moveItem,
     moveBlock,
@@ -100,9 +101,7 @@ export default function Queue() {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed z-[60] bg-black/60 ${
-          isMobile ? 'inset-0' : 'inset-0 bottom-[90px]'
-        }`}
+        className="fixed inset-0 z-[60] bg-black/60"
         onClick={toggleQueue}
         aria-hidden="true"
       />
@@ -111,78 +110,29 @@ export default function Queue() {
       <aside
         className={`fixed z-[70] flex flex-col ${
           isMobile
-            ? 'inset-0 bg-gradient-to-b from-[#3a3632] to-[#1c1a17] safe-top safe-bottom'
-            : 'left-0 top-0 bottom-[90px] w-96 bg-[#1c1a17] border-r border-[#2d2a26]'
+            ? 'inset-0 bg-[#1c1a17] safe-top safe-bottom'
+            : 'left-0 top-0 bottom-0 w-96 bg-[#1c1a17] border-r border-[#2d2a26]/50'
         }`}
         role="dialog"
         aria-modal="true"
         aria-label="Queue"
       >
-          {/* Mobile drag indicator */}
-          {isMobile && (
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-white/30 rounded-full" />
-            </div>
-          )}
-
           {/* Header */}
-          <div className={`flex items-center justify-between px-4 ${isMobile ? 'py-3' : 'p-4 border-b border-[#2d2a26]'}`}>
-            {isMobile ? (
-              <>
-                <button
-                  onClick={toggleQueue}
-                  className="p-2 -ml-2 text-white"
-                  aria-label="Close queue"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <h2 className="text-base font-bold text-white">Queue</h2>
-                <div className="w-10" /> {/* Spacer for centering */}
-              </>
-            ) : (
-              <>
-                <h2 className="text-base font-bold text-white">Queue</h2>
-                <div className="flex items-center gap-2">
-                  {hasItems && (
-                    <button
-                      onClick={clearQueue}
-                      className="text-xs text-[#8a8478] hover:text-white transition-colors"
-                      aria-label="Clear entire queue"
-                    >
-                      Clear all
-                    </button>
-                  )}
-                  <button
-                    onClick={toggleQueue}
-                    className="p-2 text-[#8a8478] hover:text-white transition-colors"
-                    aria-label="Close queue"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </>
-            )}
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <h2 className="text-xs font-medium text-[#8a8478] uppercase tracking-[0.2em]">Queue</h2>
+            <button
+              onClick={toggleQueue}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-[#3a3632] text-[#8a8478] hover:text-white hover:border-[#6a6458] transition-colors"
+              aria-label="Close queue"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
-          {/* Save as Playlist Button */}
-          {hasItems && totalItems > 0 && (
-            <div className="px-4 py-3 border-b border-[#2d2a26]">
-              <button
-                onClick={() => setShowSaveModal(true)}
-                className="w-full py-2 px-4 bg-[#d4a060] hover:bg-[#c08a40] text-white text-sm font-semibold rounded-full transition-colors"
-                aria-label={`Save queue with ${totalItems} songs as a new playlist`}
-              >
-                Save as Playlist
-              </button>
-            </div>
-          )}
-
           {/* Content */}
-          <div className="flex-1 overflow-y-auto prevent-overscroll" role="region" aria-label="Queue tracks">
+          <div className="flex-1 overflow-y-auto prevent-overscroll px-4" role="region" aria-label="Queue tracks">
             {!hasItems ? (
               <div className="flex flex-col items-center justify-center h-full text-[#8a8478]">
                 <svg className="w-12 h-12 mb-4 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
@@ -194,19 +144,21 @@ export default function Queue() {
             ) : (
               <>
                 {/* Now Playing */}
-                <NowPlayingSection currentItem={currentItem} />
+                <NowPlayingSection currentItem={currentItem} currentTime={currentTime} duration={duration} />
 
                 {/* Upcoming Queue */}
                 <UpcomingSection
                   queue={queue}
                   albumGroups={albumGroups}
-                  isMobile={isMobile}
                   removeItem={removeItem}
                   clearUpcoming={clearUpcoming}
                   playFromQueue={playFromQueue}
                   moveItem={moveItem}
                   moveBlock={moveBlock}
                   selectVersion={selectVersion}
+                  onSave={() => setShowSaveModal(true)}
+                  totalItems={totalItems}
+                  hasItems={hasItems}
                 />
               </>
             )}
@@ -288,156 +240,11 @@ export default function Queue() {
 }
 
 // =============================================================================
-// Queue Card Detail — expanded card with version browsing (adapted from BottomPlayer)
-// =============================================================================
-
-function QueueCardDetail({
-  item,
-  absoluteIndex,
-  onPlay,
-  onSelectVersion,
-}: {
-  item: QueueItem;
-  absoluteIndex: number;
-  onPlay: (index: number) => void;
-  onSelectVersion: (queueId: string, song: Song) => void;
-}) {
-  const versions = item.availableVersions;
-  const hasVersions = !item.played && versions.length > 1;
-  const vIdx = versions.findIndex((v) => v.id === item.song.id);
-
-  const song = item.song;
-  const badge = getRecordingBadge(song.lineage, song.recordingType);
-
-  const goPrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!hasVersions || vIdx <= 0) return;
-    onSelectVersion(item.queueId, versions[vIdx - 1]);
-  };
-  const goNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!hasVersions || vIdx >= versions.length - 1) return;
-    onSelectVersion(item.queueId, versions[vIdx + 1]);
-  };
-
-  const year = song.showDate?.split('-')[0] || '\u2014';
-  let formattedDate = song.showDate || null;
-  if (formattedDate && formattedDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    const [y, m, d] = formattedDate.split('-');
-    formattedDate = `${m}/${d}/${y.slice(-2)}`;
-  }
-
-  const Row = ({ label, value, truncLen }: { label: string; value?: string | null; truncLen?: number }) => {
-    if (!value) return null;
-    const display = truncLen && value.length > truncLen ? value.slice(0, truncLen) + '\u2026' : value;
-    return (
-      <div className="flex justify-between gap-2">
-        <span className="text-[#d4a060] flex-shrink-0">{label}</span>
-        <span className="text-[#a89a8c] truncate text-right" title={value}>{display}</span>
-      </div>
-    );
-  };
-
-  return (
-    <div className="border-t border-[#3a3632]/50 mt-1">
-      <div className="px-1.5 py-1.5 flex items-stretch gap-1">
-        {/* Left arrow */}
-        {hasVersions && (
-          <button
-            onClick={goPrev}
-            disabled={vIdx <= 0}
-            className="flex-shrink-0 w-7 flex items-center justify-center rounded-l-lg bg-[#252220] hover:bg-[#2d2a26] text-[#8a8478] hover:text-[#d4a060] transition-colors disabled:opacity-15 disabled:text-[#3a3632]"
-            aria-label="Previous version"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
-          </button>
-        )}
-
-        {/* Card */}
-        <div className="flex-1 min-w-0 bg-[#1c1a17] rounded-lg border border-[#3a3632]/60 overflow-hidden">
-          {/* Card header */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#252220] border-b border-[#3a3632]/40">
-            <span className="text-lg font-bold text-white leading-none tracking-tight">{year}</span>
-            {badge && badge.show && (
-              <span
-                className="px-1.5 py-0.5 text-[8px] font-bold rounded uppercase tracking-wider"
-                style={{ backgroundColor: badge.bgColor, color: badge.textColor }}
-              >
-                {badge.text}
-              </span>
-            )}
-            {song.duration > 0 && (
-              <span className="text-[10px] text-[#6a6458] font-mono">{formatDuration(song.duration)}</span>
-            )}
-            {hasVersions && (
-              <span className="text-[10px] text-[#6a6458] tabular-nums ml-auto">{vIdx + 1} / {versions.length}</span>
-            )}
-          </div>
-
-          {/* Card body */}
-          <div className="px-3 py-2 text-[10px] space-y-1">
-            <Row label="Venue" value={song.showVenue} truncLen={28} />
-            <Row label="Location" value={song.showLocation} truncLen={28} />
-            <Row label="Date" value={formattedDate} />
-            <Row label="Taper" value={song.taper} truncLen={24} />
-            <Row label="Source" value={song.source} truncLen={34} />
-            <Row label="Lineage" value={song.lineage ? formatLineage(song.lineage, 38) : undefined} />
-            {song.avgRating && (
-              <div className="flex justify-between gap-2">
-                <span className="text-[#d4a060] flex-shrink-0">Rating</span>
-                <span className="text-[#a89a8c]">
-                  {'\u2605'.repeat(Math.round(song.avgRating))}{'\u2606'.repeat(5 - Math.round(song.avgRating))}
-                  <span className="text-[#6a6458] ml-1">{song.avgRating.toFixed(1)}{song.numReviews ? ` (${song.numReviews})` : ''}</span>
-                </span>
-              </div>
-            )}
-            {song.downloads && (
-              <Row label="Downloads" value={song.downloads.toLocaleString()} />
-            )}
-          </div>
-
-          {/* Card footer */}
-          <div className="px-3 pb-2">
-            <button
-              onClick={(e) => { e.stopPropagation(); onPlay(absoluteIndex); }}
-              className="w-full py-1.5 bg-[#d4a060] hover:bg-[#c08a40] text-[#1c1a17] rounded-md text-[10px] font-bold uppercase tracking-wider transition-colors"
-            >
-              Play This Version
-            </button>
-          </div>
-        </div>
-
-        {/* Right arrow */}
-        {hasVersions && (
-          <button
-            onClick={goNext}
-            disabled={vIdx >= versions.length - 1}
-            className="flex-shrink-0 w-7 flex items-center justify-center rounded-r-lg bg-[#252220] hover:bg-[#2d2a26] text-[#8a8478] hover:text-[#d4a060] transition-colors disabled:opacity-15 disabled:text-[#3a3632]"
-            aria-label="Next version"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// =============================================================================
-// Compact Card Summary — shared by both desktop rows and mobile items
+// Compact Card Summary — used by DragOverlay only
 // =============================================================================
 
 function CardSummary({ item }: { item: QueueItem }) {
   const song = item.song;
-  const badge = getRecordingBadge(song.lineage, song.recordingType);
-
-  let formattedDate: string | null = song.showDate || null;
-  if (formattedDate && formattedDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    const [y, m, d] = formattedDate.split('-');
-    formattedDate = `${m}/${d}/${y.slice(-2)}`;
-  }
-
-  const venueDate = [song.showVenue, formattedDate].filter(Boolean).join(' \u00b7 ');
 
   return (
     <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -449,10 +256,10 @@ function CardSummary({ item }: { item: QueueItem }) {
           width={48}
           height={48}
           quality={80}
-          className="object-cover rounded flex-shrink-0"
+          className="object-cover rounded-md flex-shrink-0"
         />
       ) : (
-        <div className="w-12 h-12 bg-[#2d2a26] rounded flex items-center justify-center flex-shrink-0">
+        <div className="w-12 h-12 bg-[#2d2a26] rounded-md flex items-center justify-center flex-shrink-0">
           <svg className="w-6 h-6 text-[#3a3632]" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
           </svg>
@@ -461,24 +268,14 @@ function CardSummary({ item }: { item: QueueItem }) {
 
       {/* Text content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <p className="text-sm text-white truncate">
-            {item.albumSource ? <><span className="text-[#6a6458]">{(item.albumSource.originalTrackIndex ?? 0) + 1}.</span> {item.trackTitle}</> : item.trackTitle}
-          </p>
-          {badge && badge.show && (
-            <span
-              className="px-1 py-0.5 text-[7px] font-bold rounded uppercase tracking-wider flex-shrink-0"
-              style={{ backgroundColor: badge.bgColor, color: badge.textColor }}
-            >
-              {badge.text}
-            </span>
-          )}
-        </div>
+        <p className="text-sm font-medium text-white truncate">{item.trackTitle}</p>
         <p className="text-xs text-[#8a8478] truncate">{song.artistName}</p>
-        {venueDate && (
-          <p className="text-[10px] text-[#6a6458] truncate">{venueDate}</p>
-        )}
       </div>
+
+      {/* Duration */}
+      {song.duration > 0 && (
+        <span className="text-xs text-[#6a6458] font-mono flex-shrink-0">{formatDuration(song.duration)}</span>
+      )}
     </div>
   );
 }
@@ -487,60 +284,63 @@ function CardSummary({ item }: { item: QueueItem }) {
 // Now Playing Section
 // =============================================================================
 
-function NowPlayingSection({ currentItem }: { currentItem: QueueItem | null }) {
+function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem: QueueItem | null; currentTime: number; duration: number }) {
   if (!currentItem) return null;
 
   const song = currentItem.song;
-  const badge = getRecordingBadge(song.lineage, song.recordingType);
-
-  let formattedDate: string | null = song.showDate || null;
-  if (formattedDate && formattedDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    const [y, m, d] = formattedDate.split('-');
-    formattedDate = `${m}/${d}/${y.slice(-2)}`;
-  }
-
-  const venueDate = [song.showVenue, formattedDate].filter(Boolean).join(' \u00b7 ');
+  const albumName = currentItem.albumSource?.albumName;
+  const venue = song.showVenue;
+  const showInfo = [albumName, venue].filter(Boolean).join(' \u00b7 ');
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="p-4 border-b border-[#2d2a26]">
-      <p className="text-xs text-[#8a8478] uppercase tracking-wider mb-3">Now Playing</p>
-      <div className="flex items-center gap-3">
-        {currentItem.albumSource?.coverArt ? (
-          <Image
-            src={currentItem.albumSource.coverArt}
-            alt={currentItem.albumSource.albumName || 'Album cover'}
-            width={48}
-            height={48}
-            quality={80}
-            className="object-cover rounded"
-          />
-        ) : (
-          <div className="w-12 h-12 bg-[#2d2a26] rounded flex items-center justify-center">
-            <svg className="w-6 h-6 text-[#3a3632]" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-            </svg>
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="text-sm font-medium text-[#d4a060] truncate">
-              {currentItem.albumSource ? <><span className="text-[#6a6458]">{(currentItem.albumSource.originalTrackIndex ?? 0) + 1}.</span> {currentItem.song.title}</> : currentItem.song.title}
-            </p>
-            {badge && badge.show && (
-              <span
-                className="px-1 py-0.5 text-[7px] font-bold rounded uppercase tracking-wider flex-shrink-0"
-                style={{ backgroundColor: badge.bgColor, color: badge.textColor }}
-              >
-                {badge.text}
-              </span>
+    <div className="mb-5">
+      <div className="rounded-xl border border-[#3a3632]/60 bg-[#252220] p-4">
+        {/* Now Playing label */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-2 h-2 bg-[#d4a060] rounded-full" />
+          <span className="text-[10px] font-bold text-[#d4a060] uppercase tracking-[0.15em]">Now Playing</span>
+        </div>
+
+        {/* Track info */}
+        <div className="flex items-center gap-3 mb-3">
+          {currentItem.albumSource?.coverArt ? (
+            <Image
+              src={currentItem.albumSource.coverArt}
+              alt={currentItem.albumSource.albumName || 'Album cover'}
+              width={56}
+              height={56}
+              quality={80}
+              className="object-cover rounded-lg flex-shrink-0"
+            />
+          ) : (
+            <div className="w-14 h-14 bg-[#2d2a26] rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-7 h-7 text-[#3a3632]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+              </svg>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-base font-bold text-white truncate">{currentItem.song.title}</p>
+            <p className="text-sm text-[#8a8478] truncate">{currentItem.song.artistName}</p>
+            {showInfo && (
+              <p className="text-xs text-[#6a6458] truncate mt-0.5">{showInfo}</p>
             )}
           </div>
-          <p className="text-xs text-[#8a8478] truncate">
-            {currentItem.song.artistName}
-          </p>
-          {venueDate && (
-            <p className="text-[10px] text-[#6a6458] truncate">{venueDate}</p>
-          )}
+        </div>
+
+        {/* Progress bar */}
+        <div>
+          <div className="w-full h-[3px] bg-[#3a3632] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#d4a060] rounded-full transition-all duration-150"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-1.5">
+            <span className="text-[11px] text-[#8a8478] font-mono">{formatDuration(Math.floor(currentTime))}</span>
+            <span className="text-[11px] text-[#8a8478] font-mono">{formatDuration(Math.floor(duration))}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -569,26 +369,24 @@ function DragHandleIcon({ className = '' }: { className?: string }) {
 }
 
 // =============================================================================
-// Sortable Track Row (desktop only) — card layout with expand/collapse
+// Sortable Track Row — ticket stub flip card with drag handle
 // =============================================================================
 
 interface SortableTrackRowProps {
   item: QueueItem;
   absoluteIndex: number;
+  displayIndex: number;
   removeItem: (queueId: string) => void;
   playFromQueue: (index: number) => void;
-  isExpanded: boolean;
-  onToggleExpand: (queueId: string) => void;
   selectVersion: (queueId: string, song: Song) => void;
 }
 
 function SortableTrackRow({
   item,
   absoluteIndex,
+  displayIndex,
   removeItem,
   playFromQueue,
-  isExpanded,
-  onToggleExpand,
   selectVersion,
 }: SortableTrackRowProps) {
   const {
@@ -609,60 +407,18 @@ function SortableTrackRow({
   };
 
   return (
-    <li
-      ref={setNodeRef}
-      style={style}
-      className={`px-3 py-2 hover:bg-[#2d2a26]/50 transition-colors ${
-        isDragging ? 'bg-[#2d2a26] rounded shadow-lg shadow-black/30' : ''
-      } ${isExpanded ? 'bg-[#252220]' : ''}`}
-    >
-      {/* Collapsed card row */}
-      <div
-        className="flex items-center gap-2 cursor-pointer"
-        onClick={() => onToggleExpand(item.queueId)}
-      >
-        {/* Drag handle */}
-        <button
-          ref={setActivatorNodeRef}
-          {...attributes}
-          {...listeners}
-          className="p-1 text-[#3a3632] hover:text-[#8a8478] cursor-grab active:cursor-grabbing touch-none flex-shrink-0"
-          aria-label={`Reorder ${item.trackTitle}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <DragHandleIcon />
-        </button>
-
-        {/* Card summary */}
-        <CardSummary item={item} />
-
-        {/* Delete button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            removeItem(item.queueId);
-          }}
-          className="p-1 text-[#8a8478] hover:text-white transition-colors flex-shrink-0"
-          aria-label={`Remove ${item.trackTitle} from queue`}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Expanded detail */}
-      {isExpanded && (
-        <QueueCardDetail
-          item={item}
-          absoluteIndex={absoluteIndex}
-          onPlay={(idx) => {
-            playFromQueue(idx);
-            onToggleExpand(item.queueId);
-          }}
-          onSelectVersion={selectVersion}
-        />
-      )}
+    <li ref={setNodeRef} style={style}>
+      <TicketStubCard
+        item={item}
+        index={displayIndex}
+        absoluteIndex={absoluteIndex}
+        onPlay={playFromQueue}
+        onSelectVersion={selectVersion}
+        onRemove={removeItem}
+        variant="vertical"
+        dragHandleRef={setActivatorNodeRef}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
     </li>
   );
 }
@@ -673,7 +429,7 @@ function SortableTrackRow({
 
 function DragOverlayTrack({ item }: { item: QueueItem }) {
   return (
-    <div className="px-3 py-2 bg-[#2d2a26] rounded shadow-lg shadow-black/50 border border-[#d4a060]/30 flex items-center gap-2">
+    <div className="px-3 py-3 bg-[#2d2a26] rounded-xl shadow-lg shadow-black/50 border border-[#d4a060]/30 flex items-center gap-2">
       <div className="p-1 text-[#d4a060]">
         <DragHandleIcon />
       </div>
@@ -716,7 +472,6 @@ function DragOverlayGroup({ group }: { group: AlbumGroup }) {
 interface UpcomingSectionProps {
   queue: { items: QueueItem[]; cursorIndex: number };
   albumGroups: AlbumGroup[];
-  isMobile: boolean;
   removeItem: (queueId: string) => void;
   clearUpcoming: () => void;
   playFromQueue: (index: number) => void;
@@ -728,31 +483,26 @@ interface UpcomingSectionProps {
     targetIndex: number,
   ) => void;
   selectVersion: (queueId: string, song: Song) => void;
+  onSave: () => void;
+  totalItems: number;
+  hasItems: boolean;
 }
 
 function UpcomingSection({
   queue,
   albumGroups,
-  isMobile,
   removeItem,
   clearUpcoming,
   playFromQueue,
   moveItem,
   moveBlock,
   selectVersion,
+  onSave,
+  totalItems,
+  hasItems,
 }: UpcomingSectionProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [expandedQueueId, setExpandedQueueId] = useState<string | null>(null);
   const upcomingCount = queue.items.length - (queue.cursorIndex + 1);
-
-  // Collapse expanded card when cursor (current track) changes
-  useEffect(() => {
-    setExpandedQueueId(null);
-  }, [queue.cursorIndex]);
-
-  const toggleExpand = useCallback((queueId: string) => {
-    setExpandedQueueId(prev => prev === queueId ? null : queueId);
-  }, []);
 
   // Build group-header drag IDs: "group-{batchId}-{startIndex}"
   const groupDragIdPrefix = 'group-drag-';
@@ -805,13 +555,15 @@ function UpcomingSection({
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 8 },
   });
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: { delay: 200, tolerance: 5 },
+  });
   const keyboardSensor = useSensor(KeyboardSensor);
 
-  const sensors = useSensors(pointerSensor, keyboardSensor);
+  const sensors = useSensors(pointerSensor, touchSensor, keyboardSensor);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(String(event.active.id));
-    setExpandedQueueId(null); // Collapse any expanded card when dragging
   }, []);
 
   const handleDragEnd = useCallback(
@@ -879,14 +631,22 @@ function UpcomingSection({
 
   if (upcomingCount <= 0) return null;
 
-  // Mobile: no DnD, keep swipe-to-delete
-  if (isMobile) {
-    return (
-      <div>
-        <div className="flex items-center justify-between p-4">
-          <p className="text-xs text-[#8a8478] uppercase tracking-wider">
-            Up Next ({upcomingCount})
-          </p>
+  // Both mobile and desktop: DnD enabled (drag handle activator works with touch)
+  return (
+    <div className="mt-2">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs text-[#8a8478] uppercase tracking-[0.15em]">
+          Up Next <span className="text-[#d4a060]">&middot; {upcomingCount} tracks</span>
+        </p>
+        <div className="flex items-center gap-3">
+          {hasItems && totalItems > 0 && (
+            <button
+              onClick={onSave}
+              className="text-xs text-[#8a8478] hover:text-white transition-colors"
+            >
+              Save
+            </button>
+          )}
           <button
             onClick={clearUpcoming}
             className="text-xs text-[#8a8478] hover:text-white transition-colors"
@@ -895,90 +655,6 @@ function UpcomingSection({
             Clear
           </button>
         </div>
-        <ul>
-          {renderItems.map((entry) => {
-            if (entry.type === 'group-header') {
-              return (
-                <li
-                  key={`group-${entry.group.batchId}-${entry.group.startIndex}`}
-                  className="p-4 pb-0"
-                  aria-hidden="true"
-                >
-                  <div className="flex items-center gap-2">
-                    {entry.group.albumSource.coverArt && (
-                      <Image
-                        src={entry.group.albumSource.coverArt}
-                        alt=""
-                        width={24}
-                        height={24}
-                        className="rounded"
-                      />
-                    )}
-                    <p className="text-xs text-[#8a8478] uppercase tracking-wider truncate">
-                      {entry.group.isContinuation
-                        ? `${entry.group.albumSource.albumName} (continued)`
-                        : entry.group.albumSource.albumName}
-                    </p>
-                  </div>
-                </li>
-              );
-            }
-
-            const { item, absoluteIndex } = entry;
-            const isExpanded = expandedQueueId === item.queueId;
-            return (
-              <SwipeableQueueItem
-                key={item.queueId}
-                onDelete={() => removeItem(item.queueId)}
-                className="px-3 py-2"
-              >
-                <div>
-                  {/* Collapsed card row */}
-                  <div
-                    className="flex items-center gap-2 cursor-pointer"
-                    onClick={() => toggleExpand(item.queueId)}
-                  >
-                    <CardSummary item={item} />
-                    <span className="text-xs text-[#8a8478] font-mono flex-shrink-0">
-                      {formatDuration(item.song.duration)}
-                    </span>
-                  </div>
-
-                  {/* Expanded detail */}
-                  {isExpanded && (
-                    <QueueCardDetail
-                      item={item}
-                      absoluteIndex={absoluteIndex}
-                      onPlay={(idx) => {
-                        playFromQueue(idx);
-                        toggleExpand(item.queueId);
-                      }}
-                      onSelectVersion={selectVersion}
-                    />
-                  )}
-                </div>
-              </SwipeableQueueItem>
-            );
-          })}
-        </ul>
-      </div>
-    );
-  }
-
-  // Desktop: DnD enabled
-  return (
-    <div>
-      <div className="flex items-center justify-between p-4">
-        <p className="text-xs text-[#8a8478] uppercase tracking-wider">
-          Up Next ({upcomingCount})
-        </p>
-        <button
-          onClick={clearUpcoming}
-          className="text-xs text-[#8a8478] hover:text-white transition-colors"
-          aria-label={`Clear upcoming queue (${upcomingCount} songs)`}
-        >
-          Clear
-        </button>
       </div>
       <DndContext
         sensors={sensors}
@@ -987,7 +663,7 @@ function UpcomingSection({
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-          <ul>
+          <ul className="space-y-2">
             {renderItems.map((entry) => {
               if (entry.type === 'group-header') {
                 return (
@@ -1004,10 +680,9 @@ function UpcomingSection({
                   key={entry.item.queueId}
                   item={entry.item}
                   absoluteIndex={entry.absoluteIndex}
+                  displayIndex={entry.absoluteIndex - queue.cursorIndex}
                   removeItem={removeItem}
                   playFromQueue={playFromQueue}
-                  isExpanded={expandedQueueId === entry.item.queueId}
-                  onToggleExpand={toggleExpand}
                   selectVersion={selectVersion}
                 />
               );

@@ -51,3 +51,6 @@ var/log/
 # MCP servers - ignore dev artifacts, but KEEP bundle.cjs (committed)
 mcp/*/node_modules/
 mcp/*/dist/
+
+*storybook.log
+storybook-static

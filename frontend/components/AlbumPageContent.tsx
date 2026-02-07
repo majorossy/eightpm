@@ -275,8 +275,8 @@ function CassetteTape({
           </div>
         </div>
 
-        {/* Artist photo polaroid (prioritize artist image over album cover) */}
-        {(artistImageUrl || album.coverArt) ? (
+        {/* Album cover art polaroid stamp (upper right) */}
+        {album.coverArt ? (
           <div
             className="absolute top-[8px] right-[8px] sm:top-[10px] sm:right-[12px] h-16 w-16 sm:h-20 sm:w-20 z-50"
           >
@@ -299,7 +299,7 @@ function CassetteTape({
               style={{ transform: 'rotate(6deg)' }}
             >
               <Image
-                src={artistImageUrl || album.coverArt || '/images/default-album.jpg'}
+                src={album.coverArt}
                 alt={`${album.artistName}`}
                 fill
                 sizes="200px"
