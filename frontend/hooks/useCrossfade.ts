@@ -55,6 +55,8 @@ export function useCrossfade({
   const crossfadeIntervalRef = useRef<number | null>(null);
   const preloadedSrcRef = useRef<string | null>(null);
   const originalVolumeRef = useRef<number>(0.7);
+  const onTrackEndRef = useRef(onTrackEnd);
+  onTrackEndRef.current = onTrackEnd;
 
   useEffect(() => {
     audioRefA.current = new Audio();
@@ -124,6 +126,7 @@ export function useCrossfade({
       inactive.volume = originalVolumeRef.current;
       inactive.play().catch(console.error);
       swapActiveElement();
+      onTrackEndRef.current(); // Notify caller that track transition completed
       preloadedSrcRef.current = null;
       return;
     }
@@ -158,6 +161,9 @@ export function useCrossfade({
         }
 
         swapActiveElement();
+
+        // Notify caller that track transition completed
+        onTrackEndRef.current();
 
         preloadedSrcRef.current = null;
 

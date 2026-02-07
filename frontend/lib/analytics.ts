@@ -132,6 +132,27 @@ export function trackAddToQueue(song: Song): void {
 }
 
 /**
+ * Track "Play Next" action (insert after cursor)
+ */
+export function trackPlayNext(song: Song): void {
+  trackEvent('play_next', 'Engagement', `${song.artistName} - ${song.trackTitle}`);
+}
+
+/**
+ * Track version change in queue
+ */
+export function trackVersionChange(trackTitle: string, newVersionId: string): void {
+  trackEvent('version_change', 'Engagement', trackTitle);
+}
+
+/**
+ * Track queue reorder (drag-and-drop)
+ */
+export function trackQueueReorder(action: 'move_item' | 'move_block'): void {
+  trackEvent('queue_reorder', 'Engagement', action);
+}
+
+/**
  * Track liking/favoriting a song
  */
 export function trackLike(song: Song): void {
@@ -506,13 +527,6 @@ export function trackQualityChange(
       previous_quality: previousQuality,
     });
   }
-}
-
-/**
- * Track shuffle toggle
- */
-export function trackShuffleToggle(enabled: boolean): void {
-  trackEvent(enabled ? 'shuffle_on' : 'shuffle_off', 'Audio');
 }
 
 /**

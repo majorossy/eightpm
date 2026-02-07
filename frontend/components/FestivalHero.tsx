@@ -299,7 +299,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
     // Mobile (320px):  0.65rem to 1.4rem
     // Desktop (1280px): 1.4rem to 3.5rem
     const tierSizes = {
-      mobile:  [1.4, 1.05, 0.8, 0.65],   // Headliner -> Opener
+      mobile: [1.4, 1.05, 0.8, 0.65],   // Headliner -> Opener
       desktop: [3.5, 2.6, 1.9, 1.4],     // Fits within max-w-6xl
     };
 
@@ -378,7 +378,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
             className="text-[var(--neon-pink)]"
             style={{ letterSpacing: '0.2em', fontSize: '11px' }}
           >
-            ARCHIVE.ORG BY ALBUMS
+            Archive.org by Albums
           </span>
           <div
             className="h-px w-12"
@@ -412,7 +412,24 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
           className="text-sm mb-10 text-[var(--text-dim)]"
           style={{ letterSpacing: '0.35em' }}
         >
-          LIVE JAMBAND MUSIC
+          'Take me to another time'
+          <svg className="inline-block ml-2 -mt-1" width="42" height="42" viewBox="0 0 64 64" aria-label="rooster">
+            <path d="M8 38 C4 28 6 16 12 10 L14 24 L16 12 C18 18 18 26 16 34 Z" fill="#922b21"/>
+            <path d="M12 36 C9 28 10 18 14 12 L16 22 Z" fill="#c0392b"/>
+            <ellipse cx="26" cy="36" rx="14" ry="9.5" fill="#c0392b"/>
+            <path d="M18 32 C16 36 17 41 20 43 C22 40 24 36 22 32 Z" fill="#a93226"/>
+            <path d="M35 30 C36 26 37 22 38 19 L40 19 C39 23 38 27 37 31 Z" fill="#c0392b"/>
+            <circle cx="39" cy="16" r="5.5" fill="#c0392b"/>
+            <path d="M36 11 L37.5 5 L39 9 L40.5 4 L42 9 L43.5 6 L43 12 Z" fill="#e74c3c"/>
+            <circle cx="40.5" cy="14.5" r="1.3" fill="#1a1714"/>
+            <circle cx="41" cy="14.2" r="0.4" fill="#fff"/>
+            <polygon points="44,15.5 50,17 44,18.5" fill="#d4a050"/>
+            <path d="M39 20 C40 22 39 24.5 37 24 C36 22 37 20.5 39 20 Z" fill="#e74c3c"/>
+            <line x1="22" y1="45" x2="20" y2="55" stroke="#d4a050" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="30" y1="44.5" x2="31" y2="55" stroke="#d4a050" strokeWidth="2.5" strokeLinecap="round"/>
+            <path d="M16 56 L20 54.5 L22 57" stroke="#d4a050" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M27 57 L31 54.5 L33 57" stroke="#d4a050" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </p>
 
         {/* Algorithm Selector outside the border */}

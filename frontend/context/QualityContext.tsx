@@ -8,6 +8,7 @@ interface QualityContextType {
   setPreferredQuality: (quality: AudioQuality) => void;
   getStreamUrl: (song: Song) => string;
   getQualityLabel: (quality: AudioQuality) => string;
+  getLowerQualityUrl: (song: Song, currentUrl: string) => string | null;
 }
 
 const QualityContext = createContext<QualityContextType | null>(null);
@@ -60,12 +61,34 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     return QUALITY_LABELS[quality];
   }, []);
 
+  const getLowerQualityUrl = useCallback((song: Song, currentUrl: string): string | null => {
+    if (!song.qualityUrls) return null;
+
+    const { high, medium, low } = song.qualityUrls;
+    const fallback = song.streamUrl;
+
+    // Determine which quality the current URL matches and return next lower
+    if (currentUrl === high) {
+      return medium || low || (fallback !== high ? fallback : null);
+    }
+    if (currentUrl === medium) {
+      return low || (fallback !== medium ? fallback : null);
+    }
+    if (currentUrl === low) {
+      return fallback !== low ? fallback : null;
+    }
+
+    // currentUrl doesn't match any known quality - no fallback available
+    return null;
+  }, []);
+
   return (
     <QualityContext.Provider value={{
       preferredQuality,
       setPreferredQuality,
       getStreamUrl,
       getQualityLabel,
+      getLowerQualityUrl,
     }}>
       {children}
     </QualityContext.Provider>

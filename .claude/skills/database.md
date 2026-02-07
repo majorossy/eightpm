@@ -171,6 +171,41 @@ AND attribute_id = (
 | `archivedotorg_artist` | Artist status/config | Schema Patch |
 | `archivedotorg_import_run` | Import history with metrics | Schema Patch |
 | `archivedotorg_artist_status` | Per-artist statistics | Schema Patch |
+
+### Key Table Schemas
+
+**`archivedotorg_import_run`** — Full audit trail of every import operation:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | int (PK) | Auto-increment ID |
+| `command_name` | varchar | CLI command that ran (e.g., `archive:download`) |
+| `artist_name` | varchar | Artist being imported |
+| `collection_id` | varchar | Archive.org collection ID |
+| `status` | varchar | `running`, `completed`, `failed` |
+| `items_processed` | int | Total items attempted |
+| `items_successful` | int | Items successfully imported |
+| `items_failed` | int | Items that failed |
+| `duration_seconds` | int | Wall-clock time |
+| `memory_peak_mb` | decimal | Peak memory usage |
+| `started_by` | varchar | `cli:username` or `admin:username` |
+| `created_at` | timestamp | When the run started |
+| `completed_at` | timestamp | When the run finished |
+
+**`archivedotorg_artist_status`** — Per-artist import statistics (auto-updated after imports):
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | int (PK) | Auto-increment ID |
+| `artist_name` | varchar | Artist display name |
+| `collection_id` | varchar | Archive.org collection ID |
+| `downloaded_shows` | int | Metadata JSON files downloaded |
+| `imported_tracks` | int | Magento products created |
+| `matched_tracks` | int | Tracks matched to categories |
+| `unmatched_tracks` | int | Tracks that failed matching |
+| `match_rate_percent` | decimal | Percentage of tracks matched |
+| `last_download_at` | timestamp | Last `archive:download` run |
+| `last_populate_at` | timestamp | Last `archive:populate` run |
 | `archivedotorg_track_match` | Track matching results | Schema Patch |
 | `archivedotorg_unmatched_track` | Failed track matches | Schema Patch |
 | `archivedotorg_daily_metrics` | Aggregated dashboard metrics | Schema Patch |

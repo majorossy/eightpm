@@ -13,7 +13,6 @@ interface KeyboardShortcutsConfig {
   onVolumeDown: () => void;
 
   // Playlist controls
-  onToggleShuffle: () => void;
   onCycleRepeat: () => void;
 
   // Wishlist/like
@@ -41,7 +40,6 @@ interface KeyboardShortcutsConfig {
  * - P or Left Arrow: Previous track
  * - Up Arrow: Volume up (+10%)
  * - Down Arrow: Volume down (-10%)
- * - S: Toggle shuffle
  * - R: Cycle repeat (off → all → one)
  * - L: Like/unlike current song
  * - Q: Toggle queue drawer
@@ -56,7 +54,6 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
     onPrevious,
     onVolumeUp,
     onVolumeDown,
-    onToggleShuffle,
     onCycleRepeat,
     onToggleLike,
     onToggleQueue,
@@ -139,11 +136,6 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
         onVolumeDown();
         break;
 
-      case 's':
-        e.preventDefault();
-        onToggleShuffle();
-        break;
-
       case 'r':
         e.preventDefault();
         onCycleRepeat();
@@ -170,7 +162,6 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
     onPrevious,
     onVolumeUp,
     onVolumeDown,
-    onToggleShuffle,
     onCycleRepeat,
     onToggleLike,
     onToggleQueue,

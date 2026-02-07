@@ -10,6 +10,7 @@ import { useHaptic } from '@/hooks/useHaptic';
 import AlbumCard from '@/components/AlbumCard';
 import BandMembersTimeline from '@/components/artist/BandMembersTimeline';
 import BandStatistics from '@/components/artist/BandStatistics';
+import VenueCloud from '@/components/artist/VenueCloud';
 import BandLinks from '@/components/artist/BandLinks';
 import DetailedCassette from '@/components/artist/DetailedCassette';
 import PolaroidCard from '@/components/artist/PolaroidCard';
@@ -377,6 +378,9 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
                 }}
               />
             )}
+
+            {/* Venue Cloud */}
+            <VenueCloud artistId={artist.id} artistName={artist.name} />
 
             {/* Band Members */}
             <BandMembersTimeline

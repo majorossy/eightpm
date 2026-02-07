@@ -1,0 +1,174 @@
+#!/bin/bash
+#
+# Import artist image data on production Magento instance
+#
+# Reads the TSV file exported by bin/export-artist-images and updates
+# category attributes (image, band_image_url, wikipedia_artwork_url)
+# on production. Matches categories by name, so entity_id differences
+# between environments are handled automatically.
+#
+# Prerequisites:
+#   1. Image files already SCP'd to pub/media/catalog/category/
+#   2. TSV file transferred from local: bin/export-artist-images
+#
+# Usage:
+#   bin/import-artist-images-prod                           # Default: data/artist-images.tsv
+#   bin/import-artist-images-prod /tmp/artist-images.tsv    # Custom path
+#   bin/import-artist-images-prod --dry-run                 # Preview without changes
+#
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+DRY_RUN=false
+INPUT_FILE=""
+
+# Parse arguments
+for arg in "$@"; do
+    case $arg in
+        --dry-run)
+            DRY_RUN=true
+            ;;
+        *)
+            INPUT_FILE="$arg"
+            ;;
+    esac
+done
+
+INPUT_FILE="${INPUT_FILE:-$PROJECT_ROOT/data/artist-images.tsv}"
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Import Artist Image Data"
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${YELLOW}DRY RUN MODE - no changes will be made${NC}"
+fi
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Check input file exists
+if [ ! -f "$INPUT_FILE" ]; then
+    echo -e "${RED}Error: Input file not found: $INPUT_FILE${NC}"
+    echo ""
+    echo "Transfer it from local with:"
+    echo "  scp local:8pm/data/artist-images.tsv /tmp/artist-images.tsv"
+    echo "  bin/import-artist-images-prod /tmp/artist-images.tsv"
+    exit 1
+fi
+
+TOTAL_ROWS=$(wc -l < "$INPUT_FILE" | tr -d ' ')
+echo "Input file: $INPUT_FILE ($TOTAL_ROWS rows)"
+echo ""
+
+# Generate SQL from TSV
+# Each line is: artist_name<TAB>attribute_code<TAB>value
+UPDATED=0
+SKIPPED=0
+ERRORS=0
+
+while IFS=$'\t' read -r ARTIST_NAME ATTR_CODE ATTR_VALUE; do
+    # Skip empty lines
+    if [ -z "$ARTIST_NAME" ] || [ -z "$ATTR_CODE" ] || [ -z "$ATTR_VALUE" ]; then
+        continue
+    fi
+
+    # Escape single quotes for SQL
+    ESCAPED_NAME=$(echo "$ARTIST_NAME" | sed "s/'/''/g")
+    ESCAPED_VALUE=$(echo "$ATTR_VALUE" | sed "s/'/''/g")
+
+    # Build the UPDATE query that matches by category name
+    SQL="
+    UPDATE catalog_category_entity_varchar cv
+    JOIN eav_attribute ea ON cv.attribute_id = ea.attribute_id
+    JOIN catalog_category_entity c ON cv.entity_id = c.entity_id
+    JOIN catalog_category_entity_varchar cv_name
+      ON cv_name.entity_id = c.entity_id
+      AND cv_name.attribute_id = (
+        SELECT attribute_id FROM eav_attribute
+        WHERE attribute_code = 'name' AND entity_type_id = 3
+      )
+      AND cv_name.store_id = 0
+    SET cv.value = '${ESCAPED_VALUE}'
+    WHERE cv_name.value = '${ESCAPED_NAME}'
+    AND ea.attribute_code = '${ATTR_CODE}'
+    AND cv.store_id = 0;
+    "
+
+    # INSERT if no existing row (upsert logic)
+    SQL_INSERT="
+    INSERT INTO catalog_category_entity_varchar (attribute_id, store_id, entity_id, value)
+    SELECT
+      ea.attribute_id,
+      0,
+      c.entity_id,
+      '${ESCAPED_VALUE}'
+    FROM catalog_category_entity c
+    JOIN catalog_category_entity_varchar cv_name
+      ON cv_name.entity_id = c.entity_id
+      AND cv_name.attribute_id = (
+        SELECT attribute_id FROM eav_attribute
+        WHERE attribute_code = 'name' AND entity_type_id = 3
+      )
+      AND cv_name.store_id = 0
+    JOIN eav_attribute ea
+      ON ea.attribute_code = '${ATTR_CODE}'
+      AND ea.entity_type_id = 3
+    WHERE cv_name.value = '${ESCAPED_NAME}'
+    AND NOT EXISTS (
+      SELECT 1 FROM catalog_category_entity_varchar existing
+      WHERE existing.entity_id = c.entity_id
+      AND existing.attribute_id = ea.attribute_id
+      AND existing.store_id = 0
+    );
+    "
+
+    if [ "$DRY_RUN" = true ]; then
+        echo -e "  ${BLUE}[DRY RUN]${NC} $ARTIST_NAME -> $ATTR_CODE = $(echo "$ATTR_VALUE" | head -c 60)..."
+        UPDATED=$((UPDATED + 1))
+    else
+        # Run UPDATE first, then INSERT if row doesn't exist
+        if bin/mysql -N -B -e "$SQL" 2>/dev/null && bin/mysql -N -B -e "$SQL_INSERT" 2>/dev/null; then
+            echo -e "  ${GREEN}✓${NC} $ARTIST_NAME -> $ATTR_CODE"
+            UPDATED=$((UPDATED + 1))
+        else
+            echo -e "  ${RED}✗${NC} $ARTIST_NAME -> $ATTR_CODE (category not found or SQL error)"
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+done < "$INPUT_FILE"
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Results:"
+echo -e "  ${GREEN}Updated: $UPDATED${NC}"
+if [ "$ERRORS" -gt 0 ]; then
+    echo -e "  ${RED}Errors:  $ERRORS${NC}"
+fi
+echo ""
+
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${YELLOW}This was a dry run. Run without --dry-run to apply changes.${NC}"
+else
+    echo "Flushing Magento cache..."
+    if bin/magento cache:flush 2>/dev/null; then
+        echo -e "${GREEN}✓ Cache flushed${NC}"
+    else
+        echo -e "${YELLOW}Warning: Could not flush cache. Run manually: bin/magento cache:flush${NC}"
+    fi
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Verification:"
+echo "  1. Check Magento admin: Catalog > Categories > [Artist] > Content"
+echo "  2. Check image files: ls -la pub/media/catalog/category/*.jpg"
+echo "  3. Check frontend: Load an artist page"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

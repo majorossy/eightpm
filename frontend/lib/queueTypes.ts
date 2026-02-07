@@ -1,57 +1,80 @@
-// Queue types for album-centric playback model
-// Queue = Album with selectable versions per track + Up Next extras
-
+// Unified Queue Types - Single flat queue with visual album grouping
 import { Song, Album, Track } from './types';
 
-// A track slot in the queue with selectable version
-export interface QueueTrack {
-  trackId: string;              // Unique identifier for this track slot
-  title: string;                // Track title (e.g., "Dark Star")
-  trackSlug: string;            // URL-safe track identifier
-  albumIdentifier: string;      // Parent album's Archive.org identifier
-  artistSlug: string;           // Artist URL slug
-  availableVersions: Song[];    // All available recordings of this track
-  selectedVersionId: string;    // Currently selected version's ID
-  albumTrackIndex: number;      // Position in album (0-based)
-}
+// =============================================================================
+// Core Types
+// =============================================================================
 
-// Extra songs queued after the album finishes
-export interface UpNextItem {
-  id: string;                   // Unique ID for this queue entry
-  song: Song;                   // The actual song
-  addedAt: number;              // Timestamp when added
-  source: 'manual' | 'autoplay'; // How it was added
-}
-
-// Album metadata stored in queue
-export interface QueueAlbum {
-  id: string;
-  identifier: string;
-  name: string;
+// Metadata about the album a queue item came from
+export interface QueueItemAlbumSource {
+  albumId: string;
+  albumIdentifier: string;   // Archive.org identifier
+  albumName: string;
   artistSlug: string;
   artistName: string;
   coverArt?: string;
+  showDate?: string;
+  showVenue?: string;
+  showLocation?: string;
+  originalTrackIndex: number; // Position in original album
+}
+
+// How an item entered the queue
+export type QueueItemSource =
+  | { type: 'album-load' }
+  | { type: 'play-next'; addedAt: number }
+  | { type: 'add-to-queue'; addedAt: number };
+
+// A single item in the unified queue
+export interface QueueItem {
+  queueId: string;
+  batchId: string;
+  song: Song;
+  trackTitle: string;
+  trackSlug: string;
+  availableVersions: Song[];
+  albumSource: QueueItemAlbumSource | null;
+  played: boolean;
+  source: QueueItemSource;
 }
 
 // The complete queue state
-export interface AlbumQueue {
-  album: QueueAlbum | null;     // Current album being played
-  tracks: QueueTrack[];         // Album tracks with version selection
-  currentTrackIndex: number;    // Which track is currently playing (-1 if none)
-  upNext: UpNextItem[];         // Songs queued after album
-  shuffle: boolean;             // Shuffle mode
-  repeat: 'off' | 'all' | 'one'; // Repeat mode
+export interface UnifiedQueue {
+  items: QueueItem[];
+  cursorIndex: number;  // -1 if none
+  repeat: 'off' | 'all' | 'one';
+}
+
+// Computed album group (NOT stored, derived from items[])
+export interface AlbumGroup {
+  batchId: string;
+  albumSource: QueueItemAlbumSource;
+  startIndex: number;
+  endIndex: number;     // inclusive
+  isContinuation: boolean;
+  items: QueueItem[];
 }
 
 // Initial empty queue state
-export const initialQueueState: AlbumQueue = {
-  album: null,
-  tracks: [],
-  currentTrackIndex: -1,
-  upNext: [],
-  shuffle: false,
+export const initialQueueState: UnifiedQueue = {
+  items: [],
+  cursorIndex: -1,
   repeat: 'off',
 };
+
+// =============================================================================
+// ID Generators
+// =============================================================================
+
+/** Generate a unique ID for queue items */
+export function generateQueueId(): string {
+  return `q-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/** Generate a unique batch ID for grouping items added together */
+export function generateBatchId(): string {
+  return `batch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
 
 // =============================================================================
 // Utility Functions
@@ -81,81 +104,161 @@ export function getBestVersion(songs: Song[]): Song {
 }
 
 /**
- * Convert an Album to AlbumQueue state with best versions auto-selected
+ * Convert an Album to an array of QueueItems with best versions auto-selected.
+ * All items share a single batchId for album grouping.
  */
-export function albumToQueue(album: Album): AlbumQueue {
-  const queueAlbum: QueueAlbum = {
-    id: album.id,
-    identifier: album.identifier,
-    name: album.name,
+export function albumToQueueItems(
+  album: Album,
+  versionOverrides?: Map<string, string>,
+): QueueItem[] {
+  const batchId = generateBatchId();
+
+  const albumSource: Omit<QueueItemAlbumSource, 'originalTrackIndex'> = {
+    albumId: album.id,
+    albumIdentifier: album.identifier,
+    albumName: album.name,
     artistSlug: album.artistSlug,
     artistName: album.artistName,
     coverArt: album.coverArt,
+    showDate: album.showDate,
+    showVenue: album.showVenue,
+    showLocation: album.showLocation,
   };
 
-  // Filter out tracks with no available recordings and map to queue tracks
-  const tracks: QueueTrack[] = album.tracks
-    .filter(track => track.songs && track.songs.length > 0) // Skip tracks with no recordings
-    .map((track, index) => {
-      const bestVersion = getBestVersion(track.songs);
+  const items: QueueItem[] = [];
 
-      return {
-        trackId: track.id,
-        title: track.title,
-        trackSlug: track.slug,
-        albumIdentifier: album.identifier,
-        artistSlug: album.artistSlug,
-        availableVersions: track.songs,
-        selectedVersionId: bestVersion.id,
-        albumTrackIndex: index,
-      };
+  album.tracks.forEach((track, index) => {
+    if (!track.songs || track.songs.length === 0) return;
+
+    let selectedSong: Song;
+    const overrideId = versionOverrides?.get(track.id);
+
+    if (overrideId) {
+      const found = track.songs.find((s) => s.id === overrideId);
+      selectedSong = found ?? getBestVersion(track.songs);
+    } else {
+      selectedSong = getBestVersion(track.songs);
+    }
+
+    items.push({
+      queueId: generateQueueId(),
+      batchId,
+      song: selectedSong,
+      trackTitle: track.title,
+      trackSlug: track.slug,
+      availableVersions: track.songs,
+      albumSource: {
+        ...albumSource,
+        originalTrackIndex: index,
+      },
+      played: false,
+      source: { type: 'album-load' },
     });
+  });
+
+  return items;
+}
+
+/**
+ * Create a single QueueItem from a Song.
+ * Each standalone item gets its own unique batchId.
+ */
+export function trackToQueueItem(
+  song: Song,
+  track?: Track,
+  albumSource?: QueueItemAlbumSource,
+): QueueItem {
+  const trackTitle = song.trackTitle || song.title;
+  const trackSlug = track?.slug || slugify(trackTitle);
 
   return {
-    album: queueAlbum,
-    tracks,
-    currentTrackIndex: 0, // Start at first track
-    upNext: [],
-    shuffle: false,
-    repeat: 'off',
+    queueId: generateQueueId(),
+    batchId: generateBatchId(),
+    song,
+    trackTitle,
+    trackSlug,
+    availableVersions: track ? track.songs : [song],
+    albumSource: albumSource ?? null,
+    played: false,
+    source: { type: 'add-to-queue', addedAt: Date.now() },
   };
 }
 
 /**
- * Get the currently selected Song for a QueueTrack
+ * Derive visual album groups from queue items after the cursor.
+ * Groups consecutive items with the same batchId and non-null albumSource.
+ * O(n) algorithm.
  */
-export function getSelectedSong(track: QueueTrack): Song | null {
-  return track.availableVersions.find(s => s.id === track.selectedVersionId) || null;
-}
+export function computeAlbumGroups(
+  items: QueueItem[],
+  cursorIndex: number,
+): AlbumGroup[] {
+  const groups: AlbumGroup[] = [];
+  const seenBatchIds = new Set<string>();
 
-/**
- * Get the current song being played from queue state
- */
-export function getCurrentSong(queue: AlbumQueue): Song | null {
-  if (queue.currentTrackIndex < 0 || queue.currentTrackIndex >= queue.tracks.length) {
-    // No track playing from album - check up next
-    return null;
+  // Collect batchIds from items at or before cursor
+  for (let i = 0; i <= cursorIndex && i < items.length; i++) {
+    if (items[i].albumSource) {
+      seenBatchIds.add(items[i].batchId);
+    }
   }
 
-  const currentTrack = queue.tracks[queue.currentTrackIndex];
-  return getSelectedSong(currentTrack);
+  const startFrom = cursorIndex + 1;
+  if (startFrom >= items.length) return groups;
+
+  let currentGroup: AlbumGroup | null = null;
+
+  for (let i = startFrom; i < items.length; i++) {
+    const item = items[i];
+
+    if (
+      item.albumSource &&
+      currentGroup &&
+      item.batchId === currentGroup.batchId
+    ) {
+      // Continue existing group
+      currentGroup.endIndex = i;
+      currentGroup.items.push(item);
+    } else if (item.albumSource) {
+      // Finalize previous group
+      if (currentGroup) {
+        groups.push(currentGroup);
+      }
+      // Start new group
+      const isContinuation = seenBatchIds.has(item.batchId);
+      seenBatchIds.add(item.batchId);
+      currentGroup = {
+        batchId: item.batchId,
+        albumSource: item.albumSource,
+        startIndex: i,
+        endIndex: i,
+        isContinuation,
+        items: [item],
+      };
+    } else {
+      // Standalone item (no albumSource) - finalize any current group
+      if (currentGroup) {
+        groups.push(currentGroup);
+        currentGroup = null;
+      }
+    }
+  }
+
+  // Finalize last group
+  if (currentGroup) {
+    groups.push(currentGroup);
+  }
+
+  return groups;
 }
 
-/**
- * Generate a unique ID for up-next items
- */
-export function generateUpNextId(): string {
-  return `upnext-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
+// =============================================================================
+// Internal Helpers
+// =============================================================================
 
-/**
- * Create an UpNextItem from a Song
- */
-export function createUpNextItem(song: Song, source: 'manual' | 'autoplay' = 'manual'): UpNextItem {
-  return {
-    id: generateUpNextId(),
-    song,
-    addedAt: Date.now(),
-    source,
-  };
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }

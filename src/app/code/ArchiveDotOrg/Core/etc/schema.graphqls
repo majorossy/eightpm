@@ -27,6 +27,7 @@ interface CategoryInterface {
     band_total_recordings: Int @doc(description: "Total number of recordings/tracks imported") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\BandTotalRecordings")
     band_total_hours: Int @doc(description: "Total hours of audio content") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\BandTotalHours")
     band_total_venues: Int @doc(description: "Total number of unique venues") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\BandTotalVenues")
+    artist_venues: [ArtistVenueCount] @doc(description: "Venue counts for artist word cloud") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\ArtistVenues")
     is_song: Int @doc(description: "Whether this category is a song/track (1=yes, 0=no)")
     is_album: Int @doc(description: "Whether this category is an album (1=yes, 0=no)")
     is_artist: Int @doc(description: "Whether this category is an artist (1=yes, 0=no)")
@@ -42,6 +43,16 @@ type Query {
     studioAlbums(
         artistName: String @doc(description: "Filter albums by artist name")
     ): StudioAlbumsOutput @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\StudioAlbums") @doc(description: "Get studio albums with artwork from MusicBrainz/Wikipedia")
+    venue(
+        slug: String! @doc(description: "Venue URL slug")
+    ): Venue @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\Venue") @doc(description: "Get a single venue by slug")
+    venues(
+        search: String @doc(description: "Search venue names")
+        city: String @doc(description: "Filter by city")
+        state: String @doc(description: "Filter by state code")
+        pageSize: Int = 20 @doc(description: "Number of results per page")
+        currentPage: Int = 1 @doc(description: "Current page number")
+    ): VenuesOutput @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\Venues") @doc(description: "Browse and search venues")
 }
 
 type StudioAlbumsOutput {
@@ -58,4 +69,64 @@ type StudioAlbum {
     category_id: Int @doc(description: "Associated category ID")
     artwork_url: String @doc(description: "Album artwork URL")
     cached_image_path: String @doc(description: "Cached local image path")
+}
+
+type Venue {
+    venue_id: Int! @doc(description: "Venue ID")
+    slug: String! @doc(description: "URL slug")
+    normalized_name: String! @doc(description: "Display name")
+    city: String @doc(description: "City")
+    state: String @doc(description: "State code")
+    country: String @doc(description: "Country code")
+    latitude: Float @doc(description: "Latitude")
+    longitude: Float @doc(description: "Longitude")
+    total_shows: Int! @doc(description: "Total number of shows")
+    total_artists: Int! @doc(description: "Total number of artists")
+    total_tracks: Int! @doc(description: "Total number of tracks")
+    first_show_date: String @doc(description: "Earliest show date")
+    last_show_date: String @doc(description: "Most recent show date")
+    shows(
+        pageSize: Int = 50 @doc(description: "Number of shows per page")
+        currentPage: Int = 1 @doc(description: "Current page number")
+    ): VenueShowsOutput @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\VenueShows") @doc(description: "Shows at this venue")
+    artists: [VenueArtist] @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\VenueArtists") @doc(description: "Artists who played this venue")
+    nearby_venues(
+        radius_miles: Float = 50 @doc(description: "Search radius in miles")
+    ): [Venue] @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\NearbyVenues") @doc(description: "Nearby venues within radius")
+}
+
+type VenueShow {
+    identifier: String! @doc(description: "Archive.org show identifier")
+    name: String! @doc(description: "Show name")
+    show_date: String @doc(description: "Show date")
+    artist_name: String! @doc(description: "Artist name")
+    artist_slug: String! @doc(description: "Artist URL slug")
+    track_count: Int! @doc(description: "Number of tracks")
+    recording_types: [String] @doc(description: "Recording types (SBD, AUD, etc.)")
+}
+
+type VenueShowsOutput {
+    items: [VenueShow]! @doc(description: "List of shows")
+    total_count: Int! @doc(description: "Total number of shows")
+    page_info: SearchResultPageInfo @doc(description: "Pagination info")
+}
+
+type VenueArtist {
+    name: String! @doc(description: "Artist name")
+    slug: String! @doc(description: "Artist URL slug")
+    show_count: Int! @doc(description: "Number of shows at this venue")
+}
+
+type VenuesOutput {
+    items: [Venue]! @doc(description: "List of venues")
+    total_count: Int! @doc(description: "Total number of matching venues")
+    page_info: SearchResultPageInfo @doc(description: "Pagination info")
+}
+
+type ArtistVenueCount {
+    venue_name: String! @doc(description: "Venue display name")
+    venue_slug: String! @doc(description: "Venue URL slug")
+    recording_count: Int! @doc(description: "Number of recordings at this venue")
+    city: String @doc(description: "Venue city")
+    state: String @doc(description: "Venue state code")
 }

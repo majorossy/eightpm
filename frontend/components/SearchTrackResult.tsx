@@ -8,6 +8,7 @@ import { getRecordingBadge } from '@/lib/lineageUtils';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { type VersionFilters, applyFilters, hasActiveFilters } from '@/lib/filters';
+import VenueLink from '@/components/VenueLink';
 
 interface CategoryBreadcrumb {
   category_uid: string;
@@ -101,7 +102,7 @@ function VersionCard({
       <div className="px-3 py-2">
         {/* Venue */}
         <div className={`text-sm font-medium mb-1 ${isPlaying ? 'text-[#2a1810]' : 'text-[#c8b8a8]'}`}>
-          {truncate(song.showVenue, 22)}
+          <VenueLink venueName={song.showVenue} className={`${isPlaying ? 'text-[#2a1810] hover:text-[#1a0808]' : 'text-[#c8b8a8] hover:text-[#d4a060]'} hover:underline transition-colors`} truncateLength={22} />
         </div>
         {/* Location */}
         <div className={`text-xs mb-2 ${isPlaying ? 'text-[#5a4030]' : 'text-[#8a7a68]'}`}>
@@ -166,7 +167,7 @@ export function SearchTrackResult({
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const { currentSong, isPlaying, playSong } = usePlayer();
-  const { addToUpNext } = useQueue();
+  const { addToQueue, trackToItem } = useQueue();
 
   // Use pre-filtered versions if provided, otherwise use lazy-loaded versions
   const displayVersions = filteredVersions || versions;
@@ -224,7 +225,7 @@ export function SearchTrackResult({
   };
 
   const handleQueue = (song: Song) => {
-    addToUpNext(song);
+    addToQueue(trackToItem(song));
   };
 
   // Check if any version of this track is currently playing

@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Song, formatDuration } from '@/lib/api';
 import { usePlayer } from '@/context/PlayerContext';
-import { useCart } from '@/context/CartContext';
+import { useQueue } from '@/context/QueueContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { AddToPlaylistModal } from '@/components/Playlists/AddToPlaylistModal';
 import { useShare } from '@/hooks/useShare';
@@ -18,7 +18,7 @@ interface SongCardProps {
 
 export default function SongCard({ song, index }: SongCardProps) {
   const { currentSong, isPlaying, playSong, togglePlay } = usePlayer();
-  const { addToCart, isInCart } = useCart();
+  const { addToQueue, trackToItem } = useQueue();
   const { addToWishlist, isInWishlist } = useWishlist();
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const {
@@ -34,7 +34,6 @@ export default function SongCard({ song, index }: SongCardProps) {
   } = useShare();
 
   const isCurrentSong = currentSong?.id === song.id;
-  const inQueue = isInCart(song.id);
   const inFavorites = isInWishlist(song.id);
 
   const handlePlayClick = () => {
@@ -47,7 +46,7 @@ export default function SongCard({ song, index }: SongCardProps) {
 
   const handleAddToQueue = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addToCart(song);
+    addToQueue(trackToItem(song));
   };
 
   const handleAddToFavorites = (e: React.MouseEvent) => {
@@ -148,22 +147,12 @@ export default function SongCard({ song, index }: SongCardProps) {
         {/* Add to queue */}
         <button
           onClick={handleAddToQueue}
-          disabled={inQueue}
-          className={`transition-colors opacity-0 group-hover:opacity-100 ${
-            inQueue ? 'text-[var(--neon-pink)] opacity-100' : 'text-[var(--text-dim)] hover:text-[var(--text)]'
-          }`}
-          aria-label={inQueue ? `${song.title} is in queue` : `Add ${song.title} to queue`}
-          aria-pressed={inQueue}
+          className="transition-colors opacity-0 group-hover:opacity-100 text-[var(--text-dim)] hover:text-[var(--text)]"
+          aria-label={`Add ${song.title} to queue`}
         >
-          {inQueue ? (
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          )}
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
         </button>
 
         {/* Share */}

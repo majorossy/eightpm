@@ -85,7 +85,6 @@ function InnerLayout({ children }: { children: ReactNode }) {
     onPrevious: player.playPrev,
     onVolumeUp: handleVolumeUp,
     onVolumeDown: handleVolumeDown,
-    onToggleShuffle: () => queue.setShuffle(!queue.queue.shuffle),
     onCycleRepeat: handleCycleRepeat,
     onToggleLike: handleToggleLike,
     onToggleQueue: player.toggleQueue,
@@ -120,7 +119,7 @@ function InnerLayout({ children }: { children: ReactNode }) {
       {/* Main content area */}
       <main
         id="main-content"
-        className="min-h-screen bg-[var(--bg)] relative z-10 pb-[120px] pt-14"
+        className="min-h-screen bg-[var(--bg)] relative z-10 pb-[200px] pt-14"
       >
         {children}
 

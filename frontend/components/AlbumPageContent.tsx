@@ -12,6 +12,7 @@ import { useHaptic } from '@/hooks/useHaptic';
 import { VUMeter, Waveform, SpinningReel } from '@/components/AudioVisualizations';
 import { getRecordingBadge } from '@/lib/lineageUtils';
 import TaperNotes from '@/components/TaperNotes';
+import VenueLink from '@/components/VenueLink';
 import { trackAlbumView } from '@/lib/analytics';
 
 interface AlbumWithTracks extends Album {
@@ -246,7 +247,7 @@ function CassetteTape({
                   {album.name} ☮
                 </div>
                 <div className="text-[#4a3020] text-[10px] sm:text-xs italic truncate max-w-[180px] sm:max-w-[220px]">
-                  {album.artistName} — {album.showVenue || 'Live'}
+                  {album.artistName} — {album.showVenue ? <VenueLink venueName={album.showVenue} className="text-[#4a3020] hover:text-[#2a1810] hover:underline" truncateLength={24} /> : 'Live'}
                 </div>
               </div>
               <div className="flex items-center gap-2 relative">
@@ -531,7 +532,7 @@ function RecordingCard({
       {/* Card body */}
       <div className="recording-card-body px-4 py-3">
         <div className={`text-base font-medium mb-1 ${isSelected ? 'text-[#2a1810]' : 'text-[var(--text-dim)]'}`}>
-          {truncate(song.showVenue, 24)}
+          <VenueLink venueName={song.showVenue} className={`${isSelected ? 'text-[#2a1810] hover:text-[#1a0808]' : 'text-[var(--text-dim)] hover:text-[#d4a060]'} hover:underline transition-colors`} truncateLength={24} />
         </div>
         <div className={`text-sm italic mb-3 ${isSelected ? 'text-[#5a4030]' : 'text-[var(--text-subdued)]'}`}>
           {truncate(song.showLocation, 28)}
@@ -589,7 +590,6 @@ function RecordingCard({
 // Track row component
 function TrackRow({
   track,
-  trackIndex,
   displayIndex,
   album,
   isExpanded,
@@ -601,18 +601,17 @@ function TrackRow({
   volume = 0,
 }: {
   track: Track;
-  trackIndex: number;  // 0-based index in album.tracks
   displayIndex: number;  // 1-based display number
   album: AlbumWithTracks;
   isExpanded: boolean;
   onToggle: () => void;
-  onPlay: (song: Song, trackIndex: number) => void;
+  onPlay: (song: Song) => void;
   currentSong: Song | null;
   isPlaying: boolean;
   waveform?: number[];
   volume?: number;
 }) {
-  const { addToUpNext } = useQueue();
+  const { addToQueue, trackToItem } = useQueue();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const isCurrentTrack = track.songs.some(s => s.id === currentSong?.id);
@@ -730,8 +729,8 @@ function TrackRow({
                 isPlaying={currentSong?.id === song.id && isPlaying}
                 volume={currentSong?.id === song.id && isPlaying ? volume : 0}
                 onSelect={() => setSelectedIndex(idx)}
-                onPlay={() => onPlay(song, trackIndex)}
-                onQueue={() => addToUpNext(song)}
+                onPlay={() => onPlay(song)}
+                onQueue={() => addToQueue(trackToItem(song))}
               />
             ))}
           </div>
@@ -768,8 +767,8 @@ function SideDivider({ side }: { side: 'A' | 'B' }) {
 
 export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbums = [], artist }: AlbumPageContentProps) {
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { currentSong, isPlaying, togglePlay, playAlbum, playAlbumFromTrack, analyzerData, volume, setVolume } = usePlayer();
-  const { queue, setShuffle } = useQueue();
+  const { currentSong, isPlaying, togglePlay, playSong, analyzerData, volume, setVolume } = usePlayer();
+  const { queue, currentItem, addToQueue, albumToItems, trackToItem } = useQueue();
   const { followAlbum, unfollowAlbum, isAlbumFollowed } = useWishlist();
   const { vibrate, BUTTON_PRESS } = useHaptic();
 
@@ -778,7 +777,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const hasTrackedView = useRef(false);
 
   // Check if this album is currently loaded in the queue
-  const isCurrentAlbum = queue.album?.identifier === album.identifier;
+  const isCurrentAlbum = currentItem?.albumSource?.albumIdentifier === album.identifier;
   const albumIsPlaying = isCurrentAlbum && isPlaying;
 
   // Check if album is followed
@@ -824,19 +823,10 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const sideATracks = album.tracks.slice(0, midpoint);
   const sideBTracks = album.tracks.slice(midpoint);
 
-  const handlePlayPause = () => {
+  const handleAddToQueue = () => {
     vibrate(BUTTON_PRESS);
-    if (isCurrentAlbum) {
-      togglePlay();
-    } else {
-      playAlbum(album, 0);
-    }
-  };
-
-  const handleShuffle = () => {
-    vibrate(BUTTON_PRESS);
-    setShuffle(true);
-    playAlbum(album, 0);
+    const items = albumToItems(album);
+    addToQueue(items);
   };
 
   const handleFollowToggle = () => {
@@ -848,13 +838,11 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
     }
   };
 
-  const handlePlaySong = (song: Song, trackIndex: number) => {
+  const handlePlaySong = (song: Song) => {
     if (currentSong?.id === song.id && isPlaying) {
       togglePlay();
     } else {
-      // Use playAlbumFromTrack to ensure track advancement works correctly
-      // This loads the album into queue, sets the track index, selects the version, and plays
-      playAlbumFromTrack(album, trackIndex, song);
+      playSong(song);
     }
   };
 
@@ -952,7 +940,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
             </h1>
             {album.showVenue && (
               <div className="text-xl text-[var(--text-dim)] mb-1.5 italic">
-                {album.showVenue}
+                <VenueLink venueName={album.showVenue} className="text-[var(--text-dim)] hover:text-[#d4a060] hover:underline transition-colors" />
               </div>
             )}
             <div className="text-[var(--text-subdued)] text-sm mb-6">
@@ -975,16 +963,10 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
             {/* Action buttons */}
             <div className="flex gap-3.5 items-center justify-center lg:justify-start">
               <button
-                onClick={handlePlayPause}
-                className="album-play-button w-14 h-14 rounded-full flex items-center justify-center text-[var(--bg)] text-xl shadow-lg transition-all hover:scale-105"
+                onClick={handleAddToQueue}
+                className="album-play-button px-6 py-3.5 rounded-full flex items-center justify-center text-[var(--bg)] text-sm font-semibold shadow-lg transition-all hover:scale-105 gap-2"
               >
-                {albumIsPlaying ? '❚❚' : '▶'}
-              </button>
-              <button
-                onClick={handleShuffle}
-                className="album-shuffle-btn px-5 py-3.5 rounded-md text-sm transition-all"
-              >
-                ⟲ Shuffle
+                + Add Album to Queue
               </button>
               <button
                 onClick={handleFollowToggle}
@@ -1005,7 +987,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
             <TrackRow
               key={track.id}
               track={track}
-              trackIndex={idx}
               displayIndex={idx + 1}
               album={album}
               isExpanded={expandedTrack === idx}
@@ -1032,7 +1013,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                   <TrackRow
                     key={track.id}
                     track={track}
-                    trackIndex={actualIndex}
                     displayIndex={actualIndex + 1}
                     album={album}
                     isExpanded={expandedTrack === actualIndex}

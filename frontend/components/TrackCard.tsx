@@ -20,7 +20,7 @@ interface TrackCardProps {
 
 export default function TrackCard({ track, index, album }: TrackCardProps) {
   const { currentSong, isPlaying, playSong, togglePlay, playAlbum } = usePlayer();
-  const { queue, addToUpNext } = useQueue();
+  const { addToQueue, trackToItem } = useQueue();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const {
@@ -69,7 +69,7 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
   const handleAddToQueue = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (selectedSong && !isUnavailable) {
-      addToUpNext(selectedSong);
+      addToQueue(trackToItem(selectedSong));
     }
   };
 
@@ -293,7 +293,7 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
                 selectedIndex={selectedIndex}
                 onSelect={handleVersionSelect}
                 onPlay={handleVersionPlay}
-                onAddToQueue={addToUpNext}
+                onAddToQueue={(song: Song) => addToQueue(trackToItem(song))}
                 currentSongId={currentSong?.id}
                 isPlaying={isPlaying}
                 isInQueue={() => false}

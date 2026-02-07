@@ -1,0 +1,100 @@
+#!/bin/bash
+#
+# Export artist image data from local Magento database
+#
+# Exports category image attributes (image, band_image_url, wikipedia_artwork_url)
+# to a TSV file that can be transferred to production and imported with
+# bin/import-artist-images-prod.
+#
+# Requires Docker to be running (queries local Magento DB).
+#
+# Usage:
+#   bin/export-artist-images                    # Export to data/artist-images.tsv
+#   bin/export-artist-images /tmp/output.tsv    # Export to custom path
+#
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+OUTPUT_FILE="${1:-$PROJECT_ROOT/data/artist-images.tsv}"
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Export Artist Image Data"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Check if Docker container is running
+if ! docker ps --format '{{.Names}}' | grep -q "^8pm-phpfpm-1$"; then
+    echo -e "${RED}Error: Container 8pm-phpfpm-1 is not running${NC}"
+    echo "Start Docker with: bin/start"
+    exit 1
+fi
+
+# Create output directory if needed
+mkdir -p "$(dirname "$OUTPUT_FILE")"
+
+echo "Querying database for artist image attributes..."
+echo ""
+
+# Export image data as TSV: artist_name, attribute_code, value
+bin/mysql -N -B -e "
+SELECT cv_name.value AS artist_name, ea.attribute_code, cv.value
+FROM catalog_category_entity_varchar cv
+JOIN eav_attribute ea ON cv.attribute_id = ea.attribute_id
+JOIN catalog_category_entity c ON cv.entity_id = c.entity_id
+LEFT JOIN catalog_category_entity_varchar cv_name
+  ON cv_name.entity_id = c.entity_id
+  AND cv_name.attribute_id = (
+    SELECT attribute_id FROM eav_attribute
+    WHERE attribute_code = 'name' AND entity_type_id = 3
+  )
+  AND cv_name.store_id = 0
+WHERE ea.attribute_code IN ('image', 'band_image_url', 'wikipedia_artwork_url')
+AND cv.value IS NOT NULL AND cv.value != ''
+AND c.level >= 3
+AND cv.store_id = 0
+ORDER BY cv_name.value, ea.attribute_code;
+" > "$OUTPUT_FILE"
+
+if [ ! -s "$OUTPUT_FILE" ]; then
+    echo -e "${RED}Error: No image data found in database${NC}"
+    rm -f "$OUTPUT_FILE"
+    exit 1
+fi
+
+# Count results
+TOTAL_ROWS=$(wc -l < "$OUTPUT_FILE" | tr -d ' ')
+ARTIST_COUNT=$(cut -f1 "$OUTPUT_FILE" | sort -u | wc -l | tr -d ' ')
+IMAGE_COUNT=$(grep -c $'\timage\t' "$OUTPUT_FILE" || true)
+BAND_URL_COUNT=$(grep -c $'\tband_image_url\t' "$OUTPUT_FILE" || true)
+WIKI_URL_COUNT=$(grep -c $'\twikipedia_artwork_url\t' "$OUTPUT_FILE" || true)
+
+echo -e "${GREEN}Exported $TOTAL_ROWS rows for $ARTIST_COUNT artists${NC}"
+echo ""
+echo "  image:                 $IMAGE_COUNT entries"
+echo "  band_image_url:        $BAND_URL_COUNT entries"
+echo "  wikipedia_artwork_url: $WIKI_URL_COUNT entries"
+echo ""
+
+# Show preview
+echo "Preview (first 10 rows):"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+head -10 "$OUTPUT_FILE" | column -t -s $'\t'
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo -e "${GREEN}Output: $OUTPUT_FILE${NC}"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Next steps:"
+echo "  1. scp src/pub/media/catalog/category/*.jpg user@prod:/path/to/magento/pub/media/catalog/category/"
+echo "  2. scp $OUTPUT_FILE user@prod:/tmp/artist-images.tsv"
+echo "  3. SSH to prod and run: bin/import-artist-images-prod /tmp/artist-images.tsv"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

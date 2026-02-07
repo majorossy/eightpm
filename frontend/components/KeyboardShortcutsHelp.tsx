@@ -24,7 +24,6 @@ const shortcuts = [
   {
     category: 'Playlist',
     items: [
-      { keys: ['S'], description: 'Toggle shuffle' },
       { keys: ['R'], description: 'Cycle repeat (off → all → one)' },
       { keys: ['L'], description: 'Like/unlike current song' },
     ],

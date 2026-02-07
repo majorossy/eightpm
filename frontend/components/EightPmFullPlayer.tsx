@@ -15,10 +15,10 @@ import { useSleepTimer, SleepTimerPreset } from '@/hooks/useSleepTimer';
 import { useShare } from '@/hooks/useShare';
 import { useHaptic } from '@/hooks/useHaptic';
 import { formatDuration } from '@/lib/api';
-import { getSelectedSong } from '@/lib/queueTypes';
 import Link from 'next/link';
 import ShareModal from '@/components/ShareModal';
 import { formatLineage } from '@/lib/lineageUtils';
+import { useStreamingStats } from '@/hooks/useStreamingStats';
 
 export default function EightPmFullPlayer() {
   const { isPlayerExpanded, collapsePlayer, isTransitioning } = useMobileUI();
@@ -28,6 +28,7 @@ export default function EightPmFullPlayer() {
   const {
     currentSong,
     isPlaying,
+    isBuffering,
     volume,
     currentTime,
     duration,
@@ -42,16 +43,18 @@ export default function EightPmFullPlayer() {
     crossfadeDuration,
     setCrossfadeDuration,
     playFromQueue,
+    audioRef,
   } = usePlayer();
+
+  const streamingStats = useStreamingStats(audioRef);
 
   const {
     queue,
-    isFirstTrack,
-    isLastTrack,
-    hasUpNext,
-    hasAlbum,
+    currentItem,
+    hasItems,
+    isFirstItem,
+    isLastItem,
     setRepeat,
-    setShuffle,
   } = useQueue();
 
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlist } = useWishlist();
@@ -194,7 +197,7 @@ export default function EightPmFullPlayer() {
         <div className="text-center">
           <p className="text-[10px] text-[#8a8478] uppercase tracking-wider">Playing from</p>
           <p className="text-xs text-white font-medium truncate max-w-[200px]">
-            {queue.album?.name || 'Unknown'}
+            {currentItem?.albumSource?.albumName || 'Unknown'}
           </p>
         </div>
 
@@ -236,10 +239,10 @@ export default function EightPmFullPlayer() {
       {/* Album Art */}
       <div className="flex-1 flex items-center justify-center px-8 py-4">
         <div className="w-full max-w-[320px] aspect-square rounded-lg overflow-hidden shadow-2xl relative">
-          {queue.album?.coverArt ? (
+          {currentItem?.albumSource?.coverArt ? (
             <Image
-              src={queue.album.coverArt}
-              alt={`${queue.album.name} by ${currentSong.artistName}`}
+              src={currentItem.albumSource!.coverArt}
+              alt={`${currentItem?.albumSource?.albumName} by ${currentSong.artistName}`}
               fill
               sizes="320px"
               priority
@@ -264,7 +267,7 @@ export default function EightPmFullPlayer() {
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 mr-4">
             <h2 className="text-xl font-bold text-white truncate">
-              {currentSong.title}
+              {currentItem?.albumSource ? <><span className="text-[#6a6458]">{(currentItem.albumSource.originalTrackIndex ?? 0) + 1}.</span> {currentSong.title}</> : currentSong.title}
             </h2>
             <Link
               href={`/artists/${currentSong.artistSlug || ''}`}
@@ -386,15 +389,20 @@ export default function EightPmFullPlayer() {
       {/* Progress Bar */}
       <div className="px-8 mb-4">
         <div
-          className="w-full h-1 bg-[#3a3632] rounded-full cursor-pointer group"
+          className="w-full h-1 bg-[#3a3632] rounded-full cursor-pointer group relative"
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const percent = (e.clientX - rect.left) / rect.width;
             seek(percent * duration);
           }}
         >
+          {/* Buffer bar */}
           <div
-            className="h-full bg-white rounded-full relative"
+            className="absolute inset-y-0 left-0 bg-white/15 rounded-full transition-all duration-300"
+            style={{ width: `${streamingStats.bufferedPercent}%` }}
+          />
+          <div
+            className={`h-full bg-white rounded-full relative z-[1] ${isBuffering ? 'animate-pulse' : ''}`}
             style={{ width: `${progress}%` }}
           >
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-active:opacity-100" />
@@ -404,6 +412,18 @@ export default function EightPmFullPlayer() {
           <span className="text-[11px] text-[#8a8478] font-mono">
             {formatDuration(Math.floor(currentTime))}
           </span>
+
+          {/* Streaming stats (centered) */}
+          {(streamingStats.networkType || streamingStats.downlinkMbps !== null || streamingStats.bufferedAhead > 0) && (
+            <span className="text-[9px] text-[#6a6458] font-mono">
+              {[
+                streamingStats.networkType?.toUpperCase(),
+                streamingStats.downlinkMbps !== null ? `${streamingStats.downlinkMbps} Mbps` : null,
+                streamingStats.bufferedAhead > 0 ? `${streamingStats.bufferedAhead.toFixed(1)}s buf` : null,
+              ].filter(Boolean).join(' · ')}
+            </span>
+          )}
+
           <span className="text-[11px] text-[#8a8478] font-mono">
             {formatDuration(Math.floor(duration))}
           </span>
@@ -413,27 +433,13 @@ export default function EightPmFullPlayer() {
       {/* Main Controls */}
       <div className="px-8 mb-6">
         <div className="flex items-center justify-between">
-          {/* Shuffle */}
-          <button
-            onClick={() => {
-              vibrate(BUTTON_PRESS);
-              setShuffle(!queue.shuffle);
-            }}
-            className={`p-3 btn-touch ${queue.shuffle ? 'text-[#d4a060]' : 'text-[#8a8478]'}`}
-            aria-label={queue.shuffle ? 'Disable shuffle' : 'Enable shuffle'}
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" />
-            </svg>
-          </button>
-
           {/* Previous */}
           <button
             onClick={() => {
               vibrate(BUTTON_PRESS);
               playPrev();
             }}
-            disabled={isFirstTrack && !hasUpNext}
+            disabled={isFirstItem}
             className="p-3 text-white disabled:opacity-30 btn-touch"
             aria-label="Previous track"
           >
@@ -449,9 +455,14 @@ export default function EightPmFullPlayer() {
               togglePlay();
             }}
             className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-black btn-touch btn-ripple"
-            aria-label={isPlaying ? 'Pause' : 'Play'}
+            aria-label={isBuffering ? 'Buffering' : isPlaying ? 'Pause' : 'Play'}
           >
-            {isPlaying ? (
+            {isBuffering ? (
+              <svg className="w-8 h-8 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : isPlaying ? (
               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
                 <rect x="6" y="4" width="4" height="16" />
                 <rect x="14" y="4" width="4" height="16" />
@@ -469,7 +480,7 @@ export default function EightPmFullPlayer() {
               vibrate(BUTTON_PRESS);
               playNext();
             }}
-            disabled={isLastTrack && !hasUpNext}
+            disabled={isLastItem}
             className="p-3 text-white disabled:opacity-30 btn-touch"
             aria-label="Next track"
           >
@@ -505,26 +516,15 @@ export default function EightPmFullPlayer() {
 
       {/* Mini Queue / Up Next */}
       {(() => {
-        // Get upcoming tracks
-        const upcomingAlbumTracks = hasAlbum
-          ? queue.tracks.slice(queue.currentTrackIndex + 1).map(track => ({
-              song: getSelectedSong(track),
-              source: 'album' as const,
-            })).filter(t => t.song)
-          : [];
-        const upcomingUpNext = queue.upNext.map(item => ({
-          song: item.song,
-          source: 'upnext' as const,
-        }));
-        const allUpcoming = [...upcomingAlbumTracks, ...upcomingUpNext];
-        const displayTracks = isQueueExpanded ? allUpcoming.slice(0, 10) : allUpcoming.slice(0, 3);
-        const hasMoreTracks = allUpcoming.length > displayTracks.length;
+        // Get upcoming items from flat queue
+        const upcomingItems = queue.items.slice(queue.cursorIndex + 1);
+        const displayItems = isQueueExpanded ? upcomingItems.slice(0, 10) : upcomingItems.slice(0, 3);
+        const hasMoreItems = upcomingItems.length > displayItems.length;
 
-        if (allUpcoming.length === 0) return null;
+        if (upcomingItems.length === 0) return null;
 
         return (
           <div className="px-4 pb-4">
-            {/* Header with expand/collapse */}
             <button
               onClick={() => {
                 vibrate(BUTTON_PRESS);
@@ -533,53 +533,43 @@ export default function EightPmFullPlayer() {
               className="w-full flex items-center justify-between py-2 text-left"
             >
               <span className="text-xs text-[#8a8478] uppercase tracking-wider">
-                Up Next ({allUpcoming.length})
+                Up Next ({upcomingItems.length})
               </span>
               <svg
                 className={`w-4 h-4 text-[#8a8478] transition-transform ${isQueueExpanded ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
               </svg>
             </button>
 
-            {/* Track list */}
             <div className={`space-y-1 overflow-hidden transition-all duration-300 ${isQueueExpanded ? 'max-h-80' : 'max-h-32'}`}>
-              {displayTracks.map(({ song }, index) => (
+              {displayItems.map((item, index) => (
                 <button
-                  key={`${song!.id}-${index}`}
+                  key={item.queueId}
                   onClick={() => {
                     vibrate(BUTTON_PRESS);
-                    // Calculate actual queue index (current + 1 + display index)
-                    const actualIndex = queue.currentTrackIndex + 1 + index;
-                    if (actualIndex < queue.tracks.length) {
-                      playFromQueue(actualIndex);
-                    } else {
-                      // It's from upNext, just skip ahead
-                      playNext();
-                    }
+                    const actualIndex = queue.cursorIndex + 1 + index;
+                    playFromQueue(actualIndex);
                   }}
                   className="w-full flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-[#2d2a26] active:bg-[#3a3632] transition-colors text-left"
                 >
                   <span className="text-xs text-[#6a6458] w-5 text-center font-mono">
-                    {index + 1}
+                    {item.albumSource ? (item.albumSource.originalTrackIndex ?? 0) + 1 : index + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate">{song!.title}</p>
-                    <p className="text-xs text-[#8a8478] truncate">{song!.artistName}</p>
+                    <p className="text-sm text-white truncate">{item.albumSource ? <><span className="text-[#6a6458]">{(item.albumSource.originalTrackIndex ?? 0) + 1}.</span> {item.trackTitle}</> : item.trackTitle}</p>
+                    <p className="text-xs text-[#8a8478] truncate">{item.song.artistName}</p>
                   </div>
                   <span className="text-xs text-[#6a6458] font-mono flex-shrink-0">
-                    {formatDuration(song!.duration)}
+                    {formatDuration(item.song.duration)}
                   </span>
                 </button>
               ))}
 
-              {/* Show more indicator */}
-              {hasMoreTracks && !isQueueExpanded && (
+              {hasMoreItems && !isQueueExpanded && (
                 <p className="text-[10px] text-[#6a6458] text-center py-1 italic">
-                  +{allUpcoming.length - 3} more • tap to expand
+                  +{upcomingItems.length - 3} more • tap to expand
                 </p>
               )}
             </div>

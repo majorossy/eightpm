@@ -124,6 +124,7 @@
                 <item name="archivedotorg_benchmark_dashboard" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BenchmarkDashboardCommand</item>
                 <item name="archivedotorg_enrich_artist_data" xsi:type="object">ArchiveDotOrg\Core\Console\Command\EnrichArtistDataCommand</item>
                 <item name="archivedotorg_backfill_recording_data" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BackfillRecordingDataCommand</item>
+                <item name="archivedotorg_discover_venues" xsi:type="object">ArchiveDotOrg\Core\Console\Command\DiscoverVenuesCommand</item>
             </argument>
         </arguments>
     </type>

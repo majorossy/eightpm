@@ -9,7 +9,7 @@ import { VALIDATION_LIMITS } from '@/lib/validation';
 
 export default function PlaylistsPage() {
   const { playlists, createPlaylist, deletePlaylist, getPlaylist } = usePlaylists();
-  const { loadAlbum } = useQueue();
+  const { playAlbum } = useQueue();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [newPlaylistDescription, setNewPlaylistDescription] = useState('');
@@ -44,7 +44,7 @@ export default function PlaylistsPage() {
       totalDuration: playlist.songs.reduce((sum, s) => sum + s.duration, 0),
       coverArt: playlist.coverArt,
     };
-    loadAlbum(albumData, 0);
+    playAlbum(albumData, 0);
   };
 
   const handleCreate = (e: React.FormEvent) => {

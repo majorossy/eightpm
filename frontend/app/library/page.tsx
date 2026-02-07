@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import Image from 'next/image';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useWishlist } from '@/context/WishlistContext';
@@ -8,6 +8,7 @@ import { useQueue } from '@/context/QueueContext';
 import { useRecentlyPlayed } from '@/context/RecentlyPlayedContext';
 import { useHaptic } from '@/hooks/useHaptic';
 import { formatDuration } from '@/lib/api';
+import { getRecordingBadge } from '@/lib/lineageUtils';
 import Link from 'next/link';
 
 type TabType = 'songs' | 'artists' | 'albums' | 'recent';
@@ -23,7 +24,7 @@ function LibraryPageInner() {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
   const { wishlist, removeFromWishlist, followedArtists, followedAlbums } = useWishlist();
-  const { addToUpNext } = useQueue();
+  const { addToQueue, trackToItem } = useQueue();
   const { recentlyPlayed } = useRecentlyPlayed();
   const { vibrate, BUTTON_PRESS, DELETE_ACTION } = useHaptic();
 
@@ -55,25 +56,38 @@ function LibraryPageInner() {
     return `${Math.floor(diffDays / 365)} ${Math.floor(diffDays / 365) === 1 ? 'year' : 'years'} ago`;
   };
 
-  // Group songs by artist
-  const artistsMap = new Map<string, typeof wishlist.items>();
-  wishlist.items.forEach(item => {
-    const artistId = item.song.artistId;
-    if (!artistsMap.has(artistId)) {
-      artistsMap.set(artistId, []);
-    }
-    artistsMap.get(artistId)!.push(item);
-  });
+  const formatShowDate = (dateStr?: string): string => {
+    if (!dateStr) return '';
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+      month: '2-digit', day: '2-digit', year: '2-digit'
+    });
+  };
 
-  // Group songs by album
-  const albumsMap = new Map<string, typeof wishlist.items>();
-  wishlist.items.forEach(item => {
-    const albumId = item.song.albumIdentifier;
-    if (!albumsMap.has(albumId)) {
-      albumsMap.set(albumId, []);
-    }
-    albumsMap.get(albumId)!.push(item);
-  });
+  const getAlbumHref = (song: { artistSlug: string; albumIdentifier: string }) =>
+    `/artists/${song.artistSlug}/album/${song.albumIdentifier}`;
+
+  const RecordingBadge = ({ song }: { song: { lineage?: string; recordingType?: string } }) => {
+    const badge = getRecordingBadge(song.lineage, song.recordingType);
+    if (!badge || !badge.show) return null;
+    return (
+      <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-full"
+        style={{ backgroundColor: badge.bgColor, color: badge.textColor }}>
+        {badge.text}
+      </span>
+    );
+  };
+
+  const ShowContext = ({ song }: { song: { showVenue?: string; showDate?: string; artistSlug: string; albumIdentifier: string } }) => {
+    if (!song.showVenue && !song.showDate) return null;
+    const text = song.showVenue && song.showDate
+      ? `${song.showVenue} · ${formatShowDate(song.showDate)}`
+      : song.showVenue || formatShowDate(song.showDate);
+    return (
+      <Link href={getAlbumHref(song)} className="text-[#5a564e] text-xs hover:text-[#8a8478] truncate block">
+        {text}
+      </Link>
+    );
+  };
 
   const renderSongs = () => {
     if (wishlist.items.length === 0) {
@@ -97,11 +111,24 @@ function LibraryPageInner() {
             key={item.id}
             className="flex items-center gap-3 p-3 rounded hover:bg-white/10 transition-colors group"
           >
+            {/* Album art */}
+            <Link href={getAlbumHref(item.song)} className="w-10 h-10 flex-shrink-0 rounded overflow-hidden bg-[#2d2a26] relative">
+              {item.song.albumArt ? (
+                <Image src={item.song.albumArt} alt={item.song.albumName || 'Album'} fill sizes="40px" quality={75} className="object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
+                  </svg>
+                </div>
+              )}
+            </Link>
+
             {/* Play button (hidden, shows on hover/mobile always) */}
             <button
               onClick={() => {
                 vibrate(BUTTON_PRESS);
-                addToUpNext(item.song);
+                addToQueue(trackToItem(item.song));
               }}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-[#d4a060] text-black opacity-0 md:group-hover:opacity-100 hover:scale-105 transition-all btn-touch"
               aria-label={`Play ${item.song.title}`}
@@ -113,13 +140,19 @@ function LibraryPageInner() {
 
             {/* Song info */}
             <div className="flex-1 min-w-0">
-              <p className="text-white font-medium truncate">{item.song.title}</p>
+              <div className="flex items-center gap-1.5">
+                <Link href={getAlbumHref(item.song)} className="text-white font-medium truncate hover:underline">
+                  {item.song.title}
+                </Link>
+                <RecordingBadge song={item.song} />
+              </div>
               <Link
                 href={`/artists/${item.song.artistSlug}`}
                 className="text-[#8a8478] text-sm hover:text-white hover:underline truncate block"
               >
                 {item.song.artistName}
               </Link>
+              <ShowContext song={item.song} />
             </div>
 
             {/* Duration */}
@@ -147,13 +180,7 @@ function LibraryPageInner() {
   };
 
   const renderArtists = () => {
-    // Filter to only show followed artists
-    const followedArtistsList = Array.from(artistsMap.entries()).filter(([artistId, items]) => {
-      const artist = items[0].song;
-      return followedArtists.includes(artist.artistSlug);
-    });
-
-    if (followedArtistsList.length === 0) {
+    if (followedArtists.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
           <svg className="w-16 h-16 text-[#3a3632] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,19 +194,47 @@ function LibraryPageInner() {
       );
     }
 
+    // Build artist info from both liked songs and recently played
+    const artistInfoMap = new Map<string, { name: string; slug: string; art?: string; likedCount: number }>();
+    const allSongs = [
+      ...wishlist.items.map(i => i.song),
+      ...recentlyPlayed.map(i => i.song),
+    ];
+    for (const song of allSongs) {
+      const existing = artistInfoMap.get(song.artistSlug);
+      if (!existing) {
+        artistInfoMap.set(song.artistSlug, {
+          name: song.artistName,
+          slug: song.artistSlug,
+          art: song.albumArt,
+          likedCount: 0,
+        });
+      } else if (!existing.art && song.albumArt) {
+        existing.art = song.albumArt;
+      }
+    }
+    // Count liked songs per artist
+    for (const item of wishlist.items) {
+      const info = artistInfoMap.get(item.song.artistSlug);
+      if (info) info.likedCount++;
+    }
+
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
-        {followedArtistsList.map(([artistId, items]) => {
-          const artist = items[0].song;
+        {followedArtists.map((slug) => {
+          const info = artistInfoMap.get(slug);
+          const name = info?.name || slug.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          const art = info?.art;
+          const likedCount = info?.likedCount || 0;
           return (
             <Link
-              key={artistId}
-              href={`/artists/${artist.artistSlug}`}
+              key={slug}
+              href={`/artists/${slug}`}
               className="flex flex-col gap-3 p-4 rounded-lg hover:bg-white/10 transition-colors group"
             >
               <div className="w-full aspect-square rounded-full bg-[#2d2a26] overflow-hidden relative">
-                {artist.albumArt ? (
-                  <Image src={artist.albumArt} alt={artist.artistName || 'Artist'} fill sizes="200px" quality={80} className="object-cover" />
+                {art ? (
+                  <Image src={art} alt={name} fill sizes="200px" quality={80} className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <svg className="w-12 h-12 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
@@ -189,8 +244,10 @@ function LibraryPageInner() {
                 )}
               </div>
               <div>
-                <p className="text-white font-medium truncate">{artist.artistName}</p>
-                <p className="text-[#8a8478] text-sm">{items.length} liked songs</p>
+                <p className="text-white font-medium truncate">{name}</p>
+                <p className="text-[#8a8478] text-sm">
+                  {likedCount > 0 ? `${likedCount} liked song${likedCount !== 1 ? 's' : ''}` : 'Following'}
+                </p>
               </div>
             </Link>
           );
@@ -200,14 +257,7 @@ function LibraryPageInner() {
   };
 
   const renderAlbums = () => {
-    // Filter to only show followed albums
-    const followedAlbumsList = Array.from(albumsMap.entries()).filter(([albumId, items]) => {
-      const album = items[0].song;
-      const identifier = `${album.artistSlug}::${album.albumName}`;
-      return followedAlbums.includes(identifier);
-    });
-
-    if (followedAlbumsList.length === 0) {
+    if (followedAlbums.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
           <svg className="w-16 h-16 text-[#3a3632] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,18 +271,67 @@ function LibraryPageInner() {
       );
     }
 
+    // Build album info from both liked songs and recently played
+    // Key: "artistSlug::albumName" (matches followedAlbums format)
+    const albumInfoMap = new Map<string, {
+      artistName: string; artistSlug: string; albumName: string;
+      albumIdentifier: string; art?: string; showVenue?: string;
+      showDate?: string; likedCount: number;
+    }>();
+    const allSongs = [
+      ...wishlist.items.map(i => i.song),
+      ...recentlyPlayed.map(i => i.song),
+    ];
+    for (const song of allSongs) {
+      const key = `${song.artistSlug}::${song.albumName}`;
+      const existing = albumInfoMap.get(key);
+      if (!existing) {
+        albumInfoMap.set(key, {
+          artistName: song.artistName,
+          artistSlug: song.artistSlug,
+          albumName: song.albumName,
+          albumIdentifier: song.albumIdentifier,
+          art: song.albumArt,
+          showVenue: song.showVenue,
+          showDate: song.showDate,
+          likedCount: 0,
+        });
+      } else {
+        if (!existing.art && song.albumArt) existing.art = song.albumArt;
+        if (!existing.showVenue && song.showVenue) existing.showVenue = song.showVenue;
+        if (!existing.showDate && song.showDate) existing.showDate = song.showDate;
+        if (!existing.albumIdentifier && song.albumIdentifier) existing.albumIdentifier = song.albumIdentifier;
+      }
+    }
+    // Count liked songs per album
+    for (const item of wishlist.items) {
+      const key = `${item.song.artistSlug}::${item.song.albumName}`;
+      const info = albumInfoMap.get(key);
+      if (info) info.likedCount++;
+    }
+
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
-        {followedAlbumsList.map(([albumId, items]) => {
-          const album = items[0].song;
+        {followedAlbums.map((identifier) => {
+          const info = albumInfoMap.get(identifier);
+          const [artistSlug] = identifier.split('::');
+          const artistName = info?.artistName || artistSlug;
+          const albumIdentifier = info?.albumIdentifier || '';
+          const art = info?.art;
+          const venue = info?.showVenue;
+          const date = info?.showDate;
+          const likedCount = info?.likedCount || 0;
+          const href = albumIdentifier ? `/artists/${artistSlug}/album/${albumIdentifier}` : `/artists/${artistSlug}`;
+
           return (
-            <div
-              key={albumId}
-              className="flex flex-col gap-3 p-4 rounded-lg hover:bg-white/10 transition-colors group cursor-pointer"
+            <Link
+              key={identifier}
+              href={href}
+              className="flex flex-col gap-3 p-4 rounded-lg hover:bg-white/10 transition-colors group"
             >
               <div className="w-full aspect-square rounded bg-[#2d2a26] overflow-hidden relative">
-                {album.albumArt ? (
-                  <Image src={album.albumArt} alt={album.albumName || 'Album'} fill sizes="200px" quality={80} className="object-cover" />
+                {art ? (
+                  <Image src={art} alt={artistName} fill sizes="200px" quality={80} className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <svg className="w-12 h-12 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
@@ -242,11 +341,17 @@ function LibraryPageInner() {
                 )}
               </div>
               <div>
-                <p className="text-white font-medium truncate">{album.albumName}</p>
-                <p className="text-[#8a8478] text-sm truncate">{album.artistName}</p>
-                <p className="text-[#8a8478] text-xs">{items.length} liked songs</p>
+                <p className="text-white font-medium truncate">{artistName}</p>
+                {(venue || date) && (
+                  <p className="text-[#5a564e] text-xs truncate">
+                    {venue && date ? `${venue} · ${formatShowDate(date)}` : venue || formatShowDate(date)}
+                  </p>
+                )}
+                <p className="text-[#8a8478] text-xs">
+                  {likedCount > 0 ? `${likedCount} liked song${likedCount !== 1 ? 's' : ''}` : 'Following'}
+                </p>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
@@ -275,8 +380,8 @@ function LibraryPageInner() {
             key={`${item.songId}-${item.playedAt}`}
             className="flex items-center gap-3 p-3 rounded hover:bg-white/10 transition-colors group"
           >
-            {/* Album art */}
-            <div className="w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-[#2d2a26] relative">
+            {/* Album art - links to album */}
+            <Link href={getAlbumHref(item.song)} className="w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-[#2d2a26] relative">
               {item.song.albumArt ? (
                 <Image src={item.song.albumArt} alt={item.song.albumName || 'Album'} fill sizes="48px" quality={75} className="object-cover" />
               ) : (
@@ -286,13 +391,13 @@ function LibraryPageInner() {
                   </svg>
                 </div>
               )}
-            </div>
+            </Link>
 
             {/* Play button (hidden, shows on hover/mobile always) */}
             <button
               onClick={() => {
                 vibrate(BUTTON_PRESS);
-                addToUpNext(item.song);
+                addToQueue(trackToItem(item.song));
               }}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-[#d4a060] text-black opacity-0 md:group-hover:opacity-100 hover:scale-105 transition-all btn-touch"
               aria-label={`Play ${item.song.title}`}
@@ -304,13 +409,19 @@ function LibraryPageInner() {
 
             {/* Song info */}
             <div className="flex-1 min-w-0">
-              <p className="text-white font-medium truncate">{item.song.title}</p>
+              <div className="flex items-center gap-1.5">
+                <Link href={getAlbumHref(item.song)} className="text-white font-medium truncate hover:underline">
+                  {item.song.title}
+                </Link>
+                <RecordingBadge song={item.song} />
+              </div>
               <Link
                 href={`/artists/${item.song.artistSlug}`}
                 className="text-[#8a8478] text-sm hover:text-white hover:underline truncate block"
               >
                 {item.song.artistName}
               </Link>
+              <ShowContext song={item.song} />
             </div>
 
             {/* Play count and time */}

@@ -4,6 +4,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Song, formatDuration } from '@/lib/api';
+import VenueLink from '@/components/VenueLink';
 
 interface VersionCarouselProps {
   songs: Song[];
@@ -133,7 +134,9 @@ function VersionCard({
         {/* Venue */}
         <div className="flex justify-between">
           <span className="text-[#d4a060]">Venue</span>
-          <span className="text-white" title={song.showVenue || undefined}>{truncate(venue, 20) || '—'}</span>
+          <span className="text-white" title={song.showVenue || undefined}>
+            {song.showVenue ? <VenueLink venueName={song.showVenue} className="text-white hover:text-[#d4a060] hover:underline transition-colors" truncateLength={20} /> : (truncate(venue, 20) || '—')}
+          </span>
         </div>
         {/* Location */}
         <div className="flex justify-between">

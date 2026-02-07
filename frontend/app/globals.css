@@ -1913,6 +1913,16 @@ input[type='range']::-moz-range-thumb {
   scrollbar-color: var(--neon-cyan) var(--bg);
 }
 
+/* Hide scrollbar completely (queue strip, carousels) */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Blinking dot animation */
 @keyframes blink {
   0%, 100% { opacity: 1; }
@@ -2654,6 +2664,25 @@ html, body {
   .animate-equalizer-1,
   .animate-equalizer-2,
   .animate-equalizer-3 {
+    animation: none;
+    height: 50%;
+  }
+}
+
+/* EQ bar animation for album art overlay in bottom player */
+@keyframes eq-bar {
+  0%, 100% { height: 30%; }
+  25% { height: 80%; }
+  50% { height: 50%; }
+  75% { height: 100%; }
+}
+
+.animate-eq-bar {
+  animation: eq-bar 0.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-eq-bar {
     animation: none;
     height: 50%;
   }

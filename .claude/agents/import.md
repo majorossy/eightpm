@@ -14,7 +14,7 @@ The user will specify an artist name. Execute the full pipeline sequentially:
 1. **Verify containers are running** — `bin/docker-compose ps` — abort if phpfpm or db are not healthy
 2. **Check if already imported** — `bin/mysql -e "SELECT artist_name, downloaded_shows, imported_tracks FROM archivedotorg_artist_status WHERE artist_name LIKE '%ArtistName%';"` — report current state
 3. **Download metadata** — `bin/magento archive:download "ArtistName"` — downloads show metadata JSON files from Archive.org to `var/archivedotorg/metadata/`. This step is slow (rate-limited by Archive.org). Never run multiple downloads in parallel — a global lock prevents it.
-4. **Verify download** — Count downloaded files: `docker exec 8pm-phpfpm-1 bash -c 'ls -1 /var/www/html/var/archivedotorg/metadata/CollectionId/*.json 2>/dev/null | wc -l'`
+4. **Verify download** — Count downloaded files: `bin/docker-compose exec -T phpfpm bash -c 'ls -1 /var/www/html/var/archivedotorg/metadata/CollectionId/*.json 2>/dev/null | wc -l'`
 5. **Populate products** — `bin/magento archive:populate "ArtistName"` — creates Magento catalog products from the downloaded metadata. Use `--force` if re-importing.
 6. **Fix category-product index** — `bin/fix-index` — CRITICAL: populates `catalog_category_product_index_store1` which GraphQL requires. Without this, GraphQL returns 0 products.
 7. **Enrich artist** — `bin/magento archive:artist:enrich "ArtistName" --fields=bio,origin,stats` — adds biography, origin, and statistics to the artist category.

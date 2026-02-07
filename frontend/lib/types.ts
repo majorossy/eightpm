@@ -249,3 +249,45 @@ export interface MagentoCustomerCreateInput {
   lastname: string;
   password: string;
 }
+
+// Venue types - aligned with backend GraphQL schema
+
+export interface VenueDetail {
+  venue_id: number;
+  slug: string;
+  normalized_name: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+  total_shows: number;
+  total_artists: number;
+  total_tracks: number;
+  first_show_date?: string;
+  last_show_date?: string;
+}
+
+export interface VenueShow {
+  identifier: string;
+  name: string;
+  show_date?: string;
+  artist_name: string;
+  artist_slug: string;
+  track_count: number;
+  recording_types?: string[];
+}
+
+export interface VenueArtist {
+  name: string;
+  slug: string;
+  show_count: number;
+}
+
+export interface ArtistVenueCount {
+  venue_name: string;
+  venue_slug: string;
+  recording_count: number;
+  city?: string;
+  state?: string;
+}

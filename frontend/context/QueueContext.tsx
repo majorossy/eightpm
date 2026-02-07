@@ -1,232 +1,345 @@
 'use client';
 
-// QueueContext - Album-centric queue management
-// Manages which album is loaded, which versions are selected, and Up Next list
+// QueueContext - Unified flat queue with visual album grouping
+// Single items[] array with a cursor. No two-zone split.
 
-import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
-import { Song, Album } from '@/lib/types';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
+import { Song, Album, Track } from '@/lib/types';
 import {
-  AlbumQueue,
-  QueueTrack,
-  UpNextItem,
+  QueueItem,
+  QueueItemAlbumSource,
+  UnifiedQueue,
+  AlbumGroup,
   initialQueueState,
-  albumToQueue,
-  getSelectedSong,
-  getCurrentSong,
-  createUpNextItem,
+  albumToQueueItems,
+  trackToQueueItem,
+  computeAlbumGroups,
 } from '@/lib/queueTypes';
 
 // =============================================================================
-// Action Types
+// Action Types (discriminated union)
 // =============================================================================
 
-type QueueAction =
-  | { type: 'LOAD_ALBUM'; album: Album; startTrackIndex?: number }
-  | { type: 'SELECT_VERSION'; trackIndex: number; versionId: string }
-  | { type: 'SET_CURRENT_TRACK'; index: number }
-  | { type: 'NEXT_TRACK' }
-  | { type: 'PREV_TRACK' }
-  | { type: 'REMOVE_TRACK'; trackIndex: number }
-  | { type: 'ADD_TO_UP_NEXT'; song: Song; source?: 'manual' | 'autoplay' }
-  | { type: 'REMOVE_FROM_UP_NEXT'; itemId: string }
-  | { type: 'REORDER_UP_NEXT'; fromIndex: number; toIndex: number }
-  | { type: 'CLEAR_UP_NEXT' }
-  | { type: 'POP_UP_NEXT' } // Remove first item from up next (for advancing)
-  | { type: 'SET_SHUFFLE'; enabled: boolean }
+export type QueueAction =
+  | { type: 'LOAD_ITEMS'; items: QueueItem[]; cursorIndex: number }
+  | { type: 'INSERT_AFTER_CURSOR'; items: QueueItem | QueueItem[] }
+  | { type: 'APPEND_ITEMS'; items: QueueItem | QueueItem[] }
+  | { type: 'REMOVE_ITEM'; queueId: string }
+  | { type: 'MOVE_ITEM'; fromIndex: number; toIndex: number }
+  | {
+      type: 'MOVE_BLOCK';
+      batchId: string;
+      startIndex: number;
+      endIndex: number;
+      targetIndex: number;
+    }
+  | { type: 'SET_CURSOR'; index: number }
+  | { type: 'ADVANCE_CURSOR' }
+  | { type: 'RETREAT_CURSOR' }
+  | { type: 'SELECT_VERSION'; queueId: string; song: Song }
+  | { type: 'MARK_PLAYED' }
+  | { type: 'RESET_PLAYED' }
   | { type: 'SET_REPEAT'; mode: 'off' | 'all' | 'one' }
-  | { type: 'CLEAR_QUEUE' };
+  | { type: 'CLEAR_QUEUE' }
+  | { type: 'CLEAR_UPCOMING' };
 
 // =============================================================================
 // Reducer
 // =============================================================================
 
-function queueReducer(state: AlbumQueue, action: QueueAction): AlbumQueue {
+export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQueue {
   switch (action.type) {
-    case 'LOAD_ALBUM': {
-      const newQueue = albumToQueue(action.album);
-      // Preserve repeat and shuffle settings
+    case 'LOAD_ITEMS': {
       return {
-        ...newQueue,
-        currentTrackIndex: action.startTrackIndex ?? 0,
-        shuffle: state.shuffle,
+        items: action.items,
+        cursorIndex: action.cursorIndex,
         repeat: state.repeat,
-        // Preserve up-next when loading new album
-        upNext: state.upNext,
       };
     }
 
-    case 'SELECT_VERSION': {
-      const { trackIndex, versionId } = action;
-      if (trackIndex < 0 || trackIndex >= state.tracks.length) {
-        return state;
-      }
+    case 'INSERT_AFTER_CURSOR': {
+      const toInsert = Array.isArray(action.items)
+        ? action.items
+        : [action.items];
+      if (toInsert.length === 0) return state;
 
-      const track = state.tracks[trackIndex];
-      // Verify version exists
-      if (!track.availableVersions.some(v => v.id === versionId)) {
-        return state;
-      }
-
-      const updatedTracks = [...state.tracks];
-      updatedTracks[trackIndex] = {
-        ...track,
-        selectedVersionId: versionId,
-      };
+      const insertAt = state.cursorIndex + 1;
+      const newItems = [...state.items];
+      newItems.splice(insertAt, 0, ...toInsert);
 
       return {
         ...state,
-        tracks: updatedTracks,
+        items: newItems,
+        // Cursor stays the same -- new items are after it
       };
     }
 
-    case 'SET_CURRENT_TRACK': {
-      const { index } = action;
-      if (index < -1 || index >= state.tracks.length) {
-        return state;
-      }
-      return {
-        ...state,
-        currentTrackIndex: index,
-      };
-    }
-
-    case 'NEXT_TRACK': {
-      // If repeat one, stay on current track (audio will restart)
-      if (state.repeat === 'one') {
-        return state;
-      }
-
-      const nextIndex = state.currentTrackIndex + 1;
-
-      // If we're past the end of album tracks
-      if (nextIndex >= state.tracks.length) {
-        // Check up next
-        if (state.upNext.length > 0) {
-          // Don't advance index, player will handle up next
-          return state;
-        }
-
-        // If repeat all, go back to start
-        if (state.repeat === 'all') {
-          return {
-            ...state,
-            currentTrackIndex: 0,
-          };
-        }
-
-        // Otherwise stop (index stays at end)
-        return state;
-      }
+    case 'APPEND_ITEMS': {
+      const toAppend = Array.isArray(action.items)
+        ? action.items
+        : [action.items];
+      if (toAppend.length === 0) return state;
 
       return {
         ...state,
-        currentTrackIndex: nextIndex,
+        items: [...state.items, ...toAppend],
       };
     }
 
-    case 'PREV_TRACK': {
-      const prevIndex = state.currentTrackIndex - 1;
+    case 'REMOVE_ITEM': {
+      const removeIdx = state.items.findIndex(
+        (item) => item.queueId === action.queueId,
+      );
+      if (removeIdx === -1) return state;
 
-      if (prevIndex < 0) {
-        // If repeat all, go to last track
-        if (state.repeat === 'all') {
-          return {
-            ...state,
-            currentTrackIndex: state.tracks.length - 1,
-          };
-        }
-        // Otherwise stay at start
-        return state;
+      const newItems = state.items.filter((_, i) => i !== removeIdx);
+      let newCursor = state.cursorIndex;
+
+      if (newItems.length === 0) {
+        newCursor = -1;
+      } else if (removeIdx < state.cursorIndex) {
+        // Removed item was before cursor -- shift cursor back
+        newCursor = state.cursorIndex - 1;
+      } else if (removeIdx === state.cursorIndex) {
+        // Removed current item -- cursor stays at same index (now next item)
+        // Clamp to valid range
+        newCursor = Math.min(state.cursorIndex, newItems.length - 1);
       }
+      // removeIdx > cursorIndex: no cursor change
 
       return {
         ...state,
-        currentTrackIndex: prevIndex,
+        items: newItems,
+        cursorIndex: newCursor,
       };
     }
 
-    case 'REMOVE_TRACK': {
-      const { trackIndex } = action;
-      if (trackIndex < 0 || trackIndex >= state.tracks.length) {
-        return state;
-      }
-
-      const updatedTracks = state.tracks.filter((_, idx) => idx !== trackIndex);
-
-      // Adjust current track index if needed
-      let newCurrentIndex = state.currentTrackIndex;
-      if (trackIndex < state.currentTrackIndex) {
-        // Removed track was before current, shift index down
-        newCurrentIndex = Math.max(0, state.currentTrackIndex - 1);
-      } else if (trackIndex === state.currentTrackIndex) {
-        // Removed the current track, keep same index (will play next track)
-        newCurrentIndex = Math.min(state.currentTrackIndex, updatedTracks.length - 1);
-      }
-
-      return {
-        ...state,
-        tracks: updatedTracks,
-        currentTrackIndex: updatedTracks.length > 0 ? newCurrentIndex : -1,
-      };
-    }
-
-    case 'ADD_TO_UP_NEXT': {
-      const newItem = createUpNextItem(action.song, action.source || 'manual');
-      return {
-        ...state,
-        upNext: [...state.upNext, newItem],
-      };
-    }
-
-    case 'REMOVE_FROM_UP_NEXT': {
-      return {
-        ...state,
-        upNext: state.upNext.filter(item => item.id !== action.itemId),
-      };
-    }
-
-    case 'REORDER_UP_NEXT': {
+    case 'MOVE_ITEM': {
       const { fromIndex, toIndex } = action;
       if (
         fromIndex < 0 ||
-        fromIndex >= state.upNext.length ||
+        fromIndex >= state.items.length ||
         toIndex < 0 ||
-        toIndex >= state.upNext.length
+        toIndex >= state.items.length ||
+        fromIndex === toIndex
       ) {
         return state;
       }
 
-      const newUpNext = [...state.upNext];
-      const [removed] = newUpNext.splice(fromIndex, 1);
-      newUpNext.splice(toIndex, 0, removed);
+      const newItems = [...state.items];
+      const [moved] = newItems.splice(fromIndex, 1);
+      newItems.splice(toIndex, 0, moved);
+
+      // Cursor follows the currently-playing item
+      let newCursor = state.cursorIndex;
+      if (fromIndex === state.cursorIndex) {
+        // The currently-playing item was moved
+        newCursor = toIndex;
+      } else {
+        // Adjust cursor based on items shifting around it
+        if (fromIndex < state.cursorIndex && toIndex >= state.cursorIndex) {
+          newCursor = state.cursorIndex - 1;
+        } else if (
+          fromIndex > state.cursorIndex &&
+          toIndex <= state.cursorIndex
+        ) {
+          newCursor = state.cursorIndex + 1;
+        }
+      }
 
       return {
         ...state,
-        upNext: newUpNext,
+        items: newItems,
+        cursorIndex: newCursor,
       };
     }
 
-    case 'CLEAR_UP_NEXT': {
+    case 'MOVE_BLOCK': {
+      const { batchId, startIndex, endIndex, targetIndex } = action;
+      if (startIndex < 0 || endIndex >= state.items.length || startIndex > endIndex) {
+        return state;
+      }
+
+      // Extract items in the range that match the batchId
+      const blockItems: QueueItem[] = [];
+      const remainingItems: QueueItem[] = [];
+      const cursorItem =
+        state.cursorIndex >= 0 && state.cursorIndex < state.items.length
+          ? state.items[state.cursorIndex]
+          : null;
+
+      for (let i = 0; i < state.items.length; i++) {
+        if (
+          i >= startIndex &&
+          i <= endIndex &&
+          state.items[i].batchId === batchId
+        ) {
+          blockItems.push(state.items[i]);
+        } else {
+          remainingItems.push(state.items[i]);
+        }
+      }
+
+      if (blockItems.length === 0) return state;
+
+      // Calculate adjusted target in the remaining array
+      let adjustedTarget = targetIndex;
+      // Count how many block items were before targetIndex
+      let removedBefore = 0;
+      for (let i = startIndex; i <= endIndex; i++) {
+        if (
+          state.items[i].batchId === batchId &&
+          i < targetIndex
+        ) {
+          removedBefore++;
+        }
+      }
+      adjustedTarget = Math.max(0, Math.min(targetIndex - removedBefore, remainingItems.length));
+
+      // Insert block at adjusted target
+      const newItems = [...remainingItems];
+      newItems.splice(adjustedTarget, 0, ...blockItems);
+
+      // Find cursor by identity
+      let newCursor = state.cursorIndex;
+      if (cursorItem) {
+        newCursor = newItems.findIndex(
+          (item) => item.queueId === cursorItem.queueId,
+        );
+        if (newCursor === -1) newCursor = 0;
+      }
+
       return {
         ...state,
-        upNext: [],
+        items: newItems,
+        cursorIndex: newCursor,
       };
     }
 
-    case 'POP_UP_NEXT': {
-      if (state.upNext.length === 0) {
+    case 'SET_CURSOR': {
+      const { index } = action;
+      if (index < 0 || index >= state.items.length) {
         return state;
       }
       return {
         ...state,
-        upNext: state.upNext.slice(1),
+        cursorIndex: index,
       };
     }
 
-    case 'SET_SHUFFLE': {
+    case 'ADVANCE_CURSOR': {
+      if (state.items.length === 0) return state;
+
+      // repeat === 'one': don't change cursor (player will restart the same track)
+      if (state.repeat === 'one') {
+        return state;
+      }
+
+      const nextIdx = state.cursorIndex + 1;
+
+      if (nextIdx < state.items.length) {
+        return {
+          ...state,
+          cursorIndex: nextIdx,
+        };
+      }
+
+      // Past end
+      if (state.repeat === 'all') {
+        return {
+          ...state,
+          cursorIndex: 0,
+        };
+      }
+
+      // Nothing more to play -- cursor past end
       return {
         ...state,
-        shuffle: action.enabled,
+        cursorIndex: state.items.length,
+      };
+    }
+
+    case 'RETREAT_CURSOR': {
+      if (state.items.length === 0) return state;
+
+      const prevIdx = state.cursorIndex - 1;
+
+      if (prevIdx >= 0) {
+        return {
+          ...state,
+          cursorIndex: prevIdx,
+        };
+      }
+
+      // At start
+      if (state.repeat === 'all') {
+        return {
+          ...state,
+          cursorIndex: state.items.length - 1,
+        };
+      }
+
+      // Stay at 0
+      return {
+        ...state,
+        cursorIndex: 0,
+      };
+    }
+
+    case 'SELECT_VERSION': {
+      const idx = state.items.findIndex(
+        (item) => item.queueId === action.queueId,
+      );
+      if (idx === -1) return state;
+
+      const item = state.items[idx];
+      // Only allow version change on unplayed items
+      if (item.played) return state;
+
+      const newItems = [...state.items];
+      newItems[idx] = {
+        ...item,
+        song: action.song,
+      };
+
+      return {
+        ...state,
+        items: newItems,
+      };
+    }
+
+    case 'MARK_PLAYED': {
+      if (
+        state.cursorIndex < 0 ||
+        state.cursorIndex >= state.items.length
+      ) {
+        return state;
+      }
+
+      const newItems = [...state.items];
+      newItems[state.cursorIndex] = {
+        ...newItems[state.cursorIndex],
+        played: true,
+      };
+
+      return {
+        ...state,
+        items: newItems,
+      };
+    }
+
+    case 'RESET_PLAYED': {
+      return {
+        ...state,
+        items: state.items.map((item) => ({ ...item, played: false })),
       };
     }
 
@@ -240,8 +353,17 @@ function queueReducer(state: AlbumQueue, action: QueueAction): AlbumQueue {
     case 'CLEAR_QUEUE': {
       return {
         ...initialQueueState,
-        shuffle: state.shuffle,
         repeat: state.repeat,
+      };
+    }
+
+    case 'CLEAR_UPCOMING': {
+      if (state.cursorIndex < 0) return state;
+
+      const kept = state.items.slice(0, state.cursorIndex + 1);
+      return {
+        ...state,
+        items: kept,
       };
     }
 
@@ -256,165 +378,261 @@ function queueReducer(state: AlbumQueue, action: QueueAction): AlbumQueue {
 
 interface QueueContextType {
   // State
-  queue: AlbumQueue;
+  queue: UnifiedQueue;
 
-  // Computed values
-  currentTrack: QueueTrack | null;
+  // Computed
+  currentItem: QueueItem | null;
   currentSong: Song | null;
-  hasAlbum: boolean;
-  isLastTrack: boolean;
-  isFirstTrack: boolean;
-  totalTracks: number;
-  hasUpNext: boolean;
+  albumGroups: AlbumGroup[];
+  totalItems: number;
+  hasItems: boolean;
+  isLastItem: boolean;
+  isFirstItem: boolean;
 
   // Actions
-  loadAlbum: (album: Album, startTrackIndex?: number) => void;
-  selectVersion: (trackIndex: number, versionId: string) => void;
-  setCurrentTrack: (index: number) => void;
-  nextTrack: () => Song | null; // Returns next song to play (could be from up-next)
-  peekNextTrack: () => Song | null; // Returns next song without advancing queue
-  prevTrack: () => void;
-  removeTrack: (trackIndex: number) => void;
-  addToUpNext: (song: Song, source?: 'manual' | 'autoplay') => void;
-  removeFromUpNext: (itemId: string) => void;
-  reorderUpNext: (fromIndex: number, toIndex: number) => void;
-  clearUpNext: () => void;
-  setShuffle: (enabled: boolean) => void;
+  playAlbum: (
+    album: Album,
+    startIndex?: number,
+    versionOverrides?: Map<string, string>,
+  ) => void;
+  playNext: (items: QueueItem | QueueItem[]) => void;
+  addToQueue: (items: QueueItem | QueueItem[]) => void;
+  removeItem: (queueId: string) => void;
+  moveItem: (fromIndex: number, toIndex: number) => void;
+  moveBlock: (
+    batchId: string,
+    startIndex: number,
+    endIndex: number,
+    targetIndex: number,
+  ) => void;
+  setCursor: (index: number) => void;
+  advanceCursor: () => QueueItem | null;
+  retreatCursor: () => void;
+  peekNext: () => QueueItem | null;
+  selectVersion: (queueId: string, song: Song) => void;
+  markPlayed: () => void;
   setRepeat: (mode: 'off' | 'all' | 'one') => void;
   clearQueue: () => void;
+  clearUpcoming: () => void;
 
-  // Helper to get song at a specific track index
-  getSongAtTrack: (index: number) => Song | null;
+  // Helpers
+  albumToItems: (
+    album: Album,
+    versionOverrides?: Map<string, string>,
+  ) => QueueItem[];
+  trackToItem: (
+    song: Song,
+    track?: Track,
+    albumSource?: QueueItemAlbumSource,
+  ) => QueueItem;
 }
 
 const QueueContext = createContext<QueueContextType | null>(null);
+
+// =============================================================================
+// localStorage Persistence
+// =============================================================================
+
+const QUEUE_STORAGE_KEY = '8pm_queue_snapshot';
+
+function getInitialState(): UnifiedQueue {
+  if (typeof window === 'undefined') return initialQueueState;
+  try {
+    const saved = localStorage.getItem(QUEUE_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && Array.isArray(parsed.items)) {
+        const items: QueueItem[] = parsed.items.map((item: QueueItem) => ({
+          ...item,
+          availableVersions: item.song ? [item.song] : [],
+        }));
+        return {
+          items,
+          cursorIndex: typeof parsed.cursorIndex === 'number' ? parsed.cursorIndex : -1,
+          repeat: parsed.repeat || 'off',
+        };
+      }
+    }
+  } catch (e) {
+    console.error('[QueueContext] Failed to restore queue:', e);
+  }
+  return initialQueueState;
+}
 
 // =============================================================================
 // Provider
 // =============================================================================
 
 export function QueueProvider({ children }: { children: React.ReactNode }) {
-  const [queue, dispatch] = useReducer(queueReducer, initialQueueState);
+  const [queue, dispatch] = useReducer(queueReducer, null, getInitialState);
 
-  // Computed values
-  const currentTrack = useMemo(() => {
-    if (queue.currentTrackIndex < 0 || queue.currentTrackIndex >= queue.tracks.length) {
-      return null;
-    }
-    return queue.tracks[queue.currentTrackIndex];
-  }, [queue.tracks, queue.currentTrackIndex]);
+  // Ref that always holds the latest queue state (stale closure fix)
+  const queueRef = useRef(queue);
+  queueRef.current = queue;
 
-  const currentSong = useMemo(() => {
-    return getCurrentSong(queue);
+  // ---------------------------------------------------------------------------
+  // Debounced localStorage save
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const timer = setTimeout(() => {
+      try {
+        if (queue.items.length === 0) {
+          localStorage.removeItem(QUEUE_STORAGE_KEY);
+          return;
+        }
+        const snapshot = {
+          items: queue.items.map(({ availableVersions, ...rest }) => rest),
+          cursorIndex: queue.cursorIndex,
+          repeat: queue.repeat,
+        };
+        localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(snapshot));
+      } catch (e) {
+        console.error('[QueueContext] Failed to save queue:', e);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [queue]);
 
-  const hasAlbum = queue.album !== null;
-  const isLastTrack = queue.currentTrackIndex >= queue.tracks.length - 1;
-  const isFirstTrack = queue.currentTrackIndex <= 0;
-  const totalTracks = queue.tracks.length;
-  const hasUpNext = queue.upNext.length > 0;
+  // ---------------------------------------------------------------------------
+  // Computed values
+  // ---------------------------------------------------------------------------
 
+  const currentItem = useMemo((): QueueItem | null => {
+    const { items, cursorIndex } = queue;
+    if (cursorIndex < 0 || cursorIndex >= items.length) {
+      return null;
+    }
+    return items[cursorIndex];
+  }, [queue.items, queue.cursorIndex]);
+
+  const currentSong = useMemo((): Song | null => {
+    return currentItem?.song ?? null;
+  }, [currentItem]);
+
+  const albumGroups = useMemo(
+    () => computeAlbumGroups(queue.items, queue.cursorIndex),
+    [queue.items, queue.cursorIndex],
+  );
+
+  const totalItems = queue.items.length;
+  const hasItems = queue.items.length > 0;
+  const isLastItem =
+    queue.cursorIndex >= 0 && queue.cursorIndex >= queue.items.length - 1;
+  const isFirstItem = queue.cursorIndex <= 0;
+
+  // ---------------------------------------------------------------------------
+  // Helper to compute what the "next" item would be without dispatching
+  // ---------------------------------------------------------------------------
+
+  function peekNextFromState(q: UnifiedQueue): QueueItem | null {
+    if (q.items.length === 0) return null;
+
+    if (q.repeat === 'one') {
+      // repeat-one: same item again
+      if (q.cursorIndex >= 0 && q.cursorIndex < q.items.length) {
+        return q.items[q.cursorIndex];
+      }
+      return null;
+    }
+
+    const nextIdx = q.cursorIndex + 1;
+
+    if (nextIdx < q.items.length) {
+      return q.items[nextIdx];
+    }
+
+    // Past end
+    if (q.repeat === 'all' && q.items.length > 0) {
+      return q.items[0];
+    }
+
+    return null;
+  }
+
+  // ---------------------------------------------------------------------------
   // Actions
-  const loadAlbum = useCallback((album: Album, startTrackIndex?: number) => {
-    dispatch({ type: 'LOAD_ALBUM', album, startTrackIndex });
+  // ---------------------------------------------------------------------------
+
+  const playAlbum = useCallback(
+    (
+      album: Album,
+      startIndex?: number,
+      versionOverrides?: Map<string, string>,
+    ) => {
+      const items = albumToQueueItems(album, versionOverrides);
+      dispatch({
+        type: 'LOAD_ITEMS',
+        items,
+        cursorIndex: startIndex ?? 0,
+      });
+    },
+    [],
+  );
+
+  const playNext = useCallback((items: QueueItem | QueueItem[]) => {
+    dispatch({ type: 'INSERT_AFTER_CURSOR', items });
   }, []);
 
-  const selectVersion = useCallback((trackIndex: number, versionId: string) => {
-    dispatch({ type: 'SELECT_VERSION', trackIndex, versionId });
+  const addToQueue = useCallback((items: QueueItem | QueueItem[]) => {
+    dispatch({ type: 'APPEND_ITEMS', items });
   }, []);
 
-  const setCurrentTrack = useCallback((index: number) => {
-    dispatch({ type: 'SET_CURRENT_TRACK', index });
+  const removeItem = useCallback((queueId: string) => {
+    dispatch({ type: 'REMOVE_ITEM', queueId });
   }, []);
 
-  const nextTrack = useCallback((): Song | null => {
-    // If repeat one, return current song (let player restart)
-    if (queue.repeat === 'one') {
-      return currentSong;
-    }
-
-    const nextIndex = queue.currentTrackIndex + 1;
-
-    // Still have album tracks
-    if (nextIndex < queue.tracks.length) {
-      dispatch({ type: 'NEXT_TRACK' });
-      const nextTrackObj = queue.tracks[nextIndex];
-      return getSelectedSong(nextTrackObj);
-    }
-
-    // Album finished - check up next
-    if (queue.upNext.length > 0) {
-      const nextSong = queue.upNext[0].song;
-      dispatch({ type: 'POP_UP_NEXT' });
-      return nextSong;
-    }
-
-    // If repeat all, go back to start
-    if (queue.repeat === 'all') {
-      dispatch({ type: 'NEXT_TRACK' });
-      const firstTrack = queue.tracks[0];
-      return firstTrack ? getSelectedSong(firstTrack) : null;
-    }
-
-    // Nothing more to play
-    return null;
-  }, [queue, currentSong]);
-
-  const peekNextTrack = useCallback((): Song | null => {
-    // If repeat one, return current song
-    if (queue.repeat === 'one') {
-      return currentSong;
-    }
-
-    const nextIndex = queue.currentTrackIndex + 1;
-
-    // Still have album tracks
-    if (nextIndex < queue.tracks.length) {
-      const nextTrackObj = queue.tracks[nextIndex];
-      return getSelectedSong(nextTrackObj);
-    }
-
-    // Album finished - check up next
-    if (queue.upNext.length > 0) {
-      return queue.upNext[0].song;
-    }
-
-    // If repeat all, go back to start
-    if (queue.repeat === 'all') {
-      const firstTrack = queue.tracks[0];
-      return firstTrack ? getSelectedSong(firstTrack) : null;
-    }
-
-    // Nothing more to play
-    return null;
-  }, [queue, currentSong]);
-
-  const prevTrack = useCallback(() => {
-    dispatch({ type: 'PREV_TRACK' });
+  const moveItem = useCallback((fromIndex: number, toIndex: number) => {
+    dispatch({ type: 'MOVE_ITEM', fromIndex, toIndex });
   }, []);
 
-  const removeTrack = useCallback((trackIndex: number) => {
-    dispatch({ type: 'REMOVE_TRACK', trackIndex });
+  const moveBlock = useCallback(
+    (
+      batchId: string,
+      startIndex: number,
+      endIndex: number,
+      targetIndex: number,
+    ) => {
+      dispatch({ type: 'MOVE_BLOCK', batchId, startIndex, endIndex, targetIndex });
+    },
+    [],
+  );
+
+  const setCursor = useCallback((index: number) => {
+    dispatch({ type: 'SET_CURSOR', index });
   }, []);
 
-  const addToUpNext = useCallback((song: Song, source?: 'manual' | 'autoplay') => {
-    dispatch({ type: 'ADD_TO_UP_NEXT', song, source });
+  // advanceCursor: reads from ref to avoid stale closures
+  const advanceCursor = useCallback((): QueueItem | null => {
+    const q = queueRef.current;
+
+    // Pre-compute what the next item will be
+    const nextItem = peekNextFromState(q);
+
+    // Dispatch the state change
+    dispatch({ type: 'ADVANCE_CURSOR' });
+
+    return nextItem;
+  }, []); // Empty deps -- uses ref
+
+  const retreatCursor = useCallback(() => {
+    dispatch({ type: 'RETREAT_CURSOR' });
   }, []);
 
-  const removeFromUpNext = useCallback((itemId: string) => {
-    dispatch({ type: 'REMOVE_FROM_UP_NEXT', itemId });
+  // peekNext: reads from ref for consistency
+  const peekNext = useCallback((): QueueItem | null => {
+    return peekNextFromState(queueRef.current);
+  }, []); // Empty deps -- uses ref
+
+  const selectVersion = useCallback((queueId: string, song: Song) => {
+    dispatch({ type: 'SELECT_VERSION', queueId, song });
   }, []);
 
-  const reorderUpNext = useCallback((fromIndex: number, toIndex: number) => {
-    dispatch({ type: 'REORDER_UP_NEXT', fromIndex, toIndex });
-  }, []);
-
-  const clearUpNext = useCallback(() => {
-    dispatch({ type: 'CLEAR_UP_NEXT' });
-  }, []);
-
-  const setShuffle = useCallback((enabled: boolean) => {
-    dispatch({ type: 'SET_SHUFFLE', enabled });
+  const markPlayed = useCallback(() => {
+    dispatch({ type: 'MARK_PLAYED' });
   }, []);
 
   const setRepeat = useCallback((mode: 'off' | 'all' | 'one') => {
@@ -425,38 +643,99 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'CLEAR_QUEUE' });
   }, []);
 
-  const getSongAtTrack = useCallback((index: number): Song | null => {
-    if (index < 0 || index >= queue.tracks.length) {
-      return null;
-    }
-    return getSelectedSong(queue.tracks[index]);
-  }, [queue.tracks]);
+  const clearUpcoming = useCallback(() => {
+    dispatch({ type: 'CLEAR_UPCOMING' });
+  }, []);
 
-  const value: QueueContextType = {
-    queue,
-    currentTrack,
-    currentSong,
-    hasAlbum,
-    isLastTrack,
-    isFirstTrack,
-    totalTracks,
-    hasUpNext,
-    loadAlbum,
-    selectVersion,
-    setCurrentTrack,
-    nextTrack,
-    peekNextTrack,
-    prevTrack,
-    removeTrack,
-    addToUpNext,
-    removeFromUpNext,
-    reorderUpNext,
-    clearUpNext,
-    setShuffle,
-    setRepeat,
-    clearQueue,
-    getSongAtTrack,
-  };
+  // ---------------------------------------------------------------------------
+  // Helpers (passthroughs)
+  // ---------------------------------------------------------------------------
+
+  const albumToItems = useCallback(
+    (album: Album, versionOverrides?: Map<string, string>): QueueItem[] => {
+      return albumToQueueItems(album, versionOverrides);
+    },
+    [],
+  );
+
+  const trackToItem = useCallback(
+    (
+      song: Song,
+      track?: Track,
+      albumSource?: QueueItemAlbumSource,
+    ): QueueItem => {
+      return trackToQueueItem(song, track, albumSource);
+    },
+    [],
+  );
+
+  // ---------------------------------------------------------------------------
+  // Context value
+  // ---------------------------------------------------------------------------
+
+  const value: QueueContextType = useMemo(
+    () => ({
+      // State
+      queue,
+
+      // Computed
+      currentItem,
+      currentSong,
+      albumGroups,
+      totalItems,
+      hasItems,
+      isLastItem,
+      isFirstItem,
+
+      // Actions
+      playAlbum,
+      playNext,
+      addToQueue,
+      removeItem,
+      moveItem,
+      moveBlock,
+      setCursor,
+      advanceCursor,
+      retreatCursor,
+      peekNext,
+      selectVersion,
+      markPlayed,
+      setRepeat,
+      clearQueue,
+      clearUpcoming,
+
+      // Helpers
+      albumToItems,
+      trackToItem,
+    }),
+    [
+      queue,
+      currentItem,
+      currentSong,
+      albumGroups,
+      totalItems,
+      hasItems,
+      isLastItem,
+      isFirstItem,
+      playAlbum,
+      playNext,
+      addToQueue,
+      removeItem,
+      moveItem,
+      moveBlock,
+      setCursor,
+      advanceCursor,
+      retreatCursor,
+      peekNext,
+      selectVersion,
+      markPlayed,
+      setRepeat,
+      clearQueue,
+      clearUpcoming,
+      albumToItems,
+      trackToItem,
+    ],
+  );
 
   return (
     <QueueContext.Provider value={value}>

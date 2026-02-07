@@ -21,4 +21,10 @@ Run these checks (all read-only):
 
 If the user asks specifically about **indexes**, **import data**, **product counts**, or **GraphQL returning 0 products**, also run `bin/check-status` for deep archive data validation (checks per-artist product counts, index health, and GraphQL responses).
 
+8. **Redis health** — Use MCP tool `redis-8pm` to check key count (`dbsize`), memory usage (`info` with section "memory"), and run `magento_cache_stats`
+9. **Database health** — Use MCP tool `mysql-8pm` to run `query` with `SELECT 1` to verify connectivity, then `query` with `SELECT COUNT(*) as total FROM catalog_product_entity` for product count
+10. **Container resources** — Use MCP tool `docker-8pm` `container_stats` (no container param) to get CPU/memory usage for all containers
+
+**Note:** MCP tools `redis-8pm`, `mysql-8pm`, and `docker-8pm` are available at the project level and provide direct access without shell commands.
+
 Output a clean summary table with status indicators. If any service is down, include a recommendation for how to fix it.

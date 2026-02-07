@@ -52,7 +52,6 @@ import {
   trackFollowAlbum,
   trackUnfollowAlbum,
   trackQualityChange,
-  trackShuffleToggle,
   trackRepeatChange,
   trackDownload,
   trackPWAInstallPrompt,
@@ -225,10 +224,6 @@ export function useAnalytics() {
     []
   );
 
-  const trackShuffle = useCallback((enabled: boolean) => {
-    trackShuffleToggle(enabled);
-  }, []);
-
   const trackRepeat = useCallback((mode: 'off' | 'all' | 'one') => {
     trackRepeatChange(mode);
   }, []);
@@ -301,7 +296,6 @@ export function useAnalytics() {
 
     // Settings events
     trackQuality,
-    trackShuffle,
     trackRepeat,
     trackSongDownload,
 

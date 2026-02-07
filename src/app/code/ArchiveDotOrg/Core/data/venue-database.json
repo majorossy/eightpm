@@ -1,0 +1,317 @@
+{
+  "red-rocks": {
+    "name": "Red Rocks Amphitheatre",
+    "city": "Morrison",
+    "state": "CO",
+    "country": "US",
+    "lat": 39.6654,
+    "lon": -105.2057,
+    "aliases": ["red rocks", "red rocks amphitheatre", "red rocks amphitheater", "morrison"]
+  },
+  "msg": {
+    "name": "Madison Square Garden",
+    "city": "New York",
+    "state": "NY",
+    "country": "US",
+    "lat": 40.7505,
+    "lon": -73.9934,
+    "aliases": ["madison square garden", "msg", "the garden", "madison sq"]
+  },
+  "radio-city": {
+    "name": "Radio City Music Hall",
+    "city": "New York",
+    "state": "NY",
+    "country": "US",
+    "lat": 40.7600,
+    "lon": -73.9800,
+    "aliases": ["radio city", "radio city music hall"]
+  },
+  "barton-hall": {
+    "name": "Barton Hall - Cornell University",
+    "city": "Ithaca",
+    "state": "NY",
+    "country": "US",
+    "lat": 42.4450,
+    "lon": -76.4830,
+    "aliases": ["barton hall", "cornell", "cornell university"]
+  },
+  "beacon": {
+    "name": "Beacon Theatre",
+    "city": "New York",
+    "state": "NY",
+    "country": "US",
+    "lat": 40.7785,
+    "lon": -73.9814,
+    "aliases": ["beacon theatre", "beacon theater", "the beacon"]
+  },
+  "fillmore-sf": {
+    "name": "The Fillmore",
+    "city": "San Francisco",
+    "state": "CA",
+    "country": "US",
+    "lat": 37.7840,
+    "lon": -122.4330,
+    "aliases": ["fillmore", "the fillmore", "fillmore auditorium", "fillmore sf", "san francisco fillmore"]
+  },
+  "greek-berkeley": {
+    "name": "Greek Theatre",
+    "city": "Berkeley",
+    "state": "CA",
+    "country": "US",
+    "lat": 37.8734,
+    "lon": -122.2540,
+    "aliases": ["greek theatre", "greek theater", "berkeley greek", "greek berkeley"]
+  },
+  "shoreline": {
+    "name": "Shoreline Amphitheatre",
+    "city": "Mountain View",
+    "state": "CA",
+    "country": "US",
+    "lat": 37.4267,
+    "lon": -122.0806,
+    "aliases": ["shoreline", "shoreline amphitheatre", "shoreline amphitheater", "mountain view"]
+  },
+  "hollywood-bowl": {
+    "name": "Hollywood Bowl",
+    "city": "Los Angeles",
+    "state": "CA",
+    "country": "US",
+    "lat": 34.1122,
+    "lon": -118.3390,
+    "aliases": ["hollywood bowl"]
+  },
+  "gorge": {
+    "name": "Gorge Amphitheatre",
+    "city": "George",
+    "state": "WA",
+    "country": "US",
+    "lat": 47.1019,
+    "lon": -119.9964,
+    "aliases": ["gorge", "the gorge", "gorge amphitheatre", "gorge amphitheater", "george wa"]
+  },
+  "alpine-valley": {
+    "name": "Alpine Valley Music Theatre",
+    "city": "East Troy",
+    "state": "WI",
+    "country": "US",
+    "lat": 42.7489,
+    "lon": -88.4165,
+    "aliases": ["alpine valley", "alpine", "east troy"]
+  },
+  "deer-creek": {
+    "name": "Ruoff Music Center",
+    "city": "Noblesville",
+    "state": "IN",
+    "country": "US",
+    "lat": 40.0456,
+    "lon": -86.0167,
+    "aliases": ["deer creek", "ruoff", "verizon wireless", "klipsch", "noblesville"]
+  },
+  "fox-atlanta": {
+    "name": "Fox Theatre",
+    "city": "Atlanta",
+    "state": "GA",
+    "country": "US",
+    "lat": 33.7725,
+    "lon": -84.3856,
+    "aliases": ["fox theatre atlanta", "fox theater atlanta", "atlanta fox"]
+  },
+  "bonnaroo": {
+    "name": "Bonnaroo Music Festival",
+    "city": "Manchester",
+    "state": "TN",
+    "country": "US",
+    "lat": 35.4792,
+    "lon": -86.0597,
+    "aliases": ["bonnaroo", "manchester tn", "great stage park"]
+  },
+  "ryman": {
+    "name": "Ryman Auditorium",
+    "city": "Nashville",
+    "state": "TN",
+    "country": "US",
+    "lat": 36.1613,
+    "lon": -86.7780,
+    "aliases": ["ryman", "ryman auditorium", "grand ole opry"]
+  },
+  "lockn": {
+    "name": "Lockn' Festival",
+    "city": "Arrington",
+    "state": "VA",
+    "country": "US",
+    "lat": 37.6281,
+    "lon": -78.8917,
+    "aliases": ["lockn", "lockn'", "arrington va", "infinity downs"]
+  },
+  "mann-center": {
+    "name": "Mann Center for the Performing Arts",
+    "city": "Philadelphia",
+    "state": "PA",
+    "country": "US",
+    "lat": 39.9782,
+    "lon": -75.2203,
+    "aliases": ["mann center", "mann music center", "fairmount park"]
+  },
+  "chicago-theatre": {
+    "name": "Chicago Theatre",
+    "city": "Chicago",
+    "state": "IL",
+    "country": "US",
+    "lat": 41.8854,
+    "lon": -87.6275,
+    "aliases": ["chicago theatre", "chicago theater"]
+  },
+  "soldier-field": {
+    "name": "Soldier Field",
+    "city": "Chicago",
+    "state": "IL",
+    "country": "US",
+    "lat": 41.8623,
+    "lon": -87.6167,
+    "aliases": ["soldier field"]
+  },
+  "northerly-island": {
+    "name": "Huntington Bank Pavilion at Northerly Island",
+    "city": "Chicago",
+    "state": "IL",
+    "country": "US",
+    "lat": 41.8583,
+    "lon": -87.6094,
+    "aliases": ["northerly island", "charter one", "firstmerit"]
+  },
+  "great-woods": {
+    "name": "Xfinity Center",
+    "city": "Mansfield",
+    "state": "MA",
+    "country": "US",
+    "lat": 42.0350,
+    "lon": -71.2250,
+    "aliases": ["great woods", "xfinity center", "tweeter center", "comcast center", "mansfield ma"]
+  },
+  "pnc-arts": {
+    "name": "PNC Bank Arts Center",
+    "city": "Holmdel",
+    "state": "NJ",
+    "country": "US",
+    "lat": 40.3853,
+    "lon": -74.1797,
+    "aliases": ["pnc", "pnc bank arts center", "garden state arts center", "holmdel"]
+  },
+  "higher-ground": {
+    "name": "Higher Ground",
+    "city": "South Burlington",
+    "state": "VT",
+    "country": "US",
+    "lat": 44.4584,
+    "lon": -73.1680,
+    "aliases": ["higher ground", "south burlington"]
+  },
+  "merriweather": {
+    "name": "Merriweather Post Pavilion",
+    "city": "Columbia",
+    "state": "MD",
+    "country": "US",
+    "lat": 39.2095,
+    "lon": -76.8617,
+    "aliases": ["merriweather", "merriweather post", "columbia md"]
+  },
+  "hartford-civic": {
+    "name": "XL Center",
+    "city": "Hartford",
+    "state": "CT",
+    "country": "US",
+    "lat": 41.7683,
+    "lon": -72.6824,
+    "aliases": ["hartford civic center", "xl center", "civic center hartford"]
+  },
+  "big-cypress": {
+    "name": "Big Cypress Seminole Reservation",
+    "city": "Big Cypress",
+    "state": "FL",
+    "country": "US",
+    "lat": 26.0564,
+    "lon": -80.8267,
+    "aliases": ["big cypress", "seminole reservation"]
+  },
+  "walnut-creek": {
+    "name": "Coastal Credit Union Music Park",
+    "city": "Raleigh",
+    "state": "NC",
+    "country": "US",
+    "lat": 35.8748,
+    "lon": -78.5391,
+    "aliases": ["walnut creek", "coastal credit union", "raleigh amphitheatre"]
+  },
+  "blossom": {
+    "name": "Blossom Music Center",
+    "city": "Cuyahoga Falls",
+    "state": "OH",
+    "country": "US",
+    "lat": 41.1153,
+    "lon": -81.5642,
+    "aliases": ["blossom", "blossom music center", "cuyahoga falls"]
+  },
+  "edgefield": {
+    "name": "Edgefield",
+    "city": "Troutdale",
+    "state": "OR",
+    "country": "US",
+    "lat": 45.5350,
+    "lon": -122.3889,
+    "aliases": ["edgefield", "mcmenamins edgefield", "troutdale"]
+  },
+  "pine-knob": {
+    "name": "Pine Knob Music Theatre",
+    "city": "Clarkston",
+    "state": "MI",
+    "country": "US",
+    "lat": 42.7633,
+    "lon": -83.3856,
+    "aliases": ["pine knob", "dte energy", "clarkston mi"]
+  },
+  "austin-city-limits": {
+    "name": "Moody Theater",
+    "city": "Austin",
+    "state": "TX",
+    "country": "US",
+    "lat": 30.2656,
+    "lon": -97.7469,
+    "aliases": ["austin city limits", "moody theater", "acl"]
+  },
+  "waterfront": {
+    "name": "Thompson's Point",
+    "city": "Portland",
+    "state": "ME",
+    "country": "US",
+    "lat": 43.6635,
+    "lon": -70.2763,
+    "aliases": ["thompsons point", "portland waterfront", "waterfront portland"]
+  },
+  "hampton-beach": {
+    "name": "Hampton Beach Casino Ballroom",
+    "city": "Hampton Beach",
+    "state": "NH",
+    "country": "US",
+    "lat": 42.9085,
+    "lon": -70.8120,
+    "aliases": ["hampton beach", "casino ballroom", "hampton casino"]
+  },
+  "providence-performing": {
+    "name": "Providence Performing Arts Center",
+    "city": "Providence",
+    "state": "RI",
+    "country": "US",
+    "lat": 41.8246,
+    "lon": -71.4129,
+    "aliases": ["providence performing", "ppac", "providence arts center"]
+  },
+  "mgm-grand": {
+    "name": "MGM Grand Garden Arena",
+    "city": "Las Vegas",
+    "state": "NV",
+    "country": "US",
+    "lat": 36.1024,
+    "lon": -115.1711,
+    "aliases": ["mgm grand", "grand garden arena", "las vegas mgm"]
+  }
+}

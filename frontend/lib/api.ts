@@ -1,11 +1,11 @@
 // API layer - Magento 2 GraphQL integration
 import { unstable_cache } from 'next/cache';
-import { Song, Artist, ArtistDetail, Album, Track } from './types';
+import { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount } from './types';
 import { fetchWikipediaSummary } from './wikipedia';
 import { applyFilters, getAvailableYears, hasActiveFilters } from './filters';
 import type { VersionFilters } from './filters';
 
-export type { Song, Artist, ArtistDetail, Album, Track } from './types';
+export type { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount } from './types';
 export type { VersionFilters } from './filters';
 export { hasActiveFilters } from './filters';
 
@@ -257,8 +257,13 @@ async function graphqlFetch<T>(
   const result: GraphQLResponse<T> = await response.json();
 
   if (result.errors) {
-    console.error('[GraphQL] Errors:', JSON.stringify(result.errors, null, 2));
-    throw new Error(result.errors.map(e => e.message).join(', '));
+    // If we have data alongside errors, log but don't throw (partial success, e.g. image field)
+    if (result.data) {
+      console.warn('[GraphQL] Partial errors (data still returned):', JSON.stringify(result.errors, null, 2));
+    } else {
+      console.error('[GraphQL] Errors:', JSON.stringify(result.errors, null, 2));
+      throw new Error(result.errors.map(e => e.message).join(', '));
+    }
   }
 
   if (!result.data) {
@@ -1918,4 +1923,249 @@ export function getAllAvailableYears(tracks: TrackWithVersions[]): number[] {
     track.availableYears.forEach(y => years.add(y));
   });
   return Array.from(years).sort((a, b) => b - a);
+}
+
+// ============================================================================
+// VENUE API FUNCTIONS
+// ============================================================================
+
+const GET_VENUE_QUERY = `
+  query GetVenue($slug: String!) {
+    venue(slug: $slug) {
+      venue_id
+      slug
+      normalized_name
+      city
+      state
+      country
+      latitude
+      longitude
+      total_shows
+      total_artists
+      total_tracks
+      first_show_date
+      last_show_date
+    }
+  }
+`;
+
+const GET_VENUE_SHOWS_QUERY = `
+  query GetVenueShows($slug: String!, $pageSize: Int!, $currentPage: Int!) {
+    venue(slug: $slug) {
+      shows(pageSize: $pageSize, currentPage: $currentPage) {
+        items {
+          identifier
+          name
+          show_date
+          artist_name
+          artist_slug
+          track_count
+          recording_types
+        }
+        total_count
+        page_info {
+          current_page
+          page_size
+          total_pages
+        }
+      }
+    }
+  }
+`;
+
+const GET_VENUE_ARTISTS_QUERY = `
+  query GetVenueArtists($slug: String!) {
+    venue(slug: $slug) {
+      artists {
+        name
+        slug
+        show_count
+      }
+    }
+  }
+`;
+
+const GET_VENUE_NEARBY_QUERY = `
+  query GetVenueNearby($slug: String!, $radius: Float!) {
+    venue(slug: $slug) {
+      nearby_venues(radius_miles: $radius) {
+        venue_id
+        slug
+        normalized_name
+        city
+        state
+        country
+        total_shows
+        total_artists
+        latitude
+        longitude
+      }
+    }
+  }
+`;
+
+const GET_VENUES_QUERY = `
+  query GetVenues($search: String, $city: String, $state: String, $pageSize: Int!, $currentPage: Int!) {
+    venues(search: $search, city: $city, state: $state, pageSize: $pageSize, currentPage: $currentPage) {
+      items {
+        venue_id
+        slug
+        normalized_name
+        city
+        state
+        country
+        total_shows
+        total_artists
+        total_tracks
+        latitude
+        longitude
+      }
+      total_count
+      page_info {
+        current_page
+        page_size
+        total_pages
+      }
+    }
+  }
+`;
+
+const GET_ARTIST_VENUES_QUERY = `
+  query GetArtistVenues($uid: String!) {
+    categoryList(filters: { category_uid: { eq: $uid } }) {
+      artist_venues {
+        venue_name
+        venue_slug
+        recording_count
+        city
+        state
+      }
+    }
+  }
+`;
+
+/**
+ * Fetch a single venue by slug
+ */
+export async function getVenue(slug: string): Promise<VenueDetail | null> {
+  try {
+    const data = await graphqlFetch<{ venue: VenueDetail | null }>(
+      GET_VENUE_QUERY,
+      { slug }
+    );
+    return data.venue || null;
+  } catch (error) {
+    console.error('[getVenue] Failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch shows for a venue with pagination
+ */
+export async function getVenueShows(
+  slug: string,
+  pageSize: number = 50,
+  currentPage: number = 1
+): Promise<{ items: VenueShow[]; total_count: number }> {
+  try {
+    const data = await graphqlFetch<{
+      venue: {
+        shows: {
+          items: VenueShow[];
+          total_count: number;
+          page_info: { current_page: number; page_size: number; total_pages: number };
+        };
+      };
+    }>(GET_VENUE_SHOWS_QUERY, { slug, pageSize, currentPage });
+    return data.venue?.shows || { items: [], total_count: 0 };
+  } catch (error) {
+    console.error('[getVenueShows] Failed:', error);
+    return { items: [], total_count: 0 };
+  }
+}
+
+/**
+ * Fetch artists who have played at a venue
+ */
+export async function getVenueArtists(slug: string): Promise<VenueArtist[]> {
+  try {
+    const data = await graphqlFetch<{
+      venue: { artists: VenueArtist[] };
+    }>(GET_VENUE_ARTISTS_QUERY, { slug });
+    return data.venue?.artists || [];
+  } catch (error) {
+    console.error('[getVenueArtists] Failed:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch nearby venues within a radius
+ */
+export async function getNearbyVenues(slug: string, radiusMiles: number = 50): Promise<VenueDetail[]> {
+  try {
+    const data = await graphqlFetch<{
+      venue: { nearby_venues: VenueDetail[] };
+    }>(GET_VENUE_NEARBY_QUERY, { slug, radius: radiusMiles });
+    return data.venue?.nearby_venues || [];
+  } catch (error) {
+    console.error('[getNearbyVenues] Failed:', error);
+    return [];
+  }
+}
+
+/**
+ * Browse/search venues with optional filters
+ */
+export async function getVenues(options: {
+  search?: string;
+  city?: string;
+  state?: string;
+  pageSize?: number;
+  currentPage?: number;
+} = {}): Promise<{ items: VenueDetail[]; total_count: number }> {
+  const { search, city, state, pageSize = 20, currentPage = 1 } = options;
+  try {
+    const data = await graphqlFetch<{
+      venues: {
+        items: VenueDetail[];
+        total_count: number;
+        page_info: { current_page: number; page_size: number; total_pages: number };
+      };
+    }>(GET_VENUES_QUERY, { search: search || null, city: city || null, state: state || null, pageSize, currentPage });
+    return {
+      items: data.venues?.items || [],
+      total_count: data.venues?.total_count || 0,
+    };
+  } catch (error) {
+    console.error('[getVenues] Failed:', error);
+    return { items: [], total_count: 0 };
+  }
+}
+
+/**
+ * Fetch venues for an artist (for VenueCloud component)
+ */
+export async function getArtistVenues(categoryUid: string): Promise<ArtistVenueCount[]> {
+  try {
+    const data = await graphqlFetch<{
+      categoryList: Array<{ artist_venues: ArtistVenueCount[] }>;
+    }>(GET_ARTIST_VENUES_QUERY, { uid: categoryUid });
+    return data.categoryList?.[0]?.artist_venues || [];
+  } catch (error) {
+    console.error('[getArtistVenues] Failed:', error);
+    return [];
+  }
+}
+
+/**
+ * Generate a URL-safe venue slug from a venue name
+ * Used by VenueLink to create links from raw venue name strings
+ */
+export function venueSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }

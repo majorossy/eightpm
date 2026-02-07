@@ -18,7 +18,7 @@ export default function PlaylistDetailPage() {
   // Validate playlist ID format
   const idValidationError = validatePlaylistId(rawId);
   const id = idValidationError ? '' : rawId;
-  const { loadAlbum, addToUpNext } = useQueue();
+  const { playAlbum, addToQueue, trackToItem } = useQueue();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
@@ -68,7 +68,7 @@ export default function PlaylistDetailPage() {
         totalDuration: playlist.songs.reduce((sum, s) => sum + s.duration, 0),
         coverArt: playlist.coverArt,
       };
-      loadAlbum(albumData, 0);
+      playAlbum(albumData, 0);
     }
   };
 
@@ -228,7 +228,7 @@ export default function PlaylistDetailPage() {
             >
               {/* Play button */}
               <button
-                onClick={() => addToUpNext(song)}
+                onClick={() => addToQueue(trackToItem(song))}
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-[#d4a060] text-black opacity-0 md:group-hover:opacity-100 hover:scale-105 transition-all btn-touch"
                 aria-label={`Play ${song.title}`}
               >
