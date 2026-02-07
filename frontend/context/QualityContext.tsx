@@ -3,6 +3,11 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { AudioQuality, Song } from '@/lib/types';
 
+interface NetworkInformation {
+  effectiveType?: string;
+  saveData?: boolean;
+}
+
 interface QualityContextType {
   preferredQuality: AudioQuality;
   setPreferredQuality: (quality: AudioQuality) => void;
@@ -19,8 +24,21 @@ const QUALITY_LABELS: Record<AudioQuality, string> = {
   low: 'Low',
 };
 
+function getDefaultQuality(): AudioQuality {
+  if (typeof navigator === 'undefined') return 'high';
+  const conn = (navigator as Navigator & { connection?: NetworkInformation }).connection;
+  if (!conn) return 'high';
+  if (conn.saveData || conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g') {
+    return 'low';
+  }
+  if (conn.effectiveType === '3g') {
+    return 'medium';
+  }
+  return 'high';
+}
+
 export function QualityProvider({ children }: { children: React.ReactNode }) {
-  const [preferredQuality, setPreferredQualityState] = useState<AudioQuality>('medium');
+  const [preferredQuality, setPreferredQualityState] = useState<AudioQuality>(getDefaultQuality);
   const [isClient, setIsClient] = useState(false);
 
   // Initialize from localStorage on client mount

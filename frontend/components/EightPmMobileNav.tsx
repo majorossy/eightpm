@@ -104,7 +104,7 @@ export default function EightPmMobileNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 h-[50px] bg-transparent z-[35] safe-bottom" aria-label="Main navigation">
+      <nav className="fixed bottom-0 left-0 right-0 h-[50px] bg-[var(--bg)] z-[35] safe-bottom" aria-label="Main navigation">
         <div className="flex items-center justify-around h-full px-4 max-w-[1000px] mx-auto">
           {tabs.map((tab) => {
             const active = isActive(tab.href);

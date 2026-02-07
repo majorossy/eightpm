@@ -368,52 +368,23 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
 
       {/* Main content */}
       <div className="flex flex-col items-center text-center z-10 max-w-[1190px] w-full">
-        {/* Eyebrow with gradient lines */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <div
-            className="h-px w-12"
-            style={{ background: 'linear-gradient(90deg, transparent, var(--neon-pink))' }}
-          />
-          <span
-            className="text-[var(--neon-pink)]"
-            style={{ letterSpacing: '0.2em', fontSize: '11px' }}
-          >
-            Archive.org by Albums
-          </span>
-          <div
-            className="h-px w-12"
-            style={{ background: 'linear-gradient(90deg, var(--neon-pink), transparent)' }}
-          />
-        </div>
-
-        {/* Main logo with gold period accent */}
-        <h1 className="mb-4">
-          <span
-            className="text-7xl md:text-8xl lg:text-9xl font-black tracking-tight text-[var(--text)]"
-            style={{ fontFamily: 'system-ui' }}
-          >
-            8PM
-          </span>
-          <span
-            className="text-7xl md:text-8xl lg:text-9xl font-black text-[var(--neon-pink)]"
-          >
-            .
-          </span>
-          <span
-            className="text-7xl md:text-8xl lg:text-9xl font-black tracking-tight text-[var(--text)]"
-            style={{ fontFamily: 'system-ui' }}
-          >
-            ME
-          </span>
-        </h1>
-
-        {/* Tagline */}
-        <p
-          className="text-sm mb-10 text-[var(--text-dim)]"
-          style={{ letterSpacing: '0.35em' }}
-        >
-          'Take me to another time'
-          <svg className="inline-block ml-2 -mt-1" width="42" height="42" viewBox="0 0 64 64" aria-label="rooster">
+        {/* Tagline with icon */}
+        <div className="mb-4 flex items-center justify-center gap-2">
+          <div className="flex flex-col items-center">
+            <span
+              className="text-[var(--text-dim)] text-sm"
+              style={{ letterSpacing: '0.35em' }}
+            >
+              Take me to another place she said
+            </span>
+            <span
+              className="text-[var(--text-dim)] text-sm"
+              style={{ letterSpacing: '0.35em' }}
+            >
+              Take me to another time
+            </span>
+          </div>
+          <svg className="w-6 h-6 sm:w-8 sm:h-8 md:w-[42px] md:h-[42px] flex-shrink-0" viewBox="0 0 64 64" aria-label="rooster">
             <path d="M8 38 C4 28 6 16 12 10 L14 24 L16 12 C18 18 18 26 16 34 Z" fill="#922b21"/>
             <path d="M12 36 C9 28 10 18 14 12 L16 22 Z" fill="#c0392b"/>
             <ellipse cx="26" cy="36" rx="14" ry="9.5" fill="#c0392b"/>
@@ -430,22 +401,57 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
             <path d="M16 56 L20 54.5 L22 57" stroke="#d4a050" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M27 57 L31 54.5 L33 57" stroke="#d4a050" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </p>
+        </div>
 
-        {/* Algorithm Selector outside the border */}
-        <div className="mb-4 flex justify-center">
+        {/* Subheading: 8PM.ME with gold period */}
+        <div className="mb-2">
+          <span
+            className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tight text-[var(--text)]"
+            style={{ fontFamily: 'system-ui' }}
+          >
+            8PM
+          </span>
+          <span className="text-4xl md:text-6xl font-black text-[var(--neon-pink)]">.</span>
+          <span
+            className="text-6xl sm:text-8xl md:text-8xl lg:text-9xl font-black tracking-tight text-[var(--text)]"
+            style={{ fontFamily: 'system-ui' }}
+          >
+            ME
+          </span>
+        </div>
+
+        {/* Archive.org attribution under 8PM.ME with gradient lines */}
+        <div className="mb-6 md:mb-8 flex items-center justify-center gap-3">
+          <div
+            className="h-px w-12"
+            style={{ background: 'linear-gradient(90deg, transparent, var(--neon-pink))' }}
+          />
+          <span
+            className="text-[var(--neon-pink)] text-sm"
+            style={{ letterSpacing: '0.2em' }}
+          >
+            it's Archive.org but by Album
+          </span>
+          <div
+            className="h-px w-12"
+            style={{ background: 'linear-gradient(90deg, var(--neon-pink), transparent)' }}
+          />
+        </div>
+
+        {/* Algorithm Selector - appears under tagline */}
+        <div className="mb-6 md:mb-8 flex justify-center w-full">
           <AlgorithmSelector />
         </div>
 
-        {/* Bordered lineup container */}
-        <div className="w-full mb-6 md:mb-8">
-          <div
-            className="relative rounded-xl p-4 md:p-8"
-            style={{
-              border: '1px solid rgba(212, 160, 96, 0.25)',
-              background: 'linear-gradient(180deg, rgba(212, 160, 96, 0.06) 0%, rgba(212, 160, 96, 0.02) 40%, transparent 100%)'
-            }}
-          >
+        {/* Roster (Bordered lineup container) */}
+        <div className="w-full mb-6 md:mb-8 flex justify-center">
+            <div
+              className="relative rounded-xl p-4 md:p-8"
+              style={{
+                border: '1px solid rgba(212, 160, 96, 0.25)',
+                background: 'linear-gradient(180deg, rgba(212, 160, 96, 0.06) 0%, rgba(212, 160, 96, 0.02) 40%, transparent 100%)'
+              }}
+            >
 
             {/* Corner accents */}
             <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 rounded-tl-xl" style={{ borderColor: 'rgba(212, 160, 96, 0.5)' }} />
@@ -506,7 +512,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
                 );
               })}
             </div>
-          </div>
+            </div>
         </div>
 
         {/* Stats */}

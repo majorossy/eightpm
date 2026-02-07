@@ -236,12 +236,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = getAudio();
     if (audio && state.isPlaying) {
       console.log('[PlayerContext] Connecting analyzer to audio element');
-      connectAudioElement(audio).then(() => {
-        // Set initial volume on the GainNode after connection
-        setAnalyzerVolume(state.volume);
-      });
+      connectAudioElement(audio);
     }
-  }, [crossfade.state.activeElement, state.isPlaying, connectAudioElement, setAnalyzerVolume, state.volume]);
+  }, [crossfade.state.activeElement, state.isPlaying, connectAudioElement]);
+
+  // Sync volume to analyzer GainNode whenever volume changes
+  useEffect(() => {
+    setAnalyzerVolume(state.volume);
+  }, [state.volume, setAnalyzerVolume]);
 
   // Helper to handle playback errors with retry logic
   const handlePlaybackError = useCallback((failedSong: Song | null, error: Error | MediaError | Event) => {
@@ -280,7 +282,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       if (toast) toast.showInfo('Connection issue - retrying...');
       setState(prev => ({ ...prev, isBuffering: true }));
 
+      const songIdAtRetry = currentSong?.id;
       setTimeout(() => {
+        if (currentSong?.id !== songIdAtRetry) return;
         const currentAudio = getAudio();
         if (!currentAudio) return;
         const url = currentAudio.src || getStreamUrl(failedSong);
@@ -301,7 +305,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         if (toast) toast.showInfo('Retrying with lower quality...');
         setState(prev => ({ ...prev, isBuffering: true }));
 
+        const songIdAtRetry2 = currentSong?.id;
         setTimeout(() => {
+          if (currentSong?.id !== songIdAtRetry2) return;
           const currentAudio = getAudio();
           if (!currentAudio) return;
           currentAudio.src = '';
@@ -682,16 +688,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     // Play first (synchronously in user gesture handler for mobile compatibility)
     audio.src = getStreamUrl(song);
+    audio.volume = state.volume;
     audio.play().catch(err => {
       console.error('Audio play error:', err);
       handlePlaybackError(song, err);
     });
 
     // Connect analyzer after play (audio plays via HTML element until context resumes)
-    connectAudioElement(audio).then(() => {
-      setAnalyzerVolume(state.volume);
-    });
-  }, [queueContext, crossfade, handlePlaybackError, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl, toast]);
+    connectAudioElement(audio);
+  }, [queueContext, crossfade, handlePlaybackError, connectAudioElement, state.volume, getStreamUrl, toast]);
 
   const pause = useCallback(() => {
     const audio = getAudio();
@@ -715,21 +720,24 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       audio.pause();
     } else {
       // Play first (synchronously in user gesture handler for mobile compatibility)
+      audio.volume = state.volume;
       audio.play().catch(console.error);
       // Connect analyzer after play
-      connectAudioElement(audio).then(() => {
-        setAnalyzerVolume(state.volume);
-      });
+      connectAudioElement(audio);
     }
     setState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
-  }, [state.isPlaying, currentSong, crossfade, connectAudioElement, setAnalyzerVolume, state.volume]);
+  }, [state.isPlaying, currentSong, crossfade, connectAudioElement, state.volume]);
 
-  const isIOS = typeof navigator !== 'undefined' && /(iPad|iPhone|iPod)/.test(navigator.userAgent);
+  const isIOS = typeof navigator !== 'undefined' && (/(iPad|iPhone|iPod)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
   const setVolume = useCallback((volume: number) => {
     // iOS Safari ignores programmatic volume changes -- hardware buttons handle volume
     if (!isIOS) {
-      setAnalyzerVolume(volume);
+      const applied = setAnalyzerVolume(volume);
+      if (!applied) {
+        const audio = getAudio();
+        if (audio) audio.volume = volume;
+      }
     }
     setState(prev => ({ ...prev, volume }));
   }, [setAnalyzerVolume, isIOS]);
@@ -755,14 +763,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (nextItem && nextItem.song.isStreamable !== false && audio) {
       // Play first (synchronously in user gesture handler for mobile compatibility)
       audio.src = getStreamUrl(nextItem.song);
+      audio.volume = state.volume;
       audio.play().catch(console.error);
       setState(prev => ({ ...prev, isPlaying: true }));
       // Connect analyzer after play
-      connectAudioElement(audio).then(() => {
-        setAnalyzerVolume(state.volume);
-      });
+      connectAudioElement(audio);
     }
-  }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
+  }, [queueContext, crossfade, connectAudioElement, state.volume, getStreamUrl]);
 
   const playPrev = useCallback(() => {
     const audio = getAudio();
@@ -822,6 +829,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     // Play first (synchronously in user gesture handler for mobile compatibility)
     audio.src = savedProgress.streamUrl;
     audio.currentTime = savedProgress.position;
+    audio.volume = state.volume;
     audio.play().catch(console.error);
 
     setState(prev => ({
@@ -830,14 +838,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }));
 
     // Connect analyzer after play
-    connectAudioElement(audio).then(() => {
-      setAnalyzerVolume(state.volume);
-    });
+    connectAudioElement(audio);
 
     // Clear saved progress after resuming
     setSavedProgress(null);
     clearPlaybackProgress();
-  }, [savedProgress, queueContext, connectAudioElement, setAnalyzerVolume, state.volume, clearPlaybackProgress]);
+  }, [savedProgress, queueContext, connectAudioElement, state.volume, clearPlaybackProgress]);
 
   const playFromQueue = useCallback((index: number) => {
     userInitiatedRef.current = true;
@@ -848,14 +854,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (item && audio) {
       // Play first (synchronously in user gesture handler for mobile compatibility)
       audio.src = getStreamUrl(item.song);
+      audio.volume = state.volume;
       audio.play().catch(console.error);
       setState(prev => ({ ...prev, isPlaying: true }));
       // Connect analyzer after play
-      connectAudioElement(audio).then(() => {
-        setAnalyzerVolume(state.volume);
-      });
+      connectAudioElement(audio);
     }
-  }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
+  }, [queueContext, crossfade, connectAudioElement, state.volume, getStreamUrl]);
 
   // Play all songs from an album, starting at a specific track index
   const playAlbum = useCallback((album: Album, startIndex: number = 0) => {
@@ -873,14 +878,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = getAudio();
     if (song && audio) {
       audio.src = getStreamUrl(song);
+      audio.volume = state.volume;
       audio.play().catch(console.error);
       setState(prev => ({ ...prev, isPlaying: true }));
       // Connect analyzer after play
-      connectAudioElement(audio).then(() => {
-        setAnalyzerVolume(state.volume);
-      });
+      connectAudioElement(audio);
     }
-  }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
+  }, [queueContext, crossfade, connectAudioElement, state.volume, getStreamUrl]);
 
   // Play a specific version of a track within an album
   // This ensures track advancement works correctly (plays next track, not next version)
@@ -900,14 +904,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = getAudio();
     if (audio) {
       audio.src = getStreamUrl(song);
+      audio.volume = state.volume;
       audio.play().catch(console.error);
       setState(prev => ({ ...prev, isPlaying: true }));
       // Connect analyzer after play
-      connectAudioElement(audio).then(() => {
-        setAnalyzerVolume(state.volume);
-      });
+      connectAudioElement(audio);
     }
-  }, [queueContext, crossfade, connectAudioElement, setAnalyzerVolume, state.volume, getStreamUrl]);
+  }, [queueContext, crossfade, connectAudioElement, state.volume, getStreamUrl]);
 
   // Media Session API integration for lock screen controls
   useMediaSession({

@@ -743,86 +743,6 @@
   border-left-color: #d4a060;
 }
 
-/* Campfire recording card (in expanded track panel) */
-.theme-campfire .recording-card {
-  background: linear-gradient(to bottom, #2a2520, #1e1a15);
-  border: 1px solid #3a3028;
-}
-
-.theme-campfire .recording-card:hover {
-  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
-  transform: translateY(-2px);
-}
-
-.theme-campfire .recording-card.selected {
-  background: linear-gradient(to bottom, #faf4e8, #f0e4d0);
-  border: 2px solid #e8a050;
-  box-shadow: 0 8px 24px rgba(232,160,80,0.25);
-  transform: translateY(-2px);
-}
-
-/* Campfire recording card borders */
-.theme-campfire .recording-card-header {
-  border-color: rgba(122, 116, 104, 0.1);
-}
-
-.theme-campfire .recording-card-header.selected {
-  border-color: rgba(139, 90, 43, 0.15);
-}
-
-.theme-campfire .recording-card-buttons {
-  border-color: rgba(122, 116, 104, 0.08);
-}
-
-.theme-campfire .recording-card-buttons.selected {
-  border-color: rgba(139, 90, 43, 0.1);
-}
-
-/* Campfire recording card play button */
-.theme-campfire .recording-card-play {
-  background: linear-gradient(to right, #3a3028, #2a2520);
-  color: #a89080;
-}
-
-.theme-campfire .recording-card-play:hover {
-  background: linear-gradient(to right, #4a4038, #3a3028);
-}
-
-.theme-campfire .recording-card-play.selected {
-  background: linear-gradient(to right, #e8a050, #c88030);
-  color: #1a1410;
-}
-
-/* Campfire recording card queue button */
-.theme-campfire .recording-card-queue {
-  border-color: rgba(122, 116, 104, 0.3);
-  color: #8a7a68;
-}
-
-.theme-campfire .recording-card-queue:hover {
-  border-color: rgba(122, 116, 104, 0.5);
-}
-
-.theme-campfire .recording-card-queue.selected {
-  border-color: #c8a070;
-  color: #6a5040;
-}
-
-.theme-campfire .recording-card-queue.selected:hover {
-  background: #e8d8c8;
-}
-
-/* Campfire track expanded panel */
-.theme-campfire .track-expanded-panel {
-  border-top: 1px solid rgba(212, 160, 96, 0.2);
-}
-
-.theme-campfire .track-sort-select {
-  background: #2a2520;
-  border: 1px solid rgba(122, 116, 104, 0.3);
-  color: #a89080;
-}
-
 /* Campfire album action buttons */
 .theme-campfire .album-shuffle-btn {
   background: transparent;
@@ -882,10 +802,61 @@
 }
 
 /* ========================================
-   LIGHT MODE: Fishman Palette
+   CAMPFIRE BADGE & COMPONENT VARIABLES
+   ======================================== */
+.theme-campfire {
+  /* Recording type badges */
+  --badge-sbd-bg: #2d4a2a;
+  --badge-sbd-border: #4a8a45;
+  --badge-sbd-text: #7ddf7d;
+
+  --badge-aud-bg: #2a3548;
+  --badge-aud-border: #4578a8;
+  --badge-aud-text: #7db8df;
+
+  --badge-mx-bg: #48392a;
+  --badge-mx-border: #a87845;
+  --badge-mx-text: #dfb87d;
+
+  --badge-other-bg: #333;
+  --badge-other-border: #555;
+  --badge-other-text: #aaa;
+
+  /* Source format badges */
+  --badge-flac24-bg: #1e3320;
+  --badge-flac24-text: #6bce6b;
+
+  --badge-flac16-bg: #1e2b38;
+  --badge-flac16-text: #6ba8ce;
+
+  --badge-mp3-bg: #38301e;
+  --badge-mp3-text: #ce9a5a;
+
+  /* Stars */
+  --star-empty: #3a3020;
+  --star-filled: var(--neon-pink);
+
+  /* Overlays */
+  --overlay-subtle: rgba(255,255,255,0.06);
+  --overlay-light: rgba(255,255,255,0.08);
+  --overlay-medium: rgba(255,255,255,0.12);
+
+  /* Cassette tape */
+  --cassette-body: linear-gradient(180deg, #2e2825, #1e1a17, #181512);
+  --cassette-window: #080605;
+  --cassette-reel: radial-gradient(circle at 40% 40%, #2a2520, #0a0808);
+  --cassette-tape: linear-gradient(180deg, #5a4030, #3a2818, #5a4030);
+  --cassette-screw: radial-gradient(circle at 35% 35%, #3a3530, #0a0808);
+  --cassette-header: linear-gradient(180deg, #c85028, #b84020);
+  --cassette-glow: #e8a050;
+  --cassette-border: #2a2520;
+}
+
+/* ========================================
+   FISHMAN THEME
    Blue-gray tones inspired by Fishman donuts
    ======================================== */
-.mode-light.theme-campfire {
+.theme-fishman {
   --bg: #3d5a6e;
   --bg-card: #2a3a44;
   --bg-elevated: #4d6a7e;
@@ -911,10 +882,61 @@
   --border-subtle: rgba(77, 106, 126, 0.5);
   /* Gold/amber accent for secondary highlights */
   --accent2: #d4a050;
+
+  /* Light mode badge overrides - enhanced contrast for WCAG AA */
+  --badge-sbd-bg: #3a6a4a;
+  --badge-sbd-border: #5a9a65;
+  --badge-sbd-text: #a0ffa0;
+
+  --badge-aud-bg: #3a5a78;
+  --badge-aud-border: #5a8ab8;
+  --badge-aud-text: #a0d8ff;
+
+  --badge-mx-bg: #6a5a3a;
+  --badge-mx-border: #aa8a5a;
+  --badge-mx-text: #ffdb90;
+
+  --badge-other-bg: rgba(138, 164, 181, 0.15);
+  --badge-other-border: #8aa4b5;
+  --badge-other-text: #4a6a78;
+
+  /* Source format badges */
+  --badge-flac24-bg: rgba(90, 138, 122, 0.2);
+  --badge-flac24-text: #3a6a5a;
+
+  --badge-flac16-bg: rgba(106, 138, 154, 0.2);
+  --badge-flac16-text: #3a5a6a;
+
+  --badge-mp3-bg: rgba(212, 160, 80, 0.2);
+  --badge-mp3-text: #8a6030;
+
+  /* Stars */
+  --star-empty: rgba(106, 138, 154, 0.3);
+  --star-filled: var(--neon-pink);
+
+  /* Overlays - inverted for light mode */
+  --overlay-subtle: rgba(0,0,0,0.06);
+  --overlay-light: rgba(0,0,0,0.08);
+  --overlay-medium: rgba(0,0,0,0.12);
+
+  /* Cassette tape - blue-gray transformation */
+  --cassette-body: linear-gradient(180deg, #4d6a7e, #3d5a6e, #2a3a44);
+  --cassette-window: #1a2630;
+  --cassette-reel: radial-gradient(circle at 40% 40%, #2a3a44, #1a2630);
+  --cassette-tape: linear-gradient(180deg, #1a2630, #0f1820, #1a2630);
+  --cassette-screw: radial-gradient(circle at 35% 35%, #4d6a7e, #2a3a44);
+  --cassette-header: linear-gradient(180deg, #c75a5a, #b54a4a);
+  --cassette-glow: #c75a5a;
+  --cassette-border: #2a3a44;
+
+  /* Enhanced text contrast for WCAG AA */
+  --text: #ffffff;
+  --text-dim: #d5e5f0;
+  --text-subdued: #c5d8e5;
 }
 
-/* Light mode blob background override */
-.mode-light.theme-campfire .blob-bg {
+/* Fishman blob background override */
+.theme-fishman .blob-bg {
   background:
     radial-gradient(ellipse 600px 500px at 10% 20%, rgba(120,160,180,0.08) 0%, transparent 70%),
     radial-gradient(ellipse 500px 600px at 85% 60%, rgba(199,90,90,0.06) 0%, transparent 70%),
@@ -923,20 +945,20 @@
     #3d5a6e;
 }
 
-/* Light mode fire glow override - subtle warm glow */
-.mode-light.theme-campfire .fire-glow {
+/* Fishman fire glow override - subtle warm glow */
+.theme-fishman .fire-glow {
   background: radial-gradient(ellipse at 50% 100%, rgba(199,90,90,0.1) 0%, rgba(180,80,80,0.03) 40%, transparent 70%);
 }
 
 /* Light mode gradient text */
-.mode-light.theme-campfire .gradient-text {
+.theme-fishman .gradient-text {
   background: linear-gradient(135deg, #f5f0e8, #c75a5a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.mode-light.theme-campfire .gradient-text-title {
+.theme-fishman .gradient-text-title {
   background: linear-gradient(180deg, #f5f0e8 0%, #e0dbd5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -945,88 +967,88 @@
 }
 
 /* Light mode buttons */
-.mode-light.theme-campfire .btn-neon {
+.theme-fishman .btn-neon {
   background: linear-gradient(135deg, #c75a5a, #b54a4a);
   color: #f5f0e8;
 }
 
-.mode-light.theme-campfire .btn-neon:hover {
+.theme-fishman .btn-neon:hover {
   background: linear-gradient(135deg, #d76a6a, #c75a5a);
   color: #f5f0e8;
   box-shadow: 0 4px 20px rgba(199,90,90,0.4);
 }
 
-.mode-light.theme-campfire .btn-ghost {
+.theme-fishman .btn-ghost {
   border-color: #6a8a9a;
   color: #c5d0d8;
 }
 
-.mode-light.theme-campfire .btn-ghost:hover {
+.theme-fishman .btn-ghost:hover {
   border-color: #c75a5a;
   color: #f5f0e8;
 }
 
 /* Light mode scrollbar */
-.mode-light.theme-campfire ::-webkit-scrollbar-track {
+.theme-fishman ::-webkit-scrollbar-track {
   background: #3d5a6e;
 }
 
-.mode-light.theme-campfire ::-webkit-scrollbar-thumb {
+.theme-fishman ::-webkit-scrollbar-thumb {
   background: #5a7a8a;
 }
 
-.mode-light.theme-campfire ::-webkit-scrollbar-thumb:hover {
+.theme-fishman ::-webkit-scrollbar-thumb:hover {
   background: #c75a5a;
 }
 
 /* Light mode input range */
-.mode-light.theme-campfire input[type='range']::-webkit-slider-runnable-track {
+.theme-fishman input[type='range']::-webkit-slider-runnable-track {
   background: #5a7a8a;
 }
 
-.mode-light.theme-campfire input[type='range']::-webkit-slider-thumb {
+.theme-fishman input[type='range']::-webkit-slider-thumb {
   background: #f5f0e8;
 }
 
-.mode-light.theme-campfire input[type='range']:hover::-webkit-slider-thumb {
+.theme-fishman input[type='range']:hover::-webkit-slider-thumb {
   background: #c75a5a;
 }
 
-.mode-light.theme-campfire input[type='range']::-moz-range-track {
+.theme-fishman input[type='range']::-moz-range-track {
   background: #5a7a8a;
 }
 
-.mode-light.theme-campfire input[type='range']::-moz-range-thumb {
+.theme-fishman input[type='range']::-moz-range-thumb {
   background: #f5f0e8;
 }
 
 /* Light mode borders and sections */
-.mode-light.theme-campfire .stats-border {
+.theme-fishman .stats-border {
   border-color: rgba(255,255,255,0.15);
 }
 
-.mode-light.theme-campfire .section-border {
+.theme-fishman .section-border {
   border-color: rgba(255,255,255,0.15);
 }
 
 /* Light mode track hover */
-.mode-light.theme-campfire .track-card-hover:hover {
+.theme-fishman .track-card-hover:hover {
   background: rgba(199,90,90,0.08);
 }
 
 /* Light mode track list container with gradient and shadow */
-.mode-light.theme-campfire .track-list-container {
+.theme-fishman .track-list-container {
   background: linear-gradient(145deg, #2a3a44 0%, #223344 100%);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
 
 /* Light mode track row wrapper */
-.mode-light.theme-campfire .track-row-wrapper {
+.theme-fishman .track-row-wrapper {
   border-bottom: 1px solid rgba(138, 164, 181, 0.1);
 }
 
-.mode-light.theme-campfire .track-row-wrapper.expanded {
+.theme-fishman .track-row-wrapper.expanded {
   border-left: 1px solid rgba(212, 160, 80, 0.25);
   border-right: 1px solid rgba(212, 160, 80, 0.25);
   border-bottom: 1px solid rgba(212, 160, 80, 0.25);
@@ -1034,157 +1056,77 @@
 }
 
 /* Light mode track row with hover effects */
-.mode-light.theme-campfire .track-row:hover {
+.theme-fishman .track-row:hover {
   background: #354a5a;
   border-left-color: #d4a050;
 }
 
-.mode-light.theme-campfire .track-row.expanded {
+.theme-fishman .track-row.expanded {
   background: rgba(212,160,80,0.12);
   border-left-color: #d4a050;
 }
 
-/* Light mode recording card */
-.mode-light.theme-campfire .recording-card {
-  background: linear-gradient(to bottom, #3a4a54, #2a3a44);
-  border: 1px solid #4a5a64;
-}
-
-.mode-light.theme-campfire .recording-card:hover {
-  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-  transform: translateY(-2px);
-}
-
-.mode-light.theme-campfire .recording-card.selected {
-  background: linear-gradient(to bottom, #faf4e8, #f0e4d0);
-  border: 2px solid #d4a050;
-  box-shadow: 0 8px 24px rgba(212,160,80,0.3);
-  transform: translateY(-2px);
-}
-
-/* Light mode recording card borders */
-.mode-light.theme-campfire .recording-card-header {
-  border-color: rgba(138, 164, 181, 0.15);
-}
-
-.mode-light.theme-campfire .recording-card-header.selected {
-  border-color: rgba(139, 90, 43, 0.15);
-}
-
-.mode-light.theme-campfire .recording-card-buttons {
-  border-color: rgba(138, 164, 181, 0.12);
-}
-
-.mode-light.theme-campfire .recording-card-buttons.selected {
-  border-color: rgba(139, 90, 43, 0.1);
-}
-
-/* Light mode recording card play button */
-.mode-light.theme-campfire .recording-card-play {
-  background: linear-gradient(to right, #4a5a64, #3a4a54);
-  color: #c5d0d8;
-}
-
-.mode-light.theme-campfire .recording-card-play:hover {
-  background: linear-gradient(to right, #5a6a74, #4a5a64);
-}
-
-.mode-light.theme-campfire .recording-card-play.selected {
-  background: linear-gradient(to right, #d4a050, #b08030);
-  color: #1a1410;
-}
-
-/* Light mode recording card queue button */
-.mode-light.theme-campfire .recording-card-queue {
-  border-color: rgba(138, 164, 181, 0.3);
-  color: #c5d0d8;
-}
-
-.mode-light.theme-campfire .recording-card-queue:hover {
-  border-color: rgba(138, 164, 181, 0.5);
-}
-
-.mode-light.theme-campfire .recording-card-queue.selected {
-  border-color: #c8a070;
-  color: #6a5040;
-}
-
-.mode-light.theme-campfire .recording-card-queue.selected:hover {
-  background: #e8d8c8;
-}
-
-/* Light mode track expanded panel */
-.mode-light.theme-campfire .track-expanded-panel {
-  border-top: 1px solid rgba(212, 160, 80, 0.25);
-}
-
-.mode-light.theme-campfire .track-sort-select {
-  background: #2a3a44;
-  border: 1px solid rgba(138, 164, 181, 0.3);
-  color: #c5d0d8;
-}
-
 /* Light mode album action buttons */
-.mode-light.theme-campfire .album-shuffle-btn {
+.theme-fishman .album-shuffle-btn {
   background: transparent;
   border: 1px solid rgba(138, 164, 181, 0.3);
   color: #c5d0d8;
 }
 
-.mode-light.theme-campfire .album-shuffle-btn:hover {
+.theme-fishman .album-shuffle-btn:hover {
   border-color: rgba(138, 164, 181, 0.5);
   color: #f5f0e8;
 }
 
-.mode-light.theme-campfire .album-follow-btn {
+.theme-fishman .album-follow-btn {
   border: 1px solid rgba(138, 164, 181, 0.3);
   color: #8aa4b5;
 }
 
-.mode-light.theme-campfire .album-follow-btn:hover {
+.theme-fishman .album-follow-btn:hover {
   border-color: rgba(138, 164, 181, 0.5);
   color: #f5f0e8;
 }
 
 /* Light mode album page elements */
-.mode-light.theme-campfire .album-quote-box {
+.theme-fishman .album-quote-box {
   background: rgba(122, 154, 170, 0.12);
 }
 
-.mode-light.theme-campfire .album-play-button {
+.theme-fishman .album-play-button {
   background: linear-gradient(135deg, #c75a5a, #a84a48);
   box-shadow: 0 4px 20px rgba(199,90,90,0.4);
 }
 
 /* Light mode version card */
-.mode-light.theme-campfire .version-card-glow:hover {
+.theme-fishman .version-card-glow:hover {
   background: #5d7a8e;
   box-shadow: 0 12px 32px rgba(0,0,0,0.2);
 }
 
-.mode-light.theme-campfire .version-card-glow.selected {
+.theme-fishman .version-card-glow.selected {
   border-color: #c75a5a;
 }
 
 /* Light mode now playing badge */
-.mode-light.theme-campfire .now-playing-badge {
+.theme-fishman .now-playing-badge {
   background: linear-gradient(135deg, #c75a5a, #a84a48);
   color: #f5f0e8;
 }
 
 /* Light mode EQ bars */
-.mode-light.theme-campfire .jamify-eq-bars span {
+.theme-fishman .jamify-eq-bars span {
   background-color: #c75a5a;
 }
 
 /* Light mode mini player */
-.mode-light.theme-campfire .mini-player {
+.theme-fishman .mini-player {
   background: linear-gradient(to bottom, #5d7a8e, #4d6a7e);
   box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.3), 0 -2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Light mode skeleton loading */
-.mode-light.theme-campfire .skeleton {
+.theme-fishman .skeleton {
   background: linear-gradient(
     90deg,
     #4d6a7e 25%,
@@ -1195,44 +1137,44 @@
 }
 
 /* Light mode spinner */
-.mode-light.theme-campfire .spinner {
+.theme-fishman .spinner {
   border: 3px solid rgba(245, 240, 232, 0.2);
   border-top-color: #c75a5a;
 }
 
 /* Light mode focus visible */
-.mode-light.theme-campfire *:focus-visible {
+.theme-fishman *:focus-visible {
   outline: 2px solid #c75a5a;
 }
 
 /* Light mode skip to main */
-.mode-light.theme-campfire .skip-to-main {
+.theme-fishman .skip-to-main {
   background: #c75a5a;
   color: #f5f0e8;
 }
 
 /* Light mode side dividers */
-.mode-light.theme-campfire .side-divider-line {
+.theme-fishman .side-divider-line {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
 }
 
-.mode-light.theme-campfire .side-divider-text {
+.theme-fishman .side-divider-text {
   color: #c5d0d8;
 }
 
-.mode-light.theme-campfire .side-divider-symbol {
+.theme-fishman .side-divider-symbol {
   color: #c75a5a;
 }
 
 /* Light mode selected card */
-.mode-light.theme-campfire .card-selected {
+.theme-fishman .card-selected {
   background: linear-gradient(180deg, #f5f0e8 0%, #e8e0d0 100%);
   border: 2px solid #c75a5a;
   color: #2a2420;
 }
 
 /* Light mode firefly */
-.mode-light.theme-campfire .firefly {
+.theme-fishman .firefly {
   background: #c75a5a;
   box-shadow: 0 0 12px rgba(199,90,90,0.6);
 }
@@ -1243,237 +1185,237 @@
    ======================================== */
 
 /* Background overrides */
-.mode-light.theme-campfire .bg-\[\#1c1a17\] {
+.theme-fishman .bg-\[\#1c1a17\] {
   background-color: #3d5a6e !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#252220\] {
+.theme-fishman .bg-\[\#252220\] {
   background-color: #2a3a44 !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#2d2a26\] {
+.theme-fishman .bg-\[\#2d2a26\] {
   background-color: #3a4a54 !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#3a3632\] {
+.theme-fishman .bg-\[\#3a3632\] {
   background-color: #4d6a7e !important;
 }
 
 /* Text color overrides */
-.mode-light.theme-campfire .text-\[\#e8e0d4\] {
+.theme-fishman .text-\[\#e8e0d4\] {
   color: #f5f0e8 !important;
 }
 
-.mode-light.theme-campfire .text-\[\#8a8478\] {
+.theme-fishman .text-\[\#8a8478\] {
   color: #8aa4b5 !important;
 }
 
-.mode-light.theme-campfire .text-\[\#9a9488\] {
+.theme-fishman .text-\[\#9a9488\] {
   color: #9ab4c5 !important;
 }
 
-.mode-light.theme-campfire .text-\[\#6a6458\] {
+.theme-fishman .text-\[\#6a6458\] {
   color: #6a8a9a !important;
 }
 
-.mode-light.theme-campfire .text-\[\#7a7468\] {
+.theme-fishman .text-\[\#7a7468\] {
   color: #7a9aa8 !important;
 }
 
-.mode-light.theme-campfire .text-\[\#c9c5bc\] {
+.theme-fishman .text-\[\#c9c5bc\] {
   color: #d5e0e8 !important;
 }
 
 /* Accent color overrides (amber → coral) */
-.mode-light.theme-campfire .text-\[\#d4a060\] {
+.theme-fishman .text-\[\#d4a060\] {
   color: #c75a5a !important;
 }
 
-.mode-light.theme-campfire .text-\[\#e8a050\] {
+.theme-fishman .text-\[\#e8a050\] {
   color: #d76a6a !important;
 }
 
-.mode-light.theme-campfire .text-\[\#c08a40\] {
+.theme-fishman .text-\[\#c08a40\] {
   color: #b54a4a !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#d4a060\] {
+.theme-fishman .bg-\[\#d4a060\] {
   background-color: #c75a5a !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#e8a050\] {
+.theme-fishman .bg-\[\#e8a050\] {
   background-color: #d76a6a !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#c08a40\] {
+.theme-fishman .bg-\[\#c08a40\] {
   background-color: #b54a4a !important;
 }
 
 /* Border overrides */
-.mode-light.theme-campfire .border-\[\#3a3632\] {
+.theme-fishman .border-\[\#3a3632\] {
   border-color: #4d6a7e !important;
 }
 
-.mode-light.theme-campfire .border-\[\#4a3a28\] {
+.theme-fishman .border-\[\#4a3a28\] {
   border-color: #5a7a8e !important;
 }
 
-.mode-light.theme-campfire .border-\[\#2d2a26\] {
+.theme-fishman .border-\[\#2d2a26\] {
   border-color: #3a5a6a !important;
 }
 
-.mode-light.theme-campfire .border-\[\#2a2520\] {
+.theme-fishman .border-\[\#2a2520\] {
   border-color: #3a4a54 !important;
 }
 
 /* Ring/outline overrides */
-.mode-light.theme-campfire .ring-\[\#d4a060\] {
+.theme-fishman .ring-\[\#d4a060\] {
   --tw-ring-color: #c75a5a !important;
 }
 
-.mode-light.theme-campfire .focus\:ring-\[\#d4a060\]:focus {
+.theme-fishman .focus\:ring-\[\#d4a060\]:focus {
   --tw-ring-color: #c75a5a !important;
 }
 
-.mode-light.theme-campfire .focus-visible\:ring-\[\#d4a060\]:focus-visible {
+.theme-fishman .focus-visible\:ring-\[\#d4a060\]:focus-visible {
   --tw-ring-color: #c75a5a !important;
 }
 
 /* Gradient overrides */
-.mode-light.theme-campfire .from-\[\#d4a060\] {
+.theme-fishman .from-\[\#d4a060\] {
   --tw-gradient-from: #c75a5a !important;
 }
 
-.mode-light.theme-campfire .to-\[\#1c1a17\] {
+.theme-fishman .to-\[\#1c1a17\] {
   --tw-gradient-to: #3d5a6e !important;
 }
 
-.mode-light.theme-campfire .via-\[\#1c1a17\] {
+.theme-fishman .via-\[\#1c1a17\] {
   --tw-gradient-via: #3d5a6e !important;
 }
 
-.mode-light.theme-campfire .from-\[\#1c1a17\] {
+.theme-fishman .from-\[\#1c1a17\] {
   --tw-gradient-from: #3d5a6e !important;
 }
 
 /* Hover state overrides */
-.mode-light.theme-campfire .hover\:text-\[\#d4a060\]:hover {
+.theme-fishman .hover\:text-\[\#d4a060\]:hover {
   color: #c75a5a !important;
 }
 
-.mode-light.theme-campfire .hover\:bg-\[\#d4a060\]:hover {
+.theme-fishman .hover\:bg-\[\#d4a060\]:hover {
   background-color: #c75a5a !important;
 }
 
-.mode-light.theme-campfire .hover\:bg-\[\#c49050\]:hover {
+.theme-fishman .hover\:bg-\[\#c49050\]:hover {
   background-color: #b54a4a !important;
 }
 
-.mode-light.theme-campfire .hover\:bg-\[\#e8a050\]:hover {
+.theme-fishman .hover\:bg-\[\#e8a050\]:hover {
   background-color: #d76a6a !important;
 }
 
-.mode-light.theme-campfire .hover\:border-\[\#d4a060\]:hover {
+.theme-fishman .hover\:border-\[\#d4a060\]:hover {
   border-color: #c75a5a !important;
 }
 
 /* Placeholder overrides */
-.mode-light.theme-campfire .placeholder-\[\#6a6458\]::placeholder {
+.theme-fishman .placeholder-\[\#6a6458\]::placeholder {
   color: #6a8a9a !important;
 }
 
-.mode-light.theme-campfire .placeholder-\[\#8a8478\]::placeholder {
+.theme-fishman .placeholder-\[\#8a8478\]::placeholder {
   color: #8aa4b5 !important;
 }
 
 /* Shadow overrides with coral glow */
-.mode-light.theme-campfire .shadow-\[\#d4a060\]\/20 {
+.theme-fishman .shadow-\[\#d4a060\]\/20 {
   --tw-shadow-color: rgba(199, 90, 90, 0.2) !important;
 }
 
 /* Specific component overrides */
 
 /* Hero gradient fix */
-.mode-light.theme-campfire .bg-gradient-to-b.from-\[\#d4a060\]\/30 {
+.theme-fishman .bg-gradient-to-b.from-\[\#d4a060\]\/30 {
   --tw-gradient-from: rgba(199, 90, 90, 0.3) !important;
 }
 
 /* Card backgrounds in lists */
-.mode-light.theme-campfire .bg-\[\#252220\]\/50 {
+.theme-fishman .bg-\[\#252220\]\/50 {
   background-color: rgba(42, 58, 68, 0.5) !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#252220\]\/80 {
+.theme-fishman .bg-\[\#252220\]\/80 {
   background-color: rgba(42, 58, 68, 0.8) !important;
 }
 
 /* Divider lines */
-.mode-light.theme-campfire .bg-\[\#3a3632\]\/20 {
+.theme-fishman .bg-\[\#3a3632\]\/20 {
   background-color: rgba(77, 106, 126, 0.2) !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#3a3632\]\/30 {
+.theme-fishman .bg-\[\#3a3632\]\/30 {
   background-color: rgba(77, 106, 126, 0.3) !important;
 }
 
-.mode-light.theme-campfire .border-\[\#3a3632\]\/20 {
+.theme-fishman .border-\[\#3a3632\]\/20 {
   border-color: rgba(77, 106, 126, 0.2) !important;
 }
 
-.mode-light.theme-campfire .border-\[\#3a3632\]\/30 {
+.theme-fishman .border-\[\#3a3632\]\/30 {
   border-color: rgba(77, 106, 126, 0.3) !important;
 }
 
 /* Brown tones → blue-gray */
-.mode-light.theme-campfire .bg-\[\#4a3a28\] {
+.theme-fishman .bg-\[\#4a3a28\] {
   background-color: #5a7a8e !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#6a5a48\] {
+.theme-fishman .bg-\[\#6a5a48\] {
   background-color: #6a8a9a !important;
 }
 
-.mode-light.theme-campfire .text-\[\#6a5a48\] {
+.theme-fishman .text-\[\#6a5a48\] {
   color: #6a8a9a !important;
 }
 
-.mode-light.theme-campfire .text-\[\#8a7a68\] {
+.theme-fishman .text-\[\#8a7a68\] {
   color: #8aa4b5 !important;
 }
 
-.mode-light.theme-campfire .text-\[\#4a4035\] {
+.theme-fishman .text-\[\#4a4035\] {
   color: #4a6a78 !important;
 }
 
 /* Rust/ochre tones → coral variants */
-.mode-light.theme-campfire .bg-\[\#a85a38\] {
+.theme-fishman .bg-\[\#a85a38\] {
   background-color: #a84a48 !important;
 }
 
-.mode-light.theme-campfire .text-\[\#a85a38\] {
+.theme-fishman .text-\[\#a85a38\] {
   color: #a84a48 !important;
 }
 
 /* SVG fill overrides */
-.mode-light.theme-campfire .fill-\[\#8a8478\] {
+.theme-fishman .fill-\[\#8a8478\] {
   fill: #8aa4b5 !important;
 }
 
-.mode-light.theme-campfire .fill-\[\#d4a060\] {
+.theme-fishman .fill-\[\#d4a060\] {
   fill: #c75a5a !important;
 }
 
 /* White text - keep as cream for better contrast on blue-gray */
-.mode-light.theme-campfire .text-white {
+.theme-fishman .text-white {
   color: #f5f0e8 !important;
 }
 
 /* Ring offset for focus states */
-.mode-light.theme-campfire .ring-offset-\[\#1c1a17\] {
+.theme-fishman .ring-offset-\[\#1c1a17\] {
   --tw-ring-offset-color: #3d5a6e !important;
 }
 
-.mode-light.theme-campfire .focus-visible\:ring-offset-\[\#1c1a17\]:focus-visible {
+.theme-fishman .focus-visible\:ring-offset-\[\#1c1a17\]:focus-visible {
   --tw-ring-offset-color: #3d5a6e !important;
 }
 
@@ -1486,7 +1428,7 @@
     linear-gradient(180deg, #1c1a17 0%, #1e1c19 100%);
 }
 
-.mode-light.theme-campfire .festival-hero-section {
+.theme-fishman .festival-hero-section {
   background:
     radial-gradient(ellipse at 50% 120%, rgba(199,90,90,0.12) 0%, transparent 50%),
     radial-gradient(ellipse at 30% 80%, rgba(150,90,90,0.08) 0%, transparent 40%),
@@ -1495,57 +1437,57 @@
 }
 
 /* Light mode: Additional cream text overrides */
-.mode-light.theme-campfire .text-\[\#e8dcc4\] {
+.theme-fishman .text-\[\#e8dcc4\] {
   color: #f5f0e8 !important;
 }
 
-.mode-light.theme-campfire .text-\[\#c8c0b4\] {
+.theme-fishman .text-\[\#c8c0b4\] {
   color: #d5e0e8 !important;
 }
 
 /* Light mode: Accent2 (gold/amber) for secondary highlights */
-.mode-light.theme-campfire .text-\[\var\(--accent2\)\],
-.mode-light.theme-campfire [class*="accent2"] {
+.theme-fishman .text-\[\var\(--accent2\)\],
+.theme-fishman [class*="accent2"] {
   color: #d4a050;
 }
 
 /* Light mode: More brown/warm tones → blue-gray */
-.mode-light.theme-campfire .bg-\[\#1a1715\] {
+.theme-fishman .bg-\[\#1a1715\] {
   background-color: #2a3a44 !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#1a1410\] {
+.theme-fishman .bg-\[\#1a1410\] {
   background-color: #2a3a44 !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#1e1c19\] {
+.theme-fishman .bg-\[\#1e1c19\] {
   background-color: #3a5868 !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#2a2520\] {
+.theme-fishman .bg-\[\#2a2520\] {
   background-color: #3a4a54 !important;
 }
 
-.mode-light.theme-campfire .bg-\[\#3a3025\] {
+.theme-fishman .bg-\[\#3a3025\] {
   background-color: #4a5a64 !important;
 }
 
 /* Light mode: Border color overrides */
-.mode-light.theme-campfire .border-\[\#3a352f\] {
+.theme-fishman .border-\[\#3a352f\] {
   border-color: #4d6a7e !important;
 }
 
-.mode-light.theme-campfire .border-\[\#4a4540\] {
+.theme-fishman .border-\[\#4a4540\] {
   border-color: #5a7a8e !important;
 }
 
 /* Light mode: Opacity-based backgrounds */
-.mode-light.theme-campfire .bg-\[\#1a1715\]\/90 {
+.theme-fishman .bg-\[\#1a1715\]\/90 {
   background-color: rgba(42, 58, 68, 0.9) !important;
 }
 
 /* Light mode: Footer styling */
-.mode-light.theme-campfire footer {
+.theme-fishman footer {
   border-color: rgba(77, 106, 126, 0.3);
 }
 
@@ -2806,4 +2748,145 @@ html, body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+}
+
+/* ========================================
+   LIGHT THEME
+   Clean white background with campfire brown text
+   ======================================== */
+.mode-light.theme-campfire {
+  --bg: #ffffff;
+  --bg-card: #f5f5f5;
+  --bg-elevated: #e8e0d8;
+  --neon-pink: #e8a050;
+  --neon-cyan: #e8a050;
+  --neon-purple: #c49040;
+  --neon-orange: #d4a060;
+  --text: #2a2520;
+  --text-dim: #4a3828;
+  --text-subdued: #6b5c4c;
+  --grid-color: rgba(0, 0, 0, 0.05);
+  --show-grid: 0;
+  --show-orbs: 0;
+  --orb-pink-opacity: 0;
+  --orb-cyan-opacity: 0;
+  --campfire-amber: #e8a050;
+  --campfire-ochre: #c49040;
+  --campfire-rust: #a84a48;
+  --campfire-teal: #7a9aaa;
+  --campfire-cream: #f5f0e8;
+  --border-color: #d0c8c0;
+  --border-subtle: rgba(106, 92, 76, 0.2);
+  --accent2: #e8a050;
+
+  /* Light theme badge colors - darker for contrast on white */
+  --badge-sbd-bg: #d4f4d4;
+  --badge-sbd-border: #4a8a45;
+  --badge-sbd-text: #2d5a2a;
+
+  --badge-aud-bg: #d4e4f4;
+  --badge-aud-border: #4578a8;
+  --badge-aud-text: #2a4568;
+
+  --badge-mx-bg: #f4e4d4;
+  --badge-mx-border: #a87845;
+  --badge-mx-text: #5a3818;
+
+  --badge-other-bg: rgba(106, 92, 76, 0.1);
+  --badge-other-border: #8a7a68;
+  --badge-other-text: #4a3828;
+
+  /* Source format badges */
+  --badge-flac24-bg: rgba(77, 166, 77, 0.15);
+  --badge-flac24-text: #2d5a2a;
+
+  --badge-flac16-bg: rgba(69, 120, 168, 0.15);
+  --badge-flac16-text: #2a4568;
+
+  --badge-mp3-bg: rgba(212, 160, 96, 0.15);
+  --badge-mp3-text: #6a4820;
+
+  /* Stars */
+  --star-empty: rgba(106, 92, 76, 0.2);
+  --star-filled: var(--neon-pink);
+
+  /* Overlays - subtle on white */
+  --overlay-subtle: rgba(0,0,0,0.04);
+  --overlay-light: rgba(0,0,0,0.06);
+  --overlay-medium: rgba(0,0,0,0.1);
+
+  /* Cassette tape - keep warm browns on white */
+  --cassette-body: linear-gradient(180deg, #d0c8c0, #c0b8b0, #b0a8a0);
+  --cassette-window: #8a7a68;
+  --cassette-reel: radial-gradient(circle at 40% 40%, #a09088, #7a6a58);
+  --cassette-tape: linear-gradient(180deg, #6a5a48, #5a4a38, #6a5a48);
+  --cassette-screw: radial-gradient(circle at 35% 35%, #c0b8b0, #8a7a68);
+  --cassette-header: linear-gradient(180deg, #e8a050, #d4a060);
+  --cassette-glow: #e8a050;
+  --cassette-border: #a09088;
+}
+
+/* Light mode blob background override */
+.mode-light.theme-campfire .blob-bg {
+  background:
+    radial-gradient(ellipse 600px 500px at 10% 20%, rgba(232,160,80,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 600px at 85% 60%, rgba(196,144,64,0.03) 0%, transparent 70%),
+    radial-gradient(ellipse 700px 400px at 50% 90%, rgba(212,160,96,0.02) 0%, transparent 70%),
+    #ffffff;
+}
+
+/* Light mode fire glow override - subtle warm glow */
+.mode-light.theme-campfire .fire-glow {
+  background: radial-gradient(ellipse at 50% 100%, rgba(232,160,80,0.08) 0%, rgba(212,160,96,0.02) 40%, transparent 70%);
+}
+
+/* Light mode gradient text */
+.mode-light.theme-campfire .gradient-text {
+  background: linear-gradient(135deg, #2a2520, #e8a050);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.mode-light.theme-campfire .gradient-text-title {
+  background: linear-gradient(180deg, #2a2520 0%, #4a3828 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+/* Light mode buttons */
+.mode-light.theme-campfire .btn-neon {
+  background: linear-gradient(135deg, #e8a050, #d4a060);
+  color: #ffffff;
+}
+
+.mode-light.theme-campfire .btn-neon:hover {
+  background: linear-gradient(135deg, #f0b060, #e8a050);
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(232,160,80,0.4);
+}
+
+.mode-light.theme-campfire .btn-ghost {
+  border-color: #8a7a68;
+  color: #4a3828;
+}
+
+.mode-light.theme-campfire .btn-ghost:hover {
+  border-color: #e8a050;
+  color: #2a2520;
+}
+
+/* Light mode scrollbar */
+.mode-light.theme-campfire ::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.mode-light.theme-campfire ::-webkit-scrollbar-thumb {
+  background: #c0b8b0;
+}
+
+.mode-light.theme-campfire ::-webkit-scrollbar-thumb:hover {
+  background: #e8a050;
 }

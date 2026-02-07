@@ -291,6 +291,10 @@ class TrackImporter implements TrackImporterInterface
         $product->setData('track_acoustid', $track->getAcoustid());
         $product->setData('track_bitrate', $track->getBitrate());
 
+        // New track-level fields
+        $product->setData('track_original_file', $track->getOriginal());
+        $product->setData('track_album', $track->getAlbum());
+
         // Show-specific attributes
         $product->setData('identifier', $show->getIdentifier());
         $product->setData('show_name', $show->getTitle());
@@ -307,6 +311,20 @@ class TrackImporter implements TrackImporterInterface
         $product->setData('show_files_count', $show->getFilesCount());
         $product->setData('show_total_size', $show->getItemSize());
         $product->setData('show_uploader', $show->getUploader());
+
+        // New show-level fields (duplicated on every track product)
+        $product->setData('show_runtime', $show->getRuntime());
+        $product->setData('show_subject', $show->getSubject());
+
+        $addedDate = $show->getAddedDate();
+        if ($addedDate) {
+            $product->setData('show_added_date', $addedDate);
+        }
+
+        $publicDate = $show->getPublicDate();
+        if ($publicDate) {
+            $product->setData('show_public_date', $publicDate);
+        }
 
         // Convert timestamps to datetime format for Magento
         if ($show->getCreatedTimestamp()) {
@@ -528,7 +546,7 @@ class TrackImporter implements TrackImporterInterface
                 $filename
             );
 
-            $quality = $this->determineQualityTier($format, $track->getFileSize());
+            $quality = $this->determineQualityTier($format, $track->getFileSize(), $track->getLength());
 
             $qualityUrls[$quality] = [
                 'url' => $url,
@@ -546,9 +564,10 @@ class TrackImporter implements TrackImporterInterface
      *
      * @param string $format
      * @param int|null $fileSize
+     * @param string|null $trackLength Track length in seconds
      * @return string
      */
-    private function determineQualityTier(string $format, ?int $fileSize): string
+    private function determineQualityTier(string $format, ?int $fileSize, ?string $trackLength = null): string
     {
         // FLAC is always high quality
         if ($format === 'flac') {
@@ -558,7 +577,8 @@ class TrackImporter implements TrackImporterInterface
         // For MP3, estimate bitrate from file size
         // Rough estimate: 320kbps ~= 10MB per 3-min track, 128kbps ~= 4MB
         if ($format === 'mp3' && $fileSize) {
-            $mbPerMinute = ($fileSize / 1024 / 1024) / 3; // Assume ~3 min tracks
+            $trackLengthMinutes = ($trackLength && is_numeric($trackLength)) ? ((float) $trackLength / 60) : 3;
+            $mbPerMinute = ($fileSize / 1024 / 1024) / $trackLengthMinutes;
             return $mbPerMinute >= 3 ? 'medium' : 'low';
         }
 

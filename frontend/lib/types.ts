@@ -47,6 +47,14 @@ export interface Song {
   archiveLicenseUrl?: string;    // Creative Commons license URL
   recordingType?: string;        // 'SBD' | 'AUD' | 'MX' | 'FM' | 'WEBCAST' | 'UNKNOWN'
   accessRestriction?: string;    // Restriction reason (e.g., 'stream_only', 'no_derive')
+  // New show-level metadata (duplicated on every track)
+  showRuntime?: string;          // Total show duration (e.g., "2:31:31")
+  showAddedDate?: string;        // When uploaded to Archive.org (ISO datetime)
+  showPublicDate?: string;       // When made public on Archive.org (ISO datetime)
+  showSubject?: string;          // Genre/event tags (e.g., "americana; newgrass; Horn O'Plenty 2017")
+  // New track-level metadata
+  trackOriginalFile?: string;    // Original source file for derivatives (links MP3 back to FLAC)
+  trackAlbum?: string;           // Album name from file metadata
 }
 
 // Track - a unique song title within an album (may have multiple recordings)

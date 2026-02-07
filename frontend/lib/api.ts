@@ -392,6 +392,12 @@ const GET_SONGS_BY_CATEGORY_QUERY = `
         archive_detail_url
         archive_license_url
         access_restriction
+        show_runtime
+        show_added_date
+        show_public_date
+        show_subject
+        track_original_file
+        track_album
         categories {
           uid
           name
@@ -434,6 +440,12 @@ const GET_SONGS_BY_SEARCH_QUERY = `
         archive_detail_url
         archive_license_url
         access_restriction
+        show_runtime
+        show_added_date
+        show_public_date
+        show_subject
+        track_original_file
+        track_album
         categories {
           uid
           name
@@ -476,6 +488,12 @@ const GET_ALL_SONGS_QUERY = `
         archive_detail_url
         archive_license_url
         access_restriction
+        show_runtime
+        show_added_date
+        show_public_date
+        show_subject
+        track_original_file
+        track_album
         categories {
           uid
           name
@@ -698,6 +716,12 @@ interface MagentoProduct {
   archive_detail_url?: string;      // Archive.org detail page URL
   archive_license_url?: string;     // Creative Commons license URL
   access_restriction?: string;      // Restriction reason
+  show_runtime?: string;            // Total show duration (e.g., "2:31:31")
+  show_added_date?: string;         // When uploaded to Archive.org
+  show_public_date?: string;        // When made public on Archive.org
+  show_subject?: string;            // Genre/event tags
+  track_original_file?: string;     // Original source file for derivatives
+  track_album?: string;             // Album name from file metadata
   categories?: Array<{ uid: string; name: string; url_key: string }>;
 }
 
@@ -853,6 +877,14 @@ function productToSong(product: MagentoProduct, albumIdentifier?: string): Song 
     archiveDetailUrl: product.archive_detail_url || undefined,
     archiveLicenseUrl: product.archive_license_url || undefined,
     accessRestriction: product.access_restriction || undefined,
+    // New show-level metadata
+    showRuntime: product.show_runtime || undefined,
+    showAddedDate: product.show_added_date || undefined,
+    showPublicDate: product.show_public_date || undefined,
+    showSubject: product.show_subject || undefined,
+    // New track-level metadata
+    trackOriginalFile: product.track_original_file || undefined,
+    trackAlbum: product.track_album || undefined,
   };
 }
 

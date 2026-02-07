@@ -470,4 +470,64 @@ interface ShowInterface
      * @return ShowInterface
      */
     public function setSubjectTags(array $subjectTags): ShowInterface;
+
+    /**
+     * Get show runtime (total duration)
+     *
+     * @return string|null
+     */
+    public function getRuntime(): ?string;
+
+    /**
+     * Set show runtime (total duration)
+     *
+     * @param string|null $runtime
+     * @return ShowInterface
+     */
+    public function setRuntime(?string $runtime): ShowInterface;
+
+    /**
+     * Get Archive.org added date (when uploaded)
+     *
+     * @return string|null
+     */
+    public function getAddedDate(): ?string;
+
+    /**
+     * Set Archive.org added date (when uploaded)
+     *
+     * @param string|null $addedDate
+     * @return ShowInterface
+     */
+    public function setAddedDate(?string $addedDate): ShowInterface;
+
+    /**
+     * Get Archive.org public date (when made public)
+     *
+     * @return string|null
+     */
+    public function getPublicDate(): ?string;
+
+    /**
+     * Set Archive.org public date (when made public)
+     *
+     * @param string|null $publicDate
+     * @return ShowInterface
+     */
+    public function setPublicDate(?string $publicDate): ShowInterface;
+
+    /**
+     * Get show subject tags (full string)
+     *
+     * @return string|null
+     */
+    public function getSubject(): ?string;
+
+    /**
+     * Set show subject tags (full string)
+     *
+     * @param string|null $subject
+     * @return ShowInterface
+     */
+    public function setSubject(?string $subject): ShowInterface;
 }

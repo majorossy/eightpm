@@ -94,7 +94,7 @@ export default function AlgorithmSelector() {
     <div
       role="radiogroup"
       aria-label="Sort algorithm selector"
-      className="flex flex-col md:flex-row gap-2"
+      className="flex flex-row gap-2 justify-center overflow-x-auto md:flex-wrap md:justify-center px-2"
     >
       {ALGORITHMS.map((algo, index) => {
         const isSelected = algorithm === algo.id;
@@ -109,7 +109,7 @@ export default function AlgorithmSelector() {
             onKeyDown={(e) => handleKeyDown(e, index)}
             tabIndex={isSelected ? 0 : -1}
             className={`
-              relative px-4 py-3 md:px-6 md:py-2 rounded-full text-sm
+              relative px-3 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm whitespace-nowrap
               border transition-all duration-200
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]
               active:scale-95
@@ -120,7 +120,7 @@ export default function AlgorithmSelector() {
               }
             `}
             style={{
-              minWidth: '120px',
+              minWidth: 'fit-content',
             }}
             whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
           >

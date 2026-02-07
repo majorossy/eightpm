@@ -181,9 +181,9 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
         </div>
 
         {/* Main hero content - cassette left, info right on desktop */}
-        <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-16 max-w-[1000px] mx-auto">
+        <div className="relative z-10 flex flex-row items-center gap-4 md:gap-8 lg:gap-16 max-w-[1000px] mx-auto">
           {/* Cassette stack */}
-          <div className="relative w-[320px] h-[280px] flex-shrink-0 cassette-stack-float">
+          <div className="relative w-[160px] h-[140px] md:w-[240px] md:h-[210px] lg:w-[320px] lg:h-[280px] flex-shrink-0 cassette-stack-float">
             {/* Stack of 4 cassettes with slight offsets */}
             <DetailedCassette
               artistName={artist.name}
@@ -236,7 +236,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
           </div>
 
           {/* Artist info */}
-          <div className="flex-1 text-center lg:text-left">
+          <div className="flex-1 text-left">
             {/* Artist badge */}
             <span className="inline-block px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase text-[#d4a060] bg-[#d4a060]/10 rounded-full mb-4">
               Artist

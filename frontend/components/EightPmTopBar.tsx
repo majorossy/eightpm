@@ -17,9 +17,11 @@ export default function EightPmTopBar({ transparent = false }: EightPmTopBarProp
       }`}
     >
       {/* Breadcrumb navigation - constrained to same width as page content */}
-      <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-1 flex items-center justify-between">
+      <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-1.5 md:py-3 flex items-center justify-between gap-4 h-14 md:h-16">
         <Breadcrumb />
-        <ThemeToggle />
+        <div className="shrink-0">
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Soft gradient fade at bottom - uses CSS variable */}

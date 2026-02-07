@@ -221,7 +221,7 @@ class ArchiveApiClient implements ArchiveApiClientInterface
         // Build URL with fields we need
         // Note: Archive.org uses 'week' and 'month' for weekly/monthly downloads
         $url = sprintf(
-            '%s/advancedsearch.php?q=%s&fl[]=identifier&fl[]=avg_rating&fl[]=num_reviews&fl[]=downloads&fl[]=week&fl[]=month&rows=%d&output=json',
+            '%s/advancedsearch.php?q=%s&fl[]=identifier&fl[]=avg_rating&fl[]=num_reviews&fl[]=downloads&fl[]=week&fl[]=month&fl[]=publicdate&fl[]=addeddate&fl[]=runtime&rows=%d&output=json',
             $this->config->getBaseUrl(),
             urlencode($query),
             count($identifiers)
@@ -248,6 +248,9 @@ class ArchiveApiClient implements ArchiveApiClientInterface
                 'downloads' => isset($doc['downloads']) ? (int) $doc['downloads'] : null,
                 'downloads_week' => isset($doc['week']) ? (int) $doc['week'] : null,
                 'downloads_month' => isset($doc['month']) ? (int) $doc['month'] : null,
+                'pub_date' => $doc['publicdate'] ?? null,
+                'added_date' => $doc['addeddate'] ?? null,
+                'runtime' => $doc['runtime'] ?? null,
             ];
         }
 
@@ -441,6 +444,21 @@ class ArchiveApiClient implements ArchiveApiClientInterface
         $show->setServerOne($data['d1'] ?? null);
         $show->setServerTwo($data['d2'] ?? null);
 
+        // Extract new show-level fields
+        $show->setPubDate($this->extractValue($metadata, 'publicdate'));
+        $show->setGuid('https://archive.org/details/' . $identifier);
+        $show->setRuntime($this->extractValue($metadata, 'runtime'));
+        $show->setAddedDate($this->extractValue($metadata, 'addeddate'));
+        $show->setPublicDate($this->extractValue($metadata, 'publicdate'));
+
+        // Extract full subject tags
+        $subject = $metadata['subject'] ?? [];
+        if (is_string($subject)) {
+            $subject = [$subject];
+        }
+        $show->setSubjectTags($subject);
+        $show->setSubject(implode('; ', $subject));
+
         // Parse ratings and reviews from top-level reviews array
         $reviews = $data['reviews'] ?? [];
         $numReviews = count($reviews);
@@ -491,6 +509,10 @@ class ArchiveApiClient implements ArchiveApiClientInterface
                 $track->setFormat($extension);  // Store actual file format
                 $track->setSource($fileData['source'] ?? null);
                 $track->setFileSize(isset($fileData['size']) ? (int) $fileData['size'] : null);
+
+                // Extract new track-level fields
+                $track->setOriginal($fileData['original'] ?? null);
+                $track->setAlbum($fileData['album'] ?? null);
 
                 $tracks[] = $track;
             }

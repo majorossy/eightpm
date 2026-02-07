@@ -45,6 +45,12 @@ class TrackPopulatorService implements TrackPopulatorServiceInterface
      */
     private array $titleLookupCache = [];
 
+    /**
+     * Format tracks grouped by basename from last parseShowMetadata() call
+     * @var array<string, \ArchiveDotOrg\Core\Api\Data\TrackInterface[]>
+     */
+    private array $formatTracksByBasename = [];
+
     public function __construct(
         MetadataDownloaderInterface $metadataDownloader,
         TrackImporterInterface $trackImporter,
@@ -174,8 +180,12 @@ class TrackPopulatorService implements TrackPopulatorServiceInterface
                         $existingProductId = $this->trackImporter->getProductIdBySku($sku);
                         $isUpdate = $existingProductId !== null;
 
+                        // Look up format variants for this track by basename
+                        $basename = $this->getFilenameWithoutExtension($track->getName());
+                        $formatTracks = $this->formatTracksByBasename[$basename] ?? [];
+
                         // Create or update product
-                        $productId = $this->trackImporter->importTrack($track, $show, $artistName);
+                        $productId = $this->trackImporter->importTrack($track, $show, $artistName, $existingProductId, $formatTracks);
 
                         if ($productId > 0) {
                             if ($isUpdate) {
@@ -391,6 +401,19 @@ class TrackPopulatorService implements TrackPopulatorServiceInterface
         $show->setServerOne($data['d1'] ?? null);
         $show->setServerTwo($data['d2'] ?? null);
 
+        // Extract new show-level fields
+        $show->setRuntime($this->extractValue($metadata, 'runtime'));
+
+        $addedDate = $this->extractValue($metadata, 'addeddate');
+        if ($addedDate) {
+            $show->setAddedDate($addedDate);
+        }
+
+        $publicDate = $this->extractValue($metadata, 'publicdate');
+        if ($publicDate) {
+            $show->setPublicDate($publicDate);
+        }
+
         // Extract extended show metadata
         $show->setFilesCount(isset($data['files_count']) ? (int) $data['files_count'] : null);
         $show->setItemSize(isset($data['item_size']) ? (int) $data['item_size'] : null);
@@ -420,38 +443,60 @@ class TrackPopulatorService implements TrackPopulatorServiceInterface
         }
         $show->setSubjectTags($subject);
 
+        // Extract full subject string for saving to products
+        $show->setSubject(implode('; ', $subject));
+
         // Parse tracks from files
         $audioFormat = $this->config->getAudioFormat();
+        $alternateFormats = ['mp3', 'ogg', 'vbr'];
         $tracks = [];
+        $this->formatTracksByBasename = [];
 
         if (isset($data['files']) && is_array($data['files'])) {
+            // First pass: collect primary format tracks and alternate format tracks
+            $allAudioTracks = [];
+
             foreach ($data['files'] as $file) {
                 $fileData = is_array($file) ? $file : (array) $file;
                 $name = $fileData['name'] ?? '';
 
-                // Only include files matching the configured audio format
-                if (!$this->endsWith($name, '.' . $audioFormat)) {
-                    continue;
+                // Determine if this is a primary or alternate format file
+                $isPrimary = $this->endsWith($name, '.' . $audioFormat);
+                $fileFormat = null;
+
+                if ($isPrimary) {
+                    $fileFormat = $audioFormat;
+                } else {
+                    foreach ($alternateFormats as $altFormat) {
+                        if ($this->endsWith($name, '.' . $altFormat)) {
+                            $fileFormat = $altFormat;
+                            break;
+                        }
+                    }
                 }
 
-                // Skip files without a title
-                if (empty($fileData['title'])) {
+                // Skip non-audio files
+                if ($fileFormat === null) {
                     continue;
                 }
 
                 $track = $this->trackFactory->create();
                 $track->setName($name);
-                $track->setTitle($fileData['title']);
+                $track->setTitle($fileData['title'] ?? '');
                 $track->setTrackNumber(isset($fileData['track']) ? (int) $fileData['track'] : null);
                 $track->setLength($fileData['length'] ?? null);
                 $track->setSha1($fileData['sha1'] ?? null);
-                $track->setFormat($audioFormat);
+                $track->setFormat($fileFormat);
                 $track->setSource($fileData['source'] ?? null);
                 $track->setFileSize(isset($fileData['size']) ? (int) $fileData['size'] : null);
 
                 // Extract extended track metadata
                 $track->setMd5($fileData['md5'] ?? null);
                 $track->setBitrate(isset($fileData['bitrate']) ? (int) $fileData['bitrate'] : null);
+
+                // Extract new track-level fields
+                $track->setOriginal($fileData['original'] ?? null);
+                $track->setAlbum($fileData['album'] ?? null);
 
                 // Extract AcoustID from external-identifier array
                 if (isset($fileData['external-identifier']) && is_array($fileData['external-identifier'])) {
@@ -463,8 +508,18 @@ class TrackPopulatorService implements TrackPopulatorServiceInterface
                     }
                 }
 
-                $tracks[] = $track;
+                // Get basename without extension for grouping
+                $basename = $this->getFilenameWithoutExtension($name);
+                $allAudioTracks[$basename][] = $track;
+
+                // Only primary format tracks with titles go into the main track list
+                if ($isPrimary && !empty($fileData['title'])) {
+                    $tracks[] = $track;
+                }
             }
+
+            // Build format tracks map keyed by primary track basename
+            $this->formatTracksByBasename = $allAudioTracks;
         }
 
         $show->setTracks($tracks);
@@ -488,6 +543,19 @@ class TrackPopulatorService implements TrackPopulatorServiceInterface
         }
 
         return (string) $value ?: null;
+    }
+
+    /**
+     * Get filename without extension
+     */
+    private function getFilenameWithoutExtension(string $filename): string
+    {
+        $pos = strrpos($filename, '.');
+        if ($pos === false) {
+            return $filename;
+        }
+
+        return substr($filename, 0, $pos);
     }
 
     /**

@@ -28,8 +28,8 @@ class SongUrlLow implements ResolverInterface
         $songUrlsJson = $product->getData('song_urls');
 
         if (!$songUrlsJson) {
-            // Fallback to legacy song_url
-            return $product->getData('song_url');
+            // No multi-quality URLs available; only SongUrlHigh falls back to legacy song_url
+            return null;
         }
 
         $qualityUrls = json_decode($songUrlsJson, true);

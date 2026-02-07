@@ -171,4 +171,34 @@ interface TrackInterface
      * @return string
      */
     public function generateUrlKey(): string;
+
+    /**
+     * Get original source file (for derivatives)
+     *
+     * @return string|null
+     */
+    public function getOriginal(): ?string;
+
+    /**
+     * Set original source file (for derivatives)
+     *
+     * @param string|null $original
+     * @return TrackInterface
+     */
+    public function setOriginal(?string $original): TrackInterface;
+
+    /**
+     * Get album name from file metadata
+     *
+     * @return string|null
+     */
+    public function getAlbum(): ?string;
+
+    /**
+     * Set album name from file metadata
+     *
+     * @param string|null $album
+     * @return TrackInterface
+     */
+    public function setAlbum(?string $album): TrackInterface;
 }

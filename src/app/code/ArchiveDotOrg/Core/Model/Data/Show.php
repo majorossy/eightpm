@@ -48,6 +48,10 @@ class Show implements ShowInterface
     private ?string $licenseUrl = null;
     /** @var string[] */
     private array $subjectTags = [];
+    private ?string $runtime = null;
+    private ?string $addedDate = null;
+    private ?string $publicDate = null;
+    private ?string $subject = null;
 
     /** @var TrackInterface[] */
     private array $tracks = [];
@@ -619,6 +623,74 @@ class Show implements ShowInterface
     public function setSubjectTags(array $subjectTags): ShowInterface
     {
         $this->subjectTags = $subjectTags;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRuntime(): ?string
+    {
+        return $this->runtime;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRuntime(?string $runtime): ShowInterface
+    {
+        $this->runtime = $runtime;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAddedDate(): ?string
+    {
+        return $this->addedDate;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAddedDate(?string $addedDate): ShowInterface
+    {
+        $this->addedDate = $addedDate;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPublicDate(): ?string
+    {
+        return $this->publicDate;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setPublicDate(?string $publicDate): ShowInterface
+    {
+        $this->publicDate = $publicDate;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSubject(): ?string
+    {
+        return $this->subject;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSubject(?string $subject): ShowInterface
+    {
+        $this->subject = $subject;
         return $this;
     }
 }

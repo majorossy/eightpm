@@ -159,7 +159,7 @@ export default function BottomPlayer() {
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlist } = useWishlist();
 
   // Detect iOS — programmatic volume control doesn't work on iOS Safari
-  const isIOS = useMemo(() => typeof navigator !== 'undefined' && /(iPad|iPhone|iPod)/.test(navigator.userAgent), []);
+  const isIOS = useMemo(() => typeof navigator !== 'undefined' && (/(iPad|iPhone|iPod)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)), []);
 
   // Image loading state for lazy loading
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -289,7 +289,7 @@ export default function BottomPlayer() {
   if (!currentSong && savedProgress) {
     return (
       <div
-        className={`fixed left-0 right-0 z-30 ${isMobile ? '' : 'bottom-0'}`}
+        className={`fixed left-0 right-0 z-[40] ${isMobile ? '' : 'bottom-0'}`}
         style={isMobile ? { bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' } : undefined}
       >
         <div className={`${isMobile ? 'border-t border-[#d4a060]/20 bg-gradient-to-b from-[#2d2a26] to-[#252220] backdrop-blur-lg px-3 pt-3' : 'bg-[#252220] border-t border-[#2d2a26] px-4'}`}>
@@ -378,7 +378,7 @@ export default function BottomPlayer() {
           {announcement}
         </div>
 
-        <div className="fixed left-0 right-0 z-30" style={{ bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}>
+        <div className="fixed left-0 right-0 z-[40]" style={{ bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}>
           <div className={`border-t border-[#d4a060]/20 bg-gradient-to-b from-[#2d2a26] to-[#252220] backdrop-blur-lg ${reducedMotion ? 'reduce-motion' : ''}`}>
             {/* Mini player card with swipe gesture */}
             <div
@@ -455,7 +455,7 @@ export default function BottomPlayer() {
                 </button>
 
                 {/* Quality badge - clickable, positioned after song info */}
-                <div className="relative flex-shrink-0 z-[100]" ref={qualityPopupRef}>
+                <div className="relative flex-shrink-0" ref={qualityPopupRef}>
                   <div className="flex flex-col items-end gap-1">
                     <button
                       onClick={(e) => {
@@ -485,7 +485,7 @@ export default function BottomPlayer() {
 
                   {/* Quality popup menu */}
                   {showQualityPopup && (
-                    <div className="fixed bottom-[160px] right-[calc(8px+env(safe-area-inset-right,0px))] w-64 bg-[#1c1a17] border border-[#4a3a28] rounded-lg shadow-2xl overflow-visible z-[9999] animate-fadeIn">
+                    <div className="fixed bottom-[160px] right-[calc(8px+env(safe-area-inset-right,0px))] w-64 bg-[#1c1a17] border border-[#4a3a28] rounded-lg shadow-2xl overflow-visible z-[60] animate-fadeIn">
                       {qualityOptions.map((option, index) => (
                         <button
                           key={option.value}
@@ -623,7 +623,7 @@ export default function BottomPlayer() {
         {announcement}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#d4a060]/20 bg-gradient-to-b from-[#2d2a26] to-[#252220] backdrop-blur-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-[40] border-t border-[#d4a060]/20 bg-gradient-to-b from-[#2d2a26] to-[#252220] backdrop-blur-lg" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {/* Progress bar — full width at the very top */}
         <div
           className="h-1 bg-[#3a3632] cursor-pointer group relative"

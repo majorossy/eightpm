@@ -25,6 +25,8 @@ class Track implements TrackInterface
     private ?string $md5 = null;
     private ?string $acoustid = null;
     private ?int $bitrate = null;
+    private ?string $original = null;
+    private ?string $album = null;
 
     /**
      * @inheritDoc
@@ -250,5 +252,39 @@ class Track implements TrackInterface
         // Sanitize to lowercase alphanumeric with hyphens, max 64 chars
         $urlKey = strtolower(preg_replace('#[^0-9a-z]+#i', '-', $sku) ?? '');
         return mb_substr(rtrim($urlKey, '-'), 0, 64);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOriginal(): ?string
+    {
+        return $this->original;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setOriginal(?string $original): TrackInterface
+    {
+        $this->original = $original;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAlbum(): ?string
+    {
+        return $this->album;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAlbum(?string $album): TrackInterface
+    {
+        $this->album = $album;
+        return $this;
     }
 }

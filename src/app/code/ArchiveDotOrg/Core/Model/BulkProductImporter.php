@@ -476,8 +476,13 @@ class BulkProductImporter implements BulkProductImporterInterface
             // Extended track attributes
             'track_md5' => $track->getMd5(),
             'track_acoustid' => $track->getAcoustid(),
+            // New track-level fields
+            'track_original_file' => $track->getOriginal(),
+            'track_album' => $track->getAlbum(),
             // Extended show attributes
-            'show_uploader' => $show->getUploader()
+            'show_uploader' => $show->getUploader(),
+            // New show-level fields (duplicated on every track)
+            'show_runtime' => $show->getRuntime()
         ];
 
         // SEO Meta Fields
@@ -594,6 +599,14 @@ class BulkProductImporter implements BulkProductImporterInterface
             );
         }
 
+        // New datetime attributes
+        if ($show->getAddedDate()) {
+            $this->saveAttribute($entityId, 'show_added_date', $show->getAddedDate(), 'datetime');
+        }
+        if ($show->getPublicDate()) {
+            $this->saveAttribute($entityId, 'show_public_date', $show->getPublicDate(), 'datetime');
+        }
+
         // Recording restriction and classification attributes
         $isStreamable = !$show->isAccessRestricted();
         $this->saveAttribute($entityId, 'is_streamable', $isStreamable ? 1 : 0, 'int');
@@ -619,11 +632,16 @@ class BulkProductImporter implements BulkProductImporterInterface
             $this->saveAttribute($entityId, 'archive_license_url', $licenseUrl, 'varchar');
         }
 
-        // Text attributes (description, meta_keyword)
+        // Text attributes (description, meta_keyword, show_subject)
         if ($show->getDescription()) {
             $this->saveAttribute($entityId, 'description', $show->getDescription(), 'text');
         }
         $this->saveAttribute($entityId, 'meta_keyword', $metaKeyword, 'text');
+
+        // New text attribute
+        if ($show->getSubject()) {
+            $this->saveAttribute($entityId, 'show_subject', $show->getSubject(), 'text');
+        }
     }
 
     /**

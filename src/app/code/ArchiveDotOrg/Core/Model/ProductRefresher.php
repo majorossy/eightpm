@@ -40,6 +40,9 @@ class ProductRefresher
     public const FIELD_REVIEWS = 'reviews';
     public const FIELD_DOWNLOADS = 'downloads';
     public const FIELD_TRENDING = 'trending';
+    public const FIELD_PUB_DATE = 'pub_date';
+    public const FIELD_ADDED_DATE = 'added_date';
+    public const FIELD_RUNTIME = 'runtime';
 
     /**
      * Slow per-show field (requires full metadata API call)
@@ -54,6 +57,9 @@ class ProductRefresher
         self::FIELD_REVIEWS,
         self::FIELD_DOWNLOADS,
         self::FIELD_TRENDING,
+        self::FIELD_PUB_DATE,
+        self::FIELD_ADDED_DATE,
+        self::FIELD_RUNTIME,
     ];
 
     /**
@@ -64,6 +70,9 @@ class ProductRefresher
         self::FIELD_REVIEWS,
         self::FIELD_DOWNLOADS,
         self::FIELD_TRENDING,
+        self::FIELD_PUB_DATE,
+        self::FIELD_ADDED_DATE,
+        self::FIELD_RUNTIME,
         self::FIELD_LENGTH,
     ];
 
@@ -658,6 +667,22 @@ class ProductRefresher
                             break;
                         }
                     }
+                }
+
+                // Update new show-level fields from batch stats
+                if (isset($stats['pub_date']) && $stats['pub_date'] !== $product->getData('pub_date')) {
+                    $product->setData('pub_date', $stats['pub_date']);
+                    $hasChanges = true;
+                }
+
+                if (isset($stats['added_date']) && $stats['added_date'] !== $product->getData('show_added_date')) {
+                    $product->setData('show_added_date', $stats['added_date']);
+                    $hasChanges = true;
+                }
+
+                if (isset($stats['runtime']) && $stats['runtime'] !== $product->getData('show_runtime')) {
+                    $product->setData('show_runtime', $stats['runtime']);
+                    $hasChanges = true;
                 }
 
                 if ($hasChanges) {

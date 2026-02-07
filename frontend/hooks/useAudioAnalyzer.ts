@@ -10,7 +10,7 @@ export interface UseAudioAnalyzerReturn {
   analyzerData: AudioAnalyzerData;
   connectAudioElement: (audioElement: HTMLAudioElement | null) => Promise<void>;
   isConnected: boolean;
-  setVolume: (volume: number) => void;
+  setVolume: (volume: number) => boolean;
 }
 
 /**
@@ -38,6 +38,8 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const animationRef = useRef<number | null>(null);
   const connectedElementRef = useRef<HTMLAudioElement | null>(null);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const playHandlerRef = useRef<(() => void) | null>(null);
   // Track which elements have been connected (can only create source once per element)
   const connectedElementsRef = useRef<WeakSet<HTMLAudioElement>>(new WeakSet());
   // Throttle frame rate for better performance (~30fps instead of 60fps)
@@ -57,6 +59,12 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
 
   // Analysis loop (throttled to ~30fps for performance)
   const analyze = useCallback((timestamp?: number) => {
+    // Stop the loop if audio is paused or element is gone
+    if (!audioElementRef.current || audioElementRef.current.paused) {
+      animationRef.current = null;
+      return;
+    }
+
     // Schedule next frame first
     animationRef.current = requestAnimationFrame(analyze);
 
@@ -132,7 +140,10 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
       if (audioContextRef.current.state === 'suspended') {
         console.log('[useAudioAnalyzer] ⚠️ AudioContext suspended, resuming...');
         await audioContextRef.current.resume();
-        console.log('[useAudioAnalyzer] ✅ AudioContext resumed, state:', audioContextRef.current!.state);
+        if (audioContextRef.current.state !== 'running') {
+          throw new Error(`AudioContext failed to resume, state: ${audioContextRef.current.state}`);
+        }
+        console.log('[useAudioAnalyzer] ✅ AudioContext resumed, state:', audioContextRef.current.state);
       }
 
       console.log('[useAudioAnalyzer] AudioContext state:', audioContextRef.current.state);
@@ -181,7 +192,23 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
         console.log('[useAudioAnalyzer] ♻️ Reusing existing audio source for element');
       }
 
+      // Clean up previous play handler
+      if (audioElementRef.current && playHandlerRef.current) {
+        audioElementRef.current.removeEventListener('play', playHandlerRef.current);
+      }
+
       connectedElementRef.current = audioElement;
+      audioElementRef.current = audioElement;
+
+      // Add play event listener to restart the analysis loop when audio resumes
+      const playHandler = () => {
+        if (!animationRef.current) {
+          analyze();
+        }
+      };
+      playHandlerRef.current = playHandler;
+      audioElement.addEventListener('play', playHandler);
+
       setIsConnected(true);
 
       // Start the analysis loop
@@ -198,6 +225,11 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
     return () => {
       cleanup();
 
+      // Clean up play handler
+      if (audioElementRef.current && playHandlerRef.current) {
+        audioElementRef.current.removeEventListener('play', playHandlerRef.current);
+      }
+
       // Close audio context on unmount
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
         audioContextRef.current.close().catch(() => {
@@ -207,12 +239,29 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
     };
   }, [cleanup]);
 
+  // Resume AudioContext when page becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && audioContextRef.current?.state === 'suspended') {
+        audioContextRef.current.resume().catch(() => {
+          // Ignore resume errors
+        });
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   // Volume control using GainNode
-  const setVolume = useCallback((volume: number) => {
+  const setVolume = useCallback((volume: number): boolean => {
     if (gainNodeRef.current) {
       gainNodeRef.current.gain.value = volume;
       console.log('[useAudioAnalyzer] 🔊 Volume set to:', Math.round(volume * 100) + '%');
+      return true;
     }
+    return false;
   }, []);
 
   return {

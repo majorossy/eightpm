@@ -71,6 +71,47 @@ See `docs/IMPORT_STATUS.md` for full resume instructions.
 
 ---
 
+## GraphQL Schema Expansion - COMPLETE (2026-02-07)
+
+**Status:** ✅ All 38 Archive.org product attributes now exposed in GraphQL
+**Location:** `docs/GRAPHQL_SCHEMA_EXPANSION.md`
+
+**What Changed:**
+Previously only 16 Archive.org attributes were accessible via GraphQL. Added 22 missing fields including:
+- ✅ `show_location` - City/state (e.g., "Morrison, CO") - **solves venue location display**
+- ✅ `show_venue`, `show_date`, `show_year` - Complete show metadata
+- ✅ `show_taper`, `show_transferer`, `lineage`, `notes` - Recording source details
+- ✅ `identifier`, `guid` - Archive.org identifiers
+- ✅ `archive_avg_rating`, `archive_num_reviews`, `archive_downloads*` - Statistics
+- ✅ `title`, `length` - Track details
+- ✅ `dir`, `server_one`, `server_two` - Server/storage paths
+
+**Impact:**
+- Frontend can now display venue + city/state on recording cards
+- All recording metadata (taper, lineage, notes) accessible
+- Download counts and ratings available for sorting/filtering
+- Complete show context for SEO and structured data
+
+**Test Query:**
+```graphql
+query {
+  products(filter: {archive_collection: {eq: "Railroad Earth"}}, pageSize: 1) {
+    items {
+      show_venue
+      show_location  # NEW: "Morrison, CO"
+      show_date
+      lineage
+      notes
+      archive_downloads
+    }
+  }
+}
+```
+
+**Cache Cleared:** Magento cache flushed after schema update
+
+---
+
 ## SEO Keyword Research - COMPLETE (2026-01-29)
 
 **Status:** ✅ Research phase complete, ready for CARD-1 and CARD-2 implementation

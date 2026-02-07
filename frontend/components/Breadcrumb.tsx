@@ -28,7 +28,7 @@ function HamburgerButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="p-1 -ml-1 mr-2 text-[var(--text-dim)] hover:brightness-110 transition-all"
+      className="p-0 text-[var(--text-dim)] hover:brightness-110 transition-all flex items-center justify-center shrink-0"
       aria-label="Open queue"
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="32" height="32">
@@ -81,10 +81,10 @@ export default function Breadcrumb() {
   // Show "8pm.me" when no breadcrumbs are set
   if (breadcrumbs.length === 0) {
     return (
-      <nav aria-label="Breadcrumb" className="flex items-center text-sm">
+      <nav aria-label="Breadcrumb" className="flex items-center text-sm gap-1 min-w-0 flex-1">
         <HamburgerButton onClick={player.toggleQueue} />
         <svg
-          className="w-4 h-4 text-[var(--text-subdued)] shrink-0 mx-1"
+          className="w-4 h-4 text-[var(--text-subdued)] shrink-0"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -96,7 +96,7 @@ export default function Breadcrumb() {
             d="M9 5l7 7-7 7"
           />
         </svg>
-        <Link href="/" className="text-[var(--text)] font-medium hover:text-[var(--neon-pink)] transition-colors">
+        <Link href="/" className="text-[var(--text)] font-medium hover:text-[var(--neon-pink)] transition-colors shrink-0">
           8pm.me
         </Link>
       </nav>
@@ -104,10 +104,10 @@ export default function Breadcrumb() {
   }
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center text-sm overflow-hidden">
+    <nav aria-label="Breadcrumb" className="flex items-center text-sm gap-1 min-w-0 flex-1">
       <HamburgerButton onClick={player.toggleQueue} />
       <svg
-        className="w-4 h-4 text-[var(--text-subdued)] shrink-0 mx-1"
+        className="w-4 h-4 text-[var(--text-subdued)] shrink-0"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -119,7 +119,7 @@ export default function Breadcrumb() {
           d="M9 5l7 7-7 7"
         />
       </svg>
-      <ol className="flex items-center gap-1 min-w-0">
+      <ol className="flex items-center gap-1 min-w-0 flex-1">
         {/* Always show 8pm.me link first */}
         <li className="flex items-center shrink-0">
           <Link
@@ -155,7 +155,7 @@ export default function Breadcrumb() {
               {isLast || !crumb.href ? (
                 // Current page (non-clickable)
                 <span
-                  className="text-[var(--text)] font-medium truncate max-w-[400px]"
+                  className="text-[var(--text)] font-medium truncate min-w-0 max-w-xs"
                   title={displayLabel}
                 >
                   {prefix && <span className="text-[var(--text-subdued)]">{prefix}</span>}
@@ -165,7 +165,7 @@ export default function Breadcrumb() {
                 // Clickable link
                 <Link
                   href={crumb.href}
-                  className="text-[var(--text-dim)] hover:text-[var(--text)] transition-colors truncate max-w-[400px]"
+                  className="text-[var(--text-dim)] hover:text-[var(--text)] transition-colors truncate min-w-0 max-w-xs"
                   title={displayLabel}
                 >
                   {prefix && <span className="text-[var(--text-subdued)]">{prefix}</span>}

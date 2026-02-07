@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Orbitron, Space_Mono, Bebas_Neue } from 'next/font/google';
+import { Orbitron, Space_Mono, Bebas_Neue, JetBrains_Mono, Instrument_Sans } from 'next/font/google';
 import './globals.css';
 import ClientLayout from '@/components/ClientLayout';
 import ConditionalAnalytics from '@/components/ConditionalAnalytics';
@@ -29,6 +29,22 @@ const bebasNeue = Bebas_Neue({
   display: 'swap',
   adjustFontFallback: true,
   fallback: ['Impact', 'sans-serif'],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
+  adjustFontFallback: true,
+  fallback: ['Courier New', 'monospace'],
+});
+
+const instrumentSans = Instrument_Sans({
+  subsets: ['latin'],
+  variable: '--font-instrument-sans',
+  display: 'swap',
+  adjustFontFallback: true,
+  fallback: ['-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
 });
 
 export const metadata: Metadata = {
@@ -73,7 +89,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} theme-campfire`}>
+    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} ${instrumentSans.variable} theme-campfire`}>
       <head>
         {/* Preconnect hints for critical resources - improves LCP */}
         <link rel="preconnect" href="https://magento.test" />

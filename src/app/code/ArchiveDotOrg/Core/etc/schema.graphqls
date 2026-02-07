@@ -1,13 +1,60 @@
 interface ProductInterface {
+    # Audio streaming URLs
     song_urls_json: String @doc(description: "JSON object with quality URLs") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongUrlsJson")
     song_url_high: String @doc(description: "High quality URL (FLAC or best available)") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongUrlHigh")
     song_url_medium: String @doc(description: "Medium quality URL (MP3 320k)") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongUrlMedium")
     song_url_low: String @doc(description: "Low quality URL (MP3 128k)") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongUrlLow")
+    song_url: String @doc(description: "Legacy single song URL")
+
+    # Recording metadata
     is_streamable: Boolean @doc(description: "Whether this recording can be streamed (not access-restricted)")
     recording_type: String @doc(description: "Recording type: SBD, AUD, MX, FM, WEBCAST, or UNKNOWN")
+    access_restriction: String @doc(description: "Access restriction type, e.g. stream_only")
+
+    # Archive.org identifiers and URLs
+    identifier: String @doc(description: "Archive.org show identifier (e.g., gd1977-05-08.sbd.miller.32601)")
     archive_detail_url: String @doc(description: "Archive.org detail page URL")
     archive_license_url: String @doc(description: "Creative Commons license URL if available")
-    access_restriction: String @doc(description: "Access restriction type, e.g. stream_only")
+    guid: String @doc(description: "Global unique identifier for this recording")
+
+    # Show metadata
+    show_name: String @doc(description: "Show/album name")
+    show_date: String @doc(description: "Performance date (YYYY-MM-DD)")
+    show_year: String @doc(description: "Performance year")
+    show_venue: String @doc(description: "Venue name")
+    show_location: String @doc(description: "Venue location (city, state) from Archive.org coverage field")
+    show_runtime: String @doc(description: "Total show duration (e.g., 165:40)")
+    show_pub_date: String @doc(description: "When published on Archive.org")
+    show_added_date: String @doc(description: "When the show was uploaded to Archive.org")
+    show_public_date: String @doc(description: "When the show was made public on Archive.org")
+    show_subject: String @doc(description: "Genre and event tags (e.g., americana; newgrass; Horn O'Plenty 2017)")
+
+    # Recording source metadata
+    show_taper: String @doc(description: "Who recorded the show (taper name)")
+    show_transferer: String @doc(description: "Who transferred/digitized the recording")
+    lineage: String @doc(description: "Recording lineage/transfer chain (equipment, process)")
+    notes: String @doc(description: "Show notes, setlist details, special guests, covers")
+
+    # Track metadata
+    title: String @doc(description: "Track title")
+    length: String @doc(description: "Track length/duration")
+    track_original_file: String @doc(description: "Original source file for derivatives (links MP3 back to FLAC)")
+    track_album: String @doc(description: "Album name from file metadata")
+
+    # Archive.org server/storage
+    dir: String @doc(description: "Directory path on Archive.org server")
+    server_one: String @doc(description: "Primary Archive.org server URL")
+    server_two: String @doc(description: "Secondary Archive.org server URL")
+
+    # Archive.org statistics
+    archive_avg_rating: String @doc(description: "Average rating from Archive.org reviews (1-5 stars)")
+    archive_num_reviews: Int @doc(description: "Number of reviews on Archive.org")
+    archive_downloads: Int @doc(description: "Total download count on Archive.org")
+    archive_downloads_week: Int @doc(description: "Downloads this week on Archive.org")
+    archive_downloads_month: Int @doc(description: "Downloads this month on Archive.org")
+
+    # Collection/artist
+    archive_collection: String @doc(description: "Archive.org collection/artist name")
 }
 
 interface CategoryInterface {
