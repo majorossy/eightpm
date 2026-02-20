@@ -710,39 +710,43 @@
   background: linear-gradient(145deg, #252220 0%, #1a1715 100%);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
 }
 
-/* Campfire track row wrapper */
-.theme-campfire .track-row-wrapper {
-  border-bottom: 1px solid rgba(122, 116, 104, 0.1);
+/* Recording table row hover */
+.recording-table-row:hover {
+  background: rgba(212,160,96,0.05) !important;
 }
 
-.theme-campfire .track-row-wrapper.expanded {
-  border-left: 1px solid #d4a060;
-  border-right: 1px solid rgba(212, 160, 96, 0.10);
-  border-bottom: 1px solid rgba(212, 160, 96, 0.10);
-  background: rgba(212, 160, 96, 0.02);
+/* Recording scroll container */
+.recording-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.recording-scroll::-webkit-scrollbar-thumb {
+  background: var(--text-subdued);
+  border-radius: 3px;
+}
+.recording-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* Campfire track row with hover effects */
-.theme-campfire .track-row {
-  transition: all 0.2s ease;
-  border-left: 1px solid transparent;
-  margin-left: -1px;
-  padding-left: calc(1rem + 1px);
+/* Recording detail fadeIn */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.theme-campfire .track-row:hover {
-  background: rgba(232,160,80,0.06);
-  border-left-color: #d4a060;
-  transform: translateX(4px);
-}
-
-.theme-campfire .track-row.expanded,
-.theme-campfire .track-row.expanded:hover {
-  background: rgba(232,160,80,0.08);
-  border-left-color: #d4a060;
-  transform: none;
+/* Hide time column on small screens */
+@media (max-width: 639px) {
+  .recording-col-time {
+    display: none;
+  }
+  .recording-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* Campfire album action buttons */
@@ -1043,29 +1047,10 @@
   background: linear-gradient(145deg, #2a3a44 0%, #223344 100%);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-}
-
-/* Light mode track row wrapper */
-.theme-fishman .track-row-wrapper {
-  border-bottom: 1px solid rgba(138, 164, 181, 0.1);
-}
-
-.theme-fishman .track-row-wrapper.expanded {
-  border-left: 1px solid rgba(212, 160, 80, 0.25);
-  border-right: 1px solid rgba(212, 160, 80, 0.25);
-  border-bottom: 1px solid rgba(212, 160, 80, 0.25);
-  background: rgba(212, 160, 80, 0.04);
-}
-
-/* Light mode track row with hover effects */
-.theme-fishman .track-row:hover {
-  background: #354a5a;
-  border-left-color: #d4a050;
-}
-
-.theme-fishman .track-row.expanded {
-  background: rgba(212,160,80,0.12);
-  border-left-color: #d4a050;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
 }
 
 /* Light mode album action buttons */
