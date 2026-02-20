@@ -12,7 +12,7 @@ bin/frontend-stop
 # Step 2: Stop Docker containers
 echo ""
 echo "Step 2/2: Stopping Docker containers..."
-bin/stop
+bin/docker-compose down
 
 echo ""
 echo "✓ All services stopped"

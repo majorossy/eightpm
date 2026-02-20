@@ -435,6 +435,27 @@ const QueueContext = createContext<QueueContextType | null>(null);
 
 const QUEUE_STORAGE_KEY = '8pm_queue_snapshot';
 
+/** Sanitize a single stream URL: fix double-slash, convert .flac -> .mp3 */
+function sanitizeUrl(url: string | undefined): string | undefined {
+  if (!url) return url;
+  let fixed = url.replace(/^(https?:\/\/[^/]+)\/\//, '$1/');
+  if (fixed.endsWith('.flac')) fixed = fixed.replace(/\.flac$/, '.mp3');
+  return fixed;
+}
+
+/** Sanitize all URLs in a Song restored from localStorage */
+function sanitizeSongUrls(song: Song): Song {
+  return {
+    ...song,
+    streamUrl: sanitizeUrl(song.streamUrl) || song.streamUrl,
+    qualityUrls: song.qualityUrls ? {
+      high: sanitizeUrl(song.qualityUrls.high),
+      medium: sanitizeUrl(song.qualityUrls.medium),
+      low: sanitizeUrl(song.qualityUrls.low),
+    } : song.qualityUrls,
+  };
+}
+
 function getInitialState(): UnifiedQueue {
   if (typeof window === 'undefined') return initialQueueState;
   try {
@@ -444,6 +465,7 @@ function getInitialState(): UnifiedQueue {
       if (parsed && Array.isArray(parsed.items)) {
         const items: QueueItem[] = parsed.items.map((item: QueueItem) => ({
           ...item,
+          song: item.song ? sanitizeSongUrls(item.song) : item.song,
           availableVersions: item.song ? [item.song] : [],
         }));
         return {

@@ -24,6 +24,18 @@ const QUALITY_LABELS: Record<AudioQuality, string> = {
   low: 'Low',
 };
 
+/**
+ * Ensure a stream URL is browser-playable.
+ * - Fix double-slash in path after domain (e.g., //24/items/ -> /24/items/)
+ * - Convert .flac -> .mp3 (Archive.org derives VBR MP3 for every FLAC)
+ */
+function sanitizeStreamUrl(url: string): string {
+  if (!url) return url;
+  url = url.replace(/^(https?:\/\/[^/]+)\/\//, '$1/');
+  if (url.endsWith('.flac')) url = url.replace(/\.flac$/, '.mp3');
+  return url;
+}
+
 function getDefaultQuality(): AudioQuality {
   if (typeof navigator === 'undefined') return 'high';
   const conn = (navigator as Navigator & { connection?: NetworkInformation }).connection;
@@ -61,18 +73,21 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
 
   const getStreamUrl = useCallback((song: Song): string => {
     if (!song.qualityUrls) {
-      return song.streamUrl; // Fallback to legacy URL
+      return sanitizeStreamUrl(song.streamUrl);
     }
 
-    // Try preferred quality first
+    // Try preferred quality first, then respect defaultQuality if set
     const preferred = song.qualityUrls[preferredQuality];
-    if (preferred) return preferred;
+    const defaultQ = song.defaultQuality ? song.qualityUrls[song.defaultQuality] : undefined;
 
-    // Fallback order: high -> medium -> low -> legacy
-    return song.qualityUrls.high
+    const url = preferred
+      || defaultQ
+      || song.qualityUrls.high
       || song.qualityUrls.medium
       || song.qualityUrls.low
       || song.streamUrl;
+
+    return sanitizeStreamUrl(url);
   }, [preferredQuality]);
 
   const getQualityLabel = useCallback((quality: AudioQuality): string => {
@@ -85,15 +100,21 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     const { high, medium, low } = song.qualityUrls;
     const fallback = song.streamUrl;
 
+    // Sanitize all URLs for comparison and return
+    const sHigh = high ? sanitizeStreamUrl(high) : undefined;
+    const sMedium = medium ? sanitizeStreamUrl(medium) : undefined;
+    const sLow = low ? sanitizeStreamUrl(low) : undefined;
+    const sFallback = sanitizeStreamUrl(fallback);
+
     // Determine which quality the current URL matches and return next lower
-    if (currentUrl === high) {
-      return medium || low || (fallback !== high ? fallback : null);
+    if (currentUrl === sHigh) {
+      return sMedium || sLow || (sFallback !== sHigh ? sFallback : null);
     }
-    if (currentUrl === medium) {
-      return low || (fallback !== medium ? fallback : null);
+    if (currentUrl === sMedium) {
+      return sLow || (sFallback !== sMedium ? sFallback : null);
     }
-    if (currentUrl === low) {
-      return fallback !== low ? fallback : null;
+    if (currentUrl === sLow) {
+      return sFallback !== sLow ? sFallback : null;
     }
 
     // currentUrl doesn't match any known quality - no fallback available
