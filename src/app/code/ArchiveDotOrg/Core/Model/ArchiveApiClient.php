@@ -235,6 +235,13 @@ class ArchiveApiClient implements ArchiveApiClientInterface
         $response = $this->executeWithRetry($url);
         $data = $this->parseJsonResponse($response);
 
+        // Archive.org returns {"error":"..."} for oversized queries
+        if (isset($data['error'])) {
+            throw new LocalizedException(
+                __('Archive.org batch API error: %1', $data['error'])
+            );
+        }
+
         $stats = [];
         foreach ($data['response']['docs'] ?? [] as $doc) {
             $identifier = $doc['identifier'] ?? null;
@@ -555,20 +562,4 @@ class ArchiveApiClient implements ArchiveApiClientInterface
         return (string) $value ?: null;
     }
 
-    /**
-     * Check if string ends with suffix
-     *
-     * @param string $haystack
-     * @param string $needle
-     * @return bool
-     */
-    private function endsWith(string $haystack, string $needle): bool
-    {
-        $length = strlen($needle);
-        if ($length === 0) {
-            return true;
-        }
-
-        return substr($haystack, -$length) === $needle;
-    }
 }

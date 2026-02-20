@@ -138,22 +138,17 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
       // Resume context if suspended (happens after page becomes visible again)
       // MUST await before createMediaElementSource or audio routes through suspended context
       if (audioContextRef.current.state === 'suspended') {
-        console.log('[useAudioAnalyzer] ⚠️ AudioContext suspended, resuming...');
         await audioContextRef.current.resume();
         if (audioContextRef.current.state !== 'running') {
           throw new Error(`AudioContext failed to resume, state: ${audioContextRef.current.state}`);
         }
-        console.log('[useAudioAnalyzer] ✅ AudioContext resumed, state:', audioContextRef.current.state);
       }
-
-      console.log('[useAudioAnalyzer] AudioContext state:', audioContextRef.current.state);
 
       // Create gain node for volume control (needed when using Web Audio API)
       if (!gainNodeRef.current) {
         gainNodeRef.current = audioContextRef.current.createGain();
         gainNodeRef.current.gain.value = 1.0; // Full volume initially
         gainNodeRef.current.connect(audioContextRef.current.destination);
-        console.log('[useAudioAnalyzer] ✅ Created GainNode for volume control');
       }
 
       // Create analyzer if needed
@@ -163,7 +158,6 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
         analyzerRef.current.smoothingTimeConstant = 0.8;
         // Connect analyzer to gain node instead of directly to destination
         analyzerRef.current.connect(gainNodeRef.current);
-        console.log('[useAudioAnalyzer] ✅ Created AnalyserNode');
       }
 
       // Check if this element was already connected before
@@ -177,19 +171,12 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
           newSource.connect(analyzerRef.current);
           sourceRef.current = newSource;
           connectedElementsRef.current.add(audioElement);
-          console.log('[useAudioAnalyzer] ✅ Created new audio source and connected:', {
-            analyzerConnected: analyzerRef.current !== null,
-            destinationConnected: true,
-            contextState: audioContextRef.current.state
-          });
         } catch (error) {
           console.error('[useAudioAnalyzer] ❌ Failed to create audio source:', error);
           // Don't proceed if we can't create the source
           return;
         }
       } else {
-        // Element was connected before - reuse the existing connection
-        console.log('[useAudioAnalyzer] ♻️ Reusing existing audio source for element');
       }
 
       // Clean up previous play handler
@@ -216,7 +203,7 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
         analyze();
       }
     } catch (error) {
-      console.warn('[useAudioAnalyzer] Failed to connect:', error);
+      console.error('[useAudioAnalyzer] Failed to connect:', error);
     }
   }, [analyze, cleanup, isConnected]);
 
@@ -258,7 +245,6 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
   const setVolume = useCallback((volume: number): boolean => {
     if (gainNodeRef.current) {
       gainNodeRef.current.gain.value = volume;
-      console.log('[useAudioAnalyzer] 🔊 Volume set to:', Math.round(volume * 100) + '%');
       return true;
     }
     return false;

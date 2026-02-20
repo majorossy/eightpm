@@ -1,0 +1,272 @@
+#!/bin/bash
+# Refresh All Artists' Product Stats from Archive.org
+# Fetches live ratings, downloads, reviews, and trending data via batch API
+# Date: 2026-02-20
+
+set -e  # Exit on error (disable with --continue-on-error)
+set -o pipefail  # Capture exit code through pipes
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+CONTINUE_ON_ERROR=false
+SKIP_ARTISTS=()
+
+# Parse arguments
+for arg in "$@"; do
+    case $arg in
+        --continue-on-error)
+            CONTINUE_ON_ERROR=true
+            set +e  # Don't exit on error
+            ;;
+        --skip=*)
+            IFS=',' read -ra SKIP_ARTISTS <<< "${arg#*=}"
+            ;;
+        --help|-h)
+            echo "Usage: bin/refresh-all-artists [OPTIONS]"
+            echo ""
+            echo "Refresh product stats (ratings, downloads, reviews) from Archive.org"
+            echo "for all artists in the database."
+            echo ""
+            echo "Options:"
+            echo "  --continue-on-error    Continue processing if an artist fails"
+            echo "  --skip=artist1,artist2 Skip specific artists (case-insensitive)"
+            echo "  --help, -h             Show this help"
+            echo ""
+            echo "Example:"
+            echo "  bin/refresh-all-artists --continue-on-error"
+            echo "  bin/refresh-all-artists --skip=\"railroad earth,moe.\""
+            exit 0
+            ;;
+    esac
+done
+
+# Always skip railroad earth (already refreshed)
+SKIP_ARTISTS+=("railroad earth")
+
+# Tracking
+TOTAL_ARTISTS=0
+SUCCESSFUL_ARTISTS=0
+FAILED_ARTISTS=0
+SKIPPED_ARTISTS=0
+START_TIME=$(date +%s)
+
+echo -e "${BLUE}================================================${NC}"
+echo -e "${BLUE}  Refresh All Artists - Archive.org Product Stats${NC}"
+echo -e "${BLUE}================================================${NC}"
+echo ""
+echo "Continue on error: $CONTINUE_ON_ERROR"
+echo ""
+
+# Create log file
+LOG_FILE="var/log/refresh-all-artists-$(date +%Y%m%d-%H%M%S).log"
+mkdir -p var/log
+echo "Logging to: $LOG_FILE"
+echo ""
+
+# Query database for all distinct archive_collection values with product counts
+# sorted by product count ascending (smallest first)
+echo -e "${YELLOW}Querying database for artist collections...${NC}"
+
+QUERY="SELECT v.value AS collection_name, COUNT(DISTINCT e.entity_id) AS product_count
+FROM catalog_product_entity_varchar v
+JOIN eav_attribute a ON v.attribute_id = a.attribute_id AND a.attribute_code = 'archive_collection'
+JOIN catalog_product_entity e ON v.entity_id = e.entity_id
+WHERE v.value IS NOT NULL AND v.value != ''
+GROUP BY v.value
+ORDER BY product_count ASC"
+
+# Run query and capture output (skip header row)
+ARTIST_DATA=$(bin/mysql -N -e "$QUERY" 2>/dev/null)
+
+if [ -z "$ARTIST_DATA" ]; then
+    echo -e "${RED}No artists found in database!${NC}"
+    exit 1
+fi
+
+# Parse into arrays
+declare -a ARTIST_NAMES=()
+declare -a ARTIST_COUNTS=()
+
+while IFS=$'\t' read -r name count; do
+    # Trim whitespace
+    name=$(echo "$name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    count=$(echo "$count" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    if [ -n "$name" ]; then
+        ARTIST_NAMES+=("$name")
+        ARTIST_COUNTS+=("$count")
+    fi
+done <<< "$ARTIST_DATA"
+
+TOTAL_ARTISTS=${#ARTIST_NAMES[@]}
+echo -e "${GREEN}Found $TOTAL_ARTISTS artists in database${NC}"
+echo ""
+
+# Show plan
+echo -e "${BLUE}Artists to refresh (sorted smallest → largest):${NC}"
+for i in "${!ARTIST_NAMES[@]}"; do
+    name="${ARTIST_NAMES[$i]}"
+    count="${ARTIST_COUNTS[$i]}"
+
+    # Check skip list (case-insensitive, compatible with bash 3.x)
+    SKIP=false
+    name_lower=$(echo "$name" | tr '[:upper:]' '[:lower:]')
+    for skip in "${SKIP_ARTISTS[@]}"; do
+        skip_lower=$(echo "$skip" | tr '[:upper:]' '[:lower:]')
+        if [[ "$name_lower" == "$skip_lower" ]]; then
+            SKIP=true
+            break
+        fi
+    done
+
+    if [ "$SKIP" = true ]; then
+        printf "  ${YELLOW}%-45s %6s products (SKIP)${NC}\n" "$name" "$count"
+    else
+        printf "  %-45s %6s products\n" "$name" "$count"
+    fi
+done
+echo ""
+
+# Initialize tracking arrays
+declare -a SUCCESSFUL=()
+declare -a FAILED=()
+declare -a SKIPPED=()
+
+CURRENT=0
+
+# Loop through each artist
+for i in "${!ARTIST_NAMES[@]}"; do
+    CURRENT=$((CURRENT + 1))
+    ARTIST="${ARTIST_NAMES[$i]}"
+    COUNT="${ARTIST_COUNTS[$i]}"
+
+    # Check skip list (case-insensitive, compatible with bash 3.x)
+    SKIP=false
+    artist_lower=$(echo "$ARTIST" | tr '[:upper:]' '[:lower:]')
+    for skip in "${SKIP_ARTISTS[@]}"; do
+        skip_lower=$(echo "$skip" | tr '[:upper:]' '[:lower:]')
+        if [[ "$artist_lower" == "$skip_lower" ]]; then
+            SKIP=true
+            break
+        fi
+    done
+
+    if [ "$SKIP" = true ]; then
+        echo -e "${YELLOW}[$CURRENT/$TOTAL_ARTISTS] Skipping: $ARTIST (in skip list)${NC}"
+        SKIPPED+=("$ARTIST")
+        SKIPPED_ARTISTS=$((SKIPPED_ARTISTS + 1))
+        continue
+    fi
+
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${BLUE}[$CURRENT/$TOTAL_ARTISTS] Refreshing: $ARTIST${NC}"
+    echo -e "${BLUE}($COUNT products)${NC}"
+    echo -e "${BLUE}========================================${NC}"
+
+    ARTIST_START=$(date +%s)
+
+    if bin/magento archive:refresh:products "$ARTIST" --force 2>&1 | tee -a "$LOG_FILE"; then
+        ARTIST_END=$(date +%s)
+        ARTIST_DURATION=$((ARTIST_END - ARTIST_START))
+        echo -e "${GREEN}✓ Refresh complete ($ARTIST_DURATION seconds)${NC}"
+        SUCCESSFUL+=("$ARTIST ($COUNT products, ${ARTIST_DURATION}s)")
+        SUCCESSFUL_ARTISTS=$((SUCCESSFUL_ARTISTS + 1))
+    else
+        ARTIST_END=$(date +%s)
+        ARTIST_DURATION=$((ARTIST_END - ARTIST_START))
+        echo -e "${RED}✗ Refresh failed ($ARTIST_DURATION seconds)${NC}"
+        FAILED+=("$ARTIST ($COUNT products)")
+        FAILED_ARTISTS=$((FAILED_ARTISTS + 1))
+
+        if [ "$CONTINUE_ON_ERROR" = false ]; then
+            echo -e "${RED}Stopping due to error. Use --continue-on-error to continue.${NC}"
+            exit 1
+        fi
+    fi
+
+    echo ""
+done
+
+# Calculate totals
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+HOURS=$((DURATION / 3600))
+MINUTES=$(((DURATION % 3600) / 60))
+SECONDS=$((DURATION % 60))
+
+# Post-refresh: fix index and flush cache
+echo -e "${BLUE}========================================${NC}"
+echo -e "${BLUE}  Post-Refresh Maintenance${NC}"
+echo -e "${BLUE}========================================${NC}"
+echo ""
+
+echo -e "${YELLOW}Fixing catalog index (workaround for Mage-OS bug)...${NC}"
+if bin/fix-index 2>&1 | tee -a "$LOG_FILE"; then
+    echo -e "${GREEN}✓ Index fix complete${NC}"
+else
+    echo -e "${RED}✗ Index fix failed - run bin/fix-index manually${NC}"
+fi
+
+echo ""
+echo -e "${YELLOW}Flushing Magento cache...${NC}"
+if bin/magento cache:flush 2>&1 | tee -a "$LOG_FILE"; then
+    echo -e "${GREEN}✓ Cache flush complete${NC}"
+else
+    echo -e "${RED}✗ Cache flush failed - run bin/magento cache:flush manually${NC}"
+fi
+
+# Summary
+echo ""
+echo -e "${BLUE}================================================${NC}"
+echo -e "${BLUE}           REFRESH SUMMARY${NC}"
+echo -e "${BLUE}================================================${NC}"
+echo ""
+echo -e "${GREEN}Successful: $SUCCESSFUL_ARTISTS${NC}"
+echo -e "${RED}Failed:     $FAILED_ARTISTS${NC}"
+echo -e "${YELLOW}Skipped:    $SKIPPED_ARTISTS${NC}"
+echo -e "Total:      $TOTAL_ARTISTS"
+echo ""
+echo "Duration: ${HOURS}h ${MINUTES}m ${SECONDS}s"
+echo "Log file: $LOG_FILE"
+echo ""
+
+# List successful artists
+if [ ${#SUCCESSFUL[@]} -gt 0 ]; then
+    echo -e "${GREEN}Successful Artists:${NC}"
+    for artist in "${SUCCESSFUL[@]}"; do
+        echo "  ✓ $artist"
+    done
+    echo ""
+fi
+
+# List failed artists
+if [ ${#FAILED[@]} -gt 0 ]; then
+    echo -e "${RED}Failed Artists:${NC}"
+    for artist in "${FAILED[@]}"; do
+        echo "  ✗ $artist"
+    done
+    echo ""
+    echo "Check log file for details: $LOG_FILE"
+    echo ""
+fi
+
+# List skipped artists
+if [ ${#SKIPPED[@]} -gt 0 ]; then
+    echo -e "${YELLOW}Skipped Artists:${NC}"
+    for artist in "${SKIPPED[@]}"; do
+        echo "  ⊘ $artist"
+    done
+    echo ""
+fi
+
+echo -e "${GREEN}================================================${NC}"
+echo -e "${GREEN}  Refresh Complete!${NC}"
+echo -e "${GREEN}================================================${NC}"
+echo ""
+
+exit 0

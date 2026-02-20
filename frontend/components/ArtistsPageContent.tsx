@@ -138,9 +138,6 @@ function ArtistsContentInner() {
             totalVenues: a.totalVenues,
             formationYear: a.formationYear,
           };
-          if (a.name === 'STS9') {
-            console.log('[ArtistsPageContent] STS9 data:', mapped);
-          }
           return mapped;
         })}
         onStartListening={scrollToArtists}

@@ -8,11 +8,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 // Check if Supabase is configured (both URL and key are required)
 const isConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-if (!isConfigured && typeof window !== 'undefined') {
-  console.warn(
-    'Supabase credentials not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment for cross-device sync.'
-  );
-}
 
 // Create a single supabase client for interacting with your database
 // Only create if configured, otherwise create a dummy client that won't be used

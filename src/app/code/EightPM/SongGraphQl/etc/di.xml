@@ -18,6 +18,7 @@
                 <item name="show_source" xsi:type="string">show_source</item>
                 <item name="lineage" xsi:type="string">lineage</item>
                 <item name="notes" xsi:type="string">notes</item>
+                <item name="recording_type" xsi:type="string">recording_type</item>
                 <item name="archive_avg_rating" xsi:type="string">archive_avg_rating</item>
                 <item name="archive_num_reviews" xsi:type="string">archive_num_reviews</item>
             </argument>

@@ -11,7 +11,7 @@ cd "$(dirname "$0")/../frontend"
 # Install dependencies if needed
 if [ ! -d "node_modules" ] || [ "package.json" -nt "node_modules" ]; then
   echo "Installing dependencies..."
-  npm install
+  npm install --legacy-peer-deps
 fi
 
 # Start dev server

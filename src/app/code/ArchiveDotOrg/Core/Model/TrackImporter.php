@@ -353,14 +353,15 @@ class TrackImporter implements TrackImporterInterface
             $product->setData('access_restriction', 'stream_only');
         }
 
+        $identifier = $show->getIdentifier();
         $recordingType = $this->recordingTypeDetector->detect(
             $show->getSource(),
             $show->getLineage(),
-            $show->getSubjectTags()
+            $show->getSubjectTags(),
+            $identifier
         );
         $product->setData('recording_type', $recordingType);
 
-        $identifier = $show->getIdentifier();
         if ($identifier) {
             $product->setData('archive_detail_url', 'https://archive.org/details/' . $identifier);
         }
@@ -444,8 +445,8 @@ class TrackImporter implements TrackImporterInterface
         ]));
 
         // Use magic setters for proper EAV attribute handling
-        $product->setMetaTitle($this->truncateToLength($metaTitle, 70));
-        $product->setMetaDescription($this->truncateToLength($metaDescription, 160));
+        $product->setMetaTitle(StringUtility::truncateToLength($metaTitle, 70));
+        $product->setMetaDescription(StringUtility::truncateToLength($metaDescription, 160));
         $product->setMetaKeyword($metaKeyword);
     }
 
@@ -511,11 +512,21 @@ class TrackImporter implements TrackImporterInterface
     }
 
     /**
-     * Build multi-quality URLs from format tracks
+     * Build multi-quality URLs from format tracks.
+     *
+     * No isset() guard -- the LAST file encountered for each quality tier wins,
+     * overwriting any previous entry. Quality threshold: 3 MB/min separates
+     * medium from low MP3s.
+     *
+     * This differs from BulkProductImporter::buildQualityUrlsFromVariants() which
+     * keeps the FIRST file per tier and uses a 1 MB/min threshold. The difference
+     * exists because single-track import iterates format tracks where later entries
+     * may be higher quality re-encodes, while bulk import processes pre-sorted
+     * variant arrays where the first match is preferred.
      *
      * @param TrackInterface[] $formatTracks
      * @param ShowInterface $show
-     * @return array
+     * @return array Quality tier map: ['high' => ['url' => ..., 'format' => ..., 'bitrate' => ..., 'size_mb' => ...], ...]
      */
     private function buildMultiQualityUrls(array $formatTracks, ShowInterface $show): array
     {
@@ -605,27 +616,4 @@ class TrackImporter implements TrackImporterInterface
         return $format === 'mp3' ? '256k' : '192k';
     }
 
-    /**
-     * Truncate string to maximum length without breaking words
-     *
-     * @param string $text
-     * @param int $maxLength
-     * @return string
-     */
-    private function truncateToLength(string $text, int $maxLength): string
-    {
-        if (mb_strlen($text) <= $maxLength) {
-            return $text;
-        }
-
-        $truncated = mb_substr($text, 0, $maxLength);
-        $lastSpace = mb_strrpos($truncated, ' ');
-
-        // Only break at space if it's not too far back (>75% of max length)
-        if ($lastSpace !== false && $lastSpace > $maxLength * 0.75) {
-            return mb_substr($truncated, 0, $lastSpace) . '...';
-        }
-
-        return $truncated . '...';
-    }
 }

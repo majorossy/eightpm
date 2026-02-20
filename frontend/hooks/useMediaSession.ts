@@ -80,7 +80,6 @@ export function useMediaSession({
           artworkLoadedRef.current.add(artworkKey);
         };
         img.onerror = () => {
-          console.warn('[MediaSession] Failed to load artwork:', artworkKey);
           // Don't add to loaded set - will retry next time
         };
         img.src = artworkKey;

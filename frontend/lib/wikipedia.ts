@@ -27,7 +27,6 @@ export async function fetchWikipediaSummary(
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.warn(`Wikipedia page not found: ${pageTitle}`);
         return null;
       }
       throw new Error(`Wikipedia API error: ${response.status}`);
@@ -91,7 +90,6 @@ async function fetchExtendedBiography(pageTitle: string): Promise<string | null>
     } as RequestInit);
 
     if (!response.ok) {
-      console.warn(`TextExtracts API error for ${pageTitle}: ${response.status}`);
       return null;
     }
 
@@ -151,7 +149,6 @@ async function fetchImageAttribution(imageUrl: string): Promise<ImageAttribution
     }
 
     if (!filename) {
-      console.warn(`Could not extract filename from URL: ${imageUrl}`);
       return null;
     }
 
@@ -171,7 +168,6 @@ async function fetchImageAttribution(imageUrl: string): Promise<ImageAttribution
     } as RequestInit);
 
     if (!response.ok) {
-      console.warn(`Commons API error for ${filename}: ${response.status}`);
       return null;
     }
 

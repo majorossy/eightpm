@@ -193,10 +193,6 @@ export function rateLimit(config: RateLimitConfig) {
           response.headers.set('Retry-After', resetSeconds.toString());
         }
 
-        console.warn(
-          `[RateLimit] ${name}: Rate limit exceeded for ${identifier} (${entry.count}/${limit})`
-        );
-
         return {
           success: false,
           limit,

@@ -461,14 +461,14 @@ class TrackPopulatorService implements TrackPopulatorServiceInterface
                 $name = $fileData['name'] ?? '';
 
                 // Determine if this is a primary or alternate format file
-                $isPrimary = $this->endsWith($name, '.' . $audioFormat);
+                $isPrimary = str_ends_with($name, '.' . $audioFormat);
                 $fileFormat = null;
 
                 if ($isPrimary) {
                     $fileFormat = $audioFormat;
                 } else {
                     foreach ($alternateFormats as $altFormat) {
-                        if ($this->endsWith($name, '.' . $altFormat)) {
+                        if (str_ends_with($name, '.' . $altFormat)) {
                             $fileFormat = $altFormat;
                             break;
                         }
@@ -558,18 +558,6 @@ class TrackPopulatorService implements TrackPopulatorServiceInterface
         return substr($filename, 0, $pos);
     }
 
-    /**
-     * Check if string ends with suffix
-     */
-    private function endsWith(string $haystack, string $needle): bool
-    {
-        $length = strlen($needle);
-        if ($length === 0) {
-            return true;
-        }
-
-        return substr($haystack, -$length) === $needle;
-    }
 
     /**
      * Log message via callback

@@ -80,7 +80,6 @@ export async function getAllArtists(): Promise<ArtistCategory[]> {
   let hasMore = true;
   let totalCount = 0;
 
-  console.log('[Sitemap] Fetching artists...');
 
   while (hasMore) {
     const response = await fetchGraphQL<{
@@ -100,7 +99,6 @@ export async function getAllArtists(): Promise<ArtistCategory[]> {
     currentPage++;
   }
 
-  console.log(`[Sitemap] Fetched ${artists.length}/${totalCount} artists in ${currentPage - 1} pages`);
   return artists;
 }
 
@@ -139,7 +137,6 @@ export async function getAllAlbumsPaginated(): Promise<AlbumCategory[]> {
   let hasMore = true;
   let totalCount = 0;
 
-  console.log('[Sitemap] Fetching albums (paginated)...');
 
   while (hasMore) {
     const response = await fetchGraphQL<{
@@ -160,10 +157,8 @@ export async function getAllAlbumsPaginated(): Promise<AlbumCategory[]> {
 
     // Log progress every 10 pages
     if ((currentPage - 1) % 10 === 0) {
-      console.log(`[Sitemap] Albums progress: ${albums.length}/${totalCount}`);
     }
   }
 
-  console.log(`[Sitemap] Fetched ${albums.length}/${totalCount} albums in ${currentPage - 1} pages`);
   return albums;
 }

@@ -60,7 +60,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     }));
-    console.log(`[Sitemap] Fetched ${artists.length} artists`);
   } catch (error) {
     console.error('[Sitemap] Failed to fetch artists:', error);
   }
@@ -85,18 +84,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
       };
     });
-    console.log(`[Sitemap] Fetched ${albums.length} albums`);
   } catch (error) {
     console.error('[Sitemap] Failed to fetch albums:', error);
   }
 
   const totalUrls = staticPages.length + artistPages.length + albumPages.length;
-  console.log(`[Sitemap] Generated: ${staticPages.length} static, ${artistPages.length} artists, ${albumPages.length} albums = ${totalUrls} total URLs`);
-
-  // Warn if approaching Google's 50k limit
-  if (totalUrls > 45000) {
-    console.warn(`[Sitemap] WARNING: ${totalUrls} URLs approaching 50k limit. Consider sitemap index.`);
-  }
 
   return [...staticPages, ...artistPages, ...albumPages];
 }

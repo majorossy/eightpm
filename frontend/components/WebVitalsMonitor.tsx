@@ -32,13 +32,6 @@ function reportMetric(metric: Metric) {
     navigationType: metric.navigationType,
   };
 
-  // Log in development with color-coded output
-  if (process.env.NODE_ENV === 'development') {
-    const rating = metric.rating || 'unknown';
-    const color = rating === 'good' ? '🟢' : rating === 'needs-improvement' ? '🟡' : '🔴';
-    console.log(`[WebVitals] ${color} ${metric.name}: ${metric.value.toFixed(2)} (${rating})`);
-  }
-
   // Send to Google Analytics 4 (works in both dev and production)
   if (isAnalyticsAvailable()) {
     trackWebVitals(webVitalMetric);

@@ -13,6 +13,7 @@
 services:
   app:
     image: markoshust/magento-nginx:1.24-0
+    restart: unless-stopped
     ports:
       - "8080:8000"
       - "8443:8443"
@@ -42,12 +43,14 @@ services:
 
   phpfpm:
     image: markoshust/magento-php:8.3-fpm-4
+    restart: unless-stopped
     volumes: *appvolumes
     env_file: env/phpfpm.env
     #extra_hosts: *appextrahosts
 
   db:
     image: mariadb:10.6
+    restart: unless-stopped
     command:
       --max_allowed_packet=64M
       --optimizer_use_condition_selectivity=1
@@ -74,6 +77,7 @@ services:
 
   redis:
     image: valkey/valkey:8.1-alpine
+    restart: unless-stopped
     ports:
       - "6380:6379"
 
@@ -86,6 +90,7 @@ services:
 
   opensearch:
     image: markoshust/magento-opensearch:2.12-0
+    restart: unless-stopped
     ports:
       - "9201:9200"
       - "9301:9300"
@@ -129,6 +134,7 @@ services:
 
   rabbitmq:
     image: markoshust/magento-rabbitmq:4.1-0
+    restart: unless-stopped
     ports:
       - "15673:15672"
       - "5673:5672"
@@ -138,6 +144,7 @@ services:
 
   mailcatcher:
     image: sj26/mailcatcher:v0.10.0
+    restart: unless-stopped
     ports:
       - "1080:1080"
 

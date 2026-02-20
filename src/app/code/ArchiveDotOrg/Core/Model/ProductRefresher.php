@@ -14,6 +14,7 @@ use ArchiveDotOrg\Core\Logger\Logger;
 use ArchiveDotOrg\Core\Model\Cache\ApiResponseCache;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
@@ -29,9 +30,10 @@ use Magento\Framework\Exception\LocalizedException;
 class ProductRefresher
 {
     /**
-     * Batch size for API requests (100 identifiers per call)
+     * Batch size for API requests.
+     * Archive.org Solr rejects queries with too many OR clauses (>~60).
      */
-    private const BATCH_SIZE = 100;
+    private const BATCH_SIZE = 50;
 
     /**
      * Available refresh fields - fast batch fields
@@ -81,7 +83,11 @@ class ProductRefresher
     private ProductRepositoryInterface $productRepository;
     private AttributeOptionManagerInterface $attributeOptionManager;
     private ApiResponseCache $apiResponseCache;
+    private ResourceConnection $resourceConnection;
     private Logger $logger;
+
+    /** @var array Cached attribute metadata [code => [id, backend_type]] */
+    private array $attributeMetaCache = [];
 
     /**
      * @param ArchiveApiClientInterface $apiClient
@@ -89,6 +95,7 @@ class ProductRefresher
      * @param ProductRepositoryInterface $productRepository
      * @param AttributeOptionManagerInterface $attributeOptionManager
      * @param ApiResponseCache $apiResponseCache
+     * @param ResourceConnection $resourceConnection
      * @param Logger $logger
      */
     public function __construct(
@@ -97,6 +104,7 @@ class ProductRefresher
         ProductRepositoryInterface $productRepository,
         AttributeOptionManagerInterface $attributeOptionManager,
         ApiResponseCache $apiResponseCache,
+        ResourceConnection $resourceConnection,
         Logger $logger
     ) {
         $this->apiClient = $apiClient;
@@ -104,6 +112,7 @@ class ProductRefresher
         $this->productRepository = $productRepository;
         $this->attributeOptionManager = $attributeOptionManager;
         $this->apiResponseCache = $apiResponseCache;
+        $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
     }
 
@@ -604,95 +613,63 @@ class ProductRefresher
 
         foreach ($productData['products'] as $product) {
             try {
-                $hasChanges = false;
+                $entityId = (int) $product->getId();
+                $updates = []; // [attributeCode => value]
 
                 // Update rating
-                if (in_array(self::FIELD_RATING, $fields)) {
-                    $newRating = isset($stats['avg_rating']) ? (string) $stats['avg_rating'] : null;
-                    $currentRating = $product->getData('archive_avg_rating');
-                    if ($newRating !== $currentRating) {
-                        $product->setData('archive_avg_rating', $newRating);
-                        $hasChanges = true;
-                    }
+                if (in_array(self::FIELD_RATING, $fields) && isset($stats['avg_rating'])) {
+                    $updates['archive_avg_rating'] = (float) $stats['avg_rating'];
                 }
 
                 // Update reviews
-                if (in_array(self::FIELD_REVIEWS, $fields)) {
-                    $newReviews = $stats['num_reviews'] ?? null;
-                    $currentReviews = $product->getData('archive_num_reviews');
-                    if ($newReviews !== $currentReviews) {
-                        $product->setData('archive_num_reviews', $newReviews);
-                        $hasChanges = true;
-                    }
+                if (in_array(self::FIELD_REVIEWS, $fields) && isset($stats['num_reviews'])) {
+                    $updates['archive_num_reviews'] = (int) $stats['num_reviews'];
                 }
 
                 // Update downloads
-                if (in_array(self::FIELD_DOWNLOADS, $fields)) {
-                    $newDownloads = $stats['downloads'] ?? null;
-                    $currentDownloads = $product->getData('archive_downloads');
-                    if ($newDownloads !== $currentDownloads) {
-                        $product->setData('archive_downloads', $newDownloads);
-                        $hasChanges = true;
-                    }
+                if (in_array(self::FIELD_DOWNLOADS, $fields) && isset($stats['downloads'])) {
+                    $updates['archive_downloads'] = (int) $stats['downloads'];
                 }
 
                 // Update trending (weekly/monthly downloads)
                 if (in_array(self::FIELD_TRENDING, $fields)) {
-                    $newWeek = $stats['downloads_week'] ?? null;
-                    $newMonth = $stats['downloads_month'] ?? null;
-                    $currentWeek = $product->getData('archive_downloads_week');
-                    $currentMonth = $product->getData('archive_downloads_month');
-
-                    if ($newWeek !== $currentWeek) {
-                        $product->setData('archive_downloads_week', $newWeek);
-                        $hasChanges = true;
+                    if (isset($stats['downloads_week'])) {
+                        $updates['archive_downloads_week'] = (int) $stats['downloads_week'];
                     }
-                    if ($newMonth !== $currentMonth) {
-                        $product->setData('archive_downloads_month', $newMonth);
-                        $hasChanges = true;
+                    if (isset($stats['downloads_month'])) {
+                        $updates['archive_downloads_month'] = (int) $stats['downloads_month'];
                     }
                 }
 
                 // Update length (match by SKU which contains SHA1)
                 if (in_array(self::FIELD_LENGTH, $fields) && !empty($trackLengths)) {
                     $sku = $product->getSku();
-                    // SKU format is typically sha1-based
                     foreach ($trackLengths as $sha1 => $length) {
                         if (strpos($sku, substr($sha1, 0, 8)) !== false || $sku === $sha1) {
-                            $currentLength = $product->getData('length');
-                            if ($length !== $currentLength && $length !== null) {
-                                $product->setData('length', $length);
-                                $hasChanges = true;
+                            if ($length !== null) {
+                                $updates['length'] = $length;
                             }
                             break;
                         }
                     }
                 }
 
-                // Update new show-level fields from batch stats
-                if (isset($stats['pub_date']) && $stats['pub_date'] !== $product->getData('pub_date')) {
-                    $product->setData('pub_date', $stats['pub_date']);
-                    $hasChanges = true;
+                // Update show-level fields from batch stats
+                if (isset($stats['pub_date'])) {
+                    $updates['pub_date'] = $stats['pub_date'];
+                }
+                if (isset($stats['added_date'])) {
+                    $updates['show_added_date'] = $stats['added_date'];
+                }
+                if (isset($stats['runtime'])) {
+                    $updates['show_runtime'] = $stats['runtime'];
                 }
 
-                if (isset($stats['added_date']) && $stats['added_date'] !== $product->getData('show_added_date')) {
-                    $product->setData('show_added_date', $stats['added_date']);
-                    $hasChanges = true;
-                }
-
-                if (isset($stats['runtime']) && $stats['runtime'] !== $product->getData('show_runtime')) {
-                    $product->setData('show_runtime', $stats['runtime']);
-                    $hasChanges = true;
-                }
-
-                if ($hasChanges) {
-                    $this->productRepository->save($product);
+                if (!empty($updates)) {
+                    foreach ($updates as $attributeCode => $value) {
+                        $this->upsertAttribute($entityId, $attributeCode, $value);
+                    }
                     $result['updated']++;
-
-                    $this->logger->debug('Product refreshed', [
-                        'sku' => $product->getSku(),
-                        'identifier' => $productData['identifier'],
-                    ]);
                 } else {
                     $result['skipped']++;
                 }
@@ -706,5 +683,43 @@ class ProductRefresher
         }
 
         return $result;
+    }
+
+    /**
+     * Direct SQL upsert for a product EAV attribute value.
+     * Bypasses productRepository->save() which triggers WYSIWYG validation
+     * and silently fails on products with complex notes/lineage fields.
+     */
+    private function upsertAttribute(int $entityId, string $attributeCode, $value): void
+    {
+        if (!isset($this->attributeMetaCache[$attributeCode])) {
+            $connection = $this->resourceConnection->getConnection();
+            $select = $connection->select()
+                ->from($this->resourceConnection->getTableName('eav_attribute'), ['attribute_id', 'backend_type'])
+                ->where('attribute_code = ?', $attributeCode)
+                ->where('entity_type_id = ?', 4);
+
+            $row = $connection->fetchRow($select);
+            $this->attributeMetaCache[$attributeCode] = $row ?: null;
+        }
+
+        $meta = $this->attributeMetaCache[$attributeCode];
+        if (!$meta) {
+            return;
+        }
+
+        $table = $this->resourceConnection->getTableName('catalog_product_entity_' . $meta['backend_type']);
+        $connection = $this->resourceConnection->getConnection();
+
+        $connection->insertOnDuplicate(
+            $table,
+            [
+                'attribute_id' => (int) $meta['attribute_id'],
+                'store_id' => 0,
+                'entity_id' => $entityId,
+                'value' => $value,
+            ],
+            ['value']
+        );
     }
 }

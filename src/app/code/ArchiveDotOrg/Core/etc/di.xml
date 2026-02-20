@@ -133,6 +133,7 @@
                 <item name="archivedotorg_backfill_recording_data" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BackfillRecordingDataCommand</item>
                 <item name="archivedotorg_discover_venues" xsi:type="object">ArchiveDotOrg\Core\Console\Command\DiscoverVenuesCommand</item>
                 <item name="archivedotorg_backfill_song_urls" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BackfillSongUrlsCommand</item>
+                <item name="archivedotorg_dedup_recordings" xsi:type="object">ArchiveDotOrg\Core\Console\Command\DeduplicateRecordingsCommand</item>
             </argument>
         </arguments>
     </type>

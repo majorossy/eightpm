@@ -11,7 +11,7 @@ import { useMobileUI } from '@/context/MobileUIContext';
 import { useQuality } from '@/context/QualityContext';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { useBatteryOptimization } from '@/hooks/useBatteryOptimization';
-import { useSleepTimer, SleepTimerPreset } from '@/hooks/useSleepTimer';
+import { useSleepTimer } from '@/hooks/useSleepTimer';
 import { useShare } from '@/hooks/useShare';
 import { useHaptic } from '@/hooks/useHaptic';
 import { formatDuration } from '@/lib/api';
@@ -19,72 +19,18 @@ import Link from 'next/link';
 import ShareModal from '@/components/ShareModal';
 import { formatLineage } from '@/lib/lineageUtils';
 import { useStreamingStats } from '@/hooks/useStreamingStats';
-import TicketStubCard from '@/components/TicketStubCard';
 import type { QueueItem } from '@/lib/queueTypes';
 import {
-  DndContext,
-  closestCenter,
   TouchSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragOverlay,
   DragStartEvent,
   DragEndEvent,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-
-// Sortable mini queue track for the full-screen player — uses ticket stub flip card
-function SortableMiniQueueTrack({
-  item,
-  index,
-  absoluteIndex,
-  onPlay,
-  onSelectVersion,
-}: {
-  item: QueueItem;
-  index: number;
-  absoluteIndex: number;
-  onPlay: (index: number) => void;
-  onSelectVersion?: (queueId: string, song: import('@/lib/types').Song) => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.queueId });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-    zIndex: isDragging ? 10 : undefined,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style}>
-      <TicketStubCard
-        item={item}
-        index={index + 1}
-        absoluteIndex={absoluteIndex}
-        onPlay={onPlay}
-        onSelectVersion={onSelectVersion}
-        variant="vertical-compact"
-        dragHandleRef={setActivatorNodeRef}
-        dragHandleProps={{ ...attributes, ...listeners }}
-      />
-    </div>
-  );
-}
+import { QualityPopup, getQualityBadge } from '@/components/player/QualityPopup';
+import { SettingsPanel } from '@/components/player/SettingsPanel';
+import { MiniQueue } from '@/components/player/MiniQueue';
 
 export default function EightPmFullPlayer() {
   const { isPlayerExpanded, collapsePlayer, isTransitioning } = useMobileUI();
@@ -254,26 +200,7 @@ export default function EightPmFullPlayer() {
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  // Quality options data
-  const qualityOptions = [
-    { value: 'high' as const, label: 'High', format: 'FLAC', bitrate: 'Lossless', size: '~45MB' },
-    { value: 'medium' as const, label: 'Medium', format: 'MP3', bitrate: '320kbps', size: '~10MB', recommended: true },
-    { value: 'low' as const, label: 'Low', format: 'MP3', bitrate: '128kbps', size: '~4MB' }
-  ];
-
-  // Get quality badge based on user's SELECTED preference
-  const getQualityBadge = () => {
-    // Show selected quality preference (applies to next track)
-    if (preferredQuality === 'high') {
-      return { format: 'FLAC', bitrate: 'Lossless', label: 'High' };
-    } else if (preferredQuality === 'low') {
-      return { format: 'MP3', bitrate: '128k', label: 'Low' };
-    } else {
-      return { format: 'MP3', bitrate: '320k', label: 'Medium' };
-    }
-  };
-
-  const qualityInfo = getQualityBadge();
+  const qualityInfo = getQualityBadge(preferredQuality);
 
   return (
     <div
@@ -424,48 +351,14 @@ export default function EightPmFullPlayer() {
 
               {/* Quality popup menu */}
               {showQualityPopup && (
-                <div className="absolute bottom-full left-0 mb-2 w-72 bg-[#1c1a17] border border-[#4a3a28] rounded-lg shadow-2xl overflow-hidden z-50 animate-fadeIn">
-                  {qualityOptions.map((option, index) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        vibrate(BUTTON_PRESS);
-                        setPreferredQuality(option.value);
-                        setShowQualityPopup(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left hover:bg-[#2a2520] transition-colors btn-touch ${
-                        option.value === preferredQuality ? 'bg-[#2a2520]' : ''
-                      } ${index !== qualityOptions.length - 1 ? 'border-b border-[#2a2520]' : ''}`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-semibold text-[#d4a060]">{option.label}</span>
-                            {option.recommended && (
-                              <span className="px-2 py-0.5 text-xs font-medium bg-[#d4a060] text-[#1c1a17] rounded-full">
-                                Recommended
-                              </span>
-                            )}
-                            {option.value === preferredQuality && (
-                              <svg className="w-4 h-4 text-[#d4a060]" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </div>
-                          <div className="text-xs text-[#a89080]">
-                            {option.format} • {option.bitrate} • {option.size}
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                  {/* Notice about quality change timing */}
-                  <div className="px-4 py-2 bg-[#1c1a17] border-t border-[#2a2520]">
-                    <p className="text-[10px] text-[#6a6458] text-center italic">
-                      Quality changes apply to next track
-                    </p>
-                  </div>
-                </div>
+                <QualityPopup
+                  preferredQuality={preferredQuality}
+                  onSelect={(q) => { vibrate(BUTTON_PRESS); setPreferredQuality(q); }}
+                  onClose={() => setShowQualityPopup(false)}
+                  position="absolute"
+                  className="w-72"
+                  style={{ bottom: '100%', left: 0, marginBottom: '8px' }}
+                />
               )}
             </div>
           </div>
@@ -629,84 +522,21 @@ export default function EightPmFullPlayer() {
       </div>
 
       {/* Mini Queue / Up Next */}
-      {(() => {
-        const totalUpcoming = queue.cursorIndex >= 0 ? queue.items.length - queue.cursorIndex - 1 : 0;
-        const hasMoreItems = totalUpcoming > upcomingForDnd.length;
-
-        if (totalUpcoming === 0) return null;
-
-        return (
-          <div className="px-4 pb-4">
-            <button
-              onClick={() => {
-                vibrate(BUTTON_PRESS);
-                setIsQueueExpanded(!isQueueExpanded);
-              }}
-              className="w-full flex items-center justify-between py-2 text-left"
-            >
-              <span className="text-xs text-[#8a8478] uppercase tracking-[0.15em]">
-                Up Next <span className="text-[#d4a060]">&middot; {totalUpcoming} tracks</span>
-              </span>
-              <svg
-                className={`w-4 h-4 text-[#8a8478] transition-transform ${isQueueExpanded ? 'rotate-180' : ''}`}
-                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-
-            <div className={`overflow-hidden transition-all duration-300 ${isQueueExpanded ? 'max-h-[400px] overflow-y-auto' : 'max-h-40'}`}>
-              <DndContext
-                sensors={miniQueueSensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleMiniDragStart}
-                onDragEnd={handleMiniDragEnd}
-              >
-                <SortableContext items={miniQueueSortableIds} strategy={verticalListSortingStrategy}>
-                  <div className="space-y-2">
-                    {upcomingForDnd.map(({ item, absoluteIndex }, index) => (
-                      <SortableMiniQueueTrack
-                        key={item.queueId}
-                        item={item}
-                        index={index}
-                        absoluteIndex={absoluteIndex}
-                        onPlay={(idx) => {
-                          vibrate(BUTTON_PRESS);
-                          playFromQueue(idx);
-                        }}
-                        onSelectVersion={selectVersion}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-                <DragOverlay dropAnimation={null}>
-                  {activeDragItem && (
-                    <div className="flex items-center gap-3 py-3 px-3 rounded-xl bg-[#2d2a26] shadow-lg shadow-black/50 border border-[#d4a060]/30">
-                      {activeDragItem.item.albumSource?.coverArt ? (
-                        <Image src={activeDragItem.item.albumSource.coverArt} alt="" width={40} height={40} quality={60} className="object-cover rounded-md flex-shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 bg-[#2d2a26] rounded-md flex items-center justify-center flex-shrink-0">
-                          <svg className="w-5 h-5 text-[#3a3632]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{activeDragItem.item.trackTitle}</p>
-                        <p className="text-xs text-[#8a8478] truncate">{activeDragItem.item.song.artistName}</p>
-                      </div>
-                    </div>
-                  )}
-                </DragOverlay>
-              </DndContext>
-
-              {hasMoreItems && !isQueueExpanded && (
-                <p className="text-[10px] text-[#6a6458] text-center py-1 italic mt-2">
-                  +{totalUpcoming - upcomingForDnd.length} more &middot; tap to expand
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      })()}
+      <MiniQueue
+        upcomingItems={upcomingForDnd}
+        totalUpcoming={queue.cursorIndex >= 0 ? queue.items.length - queue.cursorIndex - 1 : 0}
+        isExpanded={isQueueExpanded}
+        onToggleExpand={() => setIsQueueExpanded(!isQueueExpanded)}
+        sortableIds={miniQueueSortableIds}
+        sensors={miniQueueSensors}
+        activeDragItem={activeDragItem}
+        onDragStart={handleMiniDragStart}
+        onDragEnd={handleMiniDragEnd}
+        onPlay={(idx) => { vibrate(BUTTON_PRESS); playFromQueue(idx); }}
+        onSelectVersion={selectVersion}
+        vibrate={vibrate}
+        BUTTON_PRESS={BUTTON_PRESS}
+      />
 
       {/* Bottom Actions */}
       <div className="px-8 pb-6">
@@ -736,146 +566,15 @@ export default function EightPmFullPlayer() {
       </div>
 
       {/* Settings Panel */}
-      {isSettingsOpen && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-end md:items-center md:justify-center" onClick={() => setIsSettingsOpen(false)}>
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="settings-title"
-            className="bg-[#2d2a26] w-full md:w-96 md:rounded-lg p-6 space-y-4 safe-bottom"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 id="settings-title" className="text-white text-lg font-bold">Sleep Timer</h3>
-              <button
-                onClick={() => {
-                  vibrate(BUTTON_PRESS);
-                  setIsSettingsOpen(false);
-                }}
-                className="p-2 text-[#8a8478] hover:text-white"
-                aria-label="Close settings"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Active timer display */}
-            {sleepTimer.isActive && (
-              <div className="bg-[#d4a060]/20 border border-[#d4a060] rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[#d4a060] text-sm font-medium">Timer Active</p>
-                    <p className="text-white text-2xl font-bold font-mono mt-1">
-                      {Math.floor(sleepTimer.timeRemaining / 60)}:{(sleepTimer.timeRemaining % 60).toString().padStart(2, '0')}
-                    </p>
-                    <p className="text-[#8a8478] text-xs mt-1">
-                      Music will stop in {Math.floor(sleepTimer.timeRemaining / 60)} minute{Math.floor(sleepTimer.timeRemaining / 60) !== 1 ? 's' : ''}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      vibrate(BUTTON_PRESS);
-                      sleepTimer.cancelTimer();
-                    }}
-                    className="px-4 py-2 bg-[#8a8478]/20 text-white rounded-full text-sm font-medium hover:bg-[#8a8478]/30"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Timer presets */}
-            <div className="space-y-2">
-              <p className="text-[#8a8478] text-sm mb-3">Set a timer to automatically stop music</p>
-              <button
-                onClick={() => {
-                  vibrate(BUTTON_PRESS);
-                  sleepTimer.startTimer('5min');
-                  setIsSettingsOpen(false);
-                }}
-                className="w-full px-4 py-3 bg-[#3a3632] hover:bg-[#3a3632] text-white rounded-lg text-left font-medium transition-colors"
-              >
-                5 minutes
-              </button>
-              <button
-                onClick={() => {
-                  vibrate(BUTTON_PRESS);
-                  sleepTimer.startTimer('15min');
-                  setIsSettingsOpen(false);
-                }}
-                className="w-full px-4 py-3 bg-[#3a3632] hover:bg-[#3a3632] text-white rounded-lg text-left font-medium transition-colors"
-              >
-                15 minutes
-              </button>
-              <button
-                onClick={() => {
-                  vibrate(BUTTON_PRESS);
-                  sleepTimer.startTimer('30min');
-                  setIsSettingsOpen(false);
-                }}
-                className="w-full px-4 py-3 bg-[#3a3632] hover:bg-[#3a3632] text-white rounded-lg text-left font-medium transition-colors"
-              >
-                30 minutes
-              </button>
-              <button
-                onClick={() => {
-                  vibrate(BUTTON_PRESS);
-                  sleepTimer.startTimer('1hr');
-                  setIsSettingsOpen(false);
-                }}
-                className="w-full px-4 py-3 bg-[#3a3632] hover:bg-[#3a3632] text-white rounded-lg text-left font-medium transition-colors"
-              >
-                1 hour
-              </button>
-              <button
-                onClick={() => {
-                  vibrate(BUTTON_PRESS);
-                  sleepTimer.startTimer('end-of-track');
-                  setIsSettingsOpen(false);
-                }}
-                className="w-full px-4 py-3 bg-[#3a3632] hover:bg-[#3a3632] text-white rounded-lg text-left font-medium transition-colors"
-              >
-                End of current track
-              </button>
-            </div>
-
-            {/* Crossfade Settings */}
-            <div className="border-t border-[#3a3632] pt-4 mt-4">
-              <h4 className="text-white text-sm font-medium mb-3">Crossfade</h4>
-              <p className="text-[#8a8478] text-xs mb-3">Seamless transition between songs</p>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[#8a8478] text-sm">
-                    {crossfadeDuration === 0 ? 'Off' : `${crossfadeDuration} second${crossfadeDuration !== 1 ? 's' : ''}`}
-                  </span>
-                </div>
-
-                <input
-                  type="range"
-                  min="0"
-                  max="12"
-                  step="1"
-                  value={crossfadeDuration}
-                  onChange={(e) => setCrossfadeDuration(Number(e.target.value))}
-                  className="w-full h-1 bg-[#3a3632] rounded-lg appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #d4a060 0%, #d4a060 ${(crossfadeDuration / 12) * 100}%, #3a3632 ${(crossfadeDuration / 12) * 100}%, #3a3632 100%)`
-                  }}
-                />
-
-                <div className="flex justify-between text-[10px] text-[#8a8478]">
-                  <span>Off</span>
-                  <span>12s</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <SettingsPanel
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        sleepTimer={sleepTimer}
+        crossfadeDuration={crossfadeDuration}
+        setCrossfadeDuration={setCrossfadeDuration}
+        vibrate={vibrate}
+        BUTTON_PRESS={BUTTON_PRESS}
+      />
 
       {/* Timer notification (1 minute warning) */}
       {showTimerNotification && (

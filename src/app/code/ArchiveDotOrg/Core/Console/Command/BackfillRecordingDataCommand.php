@@ -208,7 +208,7 @@ class BackfillRecordingDataCommand extends BaseLoggedCommand
             $source = $this->extractValue($metadataFields, 'source');
             $lineage = $this->extractValue($metadataFields, 'lineage');
 
-            $recordingType = $this->recordingTypeDetector->detect($source, $lineage, $subject);
+            $recordingType = $this->recordingTypeDetector->detect($source, $lineage, $subject, $identifier);
 
             // Archive detail URL
             $archiveDetailUrl = 'https://archive.org/details/' . $identifier;

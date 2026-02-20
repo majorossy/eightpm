@@ -146,8 +146,6 @@ export function RecentlyPlayedProvider({ children }: { children: React.ReactNode
 
   // Track a song as played
   const trackPlay = useCallback((song: Song) => {
-    console.log('[RecentlyPlayed] 📝 trackPlay called for:', song.title);
-
     let updatedItem: RecentlyPlayedItem | null = null;
 
     setRecentlyPlayed(prev => {
@@ -156,7 +154,6 @@ export function RecentlyPlayedProvider({ children }: { children: React.ReactNode
 
       if (existingIndex !== -1) {
         // Song exists - update playedAt and increment playCount
-        console.log('[RecentlyPlayed] Song exists, incrementing play count');
         const updated = [...prev];
         updatedItem = {
           ...updated[existingIndex],
@@ -170,7 +167,6 @@ export function RecentlyPlayedProvider({ children }: { children: React.ReactNode
         return [item, ...updated];
       } else {
         // New song - add to front
-        console.log('[RecentlyPlayed] New song, adding to history');
         updatedItem = {
           songId: song.id,
           song,

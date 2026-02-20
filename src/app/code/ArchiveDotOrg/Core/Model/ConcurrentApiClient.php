@@ -276,7 +276,7 @@ class ConcurrentApiClient
                 $fileData = is_array($file) ? $file : (array) $file;
                 $name = $fileData['name'] ?? '';
 
-                if (!$this->endsWith($name, '.' . $audioFormat)) {
+                if (!str_ends_with($name, '.' . $audioFormat)) {
                     continue;
                 }
 
@@ -325,20 +325,4 @@ class ConcurrentApiClient
         return (string) $value ?: null;
     }
 
-    /**
-     * Check if string ends with suffix
-     *
-     * @param string $haystack
-     * @param string $needle
-     * @return bool
-     */
-    private function endsWith(string $haystack, string $needle): bool
-    {
-        $length = strlen($needle);
-        if ($length === 0) {
-            return true;
-        }
-
-        return substr($haystack, -$length) === $needle;
-    }
 }

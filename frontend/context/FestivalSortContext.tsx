@@ -61,7 +61,6 @@ export function FestivalSortProvider({
       }
     } catch (error) {
       // localStorage quota exceeded or disabled - gracefully degrade
-      console.warn('Failed to load festival sort settings from localStorage:', error);
     } finally {
       setIsHydrated(true);
     }
@@ -85,7 +84,6 @@ export function FestivalSortProvider({
   // Memoized setter - persists to localStorage and resets alpha mode
   const setAlgorithm = useCallback((algo: SortAlgorithm) => {
     if (!isValidAlgorithm(algo)) {
-      console.warn(`Invalid algorithm: ${algo}, falling back to songVersions`);
       return;
     }
 
@@ -99,7 +97,6 @@ export function FestivalSortProvider({
         localStorage.setItem(ALPHA_STORAGE_KEY, 'false');
       } catch (error) {
         // Quota exceeded - app keeps working, just loses persistence
-        console.warn('Failed to save festival sort algorithm to localStorage:', error);
       }
     }
   }, []);
@@ -114,7 +111,6 @@ export function FestivalSortProvider({
         try {
           localStorage.setItem(ALPHA_STORAGE_KEY, String(newValue));
         } catch (error) {
-          console.warn('Failed to save alpha mode to localStorage:', error);
         }
       }
 

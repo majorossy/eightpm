@@ -440,6 +440,7 @@ class BulkProductImporter implements BulkProductImporterInterface
             'show_taper' => $show->getTaper() ?: null,
             'show_transferer' => $show->getTransferer() ?: null,
             'show_location' => $show->getCoverage() ?: null,
+            'show_source' => $show->getSource() ?: null,
             'archive_collection' => $artistName ?: null,
         ];
 
@@ -465,8 +466,8 @@ class BulkProductImporter implements BulkProductImporterInterface
             $showVenue
         );
 
-        $varcharAttributes['meta_title'] = $this->truncateToLength($metaTitle, 70);
-        $varcharAttributes['meta_description'] = $this->truncateToLength($metaDescription, 160);
+        $varcharAttributes['meta_title'] = StringUtility::truncateToLength($metaTitle, 70);
+        $varcharAttributes['meta_description'] = StringUtility::truncateToLength($metaDescription, 160);
 
         // meta_keyword uses text backend type, will be saved separately
         $metaKeyword = implode(', ', array_filter([
@@ -565,14 +566,15 @@ class BulkProductImporter implements BulkProductImporterInterface
             $this->saveAttribute($entityId, 'access_restriction', 'stream_only', 'varchar');
         }
 
+        $identifier = $show->getIdentifier();
         $recordingType = $this->recordingTypeDetector->detect(
             $show->getSource(),
             $show->getLineage(),
-            $show->getSubjectTags()
+            $show->getSubjectTags(),
+            $identifier
         );
         $this->saveAttribute($entityId, 'recording_type', $recordingType, 'varchar');
 
-        $identifier = $show->getIdentifier();
         if ($identifier) {
             $this->saveAttribute($entityId, 'archive_detail_url', 'https://archive.org/details/' . $identifier, 'varchar');
         }
@@ -600,12 +602,21 @@ class BulkProductImporter implements BulkProductImporterInterface
     }
 
     /**
-     * Build quality URLs from format variant tracks
+     * Build quality URLs from format variant tracks.
+     *
+     * Uses !isset() guard so the FIRST file encountered for each quality tier wins.
+     * Quality threshold: 1 MB/min separates medium from low MP3s.
+     *
+     * This differs from TrackImporter::buildMultiQualityUrls() which overwrites
+     * with the LAST file per tier and uses a 3 MB/min threshold. The difference
+     * exists because bulk import processes pre-sorted variant arrays where the
+     * first match is preferred, while single-track import iterates format tracks
+     * where later entries may be higher quality re-encodes.
      *
      * @param TrackInterface[] $variants
      * @param string $server
      * @param string $dir
-     * @return array
+     * @return array Quality tier map: ['high' => ['url' => ..., 'format' => ..., 'bitrate' => ..., 'size_mb' => ...], ...]
      */
     private function buildQualityUrlsFromVariants(array $variants, string $server, string $dir): array
     {
@@ -712,25 +723,6 @@ class BulkProductImporter implements BulkProductImporterInterface
         return null;
     }
 
-    /**
-     * Truncate string to maximum length without breaking words
-     *
-     * @param string $text
-     * @param int $maxLength
-     * @return string
-     */
-    private function truncateToLength(string $text, int $maxLength): string
-    {
-        if (mb_strlen($text) <= $maxLength) {
-            return $text;
-        }
-        $truncated = mb_substr($text, 0, $maxLength);
-        $lastSpace = mb_strrpos($truncated, ' ');
-        if ($lastSpace !== false && $lastSpace > $maxLength * 0.75) {
-            return mb_substr($truncated, 0, $lastSpace) . '...';
-        }
-        return $truncated . '...';
-    }
 
     /**
      * Save a single attribute value

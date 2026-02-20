@@ -107,7 +107,6 @@ export default function SearchPage() {
           // Tracks come from the same API response (no separate client-side call)
           // Sort: tracks with versions first, then tracks with no versions at the end
           const rawTracks = searchResults.tracks || [];
-          console.log('[search] Raw tracks:', rawTracks.map((t: TrackCategory) => ({ name: t.name, product_count: t.product_count })));
           const sortedTracks = [...rawTracks].sort((a: TrackCategory, b: TrackCategory) => {
             const aHasVersions = (a.product_count || 0) > 0;
             const bHasVersions = (b.product_count || 0) > 0;
@@ -115,7 +114,6 @@ export default function SearchPage() {
             if (!aHasVersions && bHasVersions) return 1;
             return 0;
           });
-          console.log('[search] Sorted tracks:', sortedTracks.map((t: TrackCategory) => ({ name: t.name, product_count: t.product_count })));
           setTracks(sortedTracks);
 
           // Collect venues from search results for autocomplete

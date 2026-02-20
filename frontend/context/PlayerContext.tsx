@@ -235,7 +235,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const audio = getAudio();
     if (audio && state.isPlaying) {
-      console.log('[PlayerContext] Connecting analyzer to audio element');
       connectAudioElement(audio);
     }
   }, [crossfade.state.activeElement, state.isPlaying, connectAudioElement]);
@@ -255,7 +254,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     // Don't retry on MEDIA_ERR_ABORTED (code 1) - user-initiated
     const mediaError = error as MediaError;
     if (mediaError?.code === 1) {
-      console.log(`[PlayerContext] Playback aborted for "${songTitle}" (user-initiated), ignoring`);
       return;
     }
 
@@ -342,7 +340,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       // Skip to next track
       const advancedItem = queueContext.advanceCursor();
       if (advancedItem) {
-        console.log(`[PlayerContext] Skipping to next track: "${advancedItem.song.title}"`);
         audio.src = '';
         audio.src = getStreamUrl(advancedItem.song);
         audio.play().catch((err) => {
@@ -432,7 +429,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     // Handle stalled/stuck streams - start 10s timeout
     const handleStalled = () => {
-      console.warn('[PlayerContext] Audio stream stalled');
       clearStallTimers();
       stallTimeoutRef.current = setTimeout(() => {
         console.error('[PlayerContext] Stall timeout (10s) - triggering retry');
@@ -442,7 +438,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     // Handle waiting (buffering) - show UI + start 15s timeout
     const handleWaiting = () => {
-      console.log('[PlayerContext] Audio buffering...');
       setState(prev => ({ ...prev, isBuffering: true }));
       clearStallTimers();
       waitingTimeoutRef.current = setTimeout(() => {
@@ -534,8 +529,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       // 2. We haven't already preloaded it
       // 3. Next track is different from current (handles repeat one)
       if (nextItem && nextItem.song.id !== preloadedSongIdRef.current && nextItem.song.id !== currentSong.id) {
-        console.log('[PlayerContext] Preloading next track:', nextItem.song.title);
-        // Set ref BEFORE calling preload to prevent duplicate calls
+          // Set ref BEFORE calling preload to prevent duplicate calls
         const songToPreload = nextItem.song.id;
         preloadedSongIdRef.current = songToPreload;
         crossfade.preloadNextTrack(getStreamUrl(nextItem.song));
@@ -562,7 +556,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     // Check if playback has reached 30 seconds
     if (state.currentTime >= 30) {
-      console.log('[PlayerContext] Tracking song:', currentSong.title, 'at', Math.floor(state.currentTime), 'seconds');
       trackPlay(currentSong);
       trackedSongsRef.current.add(currentSong.id);
     }
@@ -578,7 +571,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     // Check if playback has reached 90% of the song
     const completionThreshold = state.duration * 0.9;
     if (state.currentTime >= completionThreshold) {
-      console.log('[PlayerContext] Song completed:', currentSong.title, 'at', Math.floor(state.currentTime), 'seconds');
       trackSongComplete(currentSong);
       completedSongsRef.current.add(currentSong.id);
     }

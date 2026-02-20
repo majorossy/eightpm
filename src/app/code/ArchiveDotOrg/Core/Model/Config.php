@@ -427,60 +427,6 @@ class Config
         return sprintf('https://%s%s/%s', $server, $dir, $filename);
     }
 
-    // ==================== Feature Flags ====================
-
-    /**
-     * Check if organized folders migration is enabled
-     *
-     * @return bool
-     */
-    public function useOrganizedFolders(): bool
-    {
-        return $this->scopeConfig->isSetFlag(
-            'archivedotorg/migration/use_organized_folders',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * Check if YAML config migration is enabled
-     *
-     * @return bool
-     */
-    public function useYamlConfig(): bool
-    {
-        return $this->scopeConfig->isSetFlag(
-            'archivedotorg/migration/use_yaml_config',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * Check if new commands should be used
-     *
-     * @return bool
-     */
-    public function useNewCommands(): bool
-    {
-        return $this->scopeConfig->isSetFlag(
-            'archivedotorg/migration/use_new_commands',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * Check if admin dashboard is enabled
-     *
-     * @return bool
-     */
-    public function isDashboardEnabled(): bool
-    {
-        return $this->scopeConfig->isSetFlag(
-            'archivedotorg/migration/dashboard_enabled',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
     // ==================== Performance Settings ====================
 
     /**

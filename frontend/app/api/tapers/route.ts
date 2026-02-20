@@ -78,7 +78,6 @@ async function fetchAllTapers(): Promise<Map<string, number>> {
       }
     }
 
-    console.log(`[tapers API] Page ${currentPage}: fetched ${products.length}, total ${totalFetched}/${totalCount}`);
     currentPage++;
   } while (totalFetched < totalCount);
 
@@ -107,7 +106,6 @@ export async function GET(request: NextRequest) {
   try {
     // Check cache
     if (cachedTapers && Date.now() - cacheTimestamp < CACHE_TTL) {
-      console.log('[tapers API] Returning cached tapers:', cachedTapers.length);
       const response = NextResponse.json({
         tapers: cachedTapers,
         totalTapers: cachedTapers.length,
@@ -117,7 +115,6 @@ export async function GET(request: NextRequest) {
       return heavyRateLimit.addHeaders(response, rateLimitResult);
     }
 
-    console.log('[tapers API] Fetching tapers from GraphQL...');
     const taperCounts = await fetchAllTapers();
     const tapers = mapToSortedArray(taperCounts);
 
@@ -125,7 +122,6 @@ export async function GET(request: NextRequest) {
     cachedTapers = tapers;
     cacheTimestamp = Date.now();
 
-    console.log('[tapers API] Found', tapers.length, 'unique tapers');
 
     const response = NextResponse.json({
       tapers,

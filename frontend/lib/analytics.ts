@@ -55,10 +55,6 @@ export function trackEvent(
       value: value,
     });
 
-    // Log in development for debugging
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[Analytics] Event: ${action}`, { category, label, value });
-    }
   }
 }
 
@@ -324,13 +320,6 @@ export function trackWebVitals(metric: WebVitalMetric): void {
       metric_navigation_type: metric.navigationType || 'navigate',
     });
 
-    // Log in development
-    if (process.env.NODE_ENV === 'development') {
-      const color = metric.rating === 'good' ? '32' : metric.rating === 'needs-improvement' ? '33' : '31';
-      console.log(
-        `[Analytics] Web Vital: \x1b[${color}m${metric.name}\x1b[0m = ${metric.value.toFixed(2)} (${metric.rating})`
-      );
-    }
   }
 }
 
