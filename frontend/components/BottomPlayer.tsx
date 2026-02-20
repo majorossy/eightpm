@@ -394,6 +394,7 @@ export default function BottomPlayer() {
                       position="fixed"
                       style={{ bottom: '160px', right: 'calc(8px + env(safe-area-inset-right, 0px))' }}
                       className="z-[60]"
+                      availableQualities={currentSong?.qualityUrls}
                     />
                   )}
                 </div>
@@ -752,6 +753,7 @@ export default function BottomPlayer() {
                   onClose={() => setShowQualityPopup(false)}
                   position="absolute"
                   style={{ bottom: '100%', right: 0, marginBottom: '8px' }}
+                  availableQualities={currentSong?.qualityUrls}
                 />
               )}
             </div>

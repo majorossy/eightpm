@@ -12,9 +12,10 @@ export function RecTypeBadge({ type }: { type: string | undefined }) {
     MTX: { bg: 'var(--badge-mx-bg)', border: 'var(--badge-mx-border)', text: 'var(--badge-mx-text)', label: 'MTX', title: 'Matrix' },
     FM:  { bg: 'var(--badge-other-bg)', border: 'var(--badge-other-border)', text: 'var(--badge-other-text)', label: 'FM', title: 'FM Broadcast' },
     WEBCAST: { bg: 'var(--badge-other-bg)', border: 'var(--badge-other-border)', text: 'var(--badge-other-text)', label: 'WEB', title: 'Webcast' },
+    UNKNOWN: { bg: 'var(--badge-other-bg)', border: 'var(--badge-other-border)', text: 'var(--badge-other-text)', label: 'UNK', title: 'Unknown recording type' },
   };
-  if (!type) return null;
-  const c = cfg[type] || { bg: 'var(--badge-other-bg)', border: 'var(--badge-other-border)', text: 'var(--badge-other-text)', label: type, title: type };
+  const resolved = type || 'UNKNOWN';
+  const c = cfg[resolved] || { bg: 'var(--badge-other-bg)', border: 'var(--badge-other-border)', text: 'var(--badge-other-text)', label: 'UNK', title: 'Unknown recording type' };
   return (
     <span title={c.title} style={{
       background: c.bg, color: c.text, padding: '2px 7px', borderRadius: 4,

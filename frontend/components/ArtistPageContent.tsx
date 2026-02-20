@@ -318,7 +318,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
       </section>
 
       {/* Discography - Grid layout - Keyword-rich heading for SEO */}
-      <section className="pb-8 max-w-[1000px] mx-auto px-4 md:px-8">
+      <section className="pb-8 max-w-[1400px] mx-auto px-2 sm:px-4 md:px-8">
         <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
           {artist.name} Live Recordings &amp; Concert Archive
         </h2>
@@ -326,7 +326,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
           Stream {artist.albums.length} {artist.albums.length === 1 ? 'show' : 'shows'} - High-quality recordings from Archive.org
         </p>
         {artist.albums.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
             {artist.albums.map((album) => (
               <AlbumCard key={album.id} album={album} />
             ))}

@@ -38,14 +38,6 @@ function AlbumCarouselCard({ album }: AlbumCarouselCardProps) {
               </svg>
             </div>
           )}
-          {/* Play button overlay */}
-          <div className="absolute bottom-2 right-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-            <button className="w-8 md:w-10 h-8 md:h-10 bg-[#d4a060] rounded-full flex items-center justify-center shadow-xl hover:scale-105 hover:bg-[#c08a40] transition-all">
-              <svg className="w-3 md:w-4 h-3 md:h-4 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </button>
-          </div>
         </div>
 
         {/* Album info */}

@@ -9,7 +9,6 @@ import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useHaptic } from '@/hooks/useHaptic';
-import TaperNotes from '@/components/TaperNotes';
 import VenueLink from '@/components/VenueLink';
 import { trackAlbumView } from '@/lib/analytics';
 import { CassetteTape } from './album/CassetteTape';
@@ -292,16 +291,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
           </>
         )}
 
-        {/* Taper Notes Section - Show recording info when available */}
-        {album.tracks.length > 0 && (
-          <TaperNotes
-            track={album.tracks[0]}
-            albumName={album.name}
-            artistName={album.artistName}
-            showDate={album.showDate}
-            showVenue={album.showVenue}
-          />
-        )}
 
 
         {/* More from this Venue - Internal Linking for SEO */}

@@ -251,16 +251,6 @@ function ArtistsContentInner() {
                     </div>
                   )}
 
-                  {/* Play button overlay - hide if coming soon */}
-                  {!isComingSoon && (
-                    <div className="absolute bottom-2 right-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                      <button className="w-8 h-8 bg-[var(--neon-pink)] rounded-full flex items-center justify-center shadow-xl hover:scale-105 hover:brightness-110 transition-all">
-                        <svg className="w-3 h-3 text-[var(--bg)] ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
 
                   {/* Artist name on first album - solid color label */}
                   {album.isFirst && (

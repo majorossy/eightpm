@@ -358,6 +358,7 @@ export default function EightPmFullPlayer() {
                   position="absolute"
                   className="w-72"
                   style={{ bottom: '100%', left: 0, marginBottom: '8px' }}
+                  availableQualities={currentSong?.qualityUrls}
                 />
               )}
             </div>

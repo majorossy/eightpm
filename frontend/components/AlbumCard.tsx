@@ -25,15 +25,15 @@ export default function AlbumCard({ album }: AlbumCardProps) {
   // Jamify/Spotify style - rounded cards with hover play button
   return (
     <Link href={isComingSoon ? '#' : `/artists/${album.artistSlug}/album/${album.slug}`}>
-      <div className={`group p-4 rounded-lg transition-all duration-300 ${
+      <div className={`group rounded-lg overflow-hidden transition-all duration-300 ${
         isComingSoon
           ? 'bg-[#1a1715] cursor-default'
-          : 'bg-[#252220] hover:bg-[#2d2a26] cursor-pointer'
+          : 'bg-[#252220] hover:bg-[#2d2a26] hover:scale-105 cursor-pointer'
       }`}>
         {/* Album artwork with play button overlay */}
         <div
           ref={ref as React.RefObject<HTMLDivElement>}
-          className="relative aspect-square mb-4 rounded-md overflow-hidden shadow-lg"
+          className="relative aspect-square overflow-hidden shadow-lg"
         >
           {album.coverArt ? (
             <>
@@ -109,30 +109,22 @@ export default function AlbumCard({ album }: AlbumCardProps) {
             </div>
           )}
 
-          {/* Play button overlay - hide if coming soon */}
-          {!isComingSoon && (
-            <div className="absolute bottom-2 right-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-              <button className="w-12 h-12 bg-[#d4a060] rounded-full flex items-center justify-center shadow-xl hover:scale-105 hover:bg-[#c08a40] transition-all">
-                <svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Album info */}
-        <h3 className={`font-semibold truncate mb-1 ${
-          isComingSoon ? 'text-[#4a4540]' : 'text-white'
-        }`}>
-          {album.name}
-        </h3>
-        <p className={`text-sm truncate ${
-          isComingSoon ? 'text-[#3a3530]' : 'text-[#8a8478]'
-        }`}>
-          {album.showDate && <span>{album.showDate} </span>}
-          <span>{isComingSoon ? 'No recordings yet' : `${album.totalTracks} ${album.totalTracks === 1 ? 'track' : 'tracks'}`}</span>
-        </p>
+        <div className="p-2">
+          <div className={`text-sm font-medium truncate ${
+            isComingSoon ? 'text-[#4a4540]' : 'text-white'
+          }`}>
+            {album.name}
+          </div>
+          <div className={`text-xs truncate ${
+            isComingSoon ? 'text-[#3a3530]' : 'text-[#8a8478]'
+          }`}>
+            {album.showDate && <span>{album.showDate} </span>}
+            <span>{isComingSoon ? 'No recordings yet' : `${album.totalTracks} ${album.totalTracks === 1 ? 'track' : 'tracks'}`}</span>
+          </div>
+        </div>
       </div>
     </Link>
   );

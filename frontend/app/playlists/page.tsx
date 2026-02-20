@@ -154,19 +154,6 @@ export default function PlaylistsPage() {
                   </div>
                 )}
 
-                {/* Play button overlay */}
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePlayPlaylist(playlist.id);
-                  }}
-                  className="absolute bottom-2 right-2 w-12 h-12 rounded-full bg-[#d4a060] text-black flex items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-105 transition-all shadow-lg btn-touch"
-                  aria-label={`Play ${playlist.name}`}
-                >
-                  <svg className="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </button>
               </div>
 
               {/* Info */}
