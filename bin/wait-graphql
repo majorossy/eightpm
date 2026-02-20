@@ -19,7 +19,7 @@ QUERY='{"query":"{ products(filter: {}, pageSize: 1) { total_count } }"}'
 ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do
   # Try to get product count from GraphQL (via container to avoid SSL cert issues)
-  COUNT=$(docker exec eightpm-app-1 curl -sk --connect-timeout 5 --max-time 10 \
+  COUNT=$(docker exec 8pm-app-1 curl -sk --connect-timeout 5 --max-time 10 \
     https://localhost:8443/graphql \
     -H "Content-Type: application/json" \
     -d "$QUERY" 2>/dev/null \
@@ -41,5 +41,5 @@ done
 
 echo "✗ Timeout: GraphQL not returning products after ${TIMEOUT}s"
 echo "Debug: Checking Magento status..."
-docker exec eightpm-phpfpm-1 bin/magento deploy:mode:show 2>/dev/null || echo "Could not check deploy mode"
+docker exec 8pm-phpfpm-1 bin/magento deploy:mode:show 2>/dev/null || echo "Could not check deploy mode"
 exit 1

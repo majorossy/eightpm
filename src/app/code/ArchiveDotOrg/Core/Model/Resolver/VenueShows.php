@@ -37,7 +37,7 @@ class VenueShows implements ResolverInterface
 
         $connection = $this->resourceConnection->getConnection();
 
-        // Get the venue's raw names from alias table to match against show_venue options
+        // Get the venue's raw names from alias table to match against show_venue values
         $aliasTable = $connection->getTableName('archivedotorg_venue_alias');
         $rawNames = $connection->fetchCol(
             $connection->select()->from($aliasTable, ['raw_name'])->where('venue_id = ?', $venueId)
@@ -47,8 +47,9 @@ class VenueShows implements ResolverInterface
             return ['items' => [], 'total_count' => 0, 'page_info' => null];
         }
 
-        // Get show_venue attribute ID
         $eavAttr = $connection->getTableName('eav_attribute');
+
+        // Get show_venue attribute ID (varchar backend after migration)
         $venueAttrId = (int)$connection->fetchOne(
             $connection->select()
                 ->from($eavAttr, ['attribute_id'])
@@ -60,27 +61,8 @@ class VenueShows implements ResolverInterface
             return ['items' => [], 'total_count' => 0, 'page_info' => null];
         }
 
-        // Find matching option IDs from eav_attribute_option_value
-        $optionValueTable = $connection->getTableName('eav_attribute_option_value');
-        $optionTable = $connection->getTableName('eav_attribute_option');
-
-        $optionIds = $connection->fetchCol(
-            $connection->select()
-                ->from(['eaov' => $optionValueTable], ['eaov.option_id'])
-                ->join(['eao' => $optionTable], 'eaov.option_id = eao.option_id', [])
-                ->where('eao.attribute_id = ?', $venueAttrId)
-                ->where('eaov.store_id = ?', 0)
-                ->where('eaov.value IN (?)', $rawNames)
-        );
-
-        if (empty($optionIds)) {
-            return ['items' => [], 'total_count' => 0, 'page_info' => null];
-        }
-
-        // Get products at this venue grouped by show identifier
-        $cpeIntTable = $connection->getTableName('catalog_product_entity_int');
-        $cpeTable = $connection->getTableName('catalog_product_entity');
         $cpeVarcharTable = $connection->getTableName('catalog_product_entity_varchar');
+        $cpeTable = $connection->getTableName('catalog_product_entity');
         $cpeDatetimeTable = $connection->getTableName('catalog_product_entity_datetime');
 
         // Get identifier attribute ID (varchar)
@@ -104,18 +86,18 @@ class VenueShows implements ResolverInterface
                 ->where('entity_type_id = ?', 4)
         );
 
-        // Get archive_collection attribute ID (int/select)
+        // Get archive_collection attribute ID (varchar after migration)
         $collectionAttrId = (int)$connection->fetchOne(
             $connection->select()->from($eavAttr, ['attribute_id'])
                 ->where('attribute_code = ?', 'archive_collection')
                 ->where('entity_type_id = ?', 4)
         );
 
-        // Build the main query: group products by identifier to get shows
-        // Note: show_date uses datetime table, others use varchar/int as appropriate
+        // Build the main query using varchar table directly for show_venue.
+        // No longer needs eav_attribute_option_value join — values are stored as text.
         $showsSelect = $connection->select()
-            ->from(['cpei' => $cpeIntTable], [])
-            ->join(['cpe' => $cpeTable], 'cpei.entity_id = cpe.entity_id', [])
+            ->from(['venue_v' => $cpeVarcharTable], [])
+            ->join(['cpe' => $cpeTable], 'venue_v.entity_id = cpe.entity_id', [])
             ->joinLeft(
                 ['ident' => $cpeVarcharTable],
                 "ident.entity_id = cpe.entity_id AND ident.attribute_id = {$identifierAttrId} AND ident.store_id = 0",
@@ -132,35 +114,30 @@ class VenueShows implements ResolverInterface
                 ['show_name' => 'sname.value']
             )
             ->joinLeft(
-                ['coll' => $cpeIntTable],
+                ['coll' => $cpeVarcharTable],
                 "coll.entity_id = cpe.entity_id AND coll.attribute_id = {$collectionAttrId} AND coll.store_id = 0",
-                []
-            )
-            ->joinLeft(
-                ['coll_val' => $optionValueTable],
-                'coll.value = coll_val.option_id AND coll_val.store_id = 0',
-                ['artist_name' => 'coll_val.value']
+                ['artist_name' => 'coll.value']
             )
             ->columns(['track_count' => new \Zend_Db_Expr('COUNT(DISTINCT cpe.entity_id)')])
-            ->where('cpei.attribute_id = ?', $venueAttrId)
-            ->where('cpei.store_id = ?', 0)
-            ->where('cpei.value IN (?)', $optionIds)
+            ->where('venue_v.attribute_id = ?', $venueAttrId)
+            ->where('venue_v.store_id = ?', 0)
+            ->where('venue_v.value IN (?)', $rawNames)
             ->group('ident.value')
             ->order('sdate.value DESC');
 
         // Count total distinct shows
         $countSelect = $connection->select()
-            ->from(['cpei' => $cpeIntTable], [])
-            ->join(['cpe' => $cpeTable], 'cpei.entity_id = cpe.entity_id', [])
+            ->from(['venue_v' => $cpeVarcharTable], [])
+            ->join(['cpe' => $cpeTable], 'venue_v.entity_id = cpe.entity_id', [])
             ->joinLeft(
                 ['ident' => $cpeVarcharTable],
                 "ident.entity_id = cpe.entity_id AND ident.attribute_id = {$identifierAttrId} AND ident.store_id = 0",
                 []
             )
             ->columns(['total' => new \Zend_Db_Expr('COUNT(DISTINCT ident.value)')])
-            ->where('cpei.attribute_id = ?', $venueAttrId)
-            ->where('cpei.store_id = ?', 0)
-            ->where('cpei.value IN (?)', $optionIds);
+            ->where('venue_v.attribute_id = ?', $venueAttrId)
+            ->where('venue_v.store_id = ?', 0)
+            ->where('venue_v.value IN (?)', $rawNames);
 
         $totalCount = (int)$connection->fetchOne($countSelect);
 

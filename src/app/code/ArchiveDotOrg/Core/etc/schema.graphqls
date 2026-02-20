@@ -78,12 +78,18 @@ interface CategoryInterface {
     is_song: Int @doc(description: "Whether this category is a song/track (1=yes, 0=no)")
     is_album: Int @doc(description: "Whether this category is an album (1=yes, 0=no)")
     is_artist: Int @doc(description: "Whether this category is an artist (1=yes, 0=no)")
+    is_podcast: Int @doc(description: "Whether this category is a podcast (1=yes, 0=no)")
+    podcast_spotify_url: String @doc(description: "Spotify podcast URL")
+    podcast_apple_url: String @doc(description: "Apple Podcasts URL")
+    podcast_youtube_url: String @doc(description: "YouTube podcast URL")
+    podcast_rss_feed: String @doc(description: "Podcast RSS feed URL")
 }
 
 input CategoryFilterInput {
     is_song: FilterEqualTypeInput @doc(description: "Filter by is_song attribute")
     is_album: FilterEqualTypeInput @doc(description: "Filter by is_album attribute")
     is_artist: FilterEqualTypeInput @doc(description: "Filter by is_artist attribute")
+    is_podcast: FilterEqualTypeInput @doc(description: "Filter by is_podcast attribute")
 }
 
 type Query {

@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace ArchiveDotOrg\Core\Model;
 
-use ArchiveDotOrg\Core\Api\AttributeOptionManagerInterface;
 use ArchiveDotOrg\Core\Api\BulkProductImporterInterface;
 use ArchiveDotOrg\Core\Api\Data\ShowInterface;
 use ArchiveDotOrg\Core\Api\Data\TrackInterface;
@@ -42,7 +41,6 @@ class BulkProductImporter implements BulkProductImporterInterface
 
     private ProductResource $productResource;
     private ProductCollectionFactory $productCollectionFactory;
-    private AttributeOptionManagerInterface $attributeOptionManager;
     private RecordingTypeDetector $recordingTypeDetector;
     private IndexerRegistry $indexerRegistry;
     private ResourceConnection $resourceConnection;
@@ -59,7 +57,6 @@ class BulkProductImporter implements BulkProductImporterInterface
     /**
      * @param ProductResource $productResource
      * @param ProductCollectionFactory $productCollectionFactory
-     * @param AttributeOptionManagerInterface $attributeOptionManager
      * @param RecordingTypeDetector $recordingTypeDetector
      * @param IndexerRegistry $indexerRegistry
      * @param ResourceConnection $resourceConnection
@@ -69,7 +66,6 @@ class BulkProductImporter implements BulkProductImporterInterface
     public function __construct(
         ProductResource $productResource,
         ProductCollectionFactory $productCollectionFactory,
-        AttributeOptionManagerInterface $attributeOptionManager,
         RecordingTypeDetector $recordingTypeDetector,
         IndexerRegistry $indexerRegistry,
         ResourceConnection $resourceConnection,
@@ -78,7 +74,6 @@ class BulkProductImporter implements BulkProductImporterInterface
     ) {
         $this->productResource = $productResource;
         $this->productCollectionFactory = $productCollectionFactory;
-        $this->attributeOptionManager = $attributeOptionManager;
         $this->recordingTypeDetector = $recordingTypeDetector;
         $this->indexerRegistry = $indexerRegistry;
         $this->resourceConnection = $resourceConnection;
@@ -104,9 +99,6 @@ class BulkProductImporter implements BulkProductImporterInterface
         // Collect all SKUs for batch existence check
         $allSkus = $this->collectAllSkus($shows);
         $this->loadExistingSkus($allSkus);
-
-        // Pre-fetch attribute option IDs
-        $this->prefetchAttributeOptions($shows, $artistName);
 
         $totalTracks = $this->countTotalTracks($shows);
         $processedTracks = 0;
@@ -155,7 +147,6 @@ class BulkProductImporter implements BulkProductImporterInterface
 
             // Clear caches periodically
             if ($processedTracks % $this->config->getBatchSize() === 0) {
-                $this->attributeOptionManager->clearCache();
                 gc_collect_cycles();
             }
         }
@@ -283,46 +274,6 @@ class BulkProductImporter implements BulkProductImporterInterface
             'requested' => count($skus),
             'found' => count($this->existingSkus)
         ]);
-    }
-
-    /**
-     * Pre-fetch attribute options
-     *
-     * @param ShowInterface[] $shows
-     * @param string $artistName
-     * @return void
-     */
-    private function prefetchAttributeOptions(array $shows, string $artistName): void
-    {
-        $years = [];
-        $venues = [];
-        $tapers = [];
-
-        foreach ($shows as $show) {
-            if ($show->getYear()) {
-                $years[] = $show->getYear();
-            }
-            if ($show->getVenue()) {
-                $venues[] = $show->getVenue();
-            }
-            if ($show->getTaper()) {
-                $tapers[] = $show->getTaper();
-            }
-        }
-
-        // Bulk create/fetch options
-        if (!empty($years)) {
-            $this->attributeOptionManager->bulkGetOrCreateOptionIds('show_year', array_unique($years));
-        }
-        if (!empty($venues)) {
-            $this->attributeOptionManager->bulkGetOrCreateOptionIds('show_venue', array_unique($venues));
-        }
-        if (!empty($tapers)) {
-            $this->attributeOptionManager->bulkGetOrCreateOptionIds('show_taper', array_unique($tapers));
-        }
-
-        // Artist collection
-        $this->attributeOptionManager->getOrCreateOptionId('archive_collection', $artistName);
     }
 
     /**
@@ -482,7 +433,14 @@ class BulkProductImporter implements BulkProductImporterInterface
             // Extended show attributes
             'show_uploader' => $show->getUploader(),
             // New show-level fields (duplicated on every track)
-            'show_runtime' => $show->getRuntime()
+            'show_runtime' => $show->getRuntime(),
+            // Formerly select/dropdown attributes — now varchar
+            'show_year' => $show->getYear() ?: null,
+            'show_venue' => $show->getVenue() ?: null,
+            'show_taper' => $show->getTaper() ?: null,
+            'show_transferer' => $show->getTransferer() ?: null,
+            'show_location' => $show->getCoverage() ?: null,
+            'archive_collection' => $artistName ?: null,
         ];
 
         // SEO Meta Fields
@@ -520,14 +478,36 @@ class BulkProductImporter implements BulkProductImporterInterface
             'free streaming'
         ]));
 
-        // Build song URL
+        // Build song URL and multi-quality song_urls
+        $songUrlsJson = null;
         if ($show->getServerOne() && $show->getDir()) {
-            $filename = pathinfo($track->getName(), PATHINFO_FILENAME) . '.flac';
-            $varcharAttributes['song_url'] = $this->config->buildStreamingUrl(
-                $show->getServerOne(),
-                $show->getDir(),
-                $filename
-            );
+            $basename = pathinfo($track->getName(), PATHINFO_FILENAME);
+            $formatTracksByBasename = $show->getFormatTracksByBasename();
+            $formatVariants = $formatTracksByBasename[$basename] ?? [];
+
+            if (!empty($formatVariants)) {
+                // Build multi-quality URLs from all format variants
+                $qualityUrls = $this->buildQualityUrlsFromVariants(
+                    $formatVariants,
+                    $show->getServerOne(),
+                    $show->getDir()
+                );
+                if (!empty($qualityUrls)) {
+                    $songUrlsJson = json_encode($qualityUrls, JSON_UNESCAPED_SLASHES);
+                    // Set legacy song_url to best available MP3, falling back to FLAC
+                    $varcharAttributes['song_url'] = $this->pickBestSongUrl($qualityUrls);
+                }
+            }
+
+            // Fallback: if no format variants, use FLAC URL
+            if (!isset($varcharAttributes['song_url'])) {
+                $filename = $basename . '.flac';
+                $varcharAttributes['song_url'] = $this->config->buildStreamingUrl(
+                    $show->getServerOne(),
+                    $show->getDir(),
+                    $filename
+                );
+            }
         }
 
         foreach ($varcharAttributes as $code => $value) {
@@ -540,40 +520,10 @@ class BulkProductImporter implements BulkProductImporterInterface
         $this->saveAttribute($entityId, 'status', Status::STATUS_ENABLED, 'int');
         $this->saveAttribute($entityId, 'visibility', Visibility::VISIBILITY_BOTH, 'int');
 
-        // Dropdown attributes
-        if ($show->getYear()) {
-            $optionId = $this->attributeOptionManager->getOptionId('show_year', $show->getYear());
-            if ($optionId) {
-                $this->saveAttribute($entityId, 'show_year', $optionId, 'int');
-            }
-        }
-
-        if ($show->getVenue()) {
-            $optionId = $this->attributeOptionManager->getOptionId('show_venue', $show->getVenue());
-            if ($optionId) {
-                $this->saveAttribute($entityId, 'show_venue', $optionId, 'int');
-            }
-        }
-
-        if ($show->getTaper()) {
-            $optionId = $this->attributeOptionManager->getOptionId('show_taper', $show->getTaper());
-            if ($optionId) {
-                $this->saveAttribute($entityId, 'show_taper', $optionId, 'int');
-            }
-        }
-
-        $collectionOptionId = $this->attributeOptionManager->getOptionId('archive_collection', $artistName);
-        if ($collectionOptionId) {
-            $this->saveAttribute($entityId, 'archive_collection', $collectionOptionId, 'int');
-        }
-
         // Decimal attributes (price)
         $this->saveAttribute($entityId, 'price', 0.0, 'decimal');
 
         // Extended int attributes
-        if ($track->getBitrate() !== null) {
-            $this->saveAttribute($entityId, 'track_bitrate', $track->getBitrate(), 'int');
-        }
         if ($show->getFilesCount() !== null) {
             $this->saveAttribute($entityId, 'show_files_count', $show->getFilesCount(), 'int');
         }
@@ -632,7 +582,7 @@ class BulkProductImporter implements BulkProductImporterInterface
             $this->saveAttribute($entityId, 'archive_license_url', $licenseUrl, 'varchar');
         }
 
-        // Text attributes (description, meta_keyword, show_subject)
+        // Text attributes (description, meta_keyword, show_subject, song_urls)
         if ($show->getDescription()) {
             $this->saveAttribute($entityId, 'description', $show->getDescription(), 'text');
         }
@@ -642,6 +592,124 @@ class BulkProductImporter implements BulkProductImporterInterface
         if ($show->getSubject()) {
             $this->saveAttribute($entityId, 'show_subject', $show->getSubject(), 'text');
         }
+
+        // Multi-quality song URLs JSON
+        if ($songUrlsJson) {
+            $this->saveAttribute($entityId, 'song_urls', $songUrlsJson, 'text');
+        }
+    }
+
+    /**
+     * Build quality URLs from format variant tracks
+     *
+     * @param TrackInterface[] $variants
+     * @param string $server
+     * @param string $dir
+     * @return array
+     */
+    private function buildQualityUrlsFromVariants(array $variants, string $server, string $dir): array
+    {
+        $qualityUrls = [];
+
+        foreach ($variants as $variant) {
+            $ext = strtolower(pathinfo($variant->getName(), PATHINFO_EXTENSION));
+            $url = $this->config->buildStreamingUrl($server, $dir, $variant->getName());
+
+            $fileSize = $variant->getFileSize();
+            $length = $variant->getLength();
+
+            $tier = $this->determineQualityTierFromFile($ext, $fileSize, $length);
+            $bitrate = $this->estimateBitrateFromFile($ext, $fileSize, $length);
+
+            if (!isset($qualityUrls[$tier])) {
+                $qualityUrls[$tier] = [
+                    'url' => $url,
+                    'format' => $ext,
+                    'bitrate' => $bitrate,
+                    'size_mb' => $fileSize ? round($fileSize / 1024 / 1024, 1) : null,
+                ];
+            }
+        }
+
+        return $qualityUrls;
+    }
+
+    /**
+     * Determine quality tier based on format and file size
+     */
+    private function determineQualityTierFromFile(string $ext, ?int $fileSize, ?string $length): string
+    {
+        if ($ext === 'flac') {
+            return 'high';
+        }
+
+        if ($ext === 'mp3' && $fileSize) {
+            $seconds = $this->parseLengthToSeconds($length);
+            $minutes = $seconds > 0 ? $seconds / 60 : 3;
+            $mbPerMinute = ($fileSize / 1024 / 1024) / $minutes;
+            // Archive.org VBR MP3s are typically 160-220kbps (~1.2-1.7 MB/min)
+            return $mbPerMinute >= 1 ? 'medium' : 'low';
+        }
+
+        return 'medium';
+    }
+
+    /**
+     * Estimate bitrate string from file metadata
+     */
+    private function estimateBitrateFromFile(string $ext, ?int $fileSize, ?string $length): string
+    {
+        if ($ext === 'flac') {
+            return 'lossless';
+        }
+
+        $seconds = $this->parseLengthToSeconds($length);
+        if ($fileSize && $seconds > 0) {
+            $kbps = (int) (($fileSize * 8) / ($seconds * 1000));
+            if ($kbps >= 280) return '320k';
+            if ($kbps >= 200) return '256k';
+            if ($kbps >= 160) return '192k';
+            return '128k';
+        }
+
+        return $ext === 'mp3' ? '256k' : '192k';
+    }
+
+    /**
+     * Parse length string to seconds (handles "376.49" and "06:16" formats)
+     */
+    private function parseLengthToSeconds(?string $length): float
+    {
+        if ($length === null) {
+            return 0;
+        }
+        if (str_contains($length, ':')) {
+            $parts = explode(':', $length);
+            if (count($parts) === 2) {
+                return (float) $parts[0] * 60 + (float) $parts[1];
+            }
+            if (count($parts) === 3) {
+                return (float) $parts[0] * 3600 + (float) $parts[1] * 60 + (float) $parts[2];
+            }
+        }
+        return is_numeric($length) ? (float) $length : 0;
+    }
+
+    /**
+     * Pick best song URL: prefer medium MP3, then low, then high (FLAC)
+     */
+    private function pickBestSongUrl(array $qualityUrls): ?string
+    {
+        if (isset($qualityUrls['medium'])) {
+            return $qualityUrls['medium']['url'];
+        }
+        if (isset($qualityUrls['low'])) {
+            return $qualityUrls['low']['url'];
+        }
+        if (isset($qualityUrls['high'])) {
+            return $qualityUrls['high']['url'];
+        }
+        return null;
     }
 
     /**

@@ -530,4 +530,20 @@ interface ShowInterface
      * @return ShowInterface
      */
     public function setSubject(?string $subject): ShowInterface;
+
+    /**
+     * Get all audio format tracks grouped by basename (filename without extension).
+     * Includes files without titles (e.g., derived MP3/OGG).
+     *
+     * @return array<string, TrackInterface[]>
+     */
+    public function getFormatTracksByBasename(): array;
+
+    /**
+     * Set all audio format tracks grouped by basename.
+     *
+     * @param array<string, TrackInterface[]> $formatTracks
+     * @return ShowInterface
+     */
+    public function setFormatTracksByBasename(array $formatTracks): ShowInterface;
 }

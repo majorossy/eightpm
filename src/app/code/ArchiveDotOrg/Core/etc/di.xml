@@ -96,6 +96,12 @@
     <preference for="ArchiveDotOrg\Core\Api\ArtistConfigLoaderInterface"
                 type="ArchiveDotOrg\Core\Model\ArtistConfigLoader"/>
 
+    <preference for="ArchiveDotOrg\Core\Api\PodcastConfigValidatorInterface"
+                type="ArchiveDotOrg\Core\Model\PodcastConfigValidator"/>
+
+    <preference for="ArchiveDotOrg\Core\Api\PodcastConfigLoaderInterface"
+                type="ArchiveDotOrg\Core\Model\PodcastConfigLoader"/>
+
     <!-- Console Commands -->
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
@@ -119,12 +125,14 @@
                 <item name="archivedotorg_validate_artist" xsi:type="object">ArchiveDotOrg\Core\Console\Command\ValidateArtistCommand</item>
                 <item name="archivedotorg_migrate_export" xsi:type="object">ArchiveDotOrg\Core\Console\Command\MigrateExportCommand</item>
                 <item name="archivedotorg_setup_artist" xsi:type="object">ArchiveDotOrg\Core\Console\Command\SetupArtistCommand</item>
+                <item name="archivedotorg_setup_podcast" xsi:type="object">ArchiveDotOrg\Core\Console\Command\SetupPodcastCommand</item>
                 <item name="archivedotorg_benchmark_matching" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BenchmarkMatchingCommand</item>
                 <item name="archivedotorg_benchmark_import" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BenchmarkImportCommand</item>
                 <item name="archivedotorg_benchmark_dashboard" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BenchmarkDashboardCommand</item>
                 <item name="archivedotorg_enrich_artist_data" xsi:type="object">ArchiveDotOrg\Core\Console\Command\EnrichArtistDataCommand</item>
                 <item name="archivedotorg_backfill_recording_data" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BackfillRecordingDataCommand</item>
                 <item name="archivedotorg_discover_venues" xsi:type="object">ArchiveDotOrg\Core\Console\Command\DiscoverVenuesCommand</item>
+                <item name="archivedotorg_backfill_song_urls" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BackfillSongUrlsCommand</item>
             </argument>
         </arguments>
     </type>

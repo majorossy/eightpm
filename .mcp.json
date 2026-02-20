@@ -2,18 +2,10 @@
   "mcpServers": {
     "mysql-8pm": {
       "type": "stdio",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@f4ww4z/mcp-mysql-server"
-      ],
-      "env": {
-        "MYSQL_HOST": "127.0.0.1",
-        "MYSQL_PORT": "3307",
-        "MYSQL_USER": "magento",
-        "MYSQL_PASSWORD": "magento",
-        "MYSQL_DATABASE": "magento"
-      }
+        "mcp/mysql-8pm/bundle.cjs"
+      ]
     },
     "docker-8pm": {
       "type": "stdio",
@@ -27,6 +19,34 @@
       "command": "node",
       "args": [
         "mcp/redis-8pm/bundle.cjs"
+      ]
+    },
+    "graphql-8pm": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp/graphql-8pm/bundle.cjs"
+      ]
+    },
+    "magento-8pm": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp/magento-8pm/bundle.cjs"
+      ]
+    },
+    "opensearch-8pm": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp/opensearch-8pm/bundle.cjs"
+      ]
+    },
+    "filesystem-8pm": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp/filesystem-8pm/bundle.cjs"
       ]
     }
   }

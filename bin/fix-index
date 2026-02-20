@@ -1,18 +1,30 @@
 #!/bin/bash
-# Fix broken catalog_category_product_index after import
+# Rebuild catalog_category_product_index parent entries
+#
+# Direct assignments (is_parent=0) come from catalog_category_product and are correct.
+# Inherited entries (is_parent=1) accumulate stale rows from repeated INSERT IGNORE runs.
+# This script purges and rebuilds only the inherited entries in both index tables.
+#
 # Usage: bin/fix-index
 
-echo "Adding new products to index..."
+echo "Rebuilding product indexes..."
 
 docker-compose exec -T db mysql -u magento -pmagento magento << 'SQL'
--- Step 1: Add products to their directly assigned categories
+
+-- Step 1: Sync direct assignments (is_parent=0) into base index
+-- Add any missing direct entries, remove any that no longer exist in CCP
+DELETE idx FROM catalog_category_product_index idx
+LEFT JOIN catalog_category_product ccp
+    ON idx.category_id = ccp.category_id AND idx.product_id = ccp.product_id
+WHERE idx.is_parent = 0 AND ccp.product_id IS NULL;
+
 INSERT IGNORE INTO catalog_category_product_index
 (category_id, product_id, position, is_parent, store_id, visibility)
 SELECT
     ccp.category_id,
     ccp.product_id,
     COALESCE(ccp.position, 0),
-    0,  -- is_parent = 0 for direct assignment
+    0,
     1,
     COALESCE(cpei.value, 4)
 FROM catalog_category_product ccp
@@ -20,34 +32,43 @@ JOIN catalog_product_entity cpe ON ccp.product_id = cpe.entity_id
 LEFT JOIN catalog_product_entity_int cpei ON ccp.product_id = cpei.entity_id
     AND cpei.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'visibility' AND entity_type_id = 4);
 
--- Step 2: Add products to ALL parent categories (for artist/album pages to work)
+-- Step 2: Purge and rebuild inherited entries (is_parent=1) in base index
+DELETE FROM catalog_category_product_index WHERE is_parent = 1;
+
 INSERT IGNORE INTO catalog_category_product_index
 (category_id, product_id, position, is_parent, store_id, visibility)
 SELECT DISTINCT
-    parent_cat.entity_id as category_id,
+    parent_cat.entity_id,
     ccpi.product_id,
     ccpi.position,
-    1,  -- is_parent = 1 for inherited from child
+    1,
     1,
     ccpi.visibility
 FROM catalog_category_product_index ccpi
 JOIN catalog_category_entity child_cat ON ccpi.category_id = child_cat.entity_id
-JOIN catalog_category_entity parent_cat ON FIND_IN_SET(parent_cat.entity_id, REPLACE(child_cat.path, '/', ','))
-WHERE parent_cat.entity_id != child_cat.entity_id
-  AND parent_cat.level >= 2;  -- Skip root categories
+JOIN catalog_category_entity parent_cat
+    ON FIND_IN_SET(parent_cat.entity_id, REPLACE(child_cat.path, '/', ','))
+WHERE ccpi.is_parent = 0
+  AND parent_cat.entity_id != child_cat.entity_id
+  AND parent_cat.level >= 2;
 
-SELECT CONCAT('✅ Base index updated. Total products: ', COUNT(*)) as result
+SELECT CONCAT('Base index: ', COUNT(*), ' rows (',
+    SUM(is_parent = 0), ' direct + ', SUM(is_parent = 1), ' inherited)') AS result
 FROM catalog_category_product_index;
 
--- Step 3: Sync to store1 table (required for GraphQL queries)
--- First, add products to their directly assigned categories in store1 table
+-- Step 3: Sync direct assignments into store1 index
+DELETE idx FROM catalog_category_product_index_store1 idx
+LEFT JOIN catalog_category_product ccp
+    ON idx.category_id = ccp.category_id AND idx.product_id = ccp.product_id
+WHERE idx.is_parent = 0 AND ccp.product_id IS NULL;
+
 INSERT IGNORE INTO catalog_category_product_index_store1
 (category_id, product_id, position, is_parent, store_id, visibility)
 SELECT
     ccp.category_id,
     ccp.product_id,
     COALESCE(ccp.position, 0),
-    0,  -- is_parent = 0 for direct assignment
+    0,
     1,
     COALESCE(cpei.value, 4)
 FROM catalog_category_product ccp
@@ -55,27 +76,33 @@ JOIN catalog_product_entity cpe ON ccp.product_id = cpe.entity_id
 LEFT JOIN catalog_product_entity_int cpei ON ccp.product_id = cpei.entity_id
     AND cpei.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'visibility' AND entity_type_id = 4);
 
--- Step 4: Add products to parent categories in store1 table
+-- Step 4: Purge and rebuild inherited entries in store1 index
+DELETE FROM catalog_category_product_index_store1 WHERE is_parent = 1;
+
 INSERT IGNORE INTO catalog_category_product_index_store1
 (category_id, product_id, position, is_parent, store_id, visibility)
 SELECT DISTINCT
-    parent_cat.entity_id as category_id,
+    parent_cat.entity_id,
     ccpi.product_id,
     ccpi.position,
-    1,  -- is_parent = 1 for inherited from child
+    1,
     1,
     ccpi.visibility
 FROM catalog_category_product_index_store1 ccpi
 JOIN catalog_category_entity child_cat ON ccpi.category_id = child_cat.entity_id
-JOIN catalog_category_entity parent_cat ON FIND_IN_SET(parent_cat.entity_id, REPLACE(child_cat.path, '/', ','))
-WHERE parent_cat.entity_id != child_cat.entity_id
-  AND parent_cat.level >= 2;  -- Skip root categories
+JOIN catalog_category_entity parent_cat
+    ON FIND_IN_SET(parent_cat.entity_id, REPLACE(child_cat.path, '/', ','))
+WHERE ccpi.is_parent = 0
+  AND parent_cat.entity_id != child_cat.entity_id
+  AND parent_cat.level >= 2;
 
-SELECT CONCAT('✅ Store1 index updated. Total products: ', COUNT(*)) as result
+SELECT CONCAT('Store1 index: ', COUNT(*), ' rows (',
+    SUM(is_parent = 0), ' direct + ', SUM(is_parent = 1), ' inherited)') AS result
 FROM catalog_category_product_index_store1;
+
 SQL
 
 echo ""
 echo "Flushing cache..."
 docker-compose exec -T phpfpm bin/magento cache:flush > /dev/null
-echo "✅ Done!"
+echo "Done!"

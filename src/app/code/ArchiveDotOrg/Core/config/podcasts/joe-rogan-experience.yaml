@@ -1,0 +1,41 @@
+# ========================================
+# The Joe Rogan Experience Configuration
+# ========================================
+#
+# Test podcast configuration with all fields populated
+# Status: Test data
+#
+# ========================================
+
+# ========================================
+# PODCAST SECTION
+# ========================================
+podcast:
+  # Display name
+  name: "The Joe Rogan Experience"
+
+  # URL-safe slug
+  url_key: "joe-rogan-experience"
+
+  # Description
+  description: "The official podcast of comedian Joe Rogan. Conversations with scientists, athletes, comedians, and more."
+
+  # Podcast artwork
+  image_url: "https://upload.wikimedia.org/wikipedia/en/3/32/JRELogo.jpg"
+
+  # Genres
+  genres: "Comedy, Interview, Culture, Society & Culture"
+
+  # Official website
+  official_website: "https://www.joerogan.com"
+
+  # Platform links
+  spotify_url: "https://open.spotify.com/show/4rOoJ6Egrf8K2IrywzwOMk"
+  apple_url: "https://podcasts.apple.com/us/podcast/the-joe-rogan-experience/id360084272"
+  youtube_url: "https://www.youtube.com/@joerogan"
+  rss_feed: "https://feeds.megaphone.fm/jre"
+
+  # Social media
+  facebook: "https://www.facebook.com/joerogan"
+  instagram: "https://www.instagram.com/joerogan"
+  twitter: "https://twitter.com/joerogan"

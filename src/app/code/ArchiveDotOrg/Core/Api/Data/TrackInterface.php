@@ -41,17 +41,17 @@ interface TrackInterface
     /**
      * Get track title
      *
-     * @return string
+     * @return string|null
      */
-    public function getTitle(): string;
+    public function getTitle(): ?string;
 
     /**
      * Set track title
      *
-     * @param string $title
+     * @param string|null $title
      * @return TrackInterface
      */
-    public function setTitle(string $title): TrackInterface;
+    public function setTitle(?string $title): TrackInterface;
 
     /**
      * Get track number

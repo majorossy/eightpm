@@ -48,7 +48,7 @@ class Track implements TrackInterface
     /**
      * @inheritDoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
@@ -56,9 +56,9 @@ class Track implements TrackInterface
     /**
      * @inheritDoc
      */
-    public function setTitle(string $title): TrackInterface
+    public function setTitle(?string $title): TrackInterface
     {
-        $this->title = $title;
+        $this->title = $title ?? '';
         return $this;
     }
 

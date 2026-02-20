@@ -1,11 +1,11 @@
 // API layer - Magento 2 GraphQL integration
 import { unstable_cache } from 'next/cache';
-import { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount } from './types';
+import { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount, Podcast, PodcastEpisode, PodcastDetail } from './types';
 import { fetchWikipediaSummary } from './wikipedia';
 import { applyFilters, getAvailableYears, hasActiveFilters } from './filters';
 import type { VersionFilters } from './filters';
 
-export type { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount } from './types';
+export type { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount, Podcast, PodcastEpisode, PodcastDetail } from './types';
 export type { VersionFilters } from './filters';
 export { hasActiveFilters } from './filters';
 
@@ -132,8 +132,12 @@ async function fetchWithRetry(
   throw lastError || new Error(`[${context}] Request failed after ${RETRY_CONFIG.maxRetries} retries`);
 }
 
-// GraphQL endpoint - uses Docker service name internally, external URL for client
-const MAGENTO_GRAPHQL_URL = process.env.MAGENTO_GRAPHQL_URL || 'https://app:8443/graphql';
+// GraphQL endpoint - server-side hits Magento directly; client-side proxies through /api/graphql
+// to avoid CORS and self-signed cert issues in the browser.
+const MAGENTO_GRAPHQL_URL =
+  typeof window !== 'undefined'
+    ? '/api/graphql'
+    : (process.env.MAGENTO_GRAPHQL_URL || 'https://app:8443/graphql');
 console.log('[API] Using GraphQL URL:', MAGENTO_GRAPHQL_URL);
 
 // Magento media URL for images (browser-accessible)
@@ -141,6 +145,9 @@ const MAGENTO_MEDIA_URL = process.env.NEXT_PUBLIC_MAGENTO_MEDIA_URL || 'https://
 
 // Parent category ID for artists
 const ARTISTS_PARENT_CATEGORY_ID = '48';
+
+// Parent category ID for podcasts
+const PODCASTS_PARENT_CATEGORY_ID = '4435'; // Podcasts root category
 
 // Local album art mapping (slug -> filename in /images/albums/)
 // Filenames match url_keys exactly (no hyphens)
@@ -764,13 +771,26 @@ function normalizeUrl(url: string): string {
   // Fix "https//" or "http//" (missing colon)
   url = url.replace(/^(https?)\/\//, '$1://');
 
-  // If URL already has a valid protocol, return as-is
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
+  // Add protocol if missing
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
   }
 
-  // Otherwise, prepend https://
-  return `https://${url}`;
+  // Fix double slash in path after domain (e.g. https://server//path → https://server/path)
+  url = url.replace(/^(https?:\/\/[^/]+)\/\//, '$1/');
+
+  // Convert server-specific Archive.org URLs to stable archive.org/download/ URLs.
+  // Server-specific URLs go stale when Archive.org migrates items between servers.
+  // The /download/ URL always 302-redirects to the current server.
+  // Pattern: https://{host}.archive.org/{num}/items/{identifier}/{filename}
+  const archiveServerMatch = url.match(
+    /^https?:\/\/[a-z0-9]+\.(?:us|ca)\.archive\.org\/\d+\/items\/([^/]+)\/(.+)$/
+  );
+  if (archiveServerMatch) {
+    url = `https://archive.org/download/${archiveServerMatch[1]}/${archiveServerMatch[2]}`;
+  }
+
+  return url;
 }
 
 // Generate URL-safe slug from string
@@ -842,14 +862,29 @@ function productToSong(product: MagentoProduct, albumIdentifier?: string): Song 
     artistName: artistCategory?.name || 'Unknown Artist',
     artistSlug: artistCategory?.url_key || '',
     duration: product.song_duration || 0, // API returns seconds from Archive.org
-    streamUrl: product.song_url ? normalizeUrl(product.song_url) : '',
+    streamUrl: (() => {
+      // Prefer verified MP3 URLs from backfilled song_urls data
+      const medium = product.song_url_medium ? normalizeUrl(product.song_url_medium) : '';
+      const low = product.song_url_low ? normalizeUrl(product.song_url_low) : '';
+
+      if (medium) return medium;
+      if (low) return low;
+
+      // No backfilled MP3 available. Fall back to legacy song_url.
+      // If it's FLAC, convert to .mp3 — Archive.org always derives a VBR MP3 alongside FLAC.
+      // FLAC streams fail due to CORS on many Archive.org CDN nodes.
+      const legacy = product.song_url ? normalizeUrl(product.song_url) : '';
+      return legacy.endsWith('.flac') ? legacy.replace(/\.flac$/, '.mp3') : legacy;
+    })(),
     albumArt: '/images/songs/default.jpg',
-    // Multi-quality support
-    qualityUrls: {
-      high: product.song_url_high ? normalizeUrl(product.song_url_high) : undefined,
-      medium: product.song_url_medium ? normalizeUrl(product.song_url_medium) : undefined,
-      low: product.song_url_low ? normalizeUrl(product.song_url_low) : undefined,
-    },
+    // Multi-quality support — use verified URLs from song_urls when available.
+    // For unbackfilled products, high stays as FLAC (for download), medium/low derive MP3.
+    qualityUrls: (() => {
+      const high = product.song_url_high ? normalizeUrl(product.song_url_high) : undefined;
+      const medium = product.song_url_medium ? normalizeUrl(product.song_url_medium) : undefined;
+      const low = product.song_url_low ? normalizeUrl(product.song_url_low) : undefined;
+      return { high, medium, low };
+    })(),
     defaultQuality: 'medium', // Recommended default
     // Album/track context
     albumIdentifier: identifier,
@@ -2200,4 +2235,215 @@ export function venueSlug(name: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+}
+
+// ============================================
+// Podcast API Functions
+// ============================================
+
+const GET_PODCASTS_QUERY = `
+  query GetPodcasts($parentId: String!, $pageSize: Int!, $currentPage: Int!) {
+    categories(filters: { parent_id: { eq: $parentId }, is_podcast: { eq: "1" } }, pageSize: $pageSize, currentPage: $currentPage) {
+      total_count
+      items {
+        uid
+        name
+        url_key
+        description
+        image
+        product_count
+        is_podcast
+        podcast_spotify_url
+        podcast_apple_url
+        podcast_youtube_url
+        podcast_rss_feed
+        band_extended_bio
+        band_image_url
+        band_genres
+        band_official_website
+        band_facebook
+        band_instagram
+        band_twitter
+      }
+    }
+  }
+`;
+
+const GET_PODCAST_BY_SLUG_QUERY = `
+  query GetPodcastBySlug($urlKey: String!) {
+    categoryList(filters: { url_key: { eq: $urlKey }, is_podcast: { eq: "1" } }) {
+      uid
+      name
+      url_key
+      description
+      image
+      product_count
+      is_podcast
+      podcast_spotify_url
+      podcast_apple_url
+      podcast_youtube_url
+      podcast_rss_feed
+      band_extended_bio
+      band_image_url
+      band_genres
+      band_official_website
+      band_facebook
+      band_instagram
+      band_twitter
+    }
+  }
+`;
+
+/**
+ * Helper function to convert Magento category to Podcast type
+ */
+function categoryToPodcast(category: MagentoCategory): Podcast {
+  return {
+    id: category.uid,
+    name: category.name,
+    slug: category.url_key,
+    image: category.image || category.band_image_url || '/images/default-podcast.jpg',
+    description: category.description || category.band_extended_bio || '',
+    episodeCount: category.product_count,
+    isPodcast: true,
+    spotifyUrl: category.podcast_spotify_url,
+    appleUrl: category.podcast_apple_url,
+    youtubeUrl: category.podcast_youtube_url,
+    rssFeed: category.podcast_rss_feed,
+  };
+}
+
+/**
+ * Get all podcasts
+ */
+export async function getPodcasts(): Promise<Podcast[]> {
+  try {
+    const PAGE_SIZE = 50;
+    let allPodcasts: MagentoCategory[] = [];
+    let currentPage = 1;
+    let totalCount = 0;
+
+    // Fetch first page to get total count
+    const firstPageData = await graphqlFetch<{
+      categories: { items: MagentoCategory[]; total_count: number };
+    }>(GET_PODCASTS_QUERY, {
+      parentId: PODCASTS_PARENT_CATEGORY_ID,
+      pageSize: PAGE_SIZE,
+      currentPage: 1,
+    });
+
+    allPodcasts = firstPageData.categories.items || [];
+    totalCount = firstPageData.categories.total_count || 0;
+    console.log(`[getPodcasts] Page 1: got ${allPodcasts.length} podcasts, total: ${totalCount}`);
+
+    // Fetch remaining pages if needed
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+    for (currentPage = 2; currentPage <= totalPages; currentPage++) {
+      const pageData = await graphqlFetch<{
+        categories: { items: MagentoCategory[]; total_count: number };
+      }>(GET_PODCASTS_QUERY, {
+        parentId: PODCASTS_PARENT_CATEGORY_ID,
+        pageSize: PAGE_SIZE,
+        currentPage,
+      });
+
+      const pagePodcasts = pageData.categories.items || [];
+      allPodcasts = allPodcasts.concat(pagePodcasts);
+      console.log(`[getPodcasts] Page ${currentPage}: got ${pagePodcasts.length} more podcasts`);
+    }
+
+    console.log(`[getPodcasts] Total podcasts fetched: ${allPodcasts.length}`);
+    return allPodcasts.map(categoryToPodcast);
+  } catch (error) {
+    console.error('Failed to fetch podcasts:', error);
+    return [];
+  }
+}
+
+/**
+ * Get a single podcast by slug with its episodes
+ */
+export async function getPodcastBySlug(slug: string): Promise<PodcastDetail | null> {
+  console.log('[getPodcastBySlug] Fetching podcast:', slug);
+  try {
+    // Get podcast category by slug
+    const podcastData = await graphqlFetch<{ categoryList: MagentoCategory[] }>(
+      GET_PODCAST_BY_SLUG_QUERY,
+      { urlKey: slug }
+    );
+    console.log('[getPodcastBySlug] Got podcast data:', podcastData.categoryList.length, 'categories');
+
+    if (!podcastData.categoryList.length) {
+      console.log('[getPodcastBySlug] No categories found for slug:', slug);
+      return null;
+    }
+
+    const category = podcastData.categoryList[0];
+    const podcast = categoryToPodcast(category);
+
+    // Get episodes (products) for this podcast
+    const PAGE_SIZE = 100;
+    let allEpisodes: MagentoProduct[] = [];
+    let currentPage = 1;
+    let totalCount = 0;
+
+    // Fetch first page of episodes
+    const firstPageData = await graphqlFetch<{
+      products: { items: MagentoProduct[]; total_count: number };
+    }>(GET_SONGS_BY_CATEGORY_QUERY, {
+      categoryUid: category.uid,
+      pageSize: PAGE_SIZE,
+      currentPage: 1,
+    });
+
+    allEpisodes = firstPageData.products.items || [];
+    totalCount = firstPageData.products.total_count || 0;
+    console.log(`[getPodcastBySlug] Page 1: got ${allEpisodes.length} episodes, total: ${totalCount}`);
+
+    // Fetch remaining pages if needed
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+    for (currentPage = 2; currentPage <= totalPages; currentPage++) {
+      const pageData = await graphqlFetch<{
+        products: { items: MagentoProduct[]; total_count: number };
+      }>(GET_SONGS_BY_CATEGORY_QUERY, {
+        categoryUid: category.uid,
+        pageSize: PAGE_SIZE,
+        currentPage,
+      });
+
+      const pageEpisodes = pageData.items || [];
+      allEpisodes = allEpisodes.concat(pageEpisodes);
+      console.log(`[getPodcastBySlug] Page ${currentPage}: got ${pageEpisodes.length} more episodes`);
+    }
+
+    console.log(`[getPodcastBySlug] Total episodes fetched: ${allEpisodes.length}`);
+
+    // Convert products to podcast episodes
+    const episodes: PodcastEpisode[] = allEpisodes.map(product => ({
+      ...productToSong(product),
+      publishDate: product.show_date || product.created_at,
+    }));
+
+    return {
+      ...podcast,
+      episodes,
+    };
+  } catch (error) {
+    console.error('Failed to fetch podcast:', error);
+    return null;
+  }
+}
+
+/**
+ * Get podcast episodes by slug (alias for getPodcastBySlug)
+ * Returns podcast metadata and its episodes
+ */
+export async function getPodcastEpisodes(slug: string): Promise<{ podcast: Podcast; episodes: PodcastEpisode[] } | null> {
+  const result = await getPodcastBySlug(slug);
+  if (!result) {
+    return null;
+  }
+
+  const { episodes, ...podcast } = result;
+  return { podcast, episodes };
 }

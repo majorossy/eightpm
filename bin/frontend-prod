@@ -69,7 +69,8 @@ fi
 echo "Waiting for frontend to start..."
 for i in {1..10}; do
   sleep 2
-  if ss -tlnp 2>/dev/null | grep -q ':3001 '; then
+  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 --max-time 5 http://localhost:3001/ 2>/dev/null || echo "000")
+  if [ "$HTTP_STATUS" != "000" ]; then
     echo "✓ Frontend running on http://localhost:3001"
     if command -v pm2 &> /dev/null; then
       echo "  Logs: pm2 logs 8pm-frontend"

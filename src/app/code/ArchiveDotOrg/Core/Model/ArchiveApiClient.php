@@ -477,6 +477,7 @@ class ArchiveApiClient implements ArchiveApiClientInterface
 
         // Parse tracks from files
         $tracks = [];
+        $allAudioTracks = []; // All audio files including untitled derivatives
 
         // Collect all audio formats instead of filtering to one
         $supportedFormats = ['flac', 'mp3', 'ogg'];
@@ -494,19 +495,14 @@ class ArchiveApiClient implements ArchiveApiClientInterface
                     continue;
                 }
 
-                // Skip files without a title
-                if (empty($fileData['title'])) {
-                    continue;
-                }
-
                 /** @var TrackInterface $track */
                 $track = $this->trackFactory->create();
                 $track->setName($name);
-                $track->setTitle($fileData['title']);
+                $track->setTitle($fileData['title'] ?? null);
                 $track->setTrackNumber(isset($fileData['track']) ? (int) $fileData['track'] : null);
                 $track->setLength($fileData['length'] ?? null);
                 $track->setSha1($fileData['sha1'] ?? null);
-                $track->setFormat($extension);  // Store actual file format
+                $track->setFormat($extension);
                 $track->setSource($fileData['source'] ?? null);
                 $track->setFileSize(isset($fileData['size']) ? (int) $fileData['size'] : null);
 
@@ -514,11 +510,25 @@ class ArchiveApiClient implements ArchiveApiClientInterface
                 $track->setOriginal($fileData['original'] ?? null);
                 $track->setAlbum($fileData['album'] ?? null);
 
-                $tracks[] = $track;
+                // All audio files go into the format map
+                $allAudioTracks[] = $track;
+
+                // Only titled files go into the primary track list
+                if (!empty($fileData['title'])) {
+                    $tracks[] = $track;
+                }
             }
         }
 
         $show->setTracks($tracks);
+
+        // Group ALL audio tracks (including untitled) by basename for multi-quality URL building
+        $formatTracksByBasename = [];
+        foreach ($allAudioTracks as $audioTrack) {
+            $basename = pathinfo($audioTrack->getName(), PATHINFO_FILENAME);
+            $formatTracksByBasename[$basename][] = $audioTrack;
+        }
+        $show->setFormatTracksByBasename($formatTracksByBasename);
 
         return $show;
     }

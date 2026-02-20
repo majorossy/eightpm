@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace ArchiveDotOrg\Core\Model;
 
-use ArchiveDotOrg\Core\Api\AttributeOptionManagerInterface;
 use ArchiveDotOrg\Core\Api\Data\ShowInterface;
 use ArchiveDotOrg\Core\Api\Data\TrackInterface;
 use ArchiveDotOrg\Core\Api\TrackImporterInterface;
@@ -49,7 +48,6 @@ class TrackImporter implements TrackImporterInterface
 {
     private ProductRepositoryInterface $productRepository;
     private ProductInterfaceFactory $productFactory;
-    private AttributeOptionManagerInterface $attributeOptionManager;
     private RecordingTypeDetector $recordingTypeDetector;
     private Config $config;
     private Logger $logger;
@@ -57,7 +55,6 @@ class TrackImporter implements TrackImporterInterface
     /**
      * @param ProductRepositoryInterface $productRepository
      * @param ProductInterfaceFactory $productFactory
-     * @param AttributeOptionManagerInterface $attributeOptionManager
      * @param RecordingTypeDetector $recordingTypeDetector
      * @param Config $config
      * @param Logger $logger
@@ -65,14 +62,12 @@ class TrackImporter implements TrackImporterInterface
     public function __construct(
         ProductRepositoryInterface $productRepository,
         ProductInterfaceFactory $productFactory,
-        AttributeOptionManagerInterface $attributeOptionManager,
         RecordingTypeDetector $recordingTypeDetector,
         Config $config,
         Logger $logger
     ) {
         $this->productRepository = $productRepository;
         $this->productFactory = $productFactory;
-        $this->attributeOptionManager = $attributeOptionManager;
         $this->recordingTypeDetector = $recordingTypeDetector;
         $this->config = $config;
         $this->logger = $logger;
@@ -159,8 +154,24 @@ class TrackImporter implements TrackImporterInterface
 
         $tracks = $show->getTracks();
 
-        // Group tracks by base filename to collect all quality variations
+        // Group titled tracks by base filename
         $tracksByBasename = $this->groupTracksByBasename($tracks);
+
+        // Merge in untitled format variants from Show's full format map
+        // This ensures MP3/OGG derivatives without titles are included for multi-quality URLs
+        $allFormatTracks = $show->getFormatTracksByBasename();
+        foreach ($allFormatTracks as $basename => $variants) {
+            if (!isset($tracksByBasename[$basename])) {
+                continue; // No primary track for this basename, skip
+            }
+            // Merge variants that aren't already present
+            $existingNames = array_map(fn($t) => $t->getName(), $tracksByBasename[$basename]);
+            foreach ($variants as $variant) {
+                if (!in_array($variant->getName(), $existingNames)) {
+                    $tracksByBasename[$basename][] = $variant;
+                }
+            }
+        }
 
         foreach ($tracksByBasename as $basename => $formatTracks) {
             try {
@@ -386,13 +397,13 @@ class TrackImporter implements TrackImporterInterface
             }
         }
 
-        // Dropdown attributes (using AttributeOptionManager)
-        $this->setDropdownAttribute($product, 'show_year', $show->getYear());
-        $this->setDropdownAttribute($product, 'show_venue', $show->getVenue());
-        $this->setDropdownAttribute($product, 'show_taper', $show->getTaper());
-        $this->setDropdownAttribute($product, 'show_transferer', $show->getTransferer());
-        $this->setDropdownAttribute($product, 'show_location', $show->getCoverage());
-        $this->setDropdownAttribute($product, 'archive_collection', $artistName);
+        // Varchar attributes (formerly select/dropdown — converted to varchar)
+        $product->setData('show_year', $show->getYear() ?: null);
+        $product->setData('show_venue', $show->getVenue() ?: null);
+        $product->setData('show_taper', $show->getTaper() ?: null);
+        $product->setData('show_transferer', $show->getTransferer() ?: null);
+        $product->setData('show_location', $show->getCoverage() ?: null);
+        $product->setData('archive_collection', $artistName ?: null);
 
         // Archive.org rating attributes
         $avgRating = $show->getAvgRating();
@@ -436,32 +447,6 @@ class TrackImporter implements TrackImporterInterface
         $product->setMetaTitle($this->truncateToLength($metaTitle, 70));
         $product->setMetaDescription($this->truncateToLength($metaDescription, 160));
         $product->setMetaKeyword($metaKeyword);
-    }
-
-    /**
-     * Set a dropdown attribute value
-     *
-     * @param Product $product
-     * @param string $attributeCode
-     * @param string|null $value
-     * @return void
-     */
-    private function setDropdownAttribute(Product $product, string $attributeCode, ?string $value): void
-    {
-        if ($value === null || trim($value) === '') {
-            return;
-        }
-
-        try {
-            $optionId = $this->attributeOptionManager->getOrCreateOptionId($attributeCode, $value);
-            $product->setData($attributeCode, $optionId);
-        } catch (\Exception $e) {
-            $this->logger->debug('Failed to set dropdown attribute', [
-                'attribute' => $attributeCode,
-                'value' => $value,
-                'error' => $e->getMessage()
-            ]);
-        }
     }
 
     /**

@@ -335,19 +335,31 @@ Claude Code has access to project-specific MCP tools for Docker, Redis, and MySQ
 | `mysql-8pm` | `query`, `execute`, `list_tables`, `describe_table` | Database queries |
 | `docker-8pm` | `list_containers`, `container_logs`, `container_exec`, `container_restart`, `container_stats` | Container management |
 | `redis-8pm` | `keys`, `get`, `hgetall`, `ttl`, `info`, `dbsize`, `del`, `del_pattern`, `flushdb`, `magento_cache_stats` | Cache inspection |
+| `graphql-8pm` | `query`, `introspect`, `get_products`, `get_category` | GraphQL API testing |
+| `magento-8pm` | `cache_flush`, `reindex`, `setup_upgrade`, `run_command`, `get_config` | Magento CLI operations |
+| `opensearch-8pm` | `get_health`, `list_indices`, `get_index_stats`, `get_mappings`, `search`, `get_aliases` | Search index inspection |
+| `filesystem-8pm` | `list_logs`, `read_log`, `search_logs`, `list_metadata`, `read_metadata` | Log files & metadata |
 
 ### How It Works
 
 ```
-.mcp.json           → Tells Claude Code which MCPs to load
-mcp/docker-8pm/     → Docker MCP (scoped to 8pm-* containers only)
-mcp/redis-8pm/      → Redis MCP (connects to port 6380)
+.mcp.json              → Tells Claude Code which MCPs to load
+mcp/docker-8pm/        → Docker MCP (scoped to 8pm-* containers only)
+mcp/redis-8pm/         → Redis MCP (connects to port 6380)
+mcp/graphql-8pm/       → GraphQL MCP (connects to https://magento.test/graphql)
+mcp/magento-8pm/       → Magento CLI MCP (execs into 8pm-phpfpm-1 container)
+mcp/opensearch-8pm/    → OpenSearch MCP (connects to http://localhost:9201)
+mcp/filesystem-8pm/    → Filesystem MCP (logs + Archive.org metadata via container exec)
 ```
 
 Claude automatically uses these tools when relevant:
 - "Check container logs" → uses `docker-8pm`
 - "What's in the cache?" → uses `redis-8pm`
 - "Query the database" → uses `mysql-8pm`
+- "Test this GraphQL query" → uses `graphql-8pm`
+- "Flush the cache" / "Reindex" → uses `magento-8pm`
+- "Check search indices" / "What's indexed?" → uses `opensearch-8pm`
+- "Show me the exception log" / "Read metadata for Railroad Earth" → uses `filesystem-8pm`
 
 ### For Developers: Modifying MCPs
 

@@ -15,9 +15,10 @@ fi
 PID=""
 if command -v lsof &> /dev/null; then
   PID=$(lsof -ti:3001 2>/dev/null || true)
-fi
-if [ -z "$PID" ] && command -v ss &> /dev/null; then
+elif command -v ss &> /dev/null; then
   PID=$(ss -tlnp 2>/dev/null | grep ':3001 ' | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -1)
+elif command -v fuser &> /dev/null; then
+  PID=$(fuser 3001/tcp 2>/dev/null | tr -d ' ' || true)
 fi
 
 if [ -z "$PID" ] || [ "$PID" = "0" ]; then
@@ -50,7 +51,16 @@ if kill -0 $KILL_PID 2>/dev/null; then
 fi
 
 # Verify port is free
-if ss -tlnp 2>/dev/null | grep -q ':3001 '; then
+STILL_RUNNING=false
+if command -v lsof &> /dev/null; then
+  lsof -ti:3001 &>/dev/null && STILL_RUNNING=true
+elif command -v ss &> /dev/null; then
+  ss -tlnp 2>/dev/null | grep -q ':3001 ' && STILL_RUNNING=true
+elif command -v fuser &> /dev/null; then
+  fuser 3001/tcp &>/dev/null && STILL_RUNNING=true
+fi
+
+if [ "$STILL_RUNNING" = true ]; then
   echo "⚠ Warning: Port 3001 still in use"
   exit 1
 else

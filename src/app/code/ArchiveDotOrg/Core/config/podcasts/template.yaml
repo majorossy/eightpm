@@ -1,0 +1,58 @@
+# ========================================
+# Podcast Configuration Template
+# ========================================
+#
+# This template shows the structure for adding a new podcast.
+# Copy this file and rename it to match your podcast's URL key (e.g., joe-rogan-experience.yaml)
+#
+# REQUIRED FIELDS:
+#   - name: Display name of the podcast
+#   - url_key: URL-safe slug (lowercase, hyphens only)
+#
+# OPTIONAL FIELDS:
+#   - description: Short bio/description of the podcast
+#   - image_url: Main podcast artwork URL
+#   - genres: Comma-separated genre list
+#   - official_website: Official podcast website
+#   - spotify_url: Spotify podcast link
+#   - apple_url: Apple Podcasts link
+#   - youtube_url: YouTube channel/podcast link
+#   - rss_feed: RSS feed URL
+#   - facebook: Facebook page URL
+#   - instagram: Instagram profile URL
+#   - twitter: Twitter/X profile URL
+#
+# ========================================
+
+# ========================================
+# PODCAST SECTION
+# ========================================
+podcast:
+  # REQUIRED: Display name
+  name: "Your Podcast Name"
+
+  # REQUIRED: URL-safe slug (lowercase, hyphens, no spaces)
+  url_key: "your-podcast-slug"
+
+  # OPTIONAL: Short description
+  description: "Brief description of what this podcast is about."
+
+  # OPTIONAL: Main podcast artwork (square format recommended)
+  image_url: "https://example.com/podcast-artwork.jpg"
+
+  # OPTIONAL: Comma-separated genres
+  genres: "Comedy, Interview, Culture"
+
+  # OPTIONAL: Official website
+  official_website: "https://yourpodcast.com"
+
+  # OPTIONAL: Platform links
+  spotify_url: "https://open.spotify.com/show/..."
+  apple_url: "https://podcasts.apple.com/podcast/..."
+  youtube_url: "https://youtube.com/@yourpodcast"
+  rss_feed: "https://yourpodcast.com/feed.xml"
+
+  # OPTIONAL: Social media
+  facebook: "https://facebook.com/yourpodcast"
+  instagram: "https://instagram.com/yourpodcast"
+  twitter: "https://twitter.com/yourpodcast"

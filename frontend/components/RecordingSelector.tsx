@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Song } from '@/lib/types';
 import { formatDuration } from '@/lib/api';
 import VenueLink from '@/components/VenueLink';
@@ -244,72 +244,65 @@ function DetailSection({ title, icon, children, defaultOpen = false }: {
   );
 }
 
-// ============ Sort Button ============
+// ============ SortableHeader ============
 
-function SortBtn({ label, active, dir, onClick }: {
+function SortableHeader({ label, field, sortBy, sortDir, onSort, className, style }: {
   label: string;
-  active: boolean;
-  dir: 'asc' | 'desc';
-  onClick: () => void;
+  field: string;
+  sortBy: string;
+  sortDir: 'asc' | 'desc';
+  onSort: (field: string) => void;
+  className?: string;
+  style?: React.CSSProperties;
 }) {
+  const active = sortBy === field;
   return (
-    <button onClick={onClick} style={{
-      padding: '4px 10px', borderRadius: 6,
-      border: active ? '1px solid var(--neon-pink)33' : '1px solid var(--overlay-light)',
-      background: active ? 'var(--overlay-medium)' : 'transparent',
-      color: active ? 'var(--neon-pink)' : 'var(--text-subdued)',
-      fontSize: 11, cursor: 'pointer', fontWeight: active ? 600 : 400,
-      display: 'inline-flex', alignItems: 'center', gap: 3,
-    }}>
-      {label}{active && <span style={{ fontSize: 9 }}>{dir === 'desc' ? '↓' : '↑'}</span>}
-    </button>
+    <span
+      className={`sortable-header ${className || ''}`}
+      onClick={() => onSort(field)}
+      style={{
+        cursor: 'pointer',
+        userSelect: 'none',
+        color: active ? 'var(--neon-pink)' : undefined,
+        transition: 'color 0.15s',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 2,
+        ...style,
+      }}
+    >
+      {label}{active && <span style={{ fontSize: 8, lineHeight: 1 }}>{sortDir === 'desc' ? '↓' : '↑'}</span>}
+    </span>
   );
 }
 
 // ============ SortBar ============
 
-function SortBar({ sortBy, sortDir, viewMode, onSort, onViewChange, songCount, trackTitle }: {
+function SortBar({ sortBy, sortDir, viewMode, onSort }: {
   sortBy: string;
   sortDir: 'asc' | 'desc';
   viewMode: 'cards' | 'compact';
   onSort: (field: string) => void;
-  onViewChange: (mode: 'cards' | 'compact') => void;
-  songCount: number;
-  trackTitle: string;
 }) {
+  if (viewMode !== 'cards') return null;
   return (
-    <div>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-        <span style={{ fontSize: 15, color: 'var(--neon-pink)' }}>✦</span>
-        <h2 style={{ color: 'var(--text)', fontSize: 17, fontWeight: 600, margin: 0, fontFamily: "var(--font-instrument-sans), 'Instrument Sans', sans-serif" }}>Choose Your Recording</h2>
-      </div>
-      <p style={{ color: 'var(--text-subdued)', fontSize: 12, margin: '2px 0 14px 23px', fontFamily: "var(--font-instrument-sans), 'Instrument Sans', sans-serif" }}>
-        {songCount} recording{songCount !== 1 ? 's' : ''} of <span style={{ color: 'var(--text-dim)' }}>&ldquo;{trackTitle}&rdquo;</span>
-      </p>
-
-      {/* Toolbar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginBottom: 14, flexWrap: 'wrap', gap: 8,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ color: 'var(--text-subdued)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', marginRight: 2 }}>SORT</span>
-          {['rating', 'downloads', 'date', 'length'].map(s => (
-            <SortBtn key={s} label={s.charAt(0).toUpperCase() + s.slice(1)} active={sortBy === s} dir={sortDir} onClick={() => onSort(s)} />
-          ))}
-        </div>
-        <div style={{ display: 'flex', background: 'var(--overlay-subtle)', borderRadius: 7, padding: 2, border: '1px solid var(--overlay-light)' }}>
-          {([{ k: 'compact' as const, i: '☰' }, { k: 'cards' as const, i: '▦' }]).map(v => (
-            <button key={v.k} onClick={() => onViewChange(v.k)} style={{
-              padding: '4px 11px', borderRadius: 5, border: 'none',
-              background: viewMode === v.k ? 'var(--overlay-medium)' : 'transparent',
-              color: viewMode === v.k ? 'var(--neon-pink)' : 'var(--text-subdued)',
-              fontSize: 13, cursor: 'pointer',
-            }}>{v.i}</button>
-          ))}
-        </div>
-      </div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 10, flexWrap: 'wrap' }}>
+      <span style={{ color: 'var(--text-subdued)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', marginRight: 2 }}>SORT</span>
+      {['rating', 'downloads', 'date', 'length'].map(s => {
+        const active = sortBy === s;
+        return (
+          <button key={s} onClick={() => onSort(s)} style={{
+            padding: '4px 10px', borderRadius: 6,
+            border: active ? '1px solid var(--neon-pink)33' : '1px solid var(--overlay-light)',
+            background: active ? 'var(--overlay-medium)' : 'transparent',
+            color: active ? 'var(--neon-pink)' : 'var(--text-subdued)',
+            fontSize: 11, cursor: 'pointer', fontWeight: active ? 600 : 400,
+            display: 'inline-flex', alignItems: 'center', gap: 3,
+          }}>
+            {s.charAt(0).toUpperCase() + s.slice(1)}{active && <span style={{ fontSize: 9 }}>{sortDir === 'desc' ? '↓' : '↑'}</span>}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -347,7 +340,7 @@ function CompactRow({ song, isTopRated, isSongPlaying, expanded, onToggle, onPla
         {/* Playing */}
         <div>{isSongPlaying ? <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid var(--neon-pink)', borderRadius: '50%', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} /> : null}</div>
         {/* Date */}
-        <span style={{ color: 'var(--text-dim)', fontSize: 12, fontFamily: "var(--font-jetbrains-mono), 'JetBrains Mono', monospace" }}>{date || '—'}</span>
+        <span style={{ color: 'var(--text-dim)', fontSize: 12, fontFamily: "var(--font-jetbrains-mono), 'JetBrains Mono', monospace", textAlign: date ? undefined : 'center' }}>{date || '—'}</span>
         {/* Venue + Location */}
         <div style={{ minWidth: 0 }}>
           <div style={{ color: 'var(--text)', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -356,15 +349,15 @@ function CompactRow({ song, isTopRated, isSongPlaying, expanded, onToggle, onPla
           <div style={{ color: 'var(--text-subdued)', fontSize: 11 }}>{song.showLocation || ''}</div>
         </div>
         {/* Rec Type */}
-        <RecTypeBadge type={song.recordingType} />
+        <div><RecTypeBadge type={song.recordingType} /></div>
         {/* Source */}
-        <SourceBadge source={sourceFormat} />
+        <div><SourceBadge source={sourceFormat} /></div>
         {/* Track time - hidden on mobile */}
         <span className="compact-col-time" style={{ color: 'var(--text-dim)', fontSize: 12, fontFamily: "var(--font-jetbrains-mono), 'JetBrains Mono', monospace", textAlign: 'right' }}>{formatDuration(song.duration)}</span>
         {/* Taper - hidden on mobile */}
-        <span className="compact-col-taper" style={{ color: 'var(--text-subdued)', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.taper || '—'}</span>
+        <span className="compact-col-taper" style={{ color: 'var(--text-subdued)', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: song.taper ? undefined : 'center' }}>{song.taper || '—'}</span>
         {/* Rating */}
-        <div style={{ textAlign: 'right' }}>
+        <div style={{ textAlign: song.avgRating ? 'right' : 'center' }}>
           {song.avgRating ? (
             <span style={{ color: 'var(--neon-pink)', fontSize: 12 }}>
               {'★'.repeat(Math.round(song.avgRating))}
@@ -373,7 +366,7 @@ function CompactRow({ song, isTopRated, isSongPlaying, expanded, onToggle, onPla
           ) : <span style={{ color: 'var(--star-empty)', fontSize: 11 }}>—</span>}
         </div>
         {/* Downloads - hidden on mobile */}
-        <span className="compact-col-downloads" style={{ color: 'var(--text-subdued)', fontSize: 11, textAlign: 'right' }}>{formatNum(song.downloads) || '—'}</span>
+        <span className="compact-col-downloads" style={{ color: 'var(--text-subdued)', fontSize: 11, textAlign: formatNum(song.downloads) ? 'right' : 'center' }}>{formatNum(song.downloads) || '—'}</span>
         {/* Expand chevron */}
         <span style={{
           color: 'var(--text-subdued)', fontSize: 10, textAlign: 'center',
@@ -657,33 +650,15 @@ function RecordingCard({ song, topRatedId, isSongPlaying, expanded, onToggleExpa
 
 // ============ Main RecordingSelector ============
 
-const VIEW_MODE_KEY = 'recording-selector-view-mode';
-
 // Constants for max-height calculation
 const COMPACT_ROW_HEIGHT = 42;    // px per compact row (measured from padding:8px + content)
 const COMPACT_MAX_ROWS = 8;       // show 8 rows before scrolling
-const CARD_MAX_HEIGHT = 400;      // px — roughly 2 collapsed cards
 
 export default function RecordingSelector({ songs, currentSongId, isPlaying, onPlay, onQueue }: RecordingSelectorProps) {
-  const [viewMode, setViewMode] = useState<'cards' | 'compact'>('compact');
+  const viewMode = 'compact' as const;
   const [sortBy, setSortBy] = useState('rating');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
-  // Load view mode from localStorage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(VIEW_MODE_KEY);
-      if (stored === 'cards' || stored === 'compact') {
-        setViewMode(stored);
-      }
-    } catch {}
-  }, []);
-
-  const handleViewChange = (mode: 'cards' | 'compact') => {
-    setViewMode(mode);
-    try { localStorage.setItem(VIEW_MODE_KEY, mode); } catch {}
-  };
 
   const handleSort = (field: string) => {
     if (sortBy === field) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
@@ -711,24 +686,29 @@ export default function RecordingSelector({ songs, currentSongId, isPlaying, onP
 
   // Sorted songs
   const sorted = useMemo(() => {
+    const strFields: Record<string, (s: Song) => string> = {
+      venue: s => s.showVenue || '',
+      type: s => s.recordingType || '',
+      src: s => getSourceFormat(s) || '',
+      taper: s => s.taper || '',
+    };
+    const numFields: Record<string, (s: Song) => number> = {
+      rating: s => s.avgRating || 0,
+      downloads: s => s.downloads || 0,
+      date: s => s.showDate ? new Date(s.showDate + 'T00:00:00').getTime() || 0 : 0,
+      length: s => s.duration || 0,
+    };
     return [...songs].sort((a, b) => {
       const m = sortDir === 'desc' ? -1 : 1;
-      const get = (s: Song): number => {
-        if (sortBy === 'rating') return s.avgRating || 0;
-        if (sortBy === 'downloads') return s.downloads || 0;
-        if (sortBy === 'date') {
-          if (!s.showDate) return 0;
-          return new Date(s.showDate + 'T00:00:00').getTime() || 0;
-        }
-        if (sortBy === 'length') return s.duration || 0;
-        return 0;
-      };
-      return (get(a) - get(b)) * m;
+      if (strFields[sortBy]) {
+        const fn = strFields[sortBy];
+        return fn(a).localeCompare(fn(b)) * m;
+      }
+      const fn = numFields[sortBy];
+      if (fn) return (fn(a) - fn(b)) * m;
+      return 0;
     });
   }, [songs, sortBy, sortDir]);
-
-  // Track title (from the first song's trackTitle)
-  const trackTitle = songs[0]?.trackTitle || songs[0]?.title || 'Unknown Track';
 
   if (songs.length === 0) return null;
 
@@ -755,6 +735,9 @@ export default function RecordingSelector({ songs, currentSongId, isPlaying, onP
             grid-template-columns: 1fr !important;
           }
         }
+        .sortable-header:hover {
+          color: var(--neon-pink) !important;
+        }
         .recording-scroll::-webkit-scrollbar {
           width: 6px;
         }
@@ -779,9 +762,6 @@ export default function RecordingSelector({ songs, currentSongId, isPlaying, onP
         sortDir={sortDir}
         viewMode={viewMode}
         onSort={handleSort}
-        onViewChange={handleViewChange}
-        songCount={songs.length}
-        trackTitle={trackTitle}
       />
 
       {viewMode === 'cards' ? (
@@ -814,7 +794,7 @@ export default function RecordingSelector({ songs, currentSongId, isPlaying, onP
           display: 'flex',
           flexDirection: 'column'
         }}>
-          {/* Column headers - pinned */}
+          {/* Column headers - pinned, clickable to sort */}
           <div className="compact-row-grid" style={{
             display: 'grid',
             gap: 8,
@@ -827,11 +807,15 @@ export default function RecordingSelector({ songs, currentSongId, isPlaying, onP
             flexShrink: 0,
             background: '#15120d'
           }}>
-            <span></span><span>DATE</span><span>VENUE</span><span>TYPE</span><span>SRC</span>
-            <span className="compact-col-time" style={{ textAlign: 'right' }}>TIME</span>
-            <span className="compact-col-taper">TAPER</span>
-            <span style={{ textAlign: 'right' }}>RATING</span>
-            <span className="compact-col-downloads" style={{ textAlign: 'right' }}>DLS</span>
+            <span></span>
+            <SortableHeader label="DATE" field="date" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+            <SortableHeader label="VENUE" field="venue" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+            <SortableHeader label="TYPE" field="type" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+            <SortableHeader label="SRC" field="src" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+            <SortableHeader label="TIME" field="length" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} className="compact-col-time" style={{ textAlign: 'right', justifyContent: 'flex-end' }} />
+            <SortableHeader label="TAPER" field="taper" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} className="compact-col-taper" />
+            <SortableHeader label="RATING" field="rating" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} style={{ textAlign: 'right', justifyContent: 'flex-end' }} />
+            <SortableHeader label="DLS" field="downloads" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} className="compact-col-downloads" style={{ textAlign: 'right', justifyContent: 'flex-end' }} />
             <span></span>
           </div>
           {/* Scrollable rows */}

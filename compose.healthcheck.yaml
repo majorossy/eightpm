@@ -17,6 +17,9 @@ services:
         condition: service_started
 
   phpfpm:
+    healthcheck:
+      test: "pgrep -f 'php-fpm: master' > /dev/null"
+      <<: *healthcheck-defaults
     depends_on:
       db:
         condition: service_healthy

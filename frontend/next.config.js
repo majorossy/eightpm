@@ -230,7 +230,7 @@ const nextConfig = {
               // - archive.org: Metadata API and audio streaming
               // - google-analytics.com: Analytics beacons
               // - ws/wss localhost: Next.js hot reload WebSocket (dev only)
-              "connect-src 'self' https://magento.test https://magento.8pm.me https://*.archive.org https://archive.org https://www.google-analytics.com https://analytics.google.com wss://localhost:* ws://localhost:*",
+              "connect-src 'self' https://magento.test https://magento.8pm.me https://localhost:* https://*.archive.org https://archive.org https://www.google-analytics.com https://analytics.google.com wss://localhost:* ws://localhost:*",
 
               // Media (audio/video): Archive.org streaming and blob URLs
               // - archive.org: Audio files from ia*.us.archive.org subdomains
@@ -313,9 +313,7 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
-  env: {
-    MAGENTO_GRAPHQL_URL: process.env.MAGENTO_GRAPHQL_URL || 'https://app:8443/graphql',
-  },
+  env: {},
 };
 
 module.exports = withPWA(nextConfig);

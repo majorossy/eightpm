@@ -23,12 +23,6 @@ class ShowTaper implements ResolverInterface
 
         $product = $value['model'];
 
-        // show_taper is a dropdown attribute, get the label text
-        $text = $product->getAttributeText('show_taper');
-        if ($text) {
-            return is_array($text) ? implode(', ', $text) : $text;
-        }
-
-        return null;
+        return $product->getData('show_taper') ?: null;
     }
 }

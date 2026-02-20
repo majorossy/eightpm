@@ -14,6 +14,7 @@
                 <item name="show_venue" xsi:type="string">show_venue</item>
                 <item name="show_location" xsi:type="string">show_location</item>
                 <item name="show_taper" xsi:type="string">show_taper</item>
+                <item name="show_transferer" xsi:type="string">show_transferer</item>
                 <item name="show_source" xsi:type="string">show_source</item>
                 <item name="lineage" xsi:type="string">lineage</item>
                 <item name="notes" xsi:type="string">notes</item>

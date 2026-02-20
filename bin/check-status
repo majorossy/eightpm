@@ -74,7 +74,7 @@ trap cleanup EXIT
 echo -e "${DIM}Gathering data...${NC}"
 
 # Get metadata counts from filesystem first
-docker exec eightpm-phpfpm-1 bash -c '
+docker exec 8pm-phpfpm-1 bash -c '
 for dir in /var/www/html/var/archivedotorg/metadata/*/; do
     if [ -d "$dir" ]; then
         collection=$(basename "$dir")
@@ -94,7 +94,7 @@ SELECT
     COALESCE(artist_name.value, 'Unknown') AS artist_name,
 
     -- Get collection_id from archivedotorg_artist_status (has best coverage)
-    COALESCE(status.collection_id, '') AS collection_id,
+    COALESCE(status.collection_id, '-') AS collection_id,
 
     -- CCP: Direct product assignments through track categories (level=5)
     COALESCE(ccp_counts.ccp_count, 0) AS ccp_count,
@@ -123,15 +123,16 @@ LEFT JOIN catalog_category_entity_varchar artist_name
 LEFT JOIN archivedotorg_artist_status status
     ON LOWER(COALESCE(artist_name.value, '')) = LOWER(status.artist_name)
 
--- CCP counts: products assigned through track categories (artist -> album -> track -> product)
+-- CCP counts: all products under artist (direct + any descendant category)
 LEFT JOIN (
     SELECT
         artist.entity_id AS artist_id,
         COUNT(DISTINCT ccp.product_id) AS ccp_count
     FROM catalog_category_entity artist
-    JOIN catalog_category_entity album ON album.parent_id = artist.entity_id AND album.level = 4
-    JOIN catalog_category_entity track ON track.parent_id = album.entity_id AND track.level = 5
-    JOIN catalog_category_product ccp ON ccp.category_id = track.entity_id
+    JOIN catalog_category_entity descendant
+        ON descendant.path LIKE CONCAT(artist.path, '/%')
+        OR descendant.entity_id = artist.entity_id
+    JOIN catalog_category_product ccp ON ccp.category_id = descendant.entity_id
     WHERE artist.level = 3
     GROUP BY artist.entity_id
 ) ccp_counts ON artist.entity_id = ccp_counts.artist_id

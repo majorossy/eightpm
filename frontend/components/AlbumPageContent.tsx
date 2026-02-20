@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Album, Track, Song, Artist, formatDuration } from '@/lib/api';
@@ -50,18 +50,29 @@ function formatHours(seconds: number): string {
   return `${mins}:${String(secs).padStart(2, '0')}`;
 }
 
-// Cassette tape component
-function CassetteTape({
+// VU meter that reads volume from player context directly,
+// so only this tiny component re-renders at ~30fps during playback.
+function CassetteVUMeter() {
+  const { isPlaying, analyzerData } = usePlayer();
+  if (!isPlaying) return null;
+  return (
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+      <VUMeter volume={analyzerData.volume} size="normal" />
+    </div>
+  );
+}
+
+// Cassette tape component — memo'd so parent re-renders (from analyzerData) don't cascade here
+const CassetteTape = memo(function CassetteTape({
   album,
   isPlaying,
-  volume = 0,
   artistImageUrl,
 }: {
   album: AlbumWithTracks;
   isPlaying: boolean;
-  volume?: number;
   artistImageUrl?: string;
 }) {
+  const [imgError, setImgError] = useState(false);
   const year = album.showDate?.split('-')[0] || '';
   const formattedDate = album.showDate
     ? new Date(album.showDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })
@@ -150,7 +161,7 @@ function CassetteTape({
         </div>
 
         {/* Album cover art polaroid stamp (upper right) */}
-        {album.coverArt ? (
+        {album.coverArt && !imgError ? (
           <div
             className="absolute top-[8px] right-[8px] sm:top-[10px] sm:right-[12px] h-16 w-16 sm:h-20 sm:w-20 z-50"
           >
@@ -184,20 +195,7 @@ function CassetteTape({
                   border: '2px solid white',
                   boxShadow: '0 4px 16px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.2)'
                 }}
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const parent = e.currentTarget.parentElement?.parentElement;
-                  if (parent) {
-                    parent.innerHTML = `
-                      <div class="w-full h-full bg-[#f5ebda] flex items-center justify-center rounded-sm" style="border: 2px solid white; box-shadow: 0 4px 16px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.2)">
-                        <svg class="w-8 h-8 sm:w-10 sm:h-10 text-[#8b5a2b]" viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                          <circle cx="12" cy="12" r="3" fill="currentColor"/>
-                        </svg>
-                      </div>
-                    `;
-                  }
-                }}
+                onError={() => setImgError(true)}
               />
             </div>
           </div>
@@ -244,6 +242,7 @@ function CassetteTape({
               src={artistImageUrl}
               alt={album.artistName}
               fill
+              sizes="40px"
               className="object-cover"
             />
           </div>
@@ -301,11 +300,7 @@ function CassetteTape({
           </div>
 
           {/* VU Meter centered between reels */}
-          {isPlaying && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-              <VUMeter volume={volume} size="normal" />
-            </div>
-          )}
+          <CassetteVUMeter />
 
           {/* Right reel */}
           <div
@@ -376,7 +371,7 @@ function CassetteTape({
 
     </div>
   );
-}
+});
 
 // Track row component
 function TrackRow({
@@ -416,7 +411,7 @@ function TrackRow({
 
   return (
     <div
-      className={`track-row-wrapper ${isExpanded ? 'expanded rounded-b-xl mb-2' : ''}`}
+      className={`track-row-wrapper ${isExpanded ? 'expanded rounded-xl mb-2' : ''}`}
     >
       {/* Track row */}
       <div
@@ -479,7 +474,7 @@ function TrackRow({
 
       {/* Expanded recordings panel */}
       {isExpanded && (
-        <div className="px-5 py-5" style={{ borderTop: '1px solid var(--overlay-light)' }}>
+        <div className="px-1.5 py-1.5" style={{ borderTop: '1px solid var(--overlay-light)' }}>
           <RecordingSelector
             songs={track.songs}
             currentSongId={currentSong?.id ?? null}
@@ -680,7 +675,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-12 items-center lg:items-start justify-center">
           {/* Cassette tape */}
           <div className="flex flex-col items-center gap-6">
-            <CassetteTape album={album} isPlaying={albumIsPlaying} volume={analyzerData.volume} artistImageUrl={artist?.image} />
+            <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image} />
           </div>
 
           {/* Album info */}

@@ -16,6 +16,11 @@ services:
     env_file: env/db.env
     ports:
       - "8081:80"
+    healthcheck:
+      test: "curl --fail http://127.0.0.1:80 || exit 1"
+      interval: 5s
+      timeout: 5s
+      retries: 6
     depends_on:
       - db
 

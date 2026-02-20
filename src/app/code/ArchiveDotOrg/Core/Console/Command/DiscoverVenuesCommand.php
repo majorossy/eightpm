@@ -68,10 +68,10 @@ class DiscoverVenuesCommand extends Command
             $connection->delete($connection->getTableName('archivedotorg_venue'));
         }
 
-        // Step 1: Get all distinct show_venue values from products
+        // Step 1: Get all distinct show_venue values from products (varchar table)
         $output->writeln('<info>Querying distinct venue names from products...</info>');
         $venueData = $this->getDistinctVenues($connection);
-        $output->writeln(sprintf('Found %d distinct venue option values', count($venueData)));
+        $output->writeln(sprintf('Found %d distinct venue values', count($venueData)));
 
         if (empty($venueData)) {
             $output->writeln('<comment>No venues found in imported products</comment>');
@@ -97,13 +97,13 @@ class DiscoverVenuesCommand extends Command
             $output->writeln('<info>=== Venues to be created ===</info>');
             $venuesWithCounts = 0;
             foreach ($normalizedVenues as $slug => $venue) {
-                // Aggregate counts from all option IDs belonging to this slug
+                // Aggregate counts from all venue_names belonging to this slug
                 $totalShows = 0;
                 $totalArtists = 0;
                 $totalTracks = 0;
-                foreach ($venue['option_ids'] as $optionId) {
-                    if (isset($venueCounts[$optionId])) {
-                        $c = $venueCounts[$optionId];
+                foreach ($venue['venue_names'] as $venueName) {
+                    if (isset($venueCounts[$venueName])) {
+                        $c = $venueCounts[$venueName];
                         $totalTracks += (int)$c['tracks'];
                         $totalShows += (int)$c['shows'];
                         $totalArtists = max($totalArtists, (int)$c['artists']);
@@ -176,16 +176,14 @@ class DiscoverVenuesCommand extends Command
     }
 
     /**
-     * Get all distinct show_venue option values and their IDs
+     * Get all distinct show_venue values and their product counts.
+     * Queries catalog_product_entity_varchar directly (show_venue is now varchar).
      */
     private function getDistinctVenues($connection): array
     {
         $eavAttr = $connection->getTableName('eav_attribute');
-        $optionTable = $connection->getTableName('eav_attribute_option');
-        $optionValueTable = $connection->getTableName('eav_attribute_option_value');
-        $cpeIntTable = $connection->getTableName('catalog_product_entity_int');
+        $cpeVarcharTable = $connection->getTableName('catalog_product_entity_varchar');
 
-        // Get show_venue attribute ID
         $venueAttrId = (int)$connection->fetchOne(
             $connection->select()->from($eavAttr, ['attribute_id'])
                 ->where('attribute_code = ?', 'show_venue')
@@ -196,33 +194,29 @@ class DiscoverVenuesCommand extends Command
             return [];
         }
 
-        // Get all used option values with product count
         $select = $connection->select()
-            ->from(['cpei' => $cpeIntTable], [])
-            ->join(
-                ['eaov' => $optionValueTable],
-                'cpei.value = eaov.option_id AND eaov.store_id = 0',
-                ['option_id' => 'eaov.option_id', 'venue_name' => 'eaov.value']
-            )
-            ->columns(['product_count' => new \Zend_Db_Expr('COUNT(DISTINCT cpei.entity_id)')])
-            ->where('cpei.attribute_id = ?', $venueAttrId)
-            ->where('cpei.store_id = ?', 0)
-            ->where('cpei.value IS NOT NULL')
-            ->group('eaov.option_id')
+            ->from(['cpev' => $cpeVarcharTable], [
+                'venue_name' => 'cpev.value',
+                'product_count' => new \Zend_Db_Expr('COUNT(DISTINCT cpev.entity_id)'),
+            ])
+            ->where('cpev.attribute_id = ?', $venueAttrId)
+            ->where('cpev.store_id = ?', 0)
+            ->where('cpev.value IS NOT NULL')
+            ->where('cpev.value != ?', '')
+            ->group('cpev.value')
             ->order('product_count DESC');
 
         return $connection->fetchAll($select);
     }
 
     /**
-     * Get show_location values associated with each venue option.
-     * show_location is a SELECT attribute (int backend) so we join via option_value table.
+     * Get show_location values associated with each venue name.
+     * Both show_venue and show_location are now varchar — query directly.
      */
     private function getVenueLocations($connection, array $venueData): array
     {
         $eavAttr = $connection->getTableName('eav_attribute');
-        $cpeIntTable = $connection->getTableName('catalog_product_entity_int');
-        $optionValueTable = $connection->getTableName('eav_attribute_option_value');
+        $cpeVarcharTable = $connection->getTableName('catalog_product_entity_varchar');
 
         $venueAttrId = (int)$connection->fetchOne(
             $connection->select()->from($eavAttr, ['attribute_id'])
@@ -240,40 +234,33 @@ class DiscoverVenuesCommand extends Command
             return [];
         }
 
-        $locations = [];
-        $optionIds = array_column($venueData, 'option_id');
-
-        if (empty($optionIds)) {
+        $venueNames = array_column($venueData, 'venue_name');
+        if (empty($venueNames)) {
             return [];
         }
 
-        // show_location is a SELECT attribute (int backend), so join through option_value
         $select = $connection->select()
-            ->from(['cpei' => $cpeIntTable], ['option_id' => 'cpei.value'])
+            ->from(['venue_v' => $cpeVarcharTable], ['venue_name' => 'venue_v.value'])
             ->join(
-                ['loc_int' => $cpeIntTable],
-                "loc_int.entity_id = cpei.entity_id AND loc_int.attribute_id = {$locationAttrId} AND loc_int.store_id = 0",
-                []
-            )
-            ->join(
-                ['loc_val' => $optionValueTable],
-                'loc_val.option_id = loc_int.value AND loc_val.store_id = 0',
-                ['location' => 'loc_val.value']
+                ['loc_v' => $cpeVarcharTable],
+                "loc_v.entity_id = venue_v.entity_id AND loc_v.attribute_id = {$locationAttrId} AND loc_v.store_id = 0",
+                ['location' => 'loc_v.value']
             )
             ->columns(['cnt' => new \Zend_Db_Expr('COUNT(*)')])
-            ->where('cpei.attribute_id = ?', $venueAttrId)
-            ->where('cpei.store_id = ?', 0)
-            ->where('cpei.value IN (?)', $optionIds)
-            ->group(['cpei.value', 'loc_val.value'])
+            ->where('venue_v.attribute_id = ?', $venueAttrId)
+            ->where('venue_v.store_id = ?', 0)
+            ->where('venue_v.value IN (?)', $venueNames)
+            ->group(['venue_v.value', 'loc_v.value'])
             ->order('cnt DESC');
 
         $rows = $connection->fetchAll($select);
 
-        // Take the most common location for each option ID
+        // Take the most common location for each venue name
+        $locations = [];
         foreach ($rows as $row) {
-            $optId = $row['option_id'];
-            if (!isset($locations[$optId])) {
-                $locations[$optId] = $row['location'];
+            $venueName = $row['venue_name'];
+            if (!isset($locations[$venueName])) {
+                $locations[$venueName] = $row['location'];
             }
         }
 
@@ -281,7 +268,8 @@ class DiscoverVenuesCommand extends Command
     }
 
     /**
-     * Normalize venue names, match against known venues, and deduplicate
+     * Normalize venue names, match against known venues, and deduplicate.
+     * Uses 'venue_names' instead of 'option_ids' as the grouping key.
      */
     private function normalizeVenues(array $venueData, array $venueLocations, array $knownVenues): array
     {
@@ -289,7 +277,6 @@ class DiscoverVenuesCommand extends Command
 
         foreach ($venueData as $venue) {
             $rawName = $venue['venue_name'];
-            $optionId = $venue['option_id'];
             $normalizedLower = strtolower(trim($rawName));
 
             // Strip embedded dates like "2019-08-31" or "(08/31/2019)"
@@ -322,20 +309,22 @@ class DiscoverVenuesCommand extends Command
                         'latitude' => $knownMatch['lat'],
                         'longitude' => $knownMatch['lon'],
                         'aliases' => [],
-                        'option_ids' => [],
+                        'venue_names' => [],
                     ];
                 }
                 if (!in_array($rawName, $normalized[$slug]['aliases'])) {
                     $normalized[$slug]['aliases'][] = $rawName;
                 }
-                $normalized[$slug]['option_ids'][] = $optionId;
+                if (!in_array($rawName, $normalized[$slug]['venue_names'])) {
+                    $normalized[$slug]['venue_names'][] = $rawName;
+                }
             } else {
                 // Unknown venue: generate slug from name
                 $slug = $this->generateSlug($rawName);
 
                 if (!isset($normalized[$slug])) {
-                    // Parse location
-                    $location = $venueLocations[$optionId] ?? null;
+                    // Parse location from venue_name key (locations keyed by venue name)
+                    $location = $venueLocations[$rawName] ?? null;
                     $city = null;
                     $state = null;
                     if ($location) {
@@ -352,13 +341,15 @@ class DiscoverVenuesCommand extends Command
                         'latitude' => null,
                         'longitude' => null,
                         'aliases' => [],
-                        'option_ids' => [],
+                        'venue_names' => [],
                     ];
                 }
                 if (!in_array($rawName, $normalized[$slug]['aliases'])) {
                     $normalized[$slug]['aliases'][] = $rawName;
                 }
-                $normalized[$slug]['option_ids'][] = $optionId;
+                if (!in_array($rawName, $normalized[$slug]['venue_names'])) {
+                    $normalized[$slug]['venue_names'][] = $rawName;
+                }
             }
         }
 
@@ -366,13 +357,12 @@ class DiscoverVenuesCommand extends Command
     }
 
     /**
-     * Count shows, artists, and tracks per venue.
-     * identifier = varchar, archive_collection = int (select), show_date = datetime
+     * Count shows, artists, and tracks per venue name.
+     * All attributes (show_venue, archive_collection, identifier) now use varchar table.
      */
     private function getVenueCounts($connection, array $venueData): array
     {
         $eavAttr = $connection->getTableName('eav_attribute');
-        $cpeIntTable = $connection->getTableName('catalog_product_entity_int');
         $cpeVarcharTable = $connection->getTableName('catalog_product_entity_varchar');
         $cpeDatetimeTable = $connection->getTableName('catalog_product_entity_datetime');
 
@@ -388,14 +378,13 @@ class DiscoverVenuesCommand extends Command
                 ->where('entity_type_id = ?', 4)
         );
 
-        // archive_collection is int (select) - distinct option values = distinct artists
+        // archive_collection is now varchar
         $collectionAttrId = (int)$connection->fetchOne(
             $connection->select()->from($eavAttr, ['attribute_id'])
                 ->where('attribute_code = ?', 'archive_collection')
                 ->where('entity_type_id = ?', 4)
         );
 
-        // show_date is datetime backend type
         $showDateAttrId = (int)$connection->fetchOne(
             $connection->select()->from($eavAttr, ['attribute_id'])
                 ->where('attribute_code = ?', 'show_date')
@@ -406,76 +395,74 @@ class DiscoverVenuesCommand extends Command
             return [];
         }
 
-        $optionIds = array_column($venueData, 'option_id');
-        if (empty($optionIds)) {
+        $venueNames = array_column($venueData, 'venue_name');
+        if (empty($venueNames)) {
             return [];
         }
 
-        // Get counts per option_id
-        // identifier is varchar, archive_collection is int, show_date is datetime
         $select = $connection->select()
-            ->from(['cpei' => $cpeIntTable], ['option_id' => 'cpei.value'])
+            ->from(['venue_v' => $cpeVarcharTable], ['venue_name' => 'venue_v.value'])
             ->joinLeft(
                 ['ident' => $cpeVarcharTable],
-                "ident.entity_id = cpei.entity_id AND ident.attribute_id = {$identifierAttrId} AND ident.store_id = 0",
+                "ident.entity_id = venue_v.entity_id AND ident.attribute_id = {$identifierAttrId} AND ident.store_id = 0",
                 []
             )
             ->joinLeft(
-                ['coll' => $cpeIntTable],
-                "coll.entity_id = cpei.entity_id AND coll.attribute_id = {$collectionAttrId} AND coll.store_id = 0",
+                ['coll' => $cpeVarcharTable],
+                "coll.entity_id = venue_v.entity_id AND coll.attribute_id = {$collectionAttrId} AND coll.store_id = 0",
                 []
             )
             ->joinLeft(
                 ['sdate' => $cpeDatetimeTable],
-                "sdate.entity_id = cpei.entity_id AND sdate.attribute_id = {$showDateAttrId} AND sdate.store_id = 0",
+                "sdate.entity_id = venue_v.entity_id AND sdate.attribute_id = {$showDateAttrId} AND sdate.store_id = 0",
                 []
             )
             ->columns([
-                'tracks' => new \Zend_Db_Expr('COUNT(DISTINCT cpei.entity_id)'),
+                'tracks' => new \Zend_Db_Expr('COUNT(DISTINCT venue_v.entity_id)'),
                 'shows' => new \Zend_Db_Expr('COUNT(DISTINCT ident.value)'),
                 'artists' => new \Zend_Db_Expr('COUNT(DISTINCT coll.value)'),
                 'first_show' => new \Zend_Db_Expr('MIN(sdate.value)'),
                 'last_show' => new \Zend_Db_Expr('MAX(sdate.value)'),
             ])
-            ->where('cpei.attribute_id = ?', $venueAttrId)
-            ->where('cpei.store_id = ?', 0)
-            ->where('cpei.value IN (?)', $optionIds)
-            ->group('cpei.value');
+            ->where('venue_v.attribute_id = ?', $venueAttrId)
+            ->where('venue_v.store_id = ?', 0)
+            ->where('venue_v.value IN (?)', $venueNames)
+            ->group('venue_v.value');
 
         $rows = $connection->fetchAll($select);
 
-        // Build lookup by option_id
-        $countsByOptionId = [];
+        // Build lookup by venue_name
+        $countsByVenueName = [];
         foreach ($rows as $row) {
-            $countsByOptionId[$row['option_id']] = $row;
+            $countsByVenueName[$row['venue_name']] = $row;
         }
 
-        return $countsByOptionId;
+        return $countsByVenueName;
     }
 
     /**
      * Insert venues and aliases into database
      */
-    private function insertVenues($connection, array $normalizedVenues, array $countsByOptionId, OutputInterface $output): int
+    private function insertVenues($connection, array $normalizedVenues, array $countsByVenueName, OutputInterface $output): int
     {
         $venueTable = $connection->getTableName('archivedotorg_venue');
         $aliasTable = $connection->getTableName('archivedotorg_venue_alias');
         $inserted = 0;
 
         foreach ($normalizedVenues as $slug => $venue) {
-            // Aggregate counts from all option IDs belonging to this slug
+            // Aggregate counts from all venue_names belonging to this slug
             $totalShows = 0;
             $totalArtists = 0;
             $totalTracks = 0;
             $firstShow = null;
             $lastShow = null;
 
-            foreach ($venue['option_ids'] as $optionId) {
-                if (isset($countsByOptionId[$optionId])) {
-                    $c = $countsByOptionId[$optionId];
+            foreach ($venue['venue_names'] as $venueName) {
+                if (isset($countsByVenueName[$venueName])) {
+                    $c = $countsByVenueName[$venueName];
                     $totalTracks += (int)$c['tracks'];
                     $totalShows += (int)$c['shows'];
-                    // Artists is approximate since we're summing distinct per option
+                    // Artists is approximate since we're summing distinct per venue_name
                     $totalArtists = max($totalArtists, (int)$c['artists']);
                     if ($c['first_show'] && (!$firstShow || $c['first_show'] < $firstShow)) {
                         $firstShow = $c['first_show'];

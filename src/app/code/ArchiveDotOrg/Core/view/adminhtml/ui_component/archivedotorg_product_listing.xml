@@ -130,29 +130,23 @@
             </settings>
         </column>
 
-        <column name="archive_collection" component="Magento_Ui/js/grid/columns/select" sortOrder="50">
+        <column name="archive_collection" sortOrder="50">
             <settings>
-                <filter>select</filter>
-                <options class="ArchiveDotOrg\Core\Ui\Component\Listing\Column\CollectionOptions"/>
-                <dataType>select</dataType>
+                <filter>text</filter>
                 <label translate="true">Artist/Collection</label>
             </settings>
         </column>
 
-        <column name="show_year" component="Magento_Ui/js/grid/columns/select" sortOrder="60">
+        <column name="show_year" sortOrder="60">
             <settings>
-                <filter>select</filter>
-                <options class="ArchiveDotOrg\Core\Ui\Component\Listing\Column\YearOptions"/>
-                <dataType>select</dataType>
+                <filter>text</filter>
                 <label translate="true">Year</label>
             </settings>
         </column>
 
-        <column name="show_venue" component="Magento_Ui/js/grid/columns/select" sortOrder="70">
+        <column name="show_venue" sortOrder="70">
             <settings>
-                <filter>select</filter>
-                <options class="ArchiveDotOrg\Core\Ui\Component\Listing\Column\VenueOptions"/>
-                <dataType>select</dataType>
+                <filter>text</filter>
                 <label translate="true">Venue</label>
             </settings>
         </column>

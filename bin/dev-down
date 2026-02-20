@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Stop all 8PM development services (frontend + Docker)
+set -e
+
+echo "=== 8PM Development Shutdown ==="
+echo ""
+
+# Step 1: Stop frontend
+echo "Step 1/2: Stopping frontend..."
+bin/frontend-stop
+
+# Step 2: Stop Docker containers
+echo ""
+echo "Step 2/2: Stopping Docker containers..."
+bin/stop
+
+echo ""
+echo "✓ All services stopped"

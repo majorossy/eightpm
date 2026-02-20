@@ -188,6 +188,33 @@ export interface ArtistDetail extends Artist {
   bandData?: BandMemberData | null; // Band members and career data
 }
 
+// Podcast types - aligned with category attributes
+export interface Podcast {
+  id: string;                    // Magento category uid
+  name: string;                  // category.name
+  slug: string;                  // category.url_key
+  image: string;                 // category.image
+  description: string;           // category.description
+  episodeCount?: number;         // product_count (total episodes)
+  // Podcast-specific attributes
+  isPodcast: boolean;            // is_podcast (always true for podcasts)
+  spotifyUrl?: string;           // podcast_spotify_url
+  appleUrl?: string;             // podcast_apple_url
+  youtubeUrl?: string;           // podcast_youtube_url
+  rssFeed?: string;              // podcast_rss_feed
+}
+
+export interface PodcastEpisode extends Song {
+  // Podcast episodes are products, so they inherit all Song properties
+  // Additional podcast-specific properties can be added here
+  episodeNumber?: number;        // Derived from title or custom attribute
+  publishDate?: string;          // Use showDate or custom attribute
+}
+
+export interface PodcastDetail extends Podcast {
+  episodes: PodcastEpisode[];    // Episodes in this podcast
+}
+
 // Cart types (Queue)
 export interface CartItem {
   id: string;                    // cart item uid

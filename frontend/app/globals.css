@@ -718,18 +718,18 @@
 }
 
 .theme-campfire .track-row-wrapper.expanded {
-  border-left: 1px solid rgba(212, 160, 96, 0.25);
-  border-right: 1px solid rgba(212, 160, 96, 0.25);
-  border-bottom: 1px solid rgba(212, 160, 96, 0.25);
+  border-left: 1px solid #d4a060;
+  border-right: 1px solid rgba(212, 160, 96, 0.10);
+  border-bottom: 1px solid rgba(212, 160, 96, 0.10);
   background: rgba(212, 160, 96, 0.02);
 }
 
 /* Campfire track row with hover effects */
 .theme-campfire .track-row {
   transition: all 0.2s ease;
-  border-left: 3px solid transparent;
-  margin-left: -3px;
-  padding-left: calc(1rem + 3px);
+  border-left: 1px solid transparent;
+  margin-left: -1px;
+  padding-left: calc(1rem + 1px);
 }
 
 .theme-campfire .track-row:hover {
@@ -738,9 +738,11 @@
   transform: translateX(4px);
 }
 
-.theme-campfire .track-row.expanded {
+.theme-campfire .track-row.expanded,
+.theme-campfire .track-row.expanded:hover {
   background: rgba(232,160,80,0.08);
   border-left-color: #d4a060;
+  transform: none;
 }
 
 /* Campfire album action buttons */

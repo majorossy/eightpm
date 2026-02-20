@@ -56,6 +56,9 @@ class Show implements ShowInterface
     /** @var TrackInterface[] */
     private array $tracks = [];
 
+    /** @var array<string, TrackInterface[]> */
+    private array $formatTracksByBasename = [];
+
     /**
      * @inheritDoc
      */
@@ -691,6 +694,23 @@ class Show implements ShowInterface
     public function setSubject(?string $subject): ShowInterface
     {
         $this->subject = $subject;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFormatTracksByBasename(): array
+    {
+        return $this->formatTracksByBasename;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setFormatTracksByBasename(array $formatTracks): ShowInterface
+    {
+        $this->formatTracksByBasename = $formatTracks;
         return $this;
     }
 }

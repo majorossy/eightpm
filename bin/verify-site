@@ -17,21 +17,21 @@ ERRORS=0
 # 1. Check Docker containers
 echo ""
 echo "1. Docker Containers:"
-HEALTHY=$(docker ps --filter "name=eightpm" --filter "health=healthy" --format "{{.Names}}" 2>/dev/null | wc -l)
-TOTAL=$(docker ps --filter "name=eightpm" --format "{{.Names}}" 2>/dev/null | wc -l)
-# phpfpm has no healthcheck, so we expect 5-6 healthy out of 6-7 total
-if [ "$HEALTHY" -ge 5 ]; then
+HEALTHY=$(docker ps --filter "name=8pm" --filter "health=healthy" --format "{{.Names}}" 2>/dev/null | wc -l | tr -d ' ')
+TOTAL=$(docker ps --filter "name=8pm" --format "{{.Names}}" 2>/dev/null | wc -l | tr -d ' ')
+# All containers should have healthchecks: expect all healthy
+if [ "$HEALTHY" -eq "$TOTAL" ]; then
   echo "   ✓ $HEALTHY/$TOTAL containers healthy"
 else
   echo "   ✗ Only $HEALTHY/$TOTAL containers healthy"
-  docker ps --filter "name=eightpm" --format "{{.Names}}: {{.Status}}" 2>/dev/null | head -10
+  docker ps --filter "name=8pm" --format "{{.Names}}: {{.Status}}" 2>/dev/null | head -10
   ERRORS=$((ERRORS + 1))
 fi
 
 # 2. Check GraphQL
 echo ""
 echo "2. GraphQL API:"
-GRAPHQL_RESPONSE=$(docker exec eightpm-app-1 curl -sk --connect-timeout 5 --max-time 10 \
+GRAPHQL_RESPONSE=$(docker exec 8pm-app-1 curl -sk --connect-timeout 5 --max-time 10 \
   https://localhost:8443/graphql \
   -H "Content-Type: application/json" \
   -d '{"query":"{ products(filter: {}, pageSize: 1) { total_count } }"}' 2>/dev/null || echo "")
@@ -50,22 +50,13 @@ fi
 # 3. Check Frontend
 echo ""
 echo "3. Frontend (port 3001):"
-if ss -tlnp 2>/dev/null | grep -q ':3001 '; then
-  # Check HTTP status code first
-  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/ 2>/dev/null || echo "000")
+HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 --max-time 5 http://localhost:3001/ 2>/dev/null || echo "000")
 
-  if [ "$HTTP_STATUS" = "200" ]; then
-    # Check for actual content (look for common page elements)
-    CONTENT=$(curl -s --max-time 5 http://localhost:3001/ 2>/dev/null | head -c 5000)
-    if echo "$CONTENT" | grep -qE '(Grateful Dead|Phish|STS9|Railroad Earth|8PM|artists)'; then
-      echo "   ✓ Frontend serving content (HTTP $HTTP_STATUS)"
-    else
-      echo "   ⚠ Frontend responding but content may be incomplete (HTTP $HTTP_STATUS)"
-    fi
-  else
-    echo "   ✗ Frontend returning HTTP $HTTP_STATUS"
-    ERRORS=$((ERRORS + 1))
-  fi
+if [ "$HTTP_STATUS" = "200" ]; then
+  echo "   ✓ Frontend serving content (HTTP $HTTP_STATUS)"
+elif [ "$HTTP_STATUS" != "000" ]; then
+  echo "   ✗ Frontend returning HTTP $HTTP_STATUS"
+  ERRORS=$((ERRORS + 1))
 else
   echo "   ✗ Frontend not running on port 3001"
   ERRORS=$((ERRORS + 1))

@@ -20,11 +20,10 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
   # Count healthy containers (production: 6, dev: 8)
   HEALTHY=$(bin/docker-compose $NO_DEV ps 2>/dev/null | grep -c "(healthy)" || echo "0")
 
-  # phpfpm has no healthcheck, so we expect 1 fewer healthy container
   if [ "$NO_DEV" = "--no-dev" ]; then
-    EXPECTED=5  # app, db, redis, opensearch, rabbitmq (not phpfpm, mailcatcher)
+    EXPECTED=7  # app, phpfpm, db, redis, opensearch, rabbitmq, mailcatcher
   else
-    EXPECTED=6  # app, db, redis, opensearch, rabbitmq, mailcatcher (not phpfpm)
+    EXPECTED=8  # app, phpfpm, db, redis, opensearch, rabbitmq, mailcatcher, phpmyadmin
   fi
 
   if [ "$HEALTHY" -ge "$EXPECTED" ]; then

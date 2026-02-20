@@ -23,12 +23,6 @@ class ShowLocation implements ResolverInterface
 
         $product = $value['model'];
 
-        // show_location is a dropdown attribute, get the label text
-        $text = $product->getAttributeText('show_location');
-        if ($text) {
-            return is_array($text) ? implode(', ', $text) : $text;
-        }
-
-        return null;
+        return $product->getData('show_location') ?: null;
     }
 }

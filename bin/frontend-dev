@@ -33,7 +33,8 @@ fi
 sleep 3
 
 # Verify it's running
-if ss -tlnp 2>/dev/null | grep -q ':3001'; then
+HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 --max-time 5 http://localhost:3001/ 2>/dev/null || echo "000")
+if [ "$HTTP_STATUS" != "000" ]; then
   echo "✓ Frontend dev server running on http://localhost:3001"
   echo "  Logs: /tmp/frontend-dev.log"
 else

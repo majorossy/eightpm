@@ -23,12 +23,6 @@ class ShowVenue implements ResolverInterface
 
         $product = $value['model'];
 
-        // show_venue is a dropdown attribute, get the label text
-        $text = $product->getAttributeText('show_venue');
-        if ($text) {
-            return is_array($text) ? implode(', ', $text) : $text;
-        }
-
-        return null;
+        return $product->getData('show_venue') ?: null;
     }
 }
