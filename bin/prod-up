@@ -3,15 +3,51 @@
 # Handles everything: pre-flight check, Docker, GraphQL, frontend
 set -e
 
+# Parse args
+PURGE=false
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --purge) PURGE=true; shift ;;
+    *) shift ;;
+  esac
+done
+
 echo "=== 8PM Production Startup ==="
 echo ""
 
-# Pre-flight check: is site already running?
-echo "Checking if site is already running..."
-if bin/verify-site --prod 2>/dev/null; then
+# Handle purge mode
+if [ "$PURGE" = true ]; then
+  echo "Purge mode: clearing caches and forcing rebuild..."
   echo ""
-  echo "✓ Site is already running! No action needed."
-  exit 0
+
+  # Stop everything first
+  echo "  Stopping services..."
+  bin/stop 2>/dev/null || true
+
+  # Clear Redis cache
+  echo "  Clearing Redis cache..."
+  docker exec 8pm-redis-1 redis-cli FLUSHALL 2>/dev/null || true
+
+  # Clear frontend build
+  echo "  Clearing frontend build cache..."
+  rm -rf frontend/.next frontend/node_modules/.cache
+
+  # Clear Magento generated files
+  echo "  Clearing Magento generated files..."
+  docker exec 8pm-phpfpm-1 rm -rf /var/www/html/generated/* 2>/dev/null || true
+  docker exec 8pm-phpfpm-1 rm -rf /var/www/html/var/cache/* 2>/dev/null || true
+
+  echo ""
+  echo "Caches cleared. Starting fresh..."
+  echo ""
+else
+  # Pre-flight check: is site already running? (skip in purge mode)
+  echo "Checking if site is already running..."
+  if bin/verify-site --prod 2>/dev/null; then
+    echo ""
+    echo "✓ Site is already running! No action needed."
+    exit 0
+  fi
 fi
 
 echo ""
