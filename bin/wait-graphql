@@ -12,10 +12,9 @@ done
 
 echo "Waiting for GraphQL to be ready (timeout: ${TIMEOUT}s)..."
 
-# Determine the right GraphQL URL based on environment
 # In production, we curl from inside the container to avoid SSL issues
-# Use category_id filter (48 = Artists parent) because empty filter returns 0 in OpenSearch
-QUERY='{"query":"{ products(filter: {category_id: {eq: \"48\"}}, pageSize: 1) { total_count } }"}'
+# Use category_id 201 (Railroad Earth) - parent category 48 doesn't appear in OpenSearch category_ids
+QUERY='{"query":"{ products(filter: {category_id: {eq: \"201\"}}, pageSize: 1) { total_count } }"}'
 
 ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do

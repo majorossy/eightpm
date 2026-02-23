@@ -20,7 +20,8 @@ export default function AlbumCard({ album }: AlbumCardProps) {
   });
 
   // Check if album has no song versions (coming soon)
-  const isComingSoon = album.totalSongs === 0;
+  // Albums with artwork are not coming soon even if totalSongs is 0
+  const isComingSoon = album.totalSongs === 0 && !album.coverArt;
 
   // Jamify/Spotify style - rounded cards with hover play button
   return (

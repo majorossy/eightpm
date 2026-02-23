@@ -7,10 +7,11 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { exec } from "child_process";
 import { promisify } from "util";
+import path from "path";
 
 const execAsync = promisify(exec);
 
-const COMPOSE_FILE = "/Users/chris.majorossy/Education/8pm/compose.yaml";
+const COMPOSE_FILE = path.resolve(__dirname, "../../compose.yaml");
 const LOG_DIR = "/var/www/html/var/log";
 const METADATA_DIR = "/var/www/html/var/archivedotorg/metadata";
 

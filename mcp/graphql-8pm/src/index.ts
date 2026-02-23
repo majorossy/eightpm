@@ -7,7 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import https from "https";
 
-const GRAPHQL_URL = "https://magento.test/graphql";
+const GRAPHQL_URL = "https://localhost:8443/graphql";
 
 interface GraphQLResponse {
   data?: unknown;
@@ -21,13 +21,14 @@ function graphqlRequest(
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({ query, variables });
     const options: https.RequestOptions = {
-      hostname: "magento.test",
+      hostname: "localhost",
       port: 8443,
       path: "/graphql",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Content-Length": Buffer.byteLength(body),
+        "Host": "magento.8pm.me",
       },
       rejectUnauthorized: false, // Allow self-signed certs in dev
     };
@@ -70,7 +71,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "query",
         description:
-          "Execute a GraphQL query or mutation against the Magento endpoint (https://magento.test/graphql). Returns data and any errors.",
+          "Execute a GraphQL query or mutation against the Magento endpoint (https://localhost:8443/graphql). Returns data and any errors.",
         inputSchema: {
           type: "object",
           properties: {

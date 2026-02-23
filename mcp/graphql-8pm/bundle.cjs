@@ -20673,13 +20673,14 @@ function graphqlRequest(query, variables) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({ query, variables });
     const options = {
-      hostname: "magento.test",
+      hostname: "localhost",
       port: 8443,
       path: "/graphql",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(body)
+        "Content-Length": Buffer.byteLength(body),
+        "Host": "magento.8pm.me"
       },
       rejectUnauthorized: false
       // Allow self-signed certs in dev
@@ -20718,7 +20719,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "query",
-        description: "Execute a GraphQL query or mutation against the Magento endpoint (https://magento.test/graphql). Returns data and any errors.",
+        description: "Execute a GraphQL query or mutation against the Magento endpoint (https://localhost:8443/graphql). Returns data and any errors.",
         inputSchema: {
           type: "object",
           properties: {

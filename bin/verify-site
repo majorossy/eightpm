@@ -34,7 +34,7 @@ echo "2. GraphQL API:"
 GRAPHQL_RESPONSE=$(docker exec 8pm-app-1 curl -sk --connect-timeout 5 --max-time 10 \
   https://localhost:8443/graphql \
   -H "Content-Type: application/json" \
-  -d '{"query":"{ products(filter: {category_id: {eq: \"48\"}}, pageSize: 1) { total_count } }"}' 2>/dev/null || echo "")
+  -d '{"query":"{ products(filter: {category_id: {eq: \"201\"}}, pageSize: 1) { total_count } }"}' 2>/dev/null || echo "")
 
 COUNT=$(echo "$GRAPHQL_RESPONSE" | grep -oE '"total_count":[0-9]+' | grep -oE '[0-9]+' || echo "0")
 if [ -z "$COUNT" ]; then COUNT="0"; fi

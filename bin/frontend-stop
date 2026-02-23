@@ -6,9 +6,23 @@
 if command -v pm2 &> /dev/null && pm2 list 2>/dev/null | grep -q '8pm-frontend.*online'; then
   echo "Stopping frontend via PM2..."
   pm2 stop 8pm-frontend 2>/dev/null || true
-  sleep 1
-  echo "✓ Frontend stopped (PM2)"
-  exit 0
+  sleep 2
+
+  # Verify port is actually free after PM2 stop
+  PORT_FREE=true
+  if command -v lsof &> /dev/null; then
+    lsof -ti:3001 &>/dev/null && PORT_FREE=false
+  elif command -v ss &> /dev/null; then
+    ss -tlnp 2>/dev/null | grep -q ':3001 ' && PORT_FREE=false
+  fi
+
+  if [ "$PORT_FREE" = true ]; then
+    echo "✓ Frontend stopped (PM2)"
+    exit 0
+  else
+    echo "  PM2 stopped but port 3001 still bound, killing remaining processes..."
+    # Fall through to direct kill path below
+  fi
 fi
 
 # Fallback: kill process directly (development mode)

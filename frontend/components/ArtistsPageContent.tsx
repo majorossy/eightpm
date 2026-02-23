@@ -147,7 +147,7 @@ function ArtistsContentInner() {
       <div id="artists-content" className="px-2 sm:px-4 md:px-8 pt-4 md:pt-6 mx-auto max-w-[1400px]">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
           {allAlbums.map((album, index) => {
-            const isComingSoon = album.totalSongs === 0;
+            const isComingSoon = album.totalSongs === 0 && !album.coverArt;
             return (
             <motion.div
               key={`${album.artistSlug}-${album.id}`}

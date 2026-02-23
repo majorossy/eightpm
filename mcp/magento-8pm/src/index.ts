@@ -6,8 +6,9 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { exec } from "child_process";
+import path from "path";
 
-const COMPOSE_FILE = "/Users/chris.majorossy/Education/8pm/compose.yaml";
+const COMPOSE_FILE = path.resolve(__dirname, "../../compose.yaml");
 const CONTAINER = "phpfpm";
 const MAGENTO_BIN = "/var/www/html/bin/magento";
 const EXEC_TIMEOUT = 120_000; // 120 seconds

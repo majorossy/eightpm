@@ -3223,8 +3223,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path) {
-      let input = path;
+    function removeDotSegments(path2) {
+      let input = path2;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3423,8 +3423,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path && path !== "/" ? path : void 0;
+        const [path2, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path2 && path2 !== "/" ? path2 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -7158,8 +7158,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path, errorMaps, issueData } = params;
-  const fullPath = [...path, ...issueData.path || []];
+  const { data, path: path2, errorMaps, issueData } = params;
+  const fullPath = [...path2, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -7274,11 +7274,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path, key) {
+  constructor(parent, value, path2, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path;
+    this._path = path2;
     this._key = key;
   }
   get path() {
@@ -10922,10 +10922,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path) {
-  if (!path)
+function getElementAtPath(obj, path2) {
+  if (!path2)
     return obj;
-  return path.reduce((acc, key) => acc?.[key], obj);
+  return path2.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -11308,11 +11308,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path, issues) {
+function prefixIssues(path2, issues) {
   return issues.map((iss) => {
     var _a2;
     (_a2 = iss).path ?? (_a2.path = []);
-    iss.path.unshift(path);
+    iss.path.unshift(path2);
     return iss;
   });
 }
@@ -20669,7 +20669,8 @@ var StdioServerTransport = class {
 
 // src/index.ts
 var import_child_process = require("child_process");
-var COMPOSE_FILE = "/Users/chris.majorossy/Education/8pm/compose.yaml";
+var import_path = __toESM(require("path"), 1);
+var COMPOSE_FILE = import_path.default.resolve(__dirname, "../../compose.yaml");
 var CONTAINER = "phpfpm";
 var MAGENTO_BIN = "/var/www/html/bin/magento";
 var EXEC_TIMEOUT = 12e4;
@@ -20841,20 +20842,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
       case "get_config": {
-        const path = args?.path;
-        if (!path) {
+        const path2 = args?.path;
+        if (!path2) {
           return {
             content: [{ type: "text", text: "Missing required parameter: path" }],
             isError: true
           };
         }
-        if (DANGEROUS_CHARS.test(path)) {
+        if (DANGEROUS_CHARS.test(path2)) {
           return {
             content: [{ type: "text", text: "Invalid config path: contains shell metacharacters." }],
             isError: true
           };
         }
-        const result = await runMagento(`config:show ${path}`);
+        const result = await runMagento(`config:show ${path2}`);
         return {
           content: [{ type: "text", text: result }]
         };
