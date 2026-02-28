@@ -14,10 +14,10 @@ export default function VenueStats({ venue }: VenueStatsProps) {
   ];
 
   return (
-    <div className="flex gap-6 mb-8 pb-6 border-b border-[#2d2a26]">
+    <div className="flex gap-6 mb-8 pb-6 border-b border-default">
       {stats.map((stat) => (
         <div key={stat.label} className="text-center">
-          <div className="text-2xl font-bold text-[#d4a060]">{stat.value}</div>
+          <div className="text-2xl font-bold text-accent">{stat.value}</div>
           <div className="text-xs text-[var(--text-subdued)] uppercase tracking-wider">{stat.label}</div>
         </div>
       ))}

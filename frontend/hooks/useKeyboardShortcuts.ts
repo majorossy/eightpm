@@ -27,6 +27,9 @@ interface KeyboardShortcutsConfig {
   // Help modal
   onShowHelp?: () => void;
 
+  // Minimize player
+  onToggleMinimize?: () => void;
+
   // Get current state for conditional logic
   isQueueOpen?: boolean;
 }
@@ -46,6 +49,7 @@ interface KeyboardShortcutsConfig {
  * - K or Cmd+K or Ctrl+K: Open search
  * - Escape: Close queue/modals
  * - ?: Show shortcuts help modal
+ * - M: Toggle minimize player
  */
 export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
   const {
@@ -59,6 +63,7 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
     onToggleQueue,
     onOpenSearch,
     onShowHelp,
+    onToggleMinimize,
     isQueueOpen = false,
   } = config;
 
@@ -155,6 +160,11 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
         e.preventDefault();
         onShowHelp?.();
         break;
+
+      case 'm':
+        e.preventDefault();
+        onToggleMinimize?.();
+        break;
     }
   }, [
     onPlayPause,
@@ -167,6 +177,7 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
     onToggleQueue,
     onOpenSearch,
     onShowHelp,
+    onToggleMinimize,
     isQueueOpen,
   ]);
 

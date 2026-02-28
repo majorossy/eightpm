@@ -69,18 +69,18 @@ export function Accordion({
   const item = (
     <AccordionPrimitive.Item
       value={itemValue}
-      className="border border-[#3a3632] rounded-lg overflow-hidden bg-[#2a2825]"
+      className="border border-default rounded-lg overflow-hidden bg-surface-card"
     >
       <AccordionPrimitive.Header>
         <AccordionPrimitive.Trigger
-          className="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-[#32302c] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a060] focus-visible:ring-inset group"
+          className="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-surface-elevated transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset group"
         >
           <div className="flex items-center gap-3">
-            {icon && <span className="text-[#d4a060] flex-shrink-0">{icon}</span>}
-            <h3 className="text-lg font-semibold text-[#d4a060]">{title}</h3>
+            {icon && <span className="text-accent flex-shrink-0">{icon}</span>}
+            <h3 className="text-lg font-semibold text-accent">{title}</h3>
           </div>
           <svg
-            className="w-5 h-5 text-[#8a8478] transition-transform duration-200 group-data-[state=open]:rotate-180"
+            className="w-5 h-5 text-secondary transition-transform duration-200 group-data-[state=open]:rotate-180"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -92,7 +92,7 @@ export function Accordion({
       <AccordionPrimitive.Content
         className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up"
       >
-        <div className="px-4 pb-4 text-[#8a8478] leading-relaxed border-t border-[#3a3632]/50">
+        <div className="px-4 pb-4 text-secondary leading-relaxed border-t border-default/50">
           <div className="pt-4">
             {children}
           </div>

@@ -205,7 +205,7 @@ export default function EightPmFullPlayer() {
   return (
     <div
       {...swipeHandlers}
-      className={`fixed inset-0 z-50 bg-gradient-to-b from-[#3a3632] to-[#1c1a17] flex flex-col md:hidden safe-top safe-bottom full-screen-player prevent-overscroll touch-action-pan-y ${
+      className={`fixed inset-0 z-50 bg-gradient-to-b from-border to-surface-base flex flex-col md:hidden safe-top safe-bottom full-screen-player prevent-overscroll touch-action-pan-y ${
         isAnimating && !reducedMotion ? 'player-slide-up' : ''
       } ${swipeHandlers.isDragging ? 'dragging' : ''} ${reducedMotion ? 'reduce-motion' : ''}`}
       style={{
@@ -236,7 +236,7 @@ export default function EightPmFullPlayer() {
 
         {/* Now playing from */}
         <div className="text-center">
-          <p className="text-[10px] text-[#8a8478] uppercase tracking-wider">Playing from</p>
+          <p className="text-[10px] text-secondary uppercase tracking-wider">Playing from</p>
           <p className="text-xs text-white font-medium truncate max-w-[200px]">
             {currentItem?.albumSource?.albumName || 'Unknown'}
           </p>
@@ -264,7 +264,7 @@ export default function EightPmFullPlayer() {
               vibrate(BUTTON_PRESS);
               setIsSettingsOpen(!isSettingsOpen);
             }}
-            className={`p-2 -mr-2 btn-touch ${isSettingsOpen ? 'text-[#d4a060]' : 'text-white'}`}
+            className={`p-2 -mr-2 btn-touch ${isSettingsOpen ? 'text-accent' : 'text-white'}`}
             aria-label={isSettingsOpen ? 'Close settings' : 'Open settings menu'}
             aria-expanded={isSettingsOpen}
             aria-haspopup="dialog"
@@ -294,8 +294,8 @@ export default function EightPmFullPlayer() {
               }`}
             />
           ) : (
-            <div className="w-full h-full bg-[#2d2a26] flex items-center justify-center" aria-hidden="true">
-              <svg className="w-24 h-24 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
+            <div className="w-full h-full bg-surface-elevated flex items-center justify-center" aria-hidden="true">
+              <svg className="w-24 h-24 text-border" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
               </svg>
             </div>
@@ -308,7 +308,7 @@ export default function EightPmFullPlayer() {
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 mr-4">
             <h2 className="text-xl font-bold text-white truncate">
-              {currentItem?.albumSource ? <><span className="text-[#6a6458]">{(currentItem.albumSource.originalTrackIndex ?? 0) + 1}.</span> {currentSong.title}</> : currentSong.title}
+              {currentItem?.albumSource ? <><span className="text-tertiary">{(currentItem.albumSource.originalTrackIndex ?? 0) + 1}.</span> {currentSong.title}</> : currentSong.title}
             </h2>
             <Link
               href={`/artists/${currentSong.artistSlug || ''}`}
@@ -316,7 +316,7 @@ export default function EightPmFullPlayer() {
                 vibrate(BUTTON_PRESS);
                 collapsePlayer();
               }}
-              className="text-[#8a8478] hover:text-white hover:underline truncate block mb-2"
+              className="text-secondary hover:text-white hover:underline truncate block mb-2"
             >
               {currentSong.artistName}
             </Link>
@@ -328,21 +328,21 @@ export default function EightPmFullPlayer() {
                     vibrate(BUTTON_PRESS);
                     setShowQualityPopup(!showQualityPopup);
                   }}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#2a2520] border border-[#4a3a28] rounded-md hover:border-[#d4a060] transition-colors btn-touch"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-card border border-default rounded-md hover:border-accent transition-colors btn-touch"
                   aria-label="Change audio quality"
                 >
-                  <div className="w-1.5 h-1.5 bg-[#d4a060] rounded-full animate-pulse" />
-                  <span className="text-[11px] font-semibold text-[#d4a060] uppercase tracking-wide">
+                  <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />
+                  <span className="text-[11px] font-semibold text-accent uppercase tracking-wide">
                     {qualityInfo.format}
                   </span>
-                  <span className="text-[11px] text-[#8a8478]">
+                  <span className="text-[11px] text-secondary">
                     {qualityInfo.bitrate}
                   </span>
                 </button>
 
                 {/* Source - ALWAYS VISIBLE */}
                 <span
-                  className="text-[9px] text-[#6a6458] italic leading-tight truncate max-w-[200px]"
+                  className="text-[9px] text-tertiary italic leading-tight truncate max-w-[200px]"
                   title={currentSong?.lineage || 'Source not specified'}
                 >
                   {formatLineage(currentSong?.lineage, 60)}
@@ -377,7 +377,7 @@ export default function EightPmFullPlayer() {
               }
             }}
             className={`p-2 btn-touch btn-ripple ${
-              currentSong && isInWishlist(currentSong.id) ? 'text-[#d4a060]' : 'text-[#8a8478]'
+              currentSong && isInWishlist(currentSong.id) ? 'text-accent' : 'text-secondary'
             }`}
             aria-label={currentSong && isInWishlist(currentSong.id) ? 'Remove from favorites' : 'Add to favorites'}
           >
@@ -397,7 +397,7 @@ export default function EightPmFullPlayer() {
       {/* Progress Bar */}
       <div className="px-8 mb-4">
         <div
-          className="w-full h-1 bg-[#3a3632] rounded-full cursor-pointer group relative"
+          className="w-full h-1 bg-border rounded-full cursor-pointer group relative"
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const percent = (e.clientX - rect.left) / rect.width;
@@ -417,13 +417,13 @@ export default function EightPmFullPlayer() {
           </div>
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-[11px] text-[#8a8478] font-mono">
+          <span className="text-[11px] text-secondary font-mono">
             {formatDuration(Math.floor(currentTime))}
           </span>
 
           {/* Streaming stats (centered) */}
           {(streamingStats.networkType || streamingStats.downlinkMbps !== null || streamingStats.bufferedAhead > 0) && (
-            <span className="text-[9px] text-[#6a6458] font-mono">
+            <span className="text-[9px] text-tertiary font-mono">
               {[
                 streamingStats.networkType?.toUpperCase(),
                 streamingStats.downlinkMbps !== null ? `${streamingStats.downlinkMbps} Mbps` : null,
@@ -432,7 +432,7 @@ export default function EightPmFullPlayer() {
             </span>
           )}
 
-          <span className="text-[11px] text-[#8a8478] font-mono">
+          <span className="text-[11px] text-secondary font-mono">
             {formatDuration(Math.floor(duration))}
           </span>
         </div>
@@ -506,7 +506,7 @@ export default function EightPmFullPlayer() {
               const nextIndex = (currentIndex + 1) % modes.length;
               setRepeat(modes[nextIndex]);
             }}
-            className={`p-3 btn-touch ${queue.repeat === 'off' ? 'text-[#8a8478]' : 'text-[#d4a060]'}`}
+            className={`p-3 btn-touch ${queue.repeat === 'off' ? 'text-secondary' : 'text-accent'}`}
             aria-label={`Repeat: ${queue.repeat}`}
           >
             {queue.repeat === 'one' ? (
@@ -543,7 +543,7 @@ export default function EightPmFullPlayer() {
       <div className="px-8 pb-6">
         <div className="flex items-center justify-between">
           {/* Device */}
-          <button className="p-2 text-[#8a8478] btn-touch" aria-label="Connect to a device">
+          <button className="p-2 text-secondary btn-touch" aria-label="Connect to a device">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z" />
             </svg>
@@ -556,7 +556,7 @@ export default function EightPmFullPlayer() {
               collapsePlayer();
               setTimeout(() => toggleQueue(), 100);
             }}
-            className={`p-2 btn-touch ${isQueueOpen ? 'text-[#d4a060]' : 'text-[#8a8478]'}`}
+            className={`p-2 btn-touch ${isQueueOpen ? 'text-accent' : 'text-secondary'}`}
             aria-label="Open full queue"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -579,14 +579,14 @@ export default function EightPmFullPlayer() {
 
       {/* Timer notification (1 minute warning) */}
       {showTimerNotification && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#d4a060] text-white px-6 py-3 rounded-full shadow-lg animate-fade-in">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-accent text-white px-6 py-3 rounded-full shadow-lg animate-fade-in">
           <p className="text-sm font-medium">Music will stop in 1 minute</p>
         </div>
       )}
 
       {/* Active timer indicator (bottom of screen when not in settings) */}
       {sleepTimer.isActive && !isSettingsOpen && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-[#2d2a26]/95 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-surface-elevated/95 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg">
           <p className="text-xs font-medium text-center">
             Sleep timer: {Math.floor(sleepTimer.timeRemaining / 60)}:{(sleepTimer.timeRemaining % 60).toString().padStart(2, '0')} remaining
           </p>

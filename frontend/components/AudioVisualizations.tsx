@@ -46,7 +46,7 @@ export const VUMeter = memo(
 
         {/* Needle */}
         <div
-          className="absolute bottom-[2px] left-1/2 w-[2px] bg-[#1a1410] rounded-sm"
+          className="absolute bottom-[2px] left-1/2 w-[2px] bg-surface-sunken rounded-sm"
           style={{
             height: `${isSmall ? 12 : 16}px`,
             transformOrigin: 'bottom center',
@@ -58,7 +58,7 @@ export const VUMeter = memo(
 
         {/* Center pivot */}
         <div
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-[#e8a050] rounded-full"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-accent rounded-full"
           style={{
             width: `${isSmall ? 4 : 6}px`,
             height: `${isSmall ? 4 : 6}px`,
@@ -125,9 +125,9 @@ export const SpinningReel = memo(
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            background: 'radial-gradient(circle at 40% 40%, #5a4530, #3a3530)',
-            border: `${isSmall ? 2 : 3}px solid #c85028`,
-            boxShadow: '0 0 8px rgba(232, 160, 80, 0.3), inset 0 0 4px rgba(232, 160, 80, 0.2)',
+            background: 'radial-gradient(circle at 40% 40%, var(--bg-card, #5a4530), var(--bg, #3a3530))',
+            border: `${isSmall ? 2 : 3}px solid var(--secondary)`,
+            boxShadow: '0 0 8px var(--accent-glow-subtle), inset 0 0 4px var(--accent-gradient-warm)',
           }}
         />
 
@@ -143,7 +143,7 @@ export const SpinningReel = memo(
           {[0, 60, 120, 180, 240, 300].map((deg) => (
             <div
               key={deg}
-              className="absolute top-1/2 left-1/2 bg-[#1a1410]"
+              className="absolute top-1/2 left-1/2 bg-surface-sunken"
               style={{
                 width: `${diameter * 0.35}px`,
                 height: '1px',
@@ -156,7 +156,7 @@ export const SpinningReel = memo(
 
         {/* Center hub */}
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#4a4540] rounded-full border border-[#2a2520]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-border rounded-full border border-default"
           style={{
             width: `${diameter * 0.3}px`,
             height: `${diameter * 0.3}px`,

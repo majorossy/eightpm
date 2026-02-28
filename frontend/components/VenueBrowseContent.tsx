@@ -65,7 +65,7 @@ export default function VenueBrowseContent() {
         </div>
         <Link
           href="/venues/map"
-          className="px-4 py-2 bg-[#2d2a26] hover:bg-[#3a3632] text-[var(--text)] rounded-lg text-sm transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-surface-elevated hover:bg-border text-[var(--text)] rounded-lg text-sm transition-colors flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -82,7 +82,7 @@ export default function VenueBrowseContent() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search venues..."
-            className="w-full px-4 py-2.5 bg-[#252220] border border-[#3a3632] rounded-lg text-[var(--text)] placeholder-[var(--text-subdued)] focus:outline-none focus:border-[#d4a060] transition-colors"
+            className="w-full px-4 py-2.5 bg-surface-card border border-default rounded-lg text-[var(--text)] placeholder-[var(--text-subdued)] focus:outline-none focus:border-accent transition-colors"
           />
         </div>
         <input
@@ -90,11 +90,11 @@ export default function VenueBrowseContent() {
           value={stateFilter}
           onChange={(e) => setStateFilter(e.target.value)}
           placeholder="State (e.g. NY)"
-          className="w-full sm:w-32 px-4 py-2.5 bg-[#252220] border border-[#3a3632] rounded-lg text-[var(--text)] placeholder-[var(--text-subdued)] focus:outline-none focus:border-[#d4a060] transition-colors"
+          className="w-full sm:w-32 px-4 py-2.5 bg-surface-card border border-default rounded-lg text-[var(--text)] placeholder-[var(--text-subdued)] focus:outline-none focus:border-accent transition-colors"
         />
         <button
           type="submit"
-          className="px-6 py-2.5 bg-[#d4a060] text-[#1c1a17] rounded-lg font-medium hover:bg-[#e8c090] transition-colors"
+          className="px-6 py-2.5 bg-accent text-inverse rounded-lg font-medium hover:bg-accent-hover transition-colors"
         >
           Search
         </button>
@@ -133,17 +133,17 @@ export default function VenueBrowseContent() {
               <Link
                 key={venue.slug}
                 href={`/venues/${venue.slug}`}
-                className="bg-[#252220] hover:bg-[#2d2a26] rounded-lg p-5 transition-colors group"
+                className="bg-surface-card hover:bg-surface-elevated rounded-lg p-5 transition-colors group"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#2d2a26] flex items-center justify-center flex-shrink-0 group-hover:bg-[#3a3632] transition-colors">
-                    <svg className="w-5 h-5 text-[#d4a060]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 rounded-lg bg-surface-elevated flex items-center justify-center flex-shrink-0 group-hover:bg-border transition-colors">
+                    <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[var(--text)] font-medium truncate group-hover:text-[#d4a060] transition-colors">
+                    <div className="text-[var(--text)] font-medium truncate group-hover:text-accent transition-colors">
                       {venue.normalized_name}
                     </div>
                     {location && (
@@ -172,7 +172,7 @@ export default function VenueBrowseContent() {
           {hasFilters && (
             <button
               onClick={handleClearFilters}
-              className="text-[#d4a060] hover:underline text-sm"
+              className="text-accent hover:underline text-sm"
             >
               Clear filters
             </button>
@@ -182,11 +182,11 @@ export default function VenueBrowseContent() {
 
       {/* Pagination */}
       {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-8 pt-4 border-t border-[#2d2a26]">
+        <div className="flex items-center justify-center gap-2 mt-8 pt-4 border-t border-default">
           <button
             onClick={() => loadVenues(currentPage - 1, searchQuery, stateFilter)}
             disabled={currentPage <= 1}
-            className="px-4 py-2 text-sm rounded-lg bg-[#2d2a26] text-[var(--text)] disabled:opacity-40 hover:bg-[#3a3632] transition-colors"
+            className="px-4 py-2 text-sm rounded-lg bg-surface-elevated text-[var(--text)] disabled:opacity-40 hover:bg-border transition-colors"
           >
             Previous
           </button>
@@ -196,7 +196,7 @@ export default function VenueBrowseContent() {
           <button
             onClick={() => loadVenues(currentPage + 1, searchQuery, stateFilter)}
             disabled={currentPage >= totalPages}
-            className="px-4 py-2 text-sm rounded-lg bg-[#2d2a26] text-[var(--text)] disabled:opacity-40 hover:bg-[#3a3632] transition-colors"
+            className="px-4 py-2 text-sm rounded-lg bg-surface-elevated text-[var(--text)] disabled:opacity-40 hover:bg-border transition-colors"
           >
             Next
           </button>

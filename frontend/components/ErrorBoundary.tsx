@@ -82,7 +82,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
       // Default fallback UI - dark theme to match Jamify
       return (
-        <div className="min-h-screen bg-[#1c1a17] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-surface-base flex items-center justify-center p-4">
           <div className="max-w-md w-full text-center">
             {/* Error icon */}
             <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 text-red-400">
@@ -99,7 +99,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
             {/* Error details (development only) */}
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="mb-6 p-4 bg-[#252220] rounded-lg border border-[#2d2a26] text-left">
+              <div className="mb-6 p-4 bg-surface-card rounded-lg border border-default text-left">
                 <p className="text-sm font-mono text-red-400 break-all">
                   {this.state.error.message}
                 </p>
@@ -115,13 +115,13 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={this.handleRetry}
-                className="px-6 py-3 bg-[#2d2a26] hover:bg-[#333] text-white rounded-full font-medium transition-colors"
+                className="px-6 py-3 bg-surface-elevated hover:bg-surface-elevated text-white rounded-full font-medium transition-colors"
               >
                 Try Again
               </button>
               <button
                 onClick={this.handleReload}
-                className="px-6 py-3 bg-[#d4a060] hover:bg-[#c08a40] text-black rounded-full font-medium transition-colors inline-flex items-center justify-center gap-2"
+                className="px-6 py-3 bg-accent hover:bg-accent-hover text-black rounded-full font-medium transition-colors inline-flex items-center justify-center gap-2"
               >
                 <RefreshIcon />
                 Reload Page

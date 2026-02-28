@@ -28,19 +28,19 @@ export default function TermsPage() {
     <div className="max-w-[800px] mx-auto px-4 py-12 md:py-16">
       {/* Header with icon */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-[#2a2825] rounded-lg border border-[#3a3632]">
-          <DocumentIcon className="w-8 h-8 text-[#d4a060]" />
+        <div className="p-3 bg-surface-card rounded-lg border border-default">
+          <DocumentIcon className="w-8 h-8 text-accent" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-[#d4a060] tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-bold text-accent tracking-tight">
           Terms of Service
         </h1>
       </div>
 
-      <div className="space-y-6 text-[#8a8478] leading-relaxed">
+      <div className="space-y-6 text-secondary leading-relaxed">
         {/* Student project notice */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-4 flex items-start gap-3">
-          <InfoIcon className="w-5 h-5 text-[#d4a060] flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-[#d4a060]">
+        <div className="bg-surface-card border border-default rounded-lg p-4 flex items-start gap-3">
+          <InfoIcon className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-accent">
             <strong>Note:</strong> This is a student project placeholder. 8pm.me is an educational
             demonstration and not a commercial service.
           </p>
@@ -52,7 +52,7 @@ export default function TermsPage() {
             href="https://archive.org/about/terms"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#d4a060] hover:text-[#e8a050] underline"
+            className="text-accent hover:text-accent underline"
           >
             Internet Archive's Terms of Use
           </a>
@@ -60,10 +60,10 @@ export default function TermsPage() {
         </p>
 
         {/* Archive.org Relationship - NEW SECTION */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <ArchiveIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <ArchiveIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Our Relationship with Archive.org
             </h2>
           </div>
@@ -73,7 +73,7 @@ export default function TermsPage() {
               href="https://archive.org/details/etree"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#d4a060] hover:text-[#e8a050] underline"
+              className="text-accent hover:text-accent underline"
             >
               Live Music Archive
             </a>
@@ -86,7 +86,7 @@ export default function TermsPage() {
               href="https://archive.org/about/terms"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#d4a060] hover:text-[#e8a050] underline"
+              className="text-accent hover:text-accent underline"
             >
               Internet Archive's Terms of Use
             </a>
@@ -99,10 +99,10 @@ export default function TermsPage() {
         </div>
 
         {/* Acceptance of Terms */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <ScaleIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <ScaleIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Acceptance of Terms
             </h2>
           </div>
@@ -114,10 +114,10 @@ export default function TermsPage() {
         </div>
 
         {/* Use of Service */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <CheckIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <CheckIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Use of Service
             </h2>
           </div>
@@ -150,17 +150,17 @@ export default function TermsPage() {
         </div>
 
         {/* The Tape Trading Tradition */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <ClockIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <ClockIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               The Tape Trading Tradition
             </h2>
           </div>
           <p className="mb-4">
             Since the early 1970s, a community of concert tapers and traders has
             preserved live music through an informal network built on one core
-            principle: <strong className="text-[#d4a060]">share freely, never profit</strong>.
+            principle: <strong className="text-accent">share freely, never profit</strong>.
           </p>
           <p className="mb-4">
             Artists like the Grateful Dead, Phish, and many jam bands have embraced
@@ -174,16 +174,16 @@ export default function TermsPage() {
         </div>
 
         {/* Our Ethos */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <HeartIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <HeartIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Our Ethos: Trade Freely — Never Sell
             </h2>
           </div>
           <p className="mb-4">
             Following the Live Music Archive's policies, all content accessible through
-            8pm.me is for <strong className="text-[#d4a060]">noncommercial, royalty-free
+            8pm.me is for <strong className="text-accent">noncommercial, royalty-free
             circulation only</strong>. You may freely share these recordings, but you may not:
           </p>
           <ul className="space-y-2">
@@ -211,15 +211,15 @@ export default function TermsPage() {
         </div>
 
         {/* Artist Rights & Permissions */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <DocumentIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <DocumentIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Artist Rights & Permissions
             </h2>
           </div>
           <p className="mb-4">
-            <strong className="text-[#d4a060]">Artists retain full copyright</strong> to
+            <strong className="text-accent">Artists retain full copyright</strong> to
             their performances. Downloads and streams are provided with the understanding
             that artists still hold their copyrights.
           </p>
@@ -250,10 +250,10 @@ export default function TermsPage() {
         </div>
 
         {/* User Conduct */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <UserIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <UserIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               User Conduct
             </h2>
           </div>
@@ -284,10 +284,10 @@ export default function TermsPage() {
 
         {/* Disclaimers Grid */}
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-5">
+          <div className="bg-surface-card border border-default rounded-lg p-5">
             <div className="flex items-center gap-2 mb-3">
-              <InfoIcon className="w-5 h-5 text-[#d4a060]" />
-              <h3 className="text-lg font-semibold text-[#d4a060]">
+              <InfoIcon className="w-5 h-5 text-accent" />
+              <h3 className="text-lg font-semibold text-accent">
                 Disclaimer of Warranties
               </h3>
             </div>
@@ -298,10 +298,10 @@ export default function TermsPage() {
             </p>
           </div>
 
-          <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-5">
+          <div className="bg-surface-card border border-default rounded-lg p-5">
             <div className="flex items-center gap-2 mb-3">
-              <ScaleIcon className="w-5 h-5 text-[#d4a060]" />
-              <h3 className="text-lg font-semibold text-[#d4a060]">
+              <ScaleIcon className="w-5 h-5 text-accent" />
+              <h3 className="text-lg font-semibold text-accent">
                 Limitation of Liability
               </h3>
             </div>
@@ -314,10 +314,10 @@ export default function TermsPage() {
         </div>
 
         {/* External Resources */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <GlobeIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <GlobeIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Archive.org Resources
             </h2>
           </div>
@@ -329,10 +329,10 @@ export default function TermsPage() {
               href="https://archive.org/about/terms"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg hover:bg-[#252320] transition-colors group"
+              className="flex items-center gap-2 p-3 bg-surface-base rounded-lg hover:bg-surface-card transition-colors group"
             >
-              <DocumentIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
-              <span className="text-sm text-[#d4a060] group-hover:text-[#e8a050]">
+              <DocumentIcon className="w-4 h-4 text-accent flex-shrink-0" />
+              <span className="text-sm text-accent group-hover:text-accent">
                 Internet Archive Terms of Use
               </span>
             </a>
@@ -340,10 +340,10 @@ export default function TermsPage() {
               href="https://help.archive.org/help/live-music-archive-etree-org/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg hover:bg-[#252320] transition-colors group"
+              className="flex items-center gap-2 p-3 bg-surface-base rounded-lg hover:bg-surface-card transition-colors group"
             >
-              <InfoIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
-              <span className="text-sm text-[#d4a060] group-hover:text-[#e8a050]">
+              <InfoIcon className="w-4 h-4 text-accent flex-shrink-0" />
+              <span className="text-sm text-accent group-hover:text-accent">
                 Live Music Archive Help Center
               </span>
             </a>
@@ -351,19 +351,19 @@ export default function TermsPage() {
               href="https://archive.org/details/etree"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg hover:bg-[#252320] transition-colors group"
+              className="flex items-center gap-2 p-3 bg-surface-base rounded-lg hover:bg-surface-card transition-colors group"
             >
-              <ArchiveIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
-              <span className="text-sm text-[#d4a060] group-hover:text-[#e8a050]">
+              <ArchiveIcon className="w-4 h-4 text-accent flex-shrink-0" />
+              <span className="text-sm text-accent group-hover:text-accent">
                 Live Music Archive Collection
               </span>
             </a>
             <a
               href="mailto:lma@archive.org"
-              className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg hover:bg-[#252320] transition-colors group"
+              className="flex items-center gap-2 p-3 bg-surface-base rounded-lg hover:bg-surface-card transition-colors group"
             >
-              <MailIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
-              <span className="text-sm text-[#d4a060] group-hover:text-[#e8a050]">
+              <MailIcon className="w-4 h-4 text-accent flex-shrink-0" />
+              <span className="text-sm text-accent group-hover:text-accent">
                 Contact Live Music Archive
               </span>
             </a>
@@ -372,10 +372,10 @@ export default function TermsPage() {
 
         {/* Changes and Contact */}
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-5">
+          <div className="bg-surface-card border border-default rounded-lg p-5">
             <div className="flex items-center gap-2 mb-3">
-              <DocumentIcon className="w-5 h-5 text-[#d4a060]" />
-              <h3 className="text-lg font-semibold text-[#d4a060]">
+              <DocumentIcon className="w-5 h-5 text-accent" />
+              <h3 className="text-lg font-semibold text-accent">
                 Changes to Terms
               </h3>
             </div>
@@ -385,16 +385,16 @@ export default function TermsPage() {
             </p>
           </div>
 
-          <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-5">
+          <div className="bg-surface-card border border-default rounded-lg p-5">
             <div className="flex items-center gap-2 mb-3">
-              <MailIcon className="w-5 h-5 text-[#d4a060]" />
-              <h3 className="text-lg font-semibold text-[#d4a060]">
+              <MailIcon className="w-5 h-5 text-accent" />
+              <h3 className="text-lg font-semibold text-accent">
                 Contact
               </h3>
             </div>
             <p className="text-sm">
               If you have questions about these terms, please{' '}
-              <Link href="/contact" className="text-[#d4a060] hover:text-[#e8a050] underline">
+              <Link href="/contact" className="text-accent hover:text-accent underline">
                 contact us
               </Link>
               .
@@ -402,14 +402,14 @@ export default function TermsPage() {
           </div>
         </div>
 
-        <div className="text-sm text-[#6a6458] italic">
+        <div className="text-sm text-tertiary italic">
           Last updated: January 30, 2026
         </div>
 
         <div className="pt-4 text-center">
           <Link
             href="/"
-            className="text-sm text-[#8a8478] hover:text-[#d4a060] transition-colors duration-200"
+            className="text-sm text-secondary hover:text-accent transition-colors duration-200"
           >
             ← Back to Home
           </Link>

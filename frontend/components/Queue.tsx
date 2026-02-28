@@ -110,8 +110,8 @@ export default function Queue() {
       <aside
         className={`fixed z-[70] flex flex-col ${
           isMobile
-            ? 'inset-0 bg-[#1c1a17] safe-top safe-bottom'
-            : 'left-0 top-0 bottom-0 w-96 bg-[#1c1a17] border-r border-[#2d2a26]/50'
+            ? 'inset-0 bg-surface-base safe-top safe-bottom'
+            : 'left-0 top-0 bottom-0 w-96 bg-surface-base border-r border-default/50'
         }`}
         role="dialog"
         aria-modal="true"
@@ -119,10 +119,10 @@ export default function Queue() {
       >
           {/* Header */}
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="text-xs font-medium text-[#8a8478] uppercase tracking-[0.2em]">Queue</h2>
+            <h2 className="text-xs font-medium text-secondary uppercase tracking-[0.2em]">Queue</h2>
             <button
               onClick={toggleQueue}
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-[#3a3632] text-[#8a8478] hover:text-white hover:border-[#6a6458] transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-default text-secondary hover:text-white hover:border-tertiary transition-colors"
               aria-label="Close queue"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,8 +134,8 @@ export default function Queue() {
           {/* Content */}
           <div className="flex-1 overflow-y-auto prevent-overscroll px-4" role="region" aria-label="Queue tracks">
             {!hasItems ? (
-              <div className="flex flex-col items-center justify-center h-full text-[#8a8478]">
-                <svg className="w-12 h-12 mb-4 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
+              <div className="flex flex-col items-center justify-center h-full text-secondary">
+                <svg className="w-12 h-12 mb-4 text-border" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z" />
                 </svg>
                 <p className="font-semibold">Queue is empty</p>
@@ -175,23 +175,23 @@ export default function Queue() {
 
           {/* Modal Content */}
           <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-            <div className="bg-[#2d2a26] rounded-lg max-w-md w-full p-6">
+            <div className="bg-surface-elevated rounded-lg max-w-md w-full p-6">
               {saveSuccess ? (
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-[#d4a060] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">Playlist Created!</h3>
-                  <p className="text-[#8a8478] text-sm">
+                  <p className="text-secondary text-sm">
                     {totalItems} {totalItems === 1 ? 'song' : 'songs'} saved to &quot;{playlistName}&quot;
                   </p>
                 </div>
               ) : (
                 <>
                   <h3 className="text-xl font-bold text-white mb-4">Save Queue as Playlist</h3>
-                  <p className="text-[#8a8478] text-sm mb-4">
+                  <p className="text-secondary text-sm mb-4">
                     {totalItems} {totalItems === 1 ? 'song' : 'songs'} will be saved
                   </p>
                   <input
@@ -205,7 +205,7 @@ export default function Queue() {
                       }
                     }}
                     placeholder="Playlist name"
-                    className="w-full px-4 py-3 bg-[#3a3632] text-white rounded border border-[#3a3632] focus:border-[#d4a060] focus:outline-none mb-6"
+                    className="w-full px-4 py-3 bg-border text-white rounded border border-default focus:border-accent focus:outline-none mb-6"
                     autoFocus
                     disabled={isSaving}
                   />
@@ -216,14 +216,14 @@ export default function Queue() {
                         setPlaylistName('');
                       }}
                       disabled={isSaving}
-                      className="flex-1 py-3 px-4 bg-transparent border border-[#3a3632] text-white text-sm font-semibold rounded-full hover:border-white transition-colors disabled:opacity-50"
+                      className="flex-1 py-3 px-4 bg-transparent border border-default text-white text-sm font-semibold rounded-full hover:border-white transition-colors disabled:opacity-50"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSaveQueue}
                       disabled={!playlistName.trim() || isSaving}
-                      className="flex-1 py-3 px-4 bg-[#d4a060] hover:bg-[#c08a40] text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 py-3 px-4 bg-accent hover:bg-accent-hover text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSaving ? 'Saving...' : 'Save'}
                     </button>
@@ -259,8 +259,8 @@ function CardSummary({ item }: { item: QueueItem }) {
           className="object-cover rounded-md flex-shrink-0"
         />
       ) : (
-        <div className="w-12 h-12 bg-[#2d2a26] rounded-md flex items-center justify-center flex-shrink-0">
-          <svg className="w-6 h-6 text-[#3a3632]" viewBox="0 0 24 24" fill="currentColor">
+        <div className="w-12 h-12 bg-surface-elevated rounded-md flex items-center justify-center flex-shrink-0">
+          <svg className="w-6 h-6 text-border" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
           </svg>
         </div>
@@ -269,12 +269,12 @@ function CardSummary({ item }: { item: QueueItem }) {
       {/* Text content */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white truncate">{item.trackTitle}</p>
-        <p className="text-xs text-[#8a8478] truncate">{song.artistName}</p>
+        <p className="text-xs text-secondary truncate">{song.artistName}</p>
       </div>
 
       {/* Duration */}
       {song.duration > 0 && (
-        <span className="text-xs text-[#6a6458] font-mono flex-shrink-0">{formatDuration(song.duration)}</span>
+        <span className="text-xs text-tertiary font-mono flex-shrink-0">{formatDuration(song.duration)}</span>
       )}
     </div>
   );
@@ -295,11 +295,11 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
 
   return (
     <div className="mb-5">
-      <div className="rounded-xl border border-[#3a3632]/60 bg-[#252220] p-4">
+      <div className="rounded-xl border border-default/60 bg-surface-card p-4">
         {/* Now Playing label */}
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-2 h-2 bg-[#d4a060] rounded-full" />
-          <span className="text-[10px] font-bold text-[#d4a060] uppercase tracking-[0.15em]">Now Playing</span>
+          <div className="w-2 h-2 bg-accent rounded-full" />
+          <span className="text-[10px] font-bold text-accent uppercase tracking-[0.15em]">Now Playing</span>
         </div>
 
         {/* Track info */}
@@ -314,32 +314,32 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
               className="object-cover rounded-lg flex-shrink-0"
             />
           ) : (
-            <div className="w-14 h-14 bg-[#2d2a26] rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-7 h-7 text-[#3a3632]" viewBox="0 0 24 24" fill="currentColor">
+            <div className="w-14 h-14 bg-surface-elevated rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-7 h-7 text-border" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
               </svg>
             </div>
           )}
           <div className="flex-1 min-w-0">
             <p className="text-base font-bold text-white truncate">{currentItem.song.title}</p>
-            <p className="text-sm text-[#8a8478] truncate">{currentItem.song.artistName}</p>
+            <p className="text-sm text-secondary truncate">{currentItem.song.artistName}</p>
             {showInfo && (
-              <p className="text-xs text-[#6a6458] truncate mt-0.5">{showInfo}</p>
+              <p className="text-xs text-tertiary truncate mt-0.5">{showInfo}</p>
             )}
           </div>
         </div>
 
         {/* Progress bar */}
         <div>
-          <div className="w-full h-[3px] bg-[#3a3632] rounded-full overflow-hidden">
+          <div className="w-full h-[3px] bg-border rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#d4a060] rounded-full transition-all duration-150"
+              className="h-full bg-accent rounded-full transition-all duration-150"
               style={{ width: `${progress}%` }}
             />
           </div>
           <div className="flex justify-between mt-1.5">
-            <span className="text-[11px] text-[#8a8478] font-mono">{formatDuration(Math.floor(currentTime))}</span>
-            <span className="text-[11px] text-[#8a8478] font-mono">{formatDuration(Math.floor(duration))}</span>
+            <span className="text-[11px] text-secondary font-mono">{formatDuration(Math.floor(currentTime))}</span>
+            <span className="text-[11px] text-secondary font-mono">{formatDuration(Math.floor(duration))}</span>
           </div>
         </div>
       </div>
@@ -429,8 +429,8 @@ function SortableTrackRow({
 
 function DragOverlayTrack({ item }: { item: QueueItem }) {
   return (
-    <div className="px-3 py-3 bg-[#2d2a26] rounded-xl shadow-lg shadow-black/50 border border-[#d4a060]/30 flex items-center gap-2">
-      <div className="p-1 text-[#d4a060]">
+    <div className="px-3 py-3 bg-surface-elevated rounded-xl shadow-lg shadow-black/50 border border-accent/30 flex items-center gap-2">
+      <div className="p-1 text-accent">
         <DragHandleIcon />
       </div>
       <CardSummary item={item} />
@@ -440,9 +440,9 @@ function DragOverlayTrack({ item }: { item: QueueItem }) {
 
 function DragOverlayGroup({ group }: { group: AlbumGroup }) {
   return (
-    <div className="px-4 py-3 bg-[#2d2a26] rounded shadow-lg shadow-black/50 border border-[#d4a060]/30">
+    <div className="px-4 py-3 bg-surface-elevated rounded shadow-lg shadow-black/50 border border-accent/30">
       <div className="flex items-center gap-2">
-        <div className="p-1 text-[#d4a060]">
+        <div className="p-1 text-accent">
           <DragHandleIcon />
         </div>
         {group.albumSource.coverArt && (
@@ -457,7 +457,7 @@ function DragOverlayGroup({ group }: { group: AlbumGroup }) {
         <p className="text-xs text-white uppercase tracking-wider truncate">
           {group.albumSource.albumName}
         </p>
-        <span className="text-xs text-[#8a8478] ml-auto">
+        <span className="text-xs text-secondary ml-auto">
           {group.items.length} tracks
         </span>
       </div>
@@ -635,21 +635,21 @@ function UpcomingSection({
   return (
     <div className="mt-2">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-[#8a8478] uppercase tracking-[0.15em]">
-          Up Next <span className="text-[#d4a060]">&middot; {upcomingCount} tracks</span>
+        <p className="text-xs text-secondary uppercase tracking-[0.15em]">
+          Up Next <span className="text-accent">&middot; {upcomingCount} tracks</span>
         </p>
         <div className="flex items-center gap-3">
           {hasItems && totalItems > 0 && (
             <button
               onClick={onSave}
-              className="text-xs text-[#8a8478] hover:text-white transition-colors"
+              className="text-xs text-secondary hover:text-white transition-colors"
             >
               Save
             </button>
           )}
           <button
             onClick={clearUpcoming}
-            className="text-xs text-[#8a8478] hover:text-white transition-colors"
+            className="text-xs text-secondary hover:text-white transition-colors"
             aria-label={`Clear upcoming queue (${upcomingCount} songs)`}
           >
             Clear
@@ -734,7 +734,7 @@ function SortableGroupHeader({ group, dragId }: SortableGroupHeaderProps) {
     <li
       ref={setNodeRef}
       style={style}
-      className={`p-4 pb-0 ${isDragging ? 'bg-[#2d2a26] rounded' : ''}`}
+      className={`p-4 pb-0 ${isDragging ? 'bg-surface-elevated rounded' : ''}`}
       aria-hidden="true"
     >
       <div className="flex items-center gap-2">
@@ -742,7 +742,7 @@ function SortableGroupHeader({ group, dragId }: SortableGroupHeaderProps) {
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
-          className="p-1 text-[#3a3632] hover:text-[#8a8478] cursor-grab active:cursor-grabbing touch-none"
+          className="p-1 text-border hover:text-secondary cursor-grab active:cursor-grabbing touch-none"
           aria-label={`Reorder ${group.albumSource.albumName} group`}
         >
           <DragHandleIcon />
@@ -756,7 +756,7 @@ function SortableGroupHeader({ group, dragId }: SortableGroupHeaderProps) {
             className="rounded"
           />
         )}
-        <p className="text-xs text-[#8a8478] uppercase tracking-wider truncate">
+        <p className="text-xs text-secondary uppercase tracking-wider truncate">
           {group.isContinuation
             ? `${group.albumSource.albumName} (continued)`
             : group.albumSource.albumName}

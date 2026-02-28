@@ -1,5 +1,5 @@
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`bg-[#2d2a26] animate-pulse rounded ${className}`} />;
+  return <div className={`bg-surface-elevated animate-pulse rounded ${className}`} />;
 }
 
 export function SkeletonCard({ className = '' }: { className?: string }) {
@@ -51,13 +51,13 @@ export function SkeletonAlbumGrid() {
 
 export function SkeletonCassette() {
   return (
-    <div className="w-[280px] h-[180px] rounded-lg bg-[#2d2a26] animate-pulse border-2 border-[#4a4642]">
+    <div className="w-[280px] h-[180px] rounded-lg bg-surface-elevated animate-pulse border-2 border-border">
       {/* Label area */}
       <div className="mx-6 mt-4 h-[72px] rounded bg-[#3a3530]" />
       {/* Tape window */}
       <div className="mx-auto mt-3 w-[200px] h-[52px] rounded bg-[#1a1816] flex items-center justify-between px-4">
-        <div className="w-10 h-10 rounded-full bg-[#2a2622] border-2 border-[#3a3632]" />
-        <div className="w-10 h-10 rounded-full bg-[#2a2622] border-2 border-[#3a3632]" />
+        <div className="w-10 h-10 rounded-full bg-[#2a2622] border-2 border-default" />
+        <div className="w-10 h-10 rounded-full bg-[#2a2622] border-2 border-default" />
       </div>
     </div>
   );
@@ -86,7 +86,7 @@ export function SkeletonAlbumHeader() {
 
 export function SkeletonTrackRow() {
   return (
-    <div className="flex items-center gap-4 px-4 py-4 border-b border-[#2a2520]">
+    <div className="flex items-center gap-4 px-4 py-4 border-b border-default">
       <Skeleton className="w-8 h-6" />
       <div className="flex-1">
         <Skeleton className="h-5 w-48 mb-2" />
@@ -99,7 +99,7 @@ export function SkeletonTrackRow() {
 
 export function SkeletonAlbumPage() {
   return (
-    <div className="min-h-screen font-serif text-[#e8d8c8]">
+    <div className="min-h-screen font-serif text-primary">
       {/* Header badge */}
       <div className="text-center pt-8 pb-4">
         <Skeleton className="h-3 w-40 mx-auto" />
@@ -111,9 +111,9 @@ export function SkeletonAlbumPage() {
 
         {/* Side A divider */}
         <div className="flex items-center gap-4 my-8">
-          <div className="flex-1 h-px bg-[#2a2520]" />
+          <div className="flex-1 h-px bg-surface-card" />
           <Skeleton className="h-3 w-16" />
-          <div className="flex-1 h-px bg-[#2a2520]" />
+          <div className="flex-1 h-px bg-surface-card" />
         </div>
 
         {/* Tracks */}
@@ -154,24 +154,24 @@ export function SkeletonFestivalHero() {
       className="flex flex-col items-center relative overflow-hidden pt-0.5 pb-4 px-4 md:pt-1 md:pb-6 md:px-10"
       style={{
         background: `
-          radial-gradient(ellipse at 50% 120%, rgba(212,120,60,0.12) 0%, transparent 50%),
-          radial-gradient(ellipse at 30% 80%, rgba(212,100,40,0.06) 0%, transparent 40%),
-          radial-gradient(ellipse at 70% 90%, rgba(180,100,40,0.05) 0%, transparent 35%),
-          linear-gradient(180deg, #1c1a17 0%, #1e1c19 100%)
+          radial-gradient(ellipse at 50% 120%, color-mix(in srgb, var(--accent-primary) 12%, transparent) 0%, transparent 50%),
+          radial-gradient(ellipse at 30% 80%, color-mix(in srgb, var(--accent-primary) 6%, transparent) 0%, transparent 40%),
+          radial-gradient(ellipse at 70% 90%, color-mix(in srgb, var(--accent-primary) 5%, transparent) 0%, transparent 35%),
+          linear-gradient(180deg, var(--surface-base) 0%, var(--surface-base) 100%)
         `,
       }}
     >
       {/* Decorative stars - static, not animated */}
-      <span className="absolute top-[15%] left-[10%] text-4xl md:text-6xl text-[#d4a060] opacity-20 select-none hidden sm:block">
+      <span className="absolute top-[15%] left-[10%] text-4xl md:text-6xl text-accent opacity-20 select-none hidden sm:block">
         &#9733;
       </span>
-      <span className="absolute top-[20%] right-[15%] text-3xl md:text-5xl text-[#d4a060] opacity-15 select-none">
+      <span className="absolute top-[20%] right-[15%] text-3xl md:text-5xl text-accent opacity-15 select-none">
         &#9733;
       </span>
-      <span className="absolute top-[60%] left-[5%] text-2xl md:text-4xl text-[#d4a060] opacity-12 select-none hidden md:block">
+      <span className="absolute top-[60%] left-[5%] text-2xl md:text-4xl text-accent opacity-12 select-none hidden md:block">
         &#9733;
       </span>
-      <span className="absolute top-[70%] right-[8%] text-3xl md:text-5xl text-[#d4a060] opacity-18 select-none hidden sm:block">
+      <span className="absolute top-[70%] right-[8%] text-3xl md:text-5xl text-accent opacity-18 select-none hidden sm:block">
         &#9733;
       </span>
 
@@ -239,7 +239,7 @@ export function SkeletonAlbumGridHome() {
         {Array.from({ length: 24 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-lg overflow-hidden bg-[#1a1410]"
+            className="rounded-lg overflow-hidden bg-surface-sunken"
             style={{ width: '140px' }}
           >
             <Skeleton className="w-full aspect-square" />
@@ -316,14 +316,14 @@ export function SkeletonArtistHero() {
         <div
           className="absolute top-10 left-[5%] w-[400px] h-[350px] rounded-full opacity-[0.04]"
           style={{
-            background: 'radial-gradient(ellipse, rgba(90,138,122,0.6) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, color-mix(in srgb, var(--accent-secondary) 60%, transparent) 0%, transparent 70%)',
             filter: 'blur(40px)',
           }}
         />
         <div
           className="absolute top-20 right-[10%] w-[300px] h-[400px] rounded-full opacity-[0.03]"
           style={{
-            background: 'radial-gradient(ellipse, rgba(212,160,96,0.6) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, var(--accent-ambient) 0%, transparent 70%)',
             filter: 'blur(50px)',
           }}
         />
@@ -364,7 +364,7 @@ export function SkeletonArtistHero() {
           <div
             className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[250px] h-[60px] opacity-30"
             style={{
-              background: 'radial-gradient(ellipse at 50% 100%, rgba(212,120,50,0.5) 0%, rgba(180,100,40,0.2) 40%, transparent 70%)',
+              background: 'radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--accent-primary) 50%, transparent) 0%, color-mix(in srgb, var(--accent-primary) 20%, transparent) 40%, transparent 70%)',
               filter: 'blur(12px)',
             }}
           />
@@ -390,7 +390,7 @@ export function SkeletonArtistHero() {
           </div>
 
           {/* Quote callout */}
-          <div className="relative pl-4 border-l-2 border-[#3a3530] max-w-md lg:-ml-32">
+          <div className="relative pl-4 border-l-2 border-default max-w-md lg:-ml-32">
             <Skeleton className="h-4 w-full mb-2 rounded" />
             <Skeleton className="h-4 w-full mb-2 rounded" />
             <Skeleton className="h-4 w-3/4 mb-2 rounded" />
@@ -451,7 +451,7 @@ export function SkeletonArtistBio() {
             <Skeleton className="h-6 w-36 mb-4 rounded" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="bg-[#252220] rounded-lg p-4">
+                <div key={i} className="bg-surface-card rounded-lg p-4">
                   <Skeleton className="h-8 w-16 mb-2 rounded" />
                   <Skeleton className="h-3 w-20 rounded" />
                 </div>
@@ -464,7 +464,7 @@ export function SkeletonArtistBio() {
             <Skeleton className="h-6 w-32 mb-4 rounded" />
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 bg-[#252220] rounded-lg p-3">
+                <div key={i} className="flex items-center gap-4 bg-surface-card rounded-lg p-3">
                   <Skeleton className="w-12 h-12 rounded-full" />
                   <div className="flex-1">
                     <Skeleton className="h-4 w-32 mb-2 rounded" />
@@ -480,7 +480,7 @@ export function SkeletonArtistBio() {
         {/* Right column: Sticky image gallery */}
         <div className="hidden lg:block lg:sticky lg:top-24 lg:self-start space-y-4">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="bg-[#252220] rounded-lg overflow-hidden">
+            <div key={i} className="bg-surface-card rounded-lg overflow-hidden">
               <Skeleton className="w-full aspect-square" />
               <div className="p-3">
                 <Skeleton className="h-3 w-full mb-1 rounded" />
@@ -497,7 +497,7 @@ export function SkeletonArtistBio() {
 // Full artist page skeleton
 export function SkeletonArtistPage() {
   return (
-    <div className="min-h-screen bg-[#1c1a17]">
+    <div className="min-h-screen bg-surface-base">
       <SkeletonArtistHero />
       <SkeletonDiscographyCarousel />
       <SkeletonArtistBio />
@@ -508,7 +508,7 @@ export function SkeletonArtistPage() {
 // Search page skeleton
 export function SkeletonSearchPage() {
   return (
-    <div className="min-h-screen bg-[#1c1a17] pb-[140px] md:pb-[90px]">
+    <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px]">
       <div className="max-w-[1000px] mx-auto">
         <div className="p-6 md:p-8 border-b border-white/10">
           <Skeleton className="h-10 w-32 mb-4" />
@@ -532,7 +532,7 @@ export function SkeletonSearchPage() {
 // Playlists list skeleton
 export function SkeletonPlaylistsPage() {
   return (
-    <div className="min-h-screen bg-[#1c1a17]">
+    <div className="min-h-screen bg-surface-base">
       <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-6 md:py-8">
         <Skeleton className="h-8 w-32 mb-4" />
         <Skeleton className="h-12 w-40 rounded-full mb-8" />
@@ -549,7 +549,7 @@ export function SkeletonPlaylistsPage() {
 // Playlist detail skeleton
 export function SkeletonPlaylistDetail() {
   return (
-    <div className="min-h-screen bg-[#1c1a17]">
+    <div className="min-h-screen bg-surface-base">
       <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-6 md:py-8">
         <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-8">
           <Skeleton className="w-48 h-48 rounded" />

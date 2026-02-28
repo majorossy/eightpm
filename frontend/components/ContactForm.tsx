@@ -166,8 +166,8 @@ export function ContactForm() {
   // Field input classes
   const getInputClassName = (fieldName: keyof FormData) => {
     const hasError = touched[fieldName] && errors[fieldName];
-    return `w-full px-4 py-3 bg-[#1c1a17] border rounded-lg text-[#c9c5bc] placeholder-[#6a6458] focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:border-transparent transition-all duration-200 ${
-      hasError ? 'border-red-500/50' : 'border-[#3a3632]'
+    return `w-full px-4 py-3 bg-surface-base border rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 ${
+      hasError ? 'border-red-500/50' : 'border-default'
     }`;
   };
 
@@ -175,7 +175,7 @@ export function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {/* Name field */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-[#d4a060] mb-2">
+        <label htmlFor="name" className="block text-sm font-medium text-accent mb-2">
           Your Name <span className="text-red-400">*</span>
         </label>
         <input
@@ -200,7 +200,7 @@ export function ContactForm() {
 
       {/* Email field */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-[#d4a060] mb-2">
+        <label htmlFor="email" className="block text-sm font-medium text-accent mb-2">
           Email Address <span className="text-red-400">*</span>
         </label>
         <input
@@ -225,7 +225,7 @@ export function ContactForm() {
 
       {/* Subject dropdown */}
       <div>
-        <label htmlFor="subject" className="block text-sm font-medium text-[#d4a060] mb-2">
+        <label htmlFor="subject" className="block text-sm font-medium text-accent mb-2">
           Topic <span className="text-red-400">*</span>
         </label>
         <select
@@ -253,7 +253,7 @@ export function ContactForm() {
 
       {/* Message textarea */}
       <div>
-        <label htmlFor="message" className="block text-sm font-medium text-[#d4a060] mb-2">
+        <label htmlFor="message" className="block text-sm font-medium text-accent mb-2">
           Message <span className="text-red-400">*</span>
         </label>
         <textarea
@@ -274,7 +274,7 @@ export function ContactForm() {
             {errors.message}
           </p>
         )}
-        <p className="mt-1 text-xs text-[#6a6458]">
+        <p className="mt-1 text-xs text-tertiary">
           {formData.message.length} / {VALIDATION_LIMITS.MESSAGE_MAX} characters
         </p>
       </div>
@@ -283,7 +283,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#d4a060] text-[#1c1a17] font-semibold rounded hover:bg-[#e8a050] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a060] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1c1a17] disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-accent text-inverse font-semibold rounded hover:bg-accent-hover transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <>
@@ -313,7 +313,7 @@ export function ContactForm() {
         )}
       </button>
 
-      <p className="text-xs text-[#6a6458] text-center">
+      <p className="text-xs text-tertiary text-center">
         Your message is stored locally on this device. We value your privacy.
       </p>
     </form>

@@ -8,7 +8,7 @@ const VenueMapClient = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[600px] bg-[#252220] rounded-lg flex items-center justify-center">
+      <div className="w-full h-[600px] bg-surface-card rounded-lg flex items-center justify-center">
         <div className="text-[var(--text-subdued)]">Loading map...</div>
       </div>
     ),

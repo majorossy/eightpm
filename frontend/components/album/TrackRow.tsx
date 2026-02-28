@@ -37,7 +37,6 @@ function SegmentedChip({ date, venue, source, muted }: {
   muted: boolean;
 }) {
   const opacity = muted ? 0.65 : 1;
-  const borderAlpha = muted ? 0.08 : 0.15;
   const hasDate = !!date;
   const hasVenue = !!venue;
   const hasSource = !!source;
@@ -46,13 +45,15 @@ function SegmentedChip({ date, venue, source, muted }: {
     <div style={{ display: 'flex', alignItems: 'center', gap: 0, opacity }}>
       {hasDate && (
         <div style={{
-          background: muted ? 'rgba(212,160,96,0.05)' : 'rgba(212,160,96,0.1)',
-          border: `1px solid rgba(212,160,96,${borderAlpha})`,
-          borderRight: (hasVenue || hasSource) ? 'none' : undefined,
+          background: 'var(--quinary-muted)',
+          borderTop: '1px solid var(--chip-border)',
+          borderBottom: '1px solid var(--chip-border)',
+          borderLeft: '1px solid var(--chip-border)',
+          borderRight: (hasVenue || hasSource) ? 'none' : '1px solid var(--chip-border)',
           borderRadius: (hasVenue || hasSource) ? '5px 0 0 5px' : '5px',
           padding: '4px 10px',
           fontSize: 11,
-          color: 'var(--neon-pink)',
+          color: 'var(--chip-date-text)',
           fontWeight: 600,
         }}>
           {date}
@@ -61,9 +62,9 @@ function SegmentedChip({ date, venue, source, muted }: {
       {hasVenue && (
         <div style={{
           background: muted ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.02)',
-          borderTop: `1px solid rgba(212,160,96,${borderAlpha})`,
-          borderBottom: `1px solid rgba(212,160,96,${borderAlpha})`,
-          borderLeft: !hasDate ? `1px solid rgba(212,160,96,${borderAlpha})` : undefined,
+          borderTop: '1px solid var(--chip-border)',
+          borderBottom: '1px solid var(--chip-border)',
+          borderLeft: !hasDate ? '1px solid var(--chip-border)' : undefined,
           borderRadius: !hasDate ? (hasSource ? '5px 0 0 5px' : '5px') : undefined,
           padding: '4px 10px',
           fontSize: 12,
@@ -76,21 +77,26 @@ function SegmentedChip({ date, venue, source, muted }: {
           {venue}
         </div>
       )}
-      {hasSource && (
-        <div style={{
-          background: `rgba(90,138,122,${muted ? 0.12 : 0.2})`,
-          border: `1px solid rgba(90,138,122,${muted ? 0.15 : 0.25})`,
-          borderLeft: (hasDate || hasVenue) ? 'none' : undefined,
-          borderRadius: (hasDate || hasVenue) ? '0 5px 5px 0' : '5px',
-          padding: '4px 8px',
-          fontSize: 10,
-          color: 'var(--campfire-teal)',
-          fontWeight: 600,
-          letterSpacing: 0.3,
-        }}>
-          {source}
-        </div>
-      )}
+      {hasSource && (() => {
+        const borderColor = `1px solid color-mix(in srgb, var(--accent-secondary) ${muted ? 15 : 25}%, transparent)`;
+        return (
+          <div style={{
+            background: `color-mix(in srgb, var(--accent-secondary) ${muted ? 12 : 20}%, transparent)`,
+            borderTop: borderColor,
+            borderBottom: borderColor,
+            borderRight: borderColor,
+            borderLeft: (hasDate || hasVenue) ? 'none' : borderColor,
+            borderRadius: (hasDate || hasVenue) ? '0 5px 5px 0' : '5px',
+            padding: '4px 8px',
+            fontSize: 10,
+            color: 'var(--tertiary)',
+            fontWeight: 600,
+            letterSpacing: 0.3,
+          }}>
+            {source}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -116,7 +122,7 @@ function SortHeader({ label, field, sortBy, sortDir, onSort, className, style }:
         fontWeight: 500,
         cursor: 'pointer',
         userSelect: 'none',
-        color: active ? 'var(--neon-pink)' : undefined,
+        color: active ? 'var(--secondary)' : undefined,
         transition: 'color 0.15s',
         ...style,
       }}
@@ -217,7 +223,7 @@ function RecordingDetail({ song, onPlay, onQueue }: {
         <div style={{ display: 'flex', gap: 8, marginTop: 4, maxWidth: 300 }}>
           <button onClick={(e) => { e.stopPropagation(); onPlay(); }} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '8px', background: 'var(--neon-pink)', color: 'var(--bg)', border: 'none',
+            padding: '8px', background: 'var(--secondary)', color: 'var(--bg)', border: 'none',
             borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: 'pointer',
           }}>
             <span>▶</span> Play
@@ -283,7 +289,7 @@ function RecordingTable({ songs, onPlay, onQueue, currentSongId, isPlaying }: {
   return (
     <div className="recording-scroll" style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: MAX_TABLE_HEIGHT }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-        <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: 'rgba(26,23,18,0.95)', backdropFilter: 'blur(4px)' }}>
+        <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: 'var(--thead-bg)', backdropFilter: 'blur(4px)' }}>
           <tr style={{
             color: 'var(--text-subdued)',
             fontSize: 11,
@@ -317,21 +323,21 @@ function RecordingTable({ songs, onPlay, onQueue, currentSongId, isPlaying }: {
                     cursor: 'pointer',
                     background: isRowExpanded
                       ? 'var(--bg-card)'
-                      : isCurrent ? 'rgba(212,160,96,0.1)' : 'transparent',
-                    borderLeft: isCurrent ? '2px solid var(--neon-pink)' : '2px solid transparent',
+                      : isCurrent ? 'var(--secondary-muted)' : 'transparent',
+                    borderLeft: isCurrent ? '2px solid var(--secondary)' : '2px solid transparent',
                   }}
                 >
                   <td style={{
                     padding: '12px 12px',
-                    color: isCurrent ? 'var(--neon-pink)' : 'var(--text-subdued)',
+                    color: isCurrent ? 'var(--secondary)' : 'var(--text-subdued)',
                     whiteSpace: 'nowrap',
                   }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {isCurrentPlaying && (
-                        <span style={{ color: 'var(--neon-pink)', fontSize: 10 }}>▶</span>
+                        <span style={{ color: 'var(--secondary)', fontSize: 10 }}>▶</span>
                       )}
                       {isCurrent && !isPlaying && (
-                        <span style={{ color: 'var(--neon-pink)', fontSize: 10 }}>❚❚</span>
+                        <span style={{ color: 'var(--secondary)', fontSize: 10 }}>❚❚</span>
                       )}
                       {date || '—'}
                     </span>
@@ -377,7 +383,7 @@ function RecordingTable({ songs, onPlay, onQueue, currentSongId, isPlaying }: {
                     whiteSpace: 'nowrap',
                   }}>
                     {song.avgRating ? (
-                      <span style={{ color: 'var(--neon-pink)', fontSize: 12 }}>
+                      <span style={{ color: 'var(--secondary)', fontSize: 12 }}>
                         {'★'.repeat(Math.round(song.avgRating))}
                         <span style={{ marginLeft: 2, fontWeight: 600, fontSize: 11 }}>
                           {song.avgRating.toFixed(1)}
@@ -442,10 +448,10 @@ export const TrackRow = React.memo(function TrackRow({
   return (
     <div
       style={{
-        background: isExpanded ? 'rgba(26,23,18,0.8)' : 'transparent',
+        background: isExpanded ? 'var(--expanded-row-bg)' : 'transparent',
         borderRadius: isExpanded ? 10 : 0,
         overflow: 'hidden',
-        border: isExpanded ? '1px solid rgba(212,160,96,0.2)' : '1px solid transparent',
+        border: isExpanded ? '1px solid var(--secondary-muted)' : '1px solid transparent',
         transition: 'all 0.3s',
       }}
     >
@@ -457,12 +463,12 @@ export const TrackRow = React.memo(function TrackRow({
         style={{
           cursor: 'pointer',
           borderLeft: isExpanded
-            ? '3px solid var(--neon-pink)'
+            ? '3px solid var(--secondary)'
             : hovered
-              ? '3px solid rgba(212,160,96,0.25)'
+              ? '3px solid var(--secondary-muted)'
               : '3px solid rgba(255,255,255,0.05)',
           background: isExpanded
-            ? 'linear-gradient(135deg, rgba(212,160,96,0.06) 0%, transparent 60%)'
+            ? 'linear-gradient(135deg, var(--secondary-muted) 0%, transparent 60%)'
             : hovered
               ? 'rgba(255,255,255,0.015)'
               : 'transparent',
@@ -478,7 +484,7 @@ export const TrackRow = React.memo(function TrackRow({
                 <Waveform waveform={waveform} size="small" />
               </div>
             ) : isExpanded ? (
-              <div style={{ color: 'var(--neon-pink)', fontSize: 14 }}>▶</div>
+              <div style={{ color: 'var(--secondary)', fontSize: 14 }}>▶</div>
             ) : (
               <span style={{
                 color: 'var(--text-subdued)',
@@ -505,11 +511,11 @@ export const TrackRow = React.memo(function TrackRow({
             fontSize: 14,
           }}>
             {isExpanded && (
-              <span style={{ color: 'var(--neon-pink)' }}>+</span>
+              <span style={{ color: 'var(--secondary)' }}>+</span>
             )}
             <span>{displayDuration}</span>
             <span style={{
-              color: 'var(--neon-pink)',
+              color: 'var(--secondary)',
               fontSize: 10,
               transition: 'transform 0.3s',
               transform: isExpanded ? 'rotate(0deg)' : 'rotate(180deg)',
@@ -535,7 +541,7 @@ export const TrackRow = React.memo(function TrackRow({
         <>
           <div style={{
             height: 1,
-            background: 'linear-gradient(90deg, rgba(212,160,96,0.25) 0%, rgba(212,160,96,0.06) 100%)',
+            background: 'linear-gradient(90deg, var(--secondary-muted) 0%, transparent 100%)',
           }} />
           <div style={{ padding: '4px 8px 8px' }}>
             <RecordingTable
@@ -562,11 +568,11 @@ export function SideDivider({ side }: { side: 'A' | 'B' }) {
         style={{ background: 'linear-gradient(90deg, transparent, var(--overlay-light))' }}
       />
       <div className="text-[var(--text-subdued)] text-[11px] tracking-[4px] flex items-center gap-2.5">
-        <span className={side === 'A' ? 'text-[var(--neon-pink)]' : 'text-[var(--campfire-teal)]'}>
+        <span className={side === 'A' ? 'text-[var(--secondary)] side-divider-symbol' : 'text-[var(--tertiary)]'}>
           {side === 'A' ? '✧' : '☽'}
         </span>
         SIDE {side}
-        <span className={side === 'A' ? 'text-[var(--neon-pink)]' : 'text-[var(--campfire-teal)]'}>
+        <span className={side === 'A' ? 'text-[var(--secondary)] side-divider-symbol' : 'text-[var(--tertiary)]'}>
           {side === 'A' ? '✧' : '☽'}
         </span>
       </div>

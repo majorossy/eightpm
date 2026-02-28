@@ -69,8 +69,8 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
   const totalPages = Math.ceil(totalCount / pageSize);
 
   function SortIcon({ field }: { field: SortField }) {
-    if (sortField !== field) return <span className="text-[#6a5a48] ml-1">-</span>;
-    return <span className="text-[#d4a060] ml-1">{sortDirection === 'asc' ? '\u25B2' : '\u25BC'}</span>;
+    if (sortField !== field) return <span className="text-tertiary ml-1">-</span>;
+    return <span className="text-accent ml-1">{sortDirection === 'asc' ? '\u25B2' : '\u25BC'}</span>;
   }
 
   if (loading) {
@@ -96,7 +96,7 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
       </h2>
 
       {/* Table header */}
-      <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_1fr_auto_auto] gap-2 px-4 py-2 text-xs text-[var(--text-subdued)] uppercase tracking-wider border-b border-[#2d2a26]">
+      <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_1fr_auto_auto] gap-2 px-4 py-2 text-xs text-[var(--text-subdued)] uppercase tracking-wider border-b border-default">
         <button onClick={() => handleSort('date')} className="text-left flex items-center hover:text-[var(--text)]">
           Date <SortIcon field="date" />
         </button>
@@ -110,7 +110,7 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
       </div>
 
       {/* Show rows */}
-      <div className="divide-y divide-[#2d2a26]/50">
+      <div className="divide-y divide-border/50">
         {sortedShows.map((show) => {
           const primaryType = show.recording_types?.[0];
           const badge = primaryType ? getRecordingBadge(primaryType) : null;
@@ -119,7 +119,7 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
             <Link
               key={show.identifier}
               href={`/artists/${show.artist_slug}/${show.identifier}`}
-              className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_1fr_auto_auto] gap-2 px-4 py-3 hover:bg-[#2d2a26]/50 transition-colors items-center"
+              className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_1fr_auto_auto] gap-2 px-4 py-3 hover:bg-surface-elevated/50 transition-colors items-center"
             >
               <div>
                 <div className="text-[var(--text)] text-sm">
@@ -152,11 +152,11 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-[#2d2a26]">
+        <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-default">
           <button
             onClick={() => loadShows(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="px-3 py-1.5 text-sm rounded bg-[#2d2a26] text-[var(--text)] disabled:opacity-40 hover:bg-[#3a3632] transition-colors"
+            className="px-3 py-1.5 text-sm rounded bg-surface-elevated text-[var(--text)] disabled:opacity-40 hover:bg-border transition-colors"
           >
             Prev
           </button>
@@ -166,7 +166,7 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
           <button
             onClick={() => loadShows(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="px-3 py-1.5 text-sm rounded bg-[#2d2a26] text-[var(--text)] disabled:opacity-40 hover:bg-[#3a3632] transition-colors"
+            className="px-3 py-1.5 text-sm rounded bg-surface-elevated text-[var(--text)] disabled:opacity-40 hover:bg-border transition-colors"
           >
             Next
           </button>

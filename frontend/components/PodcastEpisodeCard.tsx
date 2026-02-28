@@ -101,7 +101,7 @@ export default function PodcastEpisodeCard({ episode, podcastName, podcastImage 
         onClick={handlePlay}
         className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center transition-all ${
           isPlaying
-            ? 'bg-[var(--neon-pink)] text-[var(--bg)]'
+            ? 'bg-[var(--secondary)] text-[var(--bg)]'
             : 'bg-[var(--bg-elevated)] text-[var(--text)] opacity-0 group-hover:opacity-100'
         } hover:scale-105`}
         aria-label={isPlaying ? 'Playing' : 'Play episode'}

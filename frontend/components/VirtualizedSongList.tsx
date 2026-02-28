@@ -58,7 +58,7 @@ function SongRow({
       className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 group transition-colors"
     >
       {/* Track number */}
-      <span className="w-6 text-sm text-[#8a8478] text-right flex-shrink-0">
+      <span className="w-6 text-sm text-secondary text-right flex-shrink-0">
         {index + 1}
       </span>
 
@@ -78,21 +78,21 @@ function SongRow({
             width={40}
             height={40}
             quality={75}
-            className="rounded flex-shrink-0 bg-[#2d2a26]"
+            className="rounded flex-shrink-0 bg-surface-elevated"
           />
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-white text-sm font-medium truncate group-hover:text-[#d4a060] transition-colors">
+          <p className="text-white text-sm font-medium truncate group-hover:text-accent transition-colors">
             {song.title}
           </p>
-          <p className="text-[#8a8478] text-xs truncate">
+          <p className="text-secondary text-xs truncate">
             {song.artistName}
           </p>
         </div>
       </button>
 
       {/* Duration */}
-      <span className="text-sm text-[#8a8478] flex-shrink-0 w-12 text-right">
+      <span className="text-sm text-secondary flex-shrink-0 w-12 text-right">
         {formatDuration(song.duration)}
       </span>
 
@@ -105,7 +105,7 @@ function SongRow({
               vibrate(BUTTON_PRESS);
               onAddToQueue(song);
             }}
-            className="p-2 text-[#8a8478] hover:text-white transition-colors"
+            className="p-2 text-secondary hover:text-white transition-colors"
             title="Add to queue"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@ function SongRow({
               vibrate(DELETE_ACTION);
               onRemove(id);
             }}
-            className="p-2 text-[#8a8478] hover:text-red-500 transition-colors"
+            className="p-2 text-secondary hover:text-red-500 transition-colors"
             title="Remove"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +157,7 @@ export function VirtualizedSongList({
 
   if (songs.length === 0) {
     return (
-      <div className="flex items-center justify-center h-48 text-[#8a8478]">
+      <div className="flex items-center justify-center h-48 text-secondary">
         No songs found
       </div>
     );
@@ -168,7 +168,7 @@ export function VirtualizedSongList({
       listRef={setListRef}
       rowCount={songs.length}
       rowHeight={rowHeight}
-      className="scrollbar-thin scrollbar-thumb-[#3a3632] scrollbar-track-transparent"
+      className="scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
       style={{ height: containerHeight, width: '100%' }}
       rowComponent={SongRow}
       rowProps={{
@@ -257,24 +257,24 @@ function RecentRow({
             width={40}
             height={40}
             quality={75}
-            className="rounded flex-shrink-0 bg-[#2d2a26]"
+            className="rounded flex-shrink-0 bg-surface-elevated"
           />
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-white text-sm font-medium truncate group-hover:text-[#d4a060] transition-colors">
+          <p className="text-white text-sm font-medium truncate group-hover:text-accent transition-colors">
             {song.title}
           </p>
-          <p className="text-[#8a8478] text-xs truncate">
+          <p className="text-secondary text-xs truncate">
             {song.artistName}
           </p>
         </div>
       </button>
 
-      <span className="text-xs text-[#8a8478] flex-shrink-0">
+      <span className="text-xs text-secondary flex-shrink-0">
         {formatTimeAgo(playedAt)}
       </span>
 
-      <span className="text-sm text-[#8a8478] flex-shrink-0 w-12 text-right">
+      <span className="text-sm text-secondary flex-shrink-0 w-12 text-right">
         {formatDuration(song.duration)}
       </span>
     </div>
@@ -302,7 +302,7 @@ export function VirtualizedRecentList({
 
   if (items.length === 0) {
     return (
-      <div className="flex items-center justify-center h-48 text-[#8a8478]">
+      <div className="flex items-center justify-center h-48 text-secondary">
         No recently played tracks
       </div>
     );
@@ -313,7 +313,7 @@ export function VirtualizedRecentList({
       listRef={setListRef}
       rowCount={items.length}
       rowHeight={rowHeight}
-      className="scrollbar-thin scrollbar-thumb-[#3a3632] scrollbar-track-transparent"
+      className="scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
       style={{ height: containerHeight, width: '100%' }}
       rowComponent={RecentRow}
       rowProps={{

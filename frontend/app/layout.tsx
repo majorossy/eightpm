@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Orbitron, Space_Mono, Bebas_Neue, JetBrains_Mono, Instrument_Sans } from 'next/font/google';
+import { Orbitron, Space_Mono, Bebas_Neue, JetBrains_Mono, Instrument_Sans, Outfit } from 'next/font/google';
 import './globals.css';
 import ClientLayout from '@/components/ClientLayout';
 import ConditionalAnalytics from '@/components/ConditionalAnalytics';
@@ -47,6 +47,14 @@ const instrumentSans = Instrument_Sans({
   fallback: ['-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
 });
 
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
+  adjustFontFallback: true,
+  fallback: ['system-ui', 'sans-serif'],
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'),
   title: {
@@ -89,7 +97,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} ${instrumentSans.variable} theme-campfire`}>
+    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} ${instrumentSans.variable} ${outfit.variable} theme-fishman`}>
       <head>
         {/* Preconnect hints for critical resources - improves LCP */}
         <link rel="preconnect" href="https://magento.test" />
@@ -104,7 +112,7 @@ export default function RootLayout({
 
         {/* PWA Meta Tags */}
         <meta name="application-name" content="8pm.me" />
-        <meta name="theme-color" content="#d4a060" />
+        <meta name="theme-color" content="#5ab8a0" />
         <meta name="mobile-web-app-capable" content="yes" />
 
         {/* iOS Web App Meta Tags */}

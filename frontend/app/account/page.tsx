@@ -19,7 +19,7 @@ export default function AccountPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#1c1a17] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-base flex items-center justify-center">
         <div className="spinner" />
       </div>
     );
@@ -28,27 +28,27 @@ export default function AccountPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#1c1a17] pb-[140px] md:pb-[90px]">
+    <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px]">
       <div className="p-6 md:p-8 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-8">Account</h1>
 
         {/* User info card */}
-        <div className="bg-[#2d2a26] rounded-lg p-6 mb-6">
+        <div className="bg-surface-elevated rounded-lg p-6 mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-full bg-[#d4a060] flex items-center justify-center text-black text-2xl font-bold">
+            <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center text-black text-2xl font-bold">
               {user.displayName.charAt(0).toUpperCase()}
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">{user.displayName}</h2>
-              <p className="text-[#8a8478]">{user.email}</p>
+              <p className="text-secondary">{user.email}</p>
             </div>
           </div>
           <div className="flex gap-2 text-sm">
             {user.hasSupabaseAuth && (
-              <span className="px-3 py-1 rounded-full bg-[#1c1a17] text-[#d4a060]">Supabase</span>
+              <span className="px-3 py-1 rounded-full bg-surface-base text-accent">Supabase</span>
             )}
             {user.hasMagentoAuth && (
-              <span className="px-3 py-1 rounded-full bg-[#1c1a17] text-[#d4a060]">Magento</span>
+              <span className="px-3 py-1 rounded-full bg-surface-base text-accent">Magento</span>
             )}
           </div>
         </div>
@@ -59,33 +59,33 @@ export default function AccountPage() {
             <>
               <Link
                 href="/account/profile"
-                className="bg-[#2d2a26] rounded-lg p-6 hover:bg-[#3a3632] transition-colors"
+                className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
               >
                 <h3 className="text-lg font-bold text-white mb-2">Profile</h3>
-                <p className="text-[#8a8478] text-sm">Edit your name and contact info</p>
+                <p className="text-secondary text-sm">Edit your name and contact info</p>
               </Link>
               <Link
                 href="/account/orders"
-                className="bg-[#2d2a26] rounded-lg p-6 hover:bg-[#3a3632] transition-colors"
+                className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
               >
                 <h3 className="text-lg font-bold text-white mb-2">Orders</h3>
-                <p className="text-[#8a8478] text-sm">View your order history</p>
+                <p className="text-secondary text-sm">View your order history</p>
               </Link>
             </>
           )}
           <Link
             href="/playlists"
-            className="bg-[#2d2a26] rounded-lg p-6 hover:bg-[#3a3632] transition-colors"
+            className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
           >
             <h3 className="text-lg font-bold text-white mb-2">Playlists</h3>
-            <p className="text-[#8a8478] text-sm">Manage your playlists</p>
+            <p className="text-secondary text-sm">Manage your playlists</p>
           </Link>
           <Link
             href="/wishlist"
-            className="bg-[#2d2a26] rounded-lg p-6 hover:bg-[#3a3632] transition-colors"
+            className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
           >
             <h3 className="text-lg font-bold text-white mb-2">Wishlist</h3>
-            <p className="text-[#8a8478] text-sm">Your liked songs</p>
+            <p className="text-secondary text-sm">Your liked songs</p>
           </Link>
         </div>
 

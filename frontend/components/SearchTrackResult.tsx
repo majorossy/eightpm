@@ -37,10 +37,10 @@ interface SearchTrackResultProps {
 
 // Simple star rating for compact display
 function CompactStars({ rating }: { rating?: number }) {
-  if (!rating) return <span className="text-[#6a5a48]">--</span>;
+  if (!rating) return <span className="text-tertiary">--</span>;
   const stars = Math.round(rating);
   return (
-    <span className="text-[#e8a050]" title={`${rating.toFixed(1)} rating`}>
+    <span className="text-accent" title={`${rating.toFixed(1)} rating`}>
       {'★'.repeat(stars)}{'☆'.repeat(5 - stars)}
     </span>
   );
@@ -72,15 +72,15 @@ function VersionCard({
       className={`
         min-w-[180px] max-w-[200px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200
         ${isPlaying
-          ? 'bg-gradient-to-b from-[#faf4e8] to-[#f0e4d0] border-2 border-[#e8a050]'
-          : 'bg-gradient-to-b from-[#2a2520] to-[#1e1a15] border border-[#3a3028] hover:border-[#4a4038]'
+          ? 'bg-gradient-to-b from-[#faf4e8] to-[#f0e4d0] border-2 border-accent'
+          : 'bg-gradient-to-b from-surface-card to-[#1e1a15] border border-[#3a3028] hover:border-[#4a4038]'
         }
       `}
     >
       {/* Card header with year and badge */}
       <div className={`px-3 pt-3 pb-2 border-b ${isPlaying ? 'border-[#8b5a2b]/15' : 'border-[#a88060]/8'}`}>
         <div className="flex justify-between items-center">
-          <span className={`text-2xl font-bold font-serif ${isPlaying ? 'text-[#1a0f08]' : 'text-[#a89080]'}`}>
+          <span className={`text-2xl font-bold font-serif ${isPlaying ? 'text-[#1a0f08]' : 'text-secondary'}`}>
             {year}
           </span>
           {recordingBadge && (
@@ -88,7 +88,7 @@ function VersionCard({
               className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
                 isPlaying
                   ? 'bg-[#c88030] text-[#1a1410]'
-                  : 'bg-[#d4a060] text-[#1c1a17]'
+                  : 'bg-accent text-inverse'
               }`}
               title={`${recordingBadge.text} Recording`}
             >
@@ -101,18 +101,18 @@ function VersionCard({
       {/* Card body */}
       <div className="px-3 py-2">
         {/* Venue */}
-        <div className={`text-sm font-medium mb-1 ${isPlaying ? 'text-[#2a1810]' : 'text-[#c8b8a8]'}`}>
-          <VenueLink venueName={song.showVenue} className={`${isPlaying ? 'text-[#2a1810] hover:text-[#1a0808]' : 'text-[#c8b8a8] hover:text-[#d4a060]'} hover:underline transition-colors`} truncateLength={22} />
+        <div className={`text-sm font-medium mb-1 ${isPlaying ? 'text-[#2a1810]' : 'text-primary'}`}>
+          <VenueLink venueName={song.showVenue} className={`${isPlaying ? 'text-[#2a1810] hover:text-[#1a0808]' : 'text-primary hover:text-accent'} hover:underline transition-colors`} truncateLength={22} />
         </div>
         {/* Location */}
-        <div className={`text-xs mb-2 ${isPlaying ? 'text-[#5a4030]' : 'text-[#8a7a68]'}`}>
+        <div className={`text-xs mb-2 ${isPlaying ? 'text-[#5a4030]' : 'text-secondary'}`}>
           {truncate(song.showLocation, 24)}
         </div>
         {/* Rating */}
         <div className="text-xs">
           <CompactStars rating={song.avgRating} />
           {song.numReviews && (
-            <span className={`ml-1 ${isPlaying ? 'text-[#6a5040]' : 'text-[#6a5a48]'}`}>
+            <span className={`ml-1 ${isPlaying ? 'text-[#6a5040]' : 'text-tertiary'}`}>
               ({song.numReviews})
             </span>
           )}
@@ -126,8 +126,8 @@ function VersionCard({
           className={`
             flex-1 py-2 rounded text-[11px] font-semibold transition-all flex items-center justify-center gap-1
             ${isPlaying
-              ? 'bg-gradient-to-r from-[#e8a050] to-[#c88030] text-[#1a1410]'
-              : 'bg-gradient-to-r from-[#3a3028] to-[#2a2520] text-[#a89080] hover:from-[#4a4038] hover:to-[#3a3028]'
+              ? 'bg-gradient-to-r from-accent to-[#c88030] text-[#1a1410]'
+              : 'bg-gradient-to-r from-[#3a3028] to-surface-card text-secondary hover:from-[#4a4038] hover:to-[#3a3028]'
             }
           `}
         >
@@ -139,7 +139,7 @@ function VersionCard({
             px-2 py-2 rounded text-[11px] transition-all border
             ${isPlaying
               ? 'border-[#c8a070] text-[#6a5040] hover:bg-[#e8d8c8]'
-              : 'border-[#4a3a28] text-[#8a7a68] hover:border-[#6a5a48]'
+              : 'border-[#4a3a28] text-secondary hover:border-tertiary'
             }
           `}
           title="Add to queue"
@@ -240,8 +240,8 @@ export function SearchTrackResult({
       ${hasNoVersions
         ? 'opacity-50 cursor-not-allowed'
         : isExpanded
-          ? 'bg-[rgba(232,160,80,0.04)] border border-[#e8a050]/20'
-          : 'hover:bg-[#2a2520]'
+          ? 'bg-accent/[0.04] border border-accent/20'
+          : 'hover:bg-surface-card'
       }
     `}>
       {/* Collapsed row (always visible) */}
@@ -253,15 +253,15 @@ export function SearchTrackResult({
         {/* Album cover image */}
         <div className={`
           w-10 h-10 rounded flex items-center justify-center flex-shrink-0 overflow-hidden relative
-          ${isExpanded ? 'ring-2 ring-[#e8a050]/40' : ''}
+          ${isExpanded ? 'ring-2 ring-accent/40' : ''}
         `}>
           {isTrackPlaying ? (
             // Animated bars when playing (overlay on image)
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <div className="flex items-end gap-0.5 h-4">
-                <div className="w-1 bg-[#e8a050] animate-[soundbar_0.5s_ease-in-out_infinite_alternate]" style={{ height: '60%' }} />
-                <div className="w-1 bg-[#e8a050] animate-[soundbar_0.5s_ease-in-out_infinite_alternate_0.2s]" style={{ height: '100%' }} />
-                <div className="w-1 bg-[#e8a050] animate-[soundbar_0.5s_ease-in-out_infinite_alternate_0.4s]" style={{ height: '40%' }} />
+                <div className="w-1 bg-accent animate-[soundbar_0.5s_ease-in-out_infinite_alternate]" style={{ height: '60%' }} />
+                <div className="w-1 bg-accent animate-[soundbar_0.5s_ease-in-out_infinite_alternate_0.2s]" style={{ height: '100%' }} />
+                <div className="w-1 bg-accent animate-[soundbar_0.5s_ease-in-out_infinite_alternate_0.4s]" style={{ height: '40%' }} />
               </div>
             </div>
           ) : null}
@@ -278,8 +278,8 @@ export function SearchTrackResult({
               }}
             />
           ) : (
-            <div className="w-full h-full bg-[#2a2520] flex items-center justify-center">
-              <svg className="w-5 h-5 text-[#d4a060]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-full h-full bg-surface-card flex items-center justify-center">
+              <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
@@ -289,7 +289,7 @@ export function SearchTrackResult({
 
         {/* Track info */}
         <div className="flex-1 min-w-0">
-          <p className={`font-medium truncate ${hasNoVersions ? 'text-[#6a5a48]' : 'text-[#e8dcc8]'}`}>
+          <p className={`font-medium truncate ${hasNoVersions ? 'text-tertiary' : 'text-primary'}`}>
             {track.name}
           </p>
           <p className={`text-sm flex items-center gap-1 ${hasNoVersions ? 'text-[#5a4a38]' : 'text-[#4a9a8a]'}`}>
@@ -302,7 +302,7 @@ export function SearchTrackResult({
               <>
                 {versionCount} {versionCount === 1 ? 'version' : 'versions'}
                 {totalVersions !== undefined && totalVersions !== versionCount && (
-                  <span className="text-[#6a5a48] ml-1">
+                  <span className="text-tertiary ml-1">
                     (of {totalVersions})
                   </span>
                 )}
@@ -312,7 +312,7 @@ export function SearchTrackResult({
               <>
                 {displayVersions.length} {displayVersions.length === 1 ? 'version' : 'versions'}
                 {filters && hasActiveFilters(filters) && allVersions.length !== displayVersions.length && (
-                  <span className="text-[#6a5a48] ml-1">
+                  <span className="text-tertiary ml-1">
                     (of {allVersions.length})
                   </span>
                 )}
@@ -331,7 +331,7 @@ export function SearchTrackResult({
           <Link
             href={`/artists/${track.breadcrumbs[1].category_url_key}/album/${track.breadcrumbs[2].category_url_key}`}
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 px-2 py-1 text-xs text-[#d4a060] hover:text-[#e8a050] transition-colors rounded hover:bg-[#2a2520]"
+            className="flex items-center gap-1 px-2 py-1 text-xs text-accent hover:text-accent transition-colors rounded hover:bg-surface-card"
           >
             Go to album
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,7 +344,7 @@ export function SearchTrackResult({
         {!hasNoVersions && (
           <div className={`
             p-1 rounded transition-transform duration-200
-            ${isExpanded ? 'rotate-180 text-[#e8a050]' : 'text-[#6a5a48]'}
+            ${isExpanded ? 'rotate-180 text-accent' : 'text-tertiary'}
           `}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -355,12 +355,12 @@ export function SearchTrackResult({
 
       {/* Expanded panel with versions carousel */}
       {isExpanded && (
-        <div className="px-3 pb-4 border-t border-[#e8a050]/10">
+        <div className="px-3 pb-4 border-t border-accent/10">
           {/* Loading state */}
           {isLoading && (
             <div className="flex items-center justify-center py-8">
-              <div className="w-6 h-6 border-2 border-[#e8a050] border-t-transparent rounded-full animate-spin" />
-              <span className="ml-3 text-[#8a7a68] text-sm">Loading versions...</span>
+              <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              <span className="ml-3 text-secondary text-sm">Loading versions...</span>
             </div>
           )}
 
@@ -368,10 +368,10 @@ export function SearchTrackResult({
           {!isLoading && displayVersions.length > 0 && (
             <div className="pt-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[#8a7a68] text-sm">
+                <span className="text-secondary text-sm">
                   Choose your recording
                 </span>
-                <span className="text-[#6a5a48] text-xs">
+                <span className="text-tertiary text-xs">
                   Sorted by rating
                 </span>
               </div>
@@ -394,7 +394,7 @@ export function SearchTrackResult({
 
           {/* No versions found */}
           {!isLoading && (hasLoaded || hasPreloadedVersions) && displayVersions.length === 0 && (
-            <div className="py-6 text-center text-[#6a5a48] text-sm">
+            <div className="py-6 text-center text-tertiary text-sm">
               No recordings found for this track.
             </div>
           )}

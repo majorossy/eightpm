@@ -245,7 +245,7 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                     onChange={(e) => setSearchQuery(e.target.value.slice(0, VALIDATION_LIMITS.SEARCH_QUERY_MAX))}
                     placeholder="What do you want to listen to?"
                     maxLength={VALIDATION_LIMITS.SEARCH_QUERY_MAX}
-                    className="w-full bg-[#2d2a26] text-white placeholder-gray-400 rounded-full px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4a060]"
+                    className="w-full bg-surface-elevated text-white placeholder-gray-400 rounded-full px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                   />
                   {searchQuery && (
                     <button
@@ -272,7 +272,7 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                     availableVenues={availableVenues}
                   />
                   {hasActiveFilters(filters) && (
-                    <p className="text-sm text-[#8a7a68] mt-2">
+                    <p className="text-sm text-secondary mt-2">
                       Filters apply when you expand each track
                     </p>
                   )}
@@ -301,7 +301,7 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                           <button
                             key={index}
                             onClick={() => handleRecentSearchClick(search)}
-                            className="group flex items-center gap-2 bg-[#2d2a26] hover:bg-[#3a3632] text-white px-4 py-2 rounded-full text-sm transition-colors btn-touch"
+                            className="group flex items-center gap-2 bg-surface-elevated hover:bg-border text-white px-4 py-2 rounded-full text-sm transition-colors btn-touch"
                           >
                             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -328,7 +328,7 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                   /* Loading State */
                   <div className="flex flex-col items-center justify-center gap-5 py-16" role="status" aria-live="polite">
                     <VinylSpinner size="lg" />
-                    <span className="text-[#d4a060] text-base font-medium tracking-wide">Searching the archives...</span>
+                    <span className="text-accent text-base font-medium tracking-wide">Searching the archives...</span>
                   </div>
                 ) : (
                   /* Search Results */
@@ -336,11 +336,11 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                     {showNoResults && (
                       <div className="flex flex-col items-center justify-center py-12">
                         <SearchSilence size={140} />
-                        <p className="text-[#b8a898] text-xl font-medium mb-2">No recordings found</p>
-                        <p className="text-[#8a7a68] text-base">
+                        <p className="text-primary text-xl font-medium mb-2">No recordings found</p>
+                        <p className="text-secondary text-base">
                           Nothing in the archives for &quot;{debouncedQuery}&quot;
                         </p>
-                        <p className="text-[#6a5a4a] text-sm mt-3">
+                        <p className="text-tertiary text-sm mt-3">
                           Try searching for artists, shows, or song titles
                         </p>
                       </div>
@@ -362,7 +362,7 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                                 <button
                                   key={artist.id}
                                   onClick={() => handleArtistClick(artist, index)}
-                                  className="w-full flex items-center gap-3 p-3 bg-[#2d2a26] hover:bg-[#3a3632] rounded-lg cursor-pointer transition-colors btn-touch text-left"
+                                  className="w-full flex items-center gap-3 p-3 bg-surface-elevated hover:bg-border rounded-lg cursor-pointer transition-colors btn-touch text-left"
                                 >
                                   <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0 relative overflow-hidden">
                                     {artist.image ? (
@@ -399,14 +399,14 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                                   <button
                                     key={album.uid}
                                     onClick={() => handleAlbumClick(album, index)}
-                                    className="w-full flex items-center gap-3 p-3 bg-[#2d2a26] hover:bg-[#3a3632] rounded-lg cursor-pointer transition-colors btn-touch text-left"
+                                    className="w-full flex items-center gap-3 p-3 bg-surface-elevated hover:bg-border rounded-lg cursor-pointer transition-colors btn-touch text-left"
                                   >
                                     <div className="w-12 h-12 bg-gray-700 rounded flex items-center justify-center flex-shrink-0 overflow-hidden relative">
                                       {album.wikipedia_artwork_url ? (
                                         <Image src={album.wikipedia_artwork_url} alt={album.name || 'Album'} fill sizes="48px" quality={75} className="object-cover" />
                                       ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#3a3632] to-[#252220]">
-                                          <svg className="w-6 h-6 text-[#d4a060]" fill="currentColor" viewBox="0 0 24 24">
+                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-border to-surface-card">
+                                          <svg className="w-6 h-6 text-accent" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
                                           </svg>
                                         </div>
@@ -432,7 +432,7 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                               </svg>
                               Tracks
                               {hasActiveFilters(filters) && (
-                                <span className="text-xs text-[#d4a060] ml-2">
+                                <span className="text-xs text-accent ml-2">
                                   (filtered)
                                 </span>
                               )}

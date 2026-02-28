@@ -144,8 +144,8 @@ export default function LoadingBar() {
         className="h-full"
         style={{
           width: `${progress}%`,
-          background: 'linear-gradient(90deg, #d4a060 0%, #c08a40 100%)',
-          boxShadow: '0 0 10px rgba(212, 160, 96, 0.5), 0 0 5px rgba(212, 160, 96, 0.3)',
+          background: 'linear-gradient(90deg, var(--loading-bar-from, #d4a060) 0%, var(--loading-bar-to, #c08a40) 100%)',
+          boxShadow: '0 0 10px var(--accent-glow), 0 0 5px var(--accent-glow-subtle)',
           transition: progress === 0
             ? 'none'
             : progress <= 30

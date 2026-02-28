@@ -28,8 +28,8 @@ export default function AlbumCard({ album }: AlbumCardProps) {
     <Link href={isComingSoon ? '#' : `/artists/${album.artistSlug}/album/${album.slug}`}>
       <div className={`group rounded-lg overflow-hidden transition-all duration-300 ${
         isComingSoon
-          ? 'bg-[#1a1715] cursor-default'
-          : 'bg-[#252220] hover:bg-[#2d2a26] hover:scale-105 cursor-pointer'
+          ? 'bg-surface-sunken cursor-default'
+          : 'bg-surface-card hover:bg-surface-elevated hover:scale-105 cursor-pointer'
       }`}>
         {/* Album artwork with play button overlay */}
         <div
@@ -40,7 +40,7 @@ export default function AlbumCard({ album }: AlbumCardProps) {
             <>
               {/* Blur placeholder - shown until image loads */}
               <div
-                className={`absolute inset-0 bg-[#2d2a26] transition-opacity duration-500 ${
+                className={`absolute inset-0 bg-surface-elevated transition-opacity duration-500 ${
                   imageLoaded ? 'opacity-0' : 'opacity-100'
                 }`}
               >
@@ -64,10 +64,10 @@ export default function AlbumCard({ album }: AlbumCardProps) {
               )}
             </>
           ) : (
-            <div className={`w-full h-full bg-[#2d2a26] flex items-center justify-center ${
+            <div className={`w-full h-full bg-surface-elevated flex items-center justify-center ${
               isComingSoon ? 'opacity-30' : ''
             }`}>
-              <svg className="w-16 h-16 text-[#3a3632]" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="w-16 h-16 text-border" viewBox="0 0 24 24" fill="currentColor">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" fill="none"/>
                 <circle cx="12" cy="12" r="3" fill="currentColor"/>
               </svg>
@@ -80,26 +80,26 @@ export default function AlbumCard({ album }: AlbumCardProps) {
               <div className="relative">
                 {/* Ticket-style stamp */}
                 <div
-                  className="transform -rotate-12 border-4 border-[#d4a060] bg-[#1a1715]/90 px-6 py-3 backdrop-blur-sm"
+                  className="transform -rotate-12 border-4 border-accent bg-surface-sunken/90 px-6 py-3 backdrop-blur-sm"
                   style={{
-                    boxShadow: '0 4px 20px rgba(212, 160, 96, 0.3)',
+                    boxShadow: '0 4px 20px var(--accent-glow-subtle)',
                   }}
                 >
                   <div className="text-center">
                     <div
-                      className="text-2xl font-bold tracking-wider text-[#d4a060]"
+                      className="text-2xl font-bold tracking-wider text-accent"
                       style={{
                         fontFamily: 'Georgia, serif',
-                        textShadow: '0 0 10px rgba(212, 160, 96, 0.5)',
+                        textShadow: '0 0 10px var(--accent-glow)',
                       }}
                     >
                       COMING
                     </div>
                     <div
-                      className="text-2xl font-bold tracking-wider text-[#d4a060] -mt-1"
+                      className="text-2xl font-bold tracking-wider text-accent -mt-1"
                       style={{
                         fontFamily: 'Georgia, serif',
-                        textShadow: '0 0 10px rgba(212, 160, 96, 0.5)',
+                        textShadow: '0 0 10px var(--accent-glow)',
                       }}
                     >
                       SOON
@@ -115,12 +115,12 @@ export default function AlbumCard({ album }: AlbumCardProps) {
         {/* Album info */}
         <div className="p-2">
           <div className={`text-sm font-medium truncate ${
-            isComingSoon ? 'text-[#4a4540]' : 'text-white'
+            isComingSoon ? 'text-tertiary' : 'text-white'
           }`}>
             {album.name}
           </div>
           <div className={`text-xs truncate ${
-            isComingSoon ? 'text-[#3a3530]' : 'text-[#8a8478]'
+            isComingSoon ? 'text-tertiary' : 'text-secondary'
           }`}>
             {album.showDate && <span>{album.showDate} </span>}
             <span>{isComingSoon ? 'No recordings yet' : `${album.totalTracks} ${album.totalTracks === 1 ? 'track' : 'tracks'}`}</span>

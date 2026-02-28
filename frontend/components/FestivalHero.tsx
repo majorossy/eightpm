@@ -86,7 +86,7 @@ function ArtistStatsTooltip({
             top: '8px',
             left: '12px',
             fontSize: '0.7rem',
-            color: '#d35400',
+            color: 'var(--quinary, #d35400)',
           }}
         >
           ★
@@ -105,30 +105,30 @@ function ArtistStatsTooltip({
           <div className="flex justify-between gap-5">
             {totalShows !== undefined && (
               <div className="text-center flex-1">
-                <div className="font-bebas-neue" style={{ fontSize: '1.5rem', color: '#5a8a7a', lineHeight: 1 }}>
+                <div className="font-bebas-neue" style={{ fontSize: '1.5rem', color: 'var(--tertiary)', lineHeight: 1 }}>
                   {totalShows.toLocaleString()}
                 </div>
-                <div style={{ fontSize: '0.5rem', color: '#8a7a6a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: '0.5rem', color: 'var(--text-subdued)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Shows
                 </div>
               </div>
             )}
             {totalRecordings !== undefined && (
               <div className="text-center flex-1">
-                <div className="font-bebas-neue" style={{ fontSize: '1.5rem', color: '#5a8a7a', lineHeight: 1 }}>
+                <div className="font-bebas-neue" style={{ fontSize: '1.5rem', color: 'var(--tertiary)', lineHeight: 1 }}>
                   {totalRecordings.toLocaleString()}
                 </div>
-                <div style={{ fontSize: '0.5rem', color: '#8a7a6a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: '0.5rem', color: 'var(--text-subdued)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Recordings
                 </div>
               </div>
             )}
             {totalVenues !== undefined && (
               <div className="text-center flex-1">
-                <div className="font-bebas-neue" style={{ fontSize: '1.5rem', color: '#5a8a7a', lineHeight: 1 }}>
+                <div className="font-bebas-neue" style={{ fontSize: '1.5rem', color: 'var(--tertiary)', lineHeight: 1 }}>
                   {totalVenues.toLocaleString()}
                 </div>
-                <div style={{ fontSize: '0.5rem', color: '#8a7a6a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: '0.5rem', color: 'var(--text-subdued)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Venues
                 </div>
               </div>
@@ -142,12 +142,12 @@ function ArtistStatsTooltip({
               style={{
                 marginTop: '10px',
                 fontSize: '0.5rem',
-                color: '#6a5a4a',
-                borderTop: '1px dashed #c4a882',
+                color: 'var(--text-subdued)',
+                borderTop: '1px dashed var(--border-subtle, #c4a882)',
                 paddingTop: '6px',
               }}
             >
-              Top Track: <strong style={{ color: '#d35400' }}>{mostPlayedTrack}</strong>
+              Top Track: <strong style={{ color: 'var(--quinary, #d35400)' }}>{mostPlayedTrack}</strong>
             </div>
           )}
         </div>
@@ -159,20 +159,20 @@ function ArtistStatsTooltip({
         >
           {totalHours !== undefined && (
             <>
-              <div className="font-bebas-neue" style={{ fontSize: '2.2rem', color: '#5a8a7a', lineHeight: 1 }}>
+              <div className="font-bebas-neue" style={{ fontSize: '2.2rem', color: 'var(--tertiary)', lineHeight: 1 }}>
                 {totalHours.toLocaleString()}
               </div>
-              <div style={{ fontSize: '0.55rem', color: '#8a7a6a', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '0.55rem', color: 'var(--text-subdued)', textTransform: 'uppercase' }}>
                 Hours
               </div>
             </>
           )}
           {formationYear !== undefined && !totalHours && (
             <>
-              <div className="font-bebas-neue" style={{ fontSize: '1.5rem', color: '#5a8a7a', lineHeight: 1 }}>
+              <div className="font-bebas-neue" style={{ fontSize: '1.5rem', color: 'var(--tertiary)', lineHeight: 1 }}>
                 {formationYear}
               </div>
-              <div style={{ fontSize: '0.5rem', color: '#8a7a6a', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '0.5rem', color: 'var(--text-subdued)', textTransform: 'uppercase' }}>
                 Est.
               </div>
             </>
@@ -347,22 +347,22 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
       className="festival-hero-section flex flex-col items-center relative overflow-hidden pt-0.5 pb-4 px-4 md:pt-1 md:pb-6 md:px-10"
     >
       {/* Decorative stars */}
-      <span className="absolute top-[15%] left-[10%] text-4xl md:text-6xl text-[var(--neon-pink)] opacity-40 select-none hidden sm:block">
+      <span className="absolute top-[15%] left-[10%] text-4xl md:text-6xl text-[var(--secondary)] opacity-40 select-none hidden sm:block">
         &#9733;
       </span>
-      <span className="absolute top-[20%] right-[15%] text-3xl md:text-5xl text-[var(--neon-pink)] opacity-30 select-none">
+      <span className="absolute top-[20%] right-[15%] text-3xl md:text-5xl text-[var(--secondary)] opacity-30 select-none">
         &#9733;
       </span>
-      <span className="absolute top-[60%] left-[5%] text-2xl md:text-4xl text-[var(--neon-pink)] opacity-25 select-none hidden md:block">
+      <span className="absolute top-[60%] left-[5%] text-2xl md:text-4xl text-[var(--secondary)] opacity-25 select-none hidden md:block">
         &#9733;
       </span>
-      <span className="absolute top-[70%] right-[8%] text-3xl md:text-5xl text-[var(--neon-pink)] opacity-35 select-none hidden sm:block">
+      <span className="absolute top-[70%] right-[8%] text-3xl md:text-5xl text-[var(--secondary)] opacity-35 select-none hidden sm:block">
         &#9733;
       </span>
-      <span className="absolute top-[40%] left-[85%] text-xl md:text-3xl text-[var(--neon-pink)] opacity-20 select-none hidden lg:block">
+      <span className="absolute top-[40%] left-[85%] text-xl md:text-3xl text-[var(--secondary)] opacity-20 select-none hidden lg:block">
         &#9733;
       </span>
-      <span className="absolute top-[85%] left-[20%] text-2xl md:text-4xl text-[var(--neon-pink)] opacity-30 select-none hidden md:block">
+      <span className="absolute top-[85%] left-[20%] text-2xl md:text-4xl text-[var(--secondary)] opacity-30 select-none hidden md:block">
         &#9733;
       </span>
 
@@ -411,7 +411,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
           >
             8PM
           </span>
-          <span className="text-4xl md:text-6xl font-black text-[var(--neon-pink)]">.</span>
+          <span className="text-4xl md:text-6xl font-black text-[var(--secondary)]">.</span>
           <span
             className="text-6xl sm:text-8xl md:text-8xl lg:text-9xl font-black tracking-tight text-[var(--text)]"
             style={{ fontFamily: 'system-ui' }}
@@ -424,17 +424,17 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
         <div className="mb-6 md:mb-8 flex items-center justify-center gap-3">
           <div
             className="h-px w-12"
-            style={{ background: 'linear-gradient(90deg, transparent, var(--neon-pink))' }}
+            style={{ background: 'linear-gradient(90deg, transparent, var(--secondary))' }}
           />
           <span
-            className="text-[var(--neon-pink)] text-sm"
+            className="text-[var(--secondary)] text-sm"
             style={{ letterSpacing: '0.2em' }}
           >
             it's Archive.org but by Album
           </span>
           <div
             className="h-px w-12"
-            style={{ background: 'linear-gradient(90deg, var(--neon-pink), transparent)' }}
+            style={{ background: 'linear-gradient(90deg, var(--secondary), transparent)' }}
           />
         </div>
 
@@ -448,16 +448,16 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
             <div
               className="relative rounded-xl p-4 md:p-8"
               style={{
-                border: '1px solid rgba(212, 160, 96, 0.25)',
-                background: 'linear-gradient(180deg, rgba(212, 160, 96, 0.06) 0%, rgba(212, 160, 96, 0.02) 40%, transparent 100%)'
+                border: '1px solid var(--accent-border-decorative)',
+                background: 'linear-gradient(180deg, var(--accent-gradient-warm) 0%, var(--accent-gradient-faint) 40%, transparent 100%)'
               }}
             >
 
             {/* Corner accents */}
-            <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 rounded-tl-xl" style={{ borderColor: 'rgba(212, 160, 96, 0.5)' }} />
-            <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 rounded-tr-xl" style={{ borderColor: 'rgba(212, 160, 96, 0.5)' }} />
-            <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 rounded-bl-xl" style={{ borderColor: 'rgba(212, 160, 96, 0.5)' }} />
-            <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 rounded-br-xl" style={{ borderColor: 'rgba(212, 160, 96, 0.5)' }} />
+            <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 rounded-tl-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+            <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 rounded-tr-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+            <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 rounded-bl-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 rounded-br-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
 
             {/* Artist names */}
             <div
@@ -484,7 +484,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
                     {index > 0 && (
                       <span
                         ref={setStarRef(index)}
-                        className="text-[var(--neon-pink)] mr-2 md:mr-4 text-base invisible"
+                        className="text-[var(--secondary)] mr-2 md:mr-4 text-base invisible"
                       >
                         &#9733;
                       </span>
@@ -518,19 +518,19 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
         {/* Stats */}
         <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-center mt-4 md:mt-6">
           <div>
-            <div className="text-xl md:text-3xl font-bold text-[var(--campfire-teal)]">10,000+</div>
+            <div className="text-xl md:text-3xl font-bold text-[var(--tertiary)]">10,000+</div>
             <div className="text-[10px] md:text-xs text-[var(--text-dim)] uppercase tracking-[1px] md:tracking-[2px] mt-0.5">
               Live Shows
             </div>
           </div>
           <div>
-            <div className="text-xl md:text-3xl font-bold text-[var(--campfire-teal)]">50+</div>
+            <div className="text-xl md:text-3xl font-bold text-[var(--tertiary)]">50+</div>
             <div className="text-[10px] md:text-xs text-[var(--text-dim)] uppercase tracking-[1px] md:tracking-[2px] mt-0.5">
               Years of Music
             </div>
           </div>
           <div>
-            <div className="text-xl md:text-3xl font-bold text-[var(--campfire-teal)]">Free</div>
+            <div className="text-xl md:text-3xl font-bold text-[var(--tertiary)]">Free</div>
             <div className="text-[10px] md:text-xs text-[var(--text-dim)] uppercase tracking-[1px] md:tracking-[2px] mt-0.5">
               Forever
             </div>
@@ -542,7 +542,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
           href="https://archive.org/details/etree"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[var(--text-dim)] text-[10px] md:text-xs tracking-[2px] md:tracking-[4px] uppercase opacity-50 mt-6 md:mt-8 hover:opacity-80 hover:text-[var(--campfire-teal)] transition-all duration-200"
+          className="text-[var(--text-dim)] text-[10px] md:text-xs tracking-[2px] md:tracking-[4px] uppercase opacity-50 mt-6 md:mt-8 hover:opacity-80 hover:text-[var(--tertiary)] transition-all duration-200"
         >
           Powered by Archive.org
         </a>

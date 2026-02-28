@@ -189,7 +189,7 @@ export default function SearchPage() {
   const showNoResults = debouncedQuery && !isSearching && !hasResults;
 
   return (
-    <div className="min-h-screen bg-[#1c1a17] pb-[140px] md:pb-[90px] safe-top">
+    <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px] safe-top">
       <div className="max-w-[1000px] mx-auto">
         {/* Header */}
         <div className="p-6 md:p-8 border-b border-white/10">
@@ -204,7 +204,7 @@ export default function SearchPage() {
               onChange={(e) => setSearchQuery(e.target.value.slice(0, VALIDATION_LIMITS.SEARCH_QUERY_MAX))}
               placeholder="What do you want to listen to?"
               maxLength={VALIDATION_LIMITS.SEARCH_QUERY_MAX}
-              className="w-full bg-[#2d2a26] text-white placeholder-gray-400 rounded-full px-6 py-4 pr-12 text-base focus:outline-none focus:ring-2 focus:ring-[#d4a060]"
+              className="w-full bg-surface-elevated text-white placeholder-gray-400 rounded-full px-6 py-4 pr-12 text-base focus:outline-none focus:ring-2 focus:ring-accent"
             />
             {searchQuery && (
               <button
@@ -230,7 +230,7 @@ export default function SearchPage() {
                 availableVenues={availableVenues}
               />
               {hasActiveFilters(filters) && (
-                <p className="text-sm text-[#8a7a68] mt-2">
+                <p className="text-sm text-secondary mt-2">
                   Filters apply when you expand each track
                 </p>
               )}
@@ -258,7 +258,7 @@ export default function SearchPage() {
                     <button
                       key={index}
                       onClick={() => handleRecentSearchClick(search)}
-                      className="group flex items-center gap-2 bg-[#2d2a26] hover:bg-[#3a3632] text-white px-4 py-2 rounded-full text-sm transition-colors"
+                      className="group flex items-center gap-2 bg-surface-elevated hover:bg-border text-white px-4 py-2 rounded-full text-sm transition-colors"
                     >
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -285,7 +285,7 @@ export default function SearchPage() {
             /* Loading State */
             <div className="flex flex-col items-center justify-center gap-6 py-20">
               <VinylSpinner size="lg" />
-              <span className="text-[#d4a060] text-lg font-medium tracking-wide">Searching the archives...</span>
+              <span className="text-accent text-lg font-medium tracking-wide">Searching the archives...</span>
             </div>
           ) : (
             /* Search Results */
@@ -293,11 +293,11 @@ export default function SearchPage() {
               {showNoResults && (
                 <div className="flex flex-col items-center justify-center py-16">
                   <SearchSilence size={160} />
-                  <p className="text-[#b8a898] text-2xl font-medium mb-2">No recordings found</p>
-                  <p className="text-[#8a7a68] text-lg">
+                  <p className="text-primary text-2xl font-medium mb-2">No recordings found</p>
+                  <p className="text-secondary text-lg">
                     Nothing in the archives for &quot;{debouncedQuery}&quot;
                   </p>
-                  <p className="text-[#6a5a4a] text-base mt-4">
+                  <p className="text-tertiary text-base mt-4">
                     Try searching for artists, shows, or song titles
                   </p>
                 </div>
@@ -314,7 +314,7 @@ export default function SearchPage() {
                           <button
                             key={artist.id}
                             onClick={() => handleArtistClick(artist, index + 1)}
-                            className="flex flex-col items-center p-4 bg-[#252220] hover:bg-[#2d2a26] rounded-lg transition-colors text-left"
+                            className="flex flex-col items-center p-4 bg-surface-card hover:bg-surface-elevated rounded-lg transition-colors text-left"
                           >
                             <div className="w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center mb-3 overflow-hidden relative">
                               {artist.image ? (
@@ -344,14 +344,14 @@ export default function SearchPage() {
                             <button
                               key={album.uid}
                               onClick={() => handleAlbumClick(album, index + 1)}
-                              className="flex flex-col p-4 bg-[#252220] hover:bg-[#2d2a26] rounded-lg transition-colors text-left"
+                              className="flex flex-col p-4 bg-surface-card hover:bg-surface-elevated rounded-lg transition-colors text-left"
                             >
                               <div className="w-full aspect-square bg-gray-700 rounded mb-3 overflow-hidden relative">
                                 {album.wikipedia_artwork_url ? (
                                   <Image src={album.wikipedia_artwork_url} alt={album.name || 'Album'} fill sizes="200px" quality={80} className="object-cover" />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#3a3632] to-[#252220]">
-                                    <svg className="w-12 h-12 text-[#d4a060]" fill="currentColor" viewBox="0 0 24 24">
+                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-border to-surface-card">
+                                    <svg className="w-12 h-12 text-accent" fill="currentColor" viewBox="0 0 24 24">
                                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
                                     </svg>
                                   </div>
@@ -371,10 +371,10 @@ export default function SearchPage() {
                   {/* Tracks Section */}
                   {tracks.length > 0 && (
                     <section className="mb-8">
-                      <h2 className="text-xl font-semibold text-[#e8dcc8] mb-4 flex items-center gap-2">
+                      <h2 className="text-xl font-semibold text-primary mb-4 flex items-center gap-2">
                         Tracks
                         {hasActiveFilters(filters) && (
-                          <span className="text-xs text-[#d4a060]">
+                          <span className="text-xs text-accent">
                             (filtered)
                           </span>
                         )}

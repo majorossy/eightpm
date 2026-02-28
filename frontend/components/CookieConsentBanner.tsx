@@ -64,22 +64,22 @@ function CategoryToggle({ label, description, checked, onChange, disabled }: Cat
           className={`
             w-5 h-5 rounded border-2 flex items-center justify-center transition-all
             ${disabled
-              ? 'bg-[#3a3632] border-[#4a4642] cursor-not-allowed'
+              ? 'bg-border border-border cursor-not-allowed'
               : checked
-                ? 'bg-[#d4a060] border-[#d4a060]'
-                : 'bg-transparent border-[#5a5652] group-hover:border-[#d4a060]'
+                ? 'bg-accent border-accent'
+                : 'bg-transparent border-border group-hover:border-accent'
             }
           `}
         >
-          {checked && <CheckIcon className="w-3 h-3 text-[#1c1a17]" />}
+          {checked && <CheckIcon className="w-3 h-3 text-inverse" />}
         </div>
       </div>
       <div className="flex-1">
-        <div className={`text-sm font-medium ${disabled ? 'text-[#6a6458]' : 'text-[#e8e4dc]'}`}>
+        <div className={`text-sm font-medium ${disabled ? 'text-tertiary' : 'text-primary'}`}>
           {label}
-          {disabled && <span className="ml-2 text-xs text-[#5a5652]">(Required)</span>}
+          {disabled && <span className="ml-2 text-xs text-tertiary">(Required)</span>}
         </div>
-        <div className="text-xs text-[#8a8478] mt-0.5">{description}</div>
+        <div className="text-xs text-secondary mt-0.5">{description}</div>
       </div>
     </label>
   );
@@ -135,14 +135,14 @@ export default function CookieConsentBanner() {
         aria-modal="true"
         aria-labelledby="cookie-consent-title"
       >
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-surface-card border border-default rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="p-4 pb-3 border-b border-[#3a3632]/50">
+          <div className="p-4 pb-3 border-b border-default/50">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#1c1a17] rounded-lg">
-                <CookieIcon className="w-5 h-5 text-[#d4a060]" />
+              <div className="p-2 bg-surface-base rounded-lg">
+                <CookieIcon className="w-5 h-5 text-accent" />
               </div>
-              <h2 id="cookie-consent-title" className="text-lg font-semibold text-[#e8e4dc]">
+              <h2 id="cookie-consent-title" className="text-lg font-semibold text-primary">
                 Cookie Preferences
               </h2>
             </div>
@@ -152,12 +152,12 @@ export default function CookieConsentBanner() {
           <div className="p-4">
             {!showCustomize ? (
               <>
-                <p className="text-sm text-[#8a8478] mb-4 leading-relaxed">
+                <p className="text-sm text-secondary mb-4 leading-relaxed">
                   We use cookies to enhance your experience. Essential cookies are required for basic functionality.
                   Analytics cookies help us improve 8pm.me.{' '}
                   <Link
                     href="/cookie-policy"
-                    className="text-[#d4a060] hover:underline focus:outline-none focus:ring-2 focus:ring-[#d4a060] rounded"
+                    className="text-accent hover:underline focus:outline-none focus:ring-2 focus:ring-accent rounded"
                   >
                     Learn more
                   </Link>
@@ -167,19 +167,19 @@ export default function CookieConsentBanner() {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     onClick={acceptAll}
-                    className="flex-1 px-4 py-2.5 bg-[#d4a060] text-[#1c1a17] font-medium rounded-lg hover:bg-[#e8b070] transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:ring-offset-2 focus:ring-offset-[#2a2825]"
+                    className="flex-1 px-4 py-2.5 bg-accent text-inverse font-medium rounded-lg hover:bg-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-card"
                   >
                     Accept All
                   </button>
                   <button
                     onClick={declineNonEssential}
-                    className="flex-1 px-4 py-2.5 bg-[#3a3632] text-[#e8e4dc] font-medium rounded-lg hover:bg-[#4a4642] transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:ring-offset-2 focus:ring-offset-[#2a2825]"
+                    className="flex-1 px-4 py-2.5 bg-border text-primary font-medium rounded-lg hover:bg-surface-elevated transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-card"
                   >
                     Essential Only
                   </button>
                   <button
                     onClick={() => setShowCustomize(true)}
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 border border-[#3a3632] text-[#8a8478] font-medium rounded-lg hover:border-[#d4a060] hover:text-[#d4a060] transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:ring-offset-2 focus:ring-offset-[#2a2825]"
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 border border-default text-secondary font-medium rounded-lg hover:border-accent hover:text-accent transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-card"
                     aria-expanded={showCustomize}
                   >
                     <SettingsIcon className="w-4 h-4" />
@@ -214,9 +214,9 @@ export default function CookieConsentBanner() {
                   />
                 </div>
 
-                <p className="text-xs text-[#6a6458] mb-4">
+                <p className="text-xs text-tertiary mb-4">
                   View our{' '}
-                  <Link href="/cookie-policy" className="text-[#d4a060] hover:underline">
+                  <Link href="/cookie-policy" className="text-accent hover:underline">
                     Cookie Policy
                   </Link>{' '}
                   for detailed information about each cookie type.
@@ -226,13 +226,13 @@ export default function CookieConsentBanner() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowCustomize(false)}
-                    className="flex-1 px-4 py-2.5 border border-[#3a3632] text-[#8a8478] font-medium rounded-lg hover:border-[#5a5652] hover:text-[#e8e4dc] transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4a060]"
+                    className="flex-1 px-4 py-2.5 border border-default text-secondary font-medium rounded-lg hover:border-border hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleCustomSave}
-                    className="flex-1 px-4 py-2.5 bg-[#d4a060] text-[#1c1a17] font-medium rounded-lg hover:bg-[#e8b070] transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:ring-offset-2 focus:ring-offset-[#2a2825]"
+                    className="flex-1 px-4 py-2.5 bg-accent text-inverse font-medium rounded-lg hover:bg-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-card"
                   >
                     Save Preferences
                   </button>

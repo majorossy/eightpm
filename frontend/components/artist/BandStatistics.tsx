@@ -113,7 +113,7 @@ const BandStatistics: React.FC<BandStatisticsProps> = ({ statistics }) => {
             transform: 'translateX(-50%)',
             width: '80%',
             height: '100px',
-            background: 'radial-gradient(ellipse, rgba(255,100,30,0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%)',
             filter: 'blur(20px)',
           }}
         />
@@ -137,11 +137,11 @@ const BandStatistics: React.FC<BandStatisticsProps> = ({ statistics }) => {
                   fontSize: '36px',
                   fontWeight: 'bold',
                   background:
-                    'linear-gradient(180deg, #fff8e7 0%, #ffb347 30%, #ff6b35 60%, #cc3300 100%)',
+                    'var(--stats-gradient, linear-gradient(180deg, #fff8e7 0%, #ffb347 30%, #ff6b35 60%, #cc3300 100%))',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
-                  filter: 'drop-shadow(0 0 10px rgba(255,150,50,0.4))',
+                  filter: 'drop-shadow(0 0 10px var(--accent-glow))',
                   lineHeight: 1,
                 }}
               >
@@ -151,7 +151,7 @@ const BandStatistics: React.FC<BandStatisticsProps> = ({ statistics }) => {
                 style={{
                   fontFamily: 'Georgia, serif',
                   fontSize: '10px',
-                  color: '#8b6914',
+                  color: 'var(--stats-label-color, #8b6914)',
                   letterSpacing: '1.5px',
                   textTransform: 'uppercase',
                   marginTop: '6px',
@@ -172,28 +172,28 @@ const BandStatistics: React.FC<BandStatisticsProps> = ({ statistics }) => {
           .ember-5 { animation: ember-flicker-5 2.2s ease-in-out infinite; }
 
           @keyframes ember-flicker-0 {
-            0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px rgba(255,150,50,0.4)); }
-            50% { opacity: 0.85; filter: drop-shadow(0 0 15px rgba(255,150,50,0.6)); }
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent-primary) 40%, transparent)); }
+            50% { opacity: 0.85; filter: drop-shadow(0 0 15px color-mix(in srgb, var(--accent-primary) 60%, transparent)); }
           }
           @keyframes ember-flicker-1 {
-            0%, 100% { opacity: 0.9; filter: drop-shadow(0 0 12px rgba(255,150,50,0.5)); }
-            50% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,150,50,0.3)); }
+            0%, 100% { opacity: 0.9; filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent-primary) 50%, transparent)); }
+            50% { opacity: 1; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-primary) 30%, transparent)); }
           }
           @keyframes ember-flicker-2 {
-            0%, 100% { opacity: 0.95; filter: drop-shadow(0 0 8px rgba(255,150,50,0.4)); }
-            50% { opacity: 0.8; filter: drop-shadow(0 0 18px rgba(255,150,50,0.7)); }
+            0%, 100% { opacity: 0.95; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-primary) 40%, transparent)); }
+            50% { opacity: 0.8; filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent-primary) 70%, transparent)); }
           }
           @keyframes ember-flicker-3 {
-            0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 14px rgba(255,150,50,0.5)); }
-            50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(255,150,50,0.3)); }
+            0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 14px color-mix(in srgb, var(--accent-primary) 50%, transparent)); }
+            50% { opacity: 1; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent-primary) 30%, transparent)); }
           }
           @keyframes ember-flicker-4 {
-            0%, 100% { opacity: 1; filter: drop-shadow(0 0 9px rgba(255,150,50,0.45)); }
-            50% { opacity: 0.9; filter: drop-shadow(0 0 16px rgba(255,150,50,0.55)); }
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 9px color-mix(in srgb, var(--accent-primary) 45%, transparent)); }
+            50% { opacity: 0.9; filter: drop-shadow(0 0 16px color-mix(in srgb, var(--accent-primary) 55%, transparent)); }
           }
           @keyframes ember-flicker-5 {
-            0%, 100% { opacity: 0.92; filter: drop-shadow(0 0 11px rgba(255,150,50,0.48)); }
-            50% { opacity: 0.95; filter: drop-shadow(0 0 13px rgba(255,150,50,0.52)); }
+            0%, 100% { opacity: 0.92; filter: drop-shadow(0 0 11px color-mix(in srgb, var(--accent-primary) 48%, transparent)); }
+            50% { opacity: 0.95; filter: drop-shadow(0 0 13px color-mix(in srgb, var(--accent-primary) 52%, transparent)); }
           }
         `}</style>
       </div>

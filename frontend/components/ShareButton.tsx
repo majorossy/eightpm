@@ -60,7 +60,7 @@ export default function ShareButton({
   return (
     <button
       onClick={handleShare}
-      className={`text-[#8a8478] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4a060] rounded ${className}`}
+      className={`text-secondary hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-accent rounded ${className}`}
       aria-label="Share"
       title="Share"
     >

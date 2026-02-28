@@ -89,21 +89,21 @@ export const CassetteTape = memo(function CassetteTape({
           {/* Label content */}
           <div className="p-2 sm:p-3 relative">
             {/* Ruled lines */}
-            <div className="absolute top-10 left-3 right-3 h-px bg-[#8b5a2b]/10" />
-            <div className="absolute top-14 left-3 right-3 h-px bg-[#8b5a2b]/5" />
+            <div className="absolute top-10 left-3 right-3 h-px" style={{ background: 'var(--cassette-label-ruled)' }} />
+            <div className="absolute top-14 left-3 right-3 h-px" style={{ background: 'var(--cassette-label-ruled)', opacity: 0.5 }} />
 
             <div className="flex justify-between items-start">
               <div>
                 <div className="text-[#1a0f08] text-base sm:text-lg font-semibold font-serif truncate max-w-[180px] sm:max-w-[220px]">
                   {album.name} ☮
                 </div>
-                <div className="text-[#4a3020] text-[10px] sm:text-xs italic truncate max-w-[180px] sm:max-w-[220px]">
-                  {album.artistName} — {album.showVenue ? <VenueLink venueName={album.showVenue} className="text-[#4a3020] hover:text-[#2a1810] hover:underline" truncateLength={24} /> : 'Live'}
+                <div className="text-[10px] sm:text-xs italic truncate max-w-[180px] sm:max-w-[220px]" style={{ color: 'var(--cassette-label-text)' }}>
+                  {album.artistName} — {album.showVenue ? <VenueLink venueName={album.showVenue} className="text-[var(--cassette-label-text)] hover:underline" truncateLength={24} /> : 'Live'}
                 </div>
               </div>
               <div className="flex items-center gap-2 relative">
                 {/* Year display */}
-                <div className="text-[#8a6a50] text-sm sm:text-base italic font-serif">
+                <div className="text-sm sm:text-base italic font-serif" style={{ color: 'var(--cassette-label-subtle)' }}>
                   '{year.slice(-2)}
                 </div>
               </div>
@@ -115,13 +115,13 @@ export const CassetteTape = memo(function CassetteTape({
 
           {/* Bottom bar */}
           <div
-            className="absolute bottom-0 left-0 right-0 h-4 sm:h-5 flex items-center justify-center gap-3 text-[8px] sm:text-[9px] text-[#6a5040] border-t border-[#8b5a2b]/10"
-            style={{ background: 'rgba(0,0,0,0.04)' }}
+            className="absolute bottom-0 left-0 right-0 h-4 sm:h-5 flex items-center justify-center gap-3 text-[8px] sm:text-[9px] border-t"
+            style={{ background: 'rgba(0,0,0,0.04)', color: 'var(--cassette-label-muted)', borderColor: 'var(--cassette-label-ruled)' }}
           >
             <span>{album.totalTracks} tracks</span>
-            <span className="text-[#c85028]">✦</span>
+            <span style={{ color: 'var(--cassette-label-accent)' }}>✦</span>
             <span>{formatHours(album.totalDuration)}</span>
-            <span className="text-[#c85028]">✦</span>
+            <span style={{ color: 'var(--cassette-label-accent)' }}>✦</span>
             <span>archive</span>
           </div>
         </div>

@@ -43,7 +43,7 @@ export default function VenueMapClient() {
 
   if (loading) {
     return (
-      <div className="w-full h-[600px] bg-[#252220] rounded-lg flex items-center justify-center">
+      <div className="w-full h-[600px] bg-surface-card rounded-lg flex items-center justify-center">
         <div className="text-[var(--text-subdued)]">Loading map...</div>
       </div>
     );
@@ -54,7 +54,7 @@ export default function VenueMapClient() {
   const defaultZoom = 4;
 
   return (
-    <div className="w-full h-[600px] rounded-lg overflow-hidden border border-[#2d2a26]">
+    <div className="w-full h-[600px] rounded-lg overflow-hidden border border-default">
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
@@ -74,7 +74,7 @@ export default function VenueMapClient() {
               <div className="text-sm">
                 <Link
                   href={`/venues/${venue.slug}`}
-                  className="font-bold text-[#d4a060] hover:underline"
+                  className="font-bold text-accent hover:underline"
                 >
                   {venue.normalized_name}
                 </Link>

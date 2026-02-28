@@ -67,11 +67,11 @@ export function NowPlayingIndicator() {
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
       <span style={{
         display: 'inline-block', width: 16, height: 16,
-        border: '2px solid var(--neon-pink)', borderRadius: '50%',
+        border: '2px solid var(--secondary)', borderRadius: '50%',
         borderTopColor: 'transparent',
         animation: 'spin 1s linear infinite',
       }} />
-      <span style={{ color: 'var(--neon-pink)', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em' }}>NOW PLAYING</span>
+      <span style={{ color: 'var(--secondary)', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em' }}>NOW PLAYING</span>
     </span>
   );
 }
@@ -94,7 +94,7 @@ export function Row({ label, value, mono, link, linkLabel }: {
       <span style={{ color: 'var(--text-subdued)', fontSize: 12, flexShrink: 0, minWidth: 90 }}>{label}</span>
       {link ? (
         <a href={link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{
-          color: 'var(--campfire-teal)', fontSize: 12, textDecoration: 'none', textAlign: 'right',
+          color: 'var(--tertiary)', fontSize: 12, textDecoration: 'none', textAlign: 'right',
           wordBreak: 'break-all', maxWidth: '65%',
         }}>{linkLabel || String(value) || link}</a>
       ) : (
@@ -183,7 +183,7 @@ export function SortableHeader({ label, field, sortBy, sortDir, onSort, classNam
       style={{
         cursor: 'pointer',
         userSelect: 'none',
-        color: active ? 'var(--neon-pink)' : undefined,
+        color: active ? 'var(--secondary)' : undefined,
         transition: 'color 0.15s',
         display: 'inline-flex',
         alignItems: 'center',

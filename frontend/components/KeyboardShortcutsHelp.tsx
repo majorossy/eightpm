@@ -53,9 +53,9 @@ export default function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShort
         <Dialog.Overlay className="fixed inset-0 bg-black/80 z-50 backdrop-blur-sm" />
 
         <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-          <div className="bg-[#252220] rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto pointer-events-auto">
+          <div className="bg-surface-card rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto pointer-events-auto">
             {/* Header */}
-            <div className="sticky top-0 bg-[#252220] border-b border-white/10 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-surface-card border-b border-white/10 px-6 py-4 flex items-center justify-between">
               <Dialog.Title className="text-2xl font-bold text-white">Keyboard Shortcuts</Dialog.Title>
               <Dialog.Close asChild>
                 <button
@@ -89,7 +89,7 @@ export default function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShort
                               {keyIndex > 0 && (
                                 <span className="text-gray-500 text-sm">or</span>
                               )}
-                              <kbd className="px-3 py-1.5 bg-[#2d2a26] text-gray-300 rounded-md border border-white/10 text-sm font-mono shadow-sm">
+                              <kbd className="px-3 py-1.5 bg-surface-elevated text-gray-300 rounded-md border border-white/10 text-sm font-mono shadow-sm">
                                 {key}
                               </kbd>
                             </span>
@@ -103,9 +103,9 @@ export default function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShort
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 bg-[#252220] border-t border-white/10 px-6 py-4">
+            <div className="sticky bottom-0 bg-surface-card border-t border-white/10 px-6 py-4">
               <p className="text-sm text-gray-400 text-center">
-                Press <kbd className="px-2 py-1 bg-[#2d2a26] text-gray-300 rounded border border-white/10 text-xs font-mono">?</kbd> anytime to show this help
+                Press <kbd className="px-2 py-1 bg-surface-elevated text-gray-300 rounded border border-white/10 text-xs font-mono">?</kbd> anytime to show this help
               </p>
             </div>
           </div>

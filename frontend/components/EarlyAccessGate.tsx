@@ -36,8 +36,8 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
   // Still checking auth state
   if (isAuthenticated === null) {
     return (
-      <div className="fixed inset-0 bg-[#1c1a17] z-[99999] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#d4a060] border-t-transparent rounded-full animate-spin" />
+      <div className="fixed inset-0 bg-surface-base z-[99999] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -49,25 +49,25 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
 
   // Not authenticated - show login modal
   return (
-    <div className="fixed inset-0 bg-[#1c1a17] z-[99999] flex items-center justify-center p-4">
-      <div className="bg-[#252220] rounded-xl p-8 max-w-md w-full shadow-2xl border border-[#3a3632]">
+    <div className="fixed inset-0 bg-surface-base z-[99999] flex items-center justify-center p-4">
+      <div className="bg-surface-card rounded-xl p-8 max-w-md w-full shadow-2xl border border-default">
         {/* Logo/Title */}
         <div className="text-center mb-8">
           <h1
-            className="text-4xl font-bold text-[#d4a060] mb-2"
+            className="text-4xl font-bold text-accent mb-2"
             style={{ fontFamily: 'Georgia, serif' }}
           >
             8pm.me
           </h1>
-          <div className="inline-block px-3 py-1 bg-[#d4a060]/10 rounded-full">
-            <span className="text-xs font-medium text-[#d4a060] tracking-wider uppercase">
+          <div className="inline-block px-3 py-1 bg-accent/10 rounded-full">
+            <span className="text-xs font-medium text-accent tracking-wider uppercase">
               Early Access
             </span>
           </div>
         </div>
 
         {/* Message */}
-        <p className="text-[#a8a098] text-center mb-6 text-sm">
+        <p className="text-secondary text-center mb-6 text-sm">
           This site is still under development.<br />
           Enter your credentials to continue.
         </p>
@@ -75,7 +75,7 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-xs font-medium text-[#8a8478] mb-1.5 uppercase tracking-wider">
+            <label htmlFor="username" className="block text-xs font-medium text-secondary mb-1.5 uppercase tracking-wider">
               Username
             </label>
             <input
@@ -83,7 +83,7 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 bg-[#1c1a17] border border-[#3a3632] rounded-lg text-[#e8e0d4] placeholder-[#6a6458] focus:outline-none focus:border-[#d4a060] transition-colors"
+              className="w-full px-4 py-3 bg-surface-base border border-default rounded-lg text-primary placeholder-tertiary focus:outline-none focus:border-accent transition-colors"
               placeholder="Enter username"
               autoComplete="username"
               autoFocus
@@ -91,7 +91,7 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-xs font-medium text-[#8a8478] mb-1.5 uppercase tracking-wider">
+            <label htmlFor="password" className="block text-xs font-medium text-secondary mb-1.5 uppercase tracking-wider">
               Password
             </label>
             <input
@@ -99,7 +99,7 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-[#1c1a17] border border-[#3a3632] rounded-lg text-[#e8e0d4] placeholder-[#6a6458] focus:outline-none focus:border-[#d4a060] transition-colors"
+              className="w-full px-4 py-3 bg-surface-base border border-default rounded-lg text-primary placeholder-tertiary focus:outline-none focus:border-accent transition-colors"
               placeholder="Enter password"
               autoComplete="current-password"
             />
@@ -111,14 +111,14 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
 
           <button
             type="submit"
-            className="w-full py-3 bg-[#d4a060] hover:bg-[#c08a40] text-[#1c1a17] font-bold rounded-lg transition-colors"
+            className="w-full py-3 bg-accent hover:bg-accent-hover text-inverse font-bold rounded-lg transition-colors"
           >
             Enter
           </button>
         </form>
 
         {/* Footer */}
-        <p className="text-[#6a6458] text-xs text-center mt-6">
+        <p className="text-tertiary text-xs text-center mt-6">
           Live music archive • Coming soon
         </p>
       </div>

@@ -84,7 +84,7 @@ export default function EightPmMobileNav() {
       icon: (active: boolean) => (
         isAuthenticated ? (
           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-            active ? 'bg-[var(--neon-pink)] text-[var(--bg)]' : 'bg-[var(--bg-elevated)] text-[var(--text)]'
+            active ? 'bg-[var(--secondary)] text-[var(--bg)]' : 'bg-[var(--bg-elevated)] text-[var(--text)]'
           }`}>
             {initials}
           </div>
@@ -116,7 +116,7 @@ export default function EightPmMobileNav() {
                   key={tab.href}
                   onClick={tab.action}
                   className={`flex flex-col items-center justify-center gap-1 min-w-[64px] py-1 transition-colors ${
-                    active ? 'text-[#d4a060]' : 'text-[#8a8478]'
+                    active ? 'text-accent' : 'text-secondary'
                   }`}
                   aria-label={tab.label}
                   aria-current={active ? 'page' : undefined}
@@ -134,7 +134,7 @@ export default function EightPmMobileNav() {
                 href={tab.href}
                 onClick={() => vibrate(BUTTON_PRESS)}
                 className={`flex flex-col items-center justify-center gap-1 min-w-[64px] py-1 transition-colors ${
-                  active ? 'text-[#d4a060]' : 'text-[#8a8478]'
+                  active ? 'text-accent' : 'text-secondary'
                 }`}
                 aria-label={tab.label}
                 aria-current={active ? 'page' : undefined}

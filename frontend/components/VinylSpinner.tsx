@@ -41,7 +41,7 @@ export function VinylSpinner({ size = 'md', className = '' }: VinylSpinnerProps)
           cy={center}
           r={center - 1}
           fill="none"
-          stroke="rgba(212, 160, 96, 0.15)"
+          stroke="var(--accent-border-decorative)"
           strokeWidth="3"
         />
 

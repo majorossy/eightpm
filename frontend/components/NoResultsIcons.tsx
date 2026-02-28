@@ -274,9 +274,9 @@ export function NoResultsIconPreview() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 p-8">
       {icons.map(({ name, component: Icon }) => (
-        <div key={name} className="flex flex-col items-center gap-4 p-6 bg-[#252220] rounded-lg">
+        <div key={name} className="flex flex-col items-center gap-4 p-6 bg-surface-card rounded-lg">
           <Icon size={120} />
-          <span className="text-[#b8a898] text-sm text-center">{name}</span>
+          <span className="text-secondary text-sm text-center">{name}</span>
         </div>
       ))}
     </div>

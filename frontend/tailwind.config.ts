@@ -8,51 +8,85 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Neon Synthwave palette
-        'neon-pink': '#ff2d95',
-        'neon-cyan': '#00f0ff',
-        'neon-purple': '#9d4edd',
-        'neon-orange': '#ff6b35',
-        // Primary/accent aliases
-        primary: '#00f0ff',
-        'primary-dark': '#00c8d4',
-        accent: '#ff2d95',
-        // Dark backgrounds
-        dark: {
-          900: '#0d0d12',
-          800: '#15151d',
-          700: '#1a1a25',
-          600: '#252530',
-          500: '#303040',
-          400: '#404055',
+        // ========================================
+        // SEMANTIC DESIGN TOKENS
+        // All components should use these classes
+        // ========================================
+
+        // Surfaces: bg-surface-base, bg-surface-card, etc.
+        surface: {
+          base: 'var(--surface-base)',
+          card: 'var(--surface-card)',
+          elevated: 'var(--surface-elevated)',
+          sunken: 'var(--surface-sunken)',
+          'player-deep': 'var(--player-surface-deep)',
+          'player-bar': 'var(--player-surface-bar)',
+          'player-queue': 'var(--player-surface-queue)',
+          'player-chip': 'var(--player-surface-chip)',
+          'player-chip-hover': 'var(--player-surface-chip-hover)',
         },
-        // Text colors
-        'text-dim': '#6a6a7a',
-        // Campfire Tapes palette
-        campfire: {
-          earth: '#1c1a17',
-          soil: '#252220',
-          clay: '#2d2a26',
-          sand: '#3a3632',
-          amber: '#d4a060',
-          ochre: '#c08a40',
-          rust: '#a85a38',
-          teal: '#5a8a7a',
-          cream: '#f5f0e8',
-          'cream-aged': '#ebe5d8',
-          parchment: '#e0d8c8',
-          text: '#e8e0d4',
-          'text-body': '#c8c0b4',
-          muted: '#9a9488',
-          dim: '#7a7468',
+
+        // Accent: text-accent, bg-accent, border-accent
+        accent: {
+          DEFAULT: 'var(--accent-primary)',
+          hover: 'var(--accent-primary-hover)',
+          muted: 'var(--accent-primary-muted)',
+          secondary: 'var(--accent-secondary)',
         },
+
+        // Borders: border-default, border-subtle, border-accent (above)
+        border: {
+          DEFAULT: 'var(--border-default)',
+          subtle: 'var(--border-subtle-token)',
+        },
+
+        // Interactive: hover:bg-interactive-hover, etc.
+        interactive: {
+          hover: 'var(--interactive-hover-bg)',
+          active: 'var(--interactive-active-bg)',
+        },
+
+        // Ring: ring-accent-ring
+        'accent-ring': 'var(--ring-accent)',
+
+        // Palette colors (resolve per-theme via CSS variables)
+        palette: {
+          primary: 'var(--primary)',
+          secondary: 'var(--secondary)',
+          tertiary: 'var(--tertiary)',
+          quaternary: 'var(--quaternary)',
+          quinary: 'var(--quinary)',
+        },
+      },
+      // Semantic text colors: text-primary, text-secondary, text-tertiary, text-inverse
+      textColor: {
+        primary: 'var(--text-primary)',
+        secondary: 'var(--text-secondary)',
+        tertiary: 'var(--text-tertiary)',
+        inverse: 'var(--text-inverse)',
+        accent: 'var(--accent-primary)',
+      },
+      // Semantic placeholder: placeholder-tertiary
+      placeholderColor: {
+        tertiary: 'var(--placeholder)',
+      },
+      // Semantic ring: ring-accent
+      ringColor: {
+        accent: 'var(--ring-accent)',
+      },
+      // Semantic border color
+      borderColor: {
+        accent: 'var(--accent-primary)',
+        DEFAULT: 'var(--border-default)',
       },
       fontFamily: {
         display: ['var(--font-orbitron)', 'sans-serif'],
         mono: ['var(--font-space-mono)', 'monospace'],
+        'jb-mono': ['var(--font-jetbrains-mono)', 'monospace'],
         'bebas-neue': ['var(--font-bebas-neue)', 'Impact', 'sans-serif'],
         serif: ['Georgia', 'serif'],
         sans: ['system-ui', 'sans-serif'],
+        outfit: ['Outfit', 'sans-serif'],
       },
       animation: {
         'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
@@ -75,16 +109,16 @@ const config: Config = {
           '50%': { transform: 'translate(30px, 20px)' },
         },
         'border-glow': {
-          '0%, 100%': { filter: 'drop-shadow(0 0 20px #00f0ff)' },
-          '33%': { filter: 'drop-shadow(0 0 20px #ff2d95)' },
-          '66%': { filter: 'drop-shadow(0 0 20px #9d4edd)' },
+          '0%, 100%': { filter: 'drop-shadow(0 0 20px var(--tertiary))' },
+          '33%': { filter: 'drop-shadow(0 0 20px var(--secondary))' },
+          '66%': { filter: 'drop-shadow(0 0 20px var(--quaternary))' },
         },
         'pulse-neon': {
           '0%, 100%': {
-            boxShadow: '0 0 10px #ff2d95, inset 0 0 10px rgba(255, 45, 149, 0.1)'
+            boxShadow: '0 0 10px var(--secondary), inset 0 0 10px color-mix(in srgb, var(--secondary) 10%, transparent)'
           },
           '50%': {
-            boxShadow: '0 0 30px #ff2d95, inset 0 0 20px rgba(255, 45, 149, 0.2)'
+            boxShadow: '0 0 30px var(--secondary), inset 0 0 20px color-mix(in srgb, var(--secondary) 20%, transparent)'
           },
         },
         'blink': {
@@ -109,8 +143,8 @@ const config: Config = {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'neon-gradient': 'linear-gradient(135deg, #00f0ff, #ff2d95, #9d4edd)',
-        'title-gradient': 'linear-gradient(180deg, #ffffff 0%, #9d4edd 100%)',
+        'neon-gradient': 'linear-gradient(135deg, var(--tertiary), var(--secondary), var(--quaternary))',
+        'title-gradient': 'linear-gradient(180deg, white 0%, var(--quaternary) 100%)',
       },
     },
   },

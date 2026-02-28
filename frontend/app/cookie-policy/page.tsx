@@ -70,20 +70,20 @@ function CookieTable({ cookies }: { cookies: CookieTableRow[] }) {
     <div className="overflow-x-auto -mx-4 px-4">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-[#3a3632]">
-            <th className="text-left py-2 pr-4 text-[#d4a060] font-medium">Cookie</th>
-            <th className="text-left py-2 pr-4 text-[#d4a060] font-medium">Purpose</th>
-            <th className="text-left py-2 pr-4 text-[#d4a060] font-medium">Duration</th>
-            <th className="text-left py-2 text-[#d4a060] font-medium">Provider</th>
+          <tr className="border-b border-default">
+            <th className="text-left py-2 pr-4 text-accent font-medium">Cookie</th>
+            <th className="text-left py-2 pr-4 text-accent font-medium">Purpose</th>
+            <th className="text-left py-2 pr-4 text-accent font-medium">Duration</th>
+            <th className="text-left py-2 text-accent font-medium">Provider</th>
           </tr>
         </thead>
         <tbody>
           {cookies.map((cookie, index) => (
-            <tr key={index} className="border-b border-[#3a3632]/50">
-              <td className="py-2 pr-4 font-mono text-xs text-[#e8e4dc]">{cookie.name}</td>
-              <td className="py-2 pr-4 text-[#8a8478]">{cookie.purpose}</td>
-              <td className="py-2 pr-4 text-[#8a8478]">{cookie.duration}</td>
-              <td className="py-2 text-[#8a8478]">{cookie.provider}</td>
+            <tr key={index} className="border-b border-default/50">
+              <td className="py-2 pr-4 font-mono text-xs text-primary">{cookie.name}</td>
+              <td className="py-2 pr-4 text-secondary">{cookie.purpose}</td>
+              <td className="py-2 pr-4 text-secondary">{cookie.duration}</td>
+              <td className="py-2 text-secondary">{cookie.provider}</td>
             </tr>
           ))}
         </tbody>
@@ -166,29 +166,29 @@ export default function CookiePolicyPage() {
     <div className="max-w-[800px] mx-auto px-4 py-12 md:py-16">
       {/* Header with icon */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-[#2a2825] rounded-lg border border-[#3a3632]">
-          <CookieIcon className="w-8 h-8 text-[#d4a060]" />
+        <div className="p-3 bg-surface-card rounded-lg border border-default">
+          <CookieIcon className="w-8 h-8 text-accent" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-[#d4a060] tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-bold text-accent tracking-tight">
           Cookie Policy
         </h1>
       </div>
 
-      <div className="space-y-6 text-[#8a8478] leading-relaxed">
+      <div className="space-y-6 text-secondary leading-relaxed">
         {/* Student project notice */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-4 flex items-start gap-3">
-          <InfoIcon className="w-5 h-5 text-[#d4a060] flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-[#d4a060]">
+        <div className="bg-surface-card border border-default rounded-lg p-4 flex items-start gap-3">
+          <InfoIcon className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-accent">
             <strong>Note:</strong> This is a student project placeholder. 8pm.me is an educational
             demonstration and not a commercial service.
           </p>
         </div>
 
         {/* What Are Cookies */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <CookieIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-2xl font-semibold text-[#d4a060]">
+            <CookieIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-2xl font-semibold text-accent">
               What Are Cookies?
             </h2>
           </div>
@@ -203,13 +203,13 @@ export default function CookiePolicyPage() {
         </div>
 
         {/* Essential Cookies */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <ShieldIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <ShieldIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Essential Cookies
             </h2>
-            <span className="ml-auto text-xs bg-[#d4a060]/20 text-[#d4a060] px-2 py-1 rounded">
+            <span className="ml-auto text-xs bg-accent/20 text-accent px-2 py-1 rounded">
               Always Active
             </span>
           </div>
@@ -221,13 +221,13 @@ export default function CookiePolicyPage() {
         </div>
 
         {/* Functional Cookies */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <CogIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <CogIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Functional Cookies
             </h2>
-            <span className="ml-auto text-xs bg-[#3a3632] text-[#8a8478] px-2 py-1 rounded">
+            <span className="ml-auto text-xs bg-border text-secondary px-2 py-1 rounded">
               Optional
             </span>
           </div>
@@ -238,20 +238,20 @@ export default function CookiePolicyPage() {
           </p>
           <CookieTable cookies={functionalCookies} />
           <p className="mt-4 text-sm">
-            <strong className="text-[#e8e4dc]">Note:</strong> All functional data is stored
+            <strong className="text-primary">Note:</strong> All functional data is stored
             locally in your browser using localStorage. It never leaves your device unless
             you explicitly enable cross-device sync (requires account).
           </p>
         </div>
 
         {/* Analytics Cookies */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <ChartIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <ChartIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Analytics Cookies
             </h2>
-            <span className="ml-auto text-xs bg-[#3a3632] text-[#8a8478] px-2 py-1 rounded">
+            <span className="ml-auto text-xs bg-border text-secondary px-2 py-1 rounded">
               Optional
             </span>
           </div>
@@ -262,14 +262,14 @@ export default function CookiePolicyPage() {
           </p>
           <CookieTable cookies={analyticsCookies} />
           <p className="mt-4 text-sm">
-            <strong className="text-[#e8e4dc]">We use Google Analytics 4.</strong> GA4
+            <strong className="text-primary">We use Google Analytics 4.</strong> GA4
             does not store IP addresses and uses privacy-preserving measurement. You can
             learn more about{' '}
             <a
               href="https://support.google.com/analytics/answer/11593727"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#d4a060] hover:underline"
+              className="text-accent hover:underline"
             >
               Google's data practices
             </a>
@@ -278,10 +278,10 @@ export default function CookiePolicyPage() {
         </div>
 
         {/* Third-Party Services */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <GlobeIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <GlobeIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Third-Party Services
             </h2>
           </div>
@@ -292,7 +292,7 @@ export default function CookiePolicyPage() {
               href="https://archive.org/about/terms.php"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#d4a060] hover:underline"
+              className="text-accent hover:underline"
             >
               Archive.org's Terms of Use
             </a>
@@ -301,7 +301,7 @@ export default function CookiePolicyPage() {
               href="https://archive.org/about/privacy.php"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#d4a060] hover:underline"
+              className="text-accent hover:underline"
             >
               Privacy Policy
             </a>
@@ -313,7 +313,7 @@ export default function CookiePolicyPage() {
               href="https://support.google.com/youtube/answer/171780"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#d4a060] hover:underline"
+              className="text-accent hover:underline"
             >
               YouTube's Privacy-Enhanced Mode
             </a>
@@ -323,10 +323,10 @@ export default function CookiePolicyPage() {
         </div>
 
         {/* Managing Your Preferences */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <CogIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <CogIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Managing Your Preferences
             </h2>
           </div>
@@ -334,33 +334,33 @@ export default function CookiePolicyPage() {
             You can change your cookie preferences at any time:
           </p>
           <div className="grid sm:grid-cols-2 gap-3">
-            <div className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-surface-base rounded-lg">
+              <CheckIcon className="w-4 h-4 text-accent flex-shrink-0" />
               <span className="text-sm">Use the cookie banner when you first visit</span>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-surface-base rounded-lg">
+              <CheckIcon className="w-4 h-4 text-accent flex-shrink-0" />
               <span className="text-sm">Clear cookies via browser settings</span>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-surface-base rounded-lg">
+              <CheckIcon className="w-4 h-4 text-accent flex-shrink-0" />
               <span className="text-sm">Use browser's "Do Not Track" setting</span>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-surface-base rounded-lg">
+              <CheckIcon className="w-4 h-4 text-accent flex-shrink-0" />
               <span className="text-sm">Use private/incognito browsing mode</span>
             </div>
           </div>
           <p className="mt-4 text-sm">
-            <strong className="text-[#e8e4dc]">Note:</strong> Disabling functional cookies
+            <strong className="text-primary">Note:</strong> Disabling functional cookies
             will clear your playlists, liked songs, and listening history stored in your
             browser.
           </p>
         </div>
 
         {/* Browser Settings Links */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-[#d4a060] mb-4">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-accent mb-4">
             Browser Cookie Settings
           </h3>
           <p className="mb-4 text-sm">
@@ -372,7 +372,7 @@ export default function CookiePolicyPage() {
                 href="https://support.google.com/chrome/answer/95647"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#d4a060] hover:underline"
+                className="text-accent hover:underline"
               >
                 Google Chrome
               </a>
@@ -382,7 +382,7 @@ export default function CookiePolicyPage() {
                 href="https://support.mozilla.org/en-US/kb/cookies-information-websites-store-on-your-computer"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#d4a060] hover:underline"
+                className="text-accent hover:underline"
               >
                 Mozilla Firefox
               </a>
@@ -392,7 +392,7 @@ export default function CookiePolicyPage() {
                 href="https://support.apple.com/guide/safari/manage-cookies-sfri11471"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#d4a060] hover:underline"
+                className="text-accent hover:underline"
               >
                 Apple Safari
               </a>
@@ -402,7 +402,7 @@ export default function CookiePolicyPage() {
                 href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#d4a060] hover:underline"
+                className="text-accent hover:underline"
               >
                 Microsoft Edge
               </a>
@@ -411,10 +411,10 @@ export default function CookiePolicyPage() {
         </div>
 
         {/* Changes */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <InfoIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <InfoIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Changes to This Policy
             </h2>
           </div>
@@ -426,34 +426,34 @@ export default function CookiePolicyPage() {
         </div>
 
         {/* Related Policies */}
-        <div className="bg-[#1c1a17] border border-[#3a3632] rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-[#d4a060] mb-4">
+        <div className="bg-surface-base border border-default rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-accent mb-4">
             Related Policies
           </h3>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/privacy"
-              className="px-4 py-2 bg-[#2a2825] text-[#8a8478] rounded-lg hover:text-[#d4a060] hover:border-[#d4a060] border border-[#3a3632] transition-colors"
+              className="px-4 py-2 bg-surface-card text-secondary rounded-lg hover:text-accent hover:border-accent border border-default transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
               href="/terms"
-              className="px-4 py-2 bg-[#2a2825] text-[#8a8478] rounded-lg hover:text-[#d4a060] hover:border-[#d4a060] border border-[#3a3632] transition-colors"
+              className="px-4 py-2 bg-surface-card text-secondary rounded-lg hover:text-accent hover:border-accent border border-default transition-colors"
             >
               Terms of Service
             </Link>
           </div>
         </div>
 
-        <div className="text-sm text-[#6a6458] italic">
+        <div className="text-sm text-tertiary italic">
           Last updated: February 1, 2026
         </div>
 
         <div className="pt-4 text-center">
           <Link
             href="/"
-            className="text-sm text-[#8a8478] hover:text-[#d4a060] transition-colors duration-200"
+            className="text-sm text-secondary hover:text-accent transition-colors duration-200"
           >
             Back to Home
           </Link>

@@ -25,29 +25,29 @@ export default function PrivacyPage() {
     <div className="max-w-[800px] mx-auto px-4 py-12 md:py-16">
       {/* Header with icon */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-[#2a2825] rounded-lg border border-[#3a3632]">
-          <ShieldIcon className="w-8 h-8 text-[#d4a060]" />
+        <div className="p-3 bg-surface-card rounded-lg border border-default">
+          <ShieldIcon className="w-8 h-8 text-accent" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-[#d4a060] tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-bold text-accent tracking-tight">
           Privacy Policy
         </h1>
       </div>
 
-      <div className="space-y-6 text-[#8a8478] leading-relaxed">
+      <div className="space-y-6 text-secondary leading-relaxed">
         {/* Student project notice */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-4 flex items-start gap-3">
-          <InfoIcon className="w-5 h-5 text-[#d4a060] flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-[#d4a060]">
+        <div className="bg-surface-card border border-default rounded-lg p-4 flex items-start gap-3">
+          <InfoIcon className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-accent">
             <strong>Note:</strong> This is a student project placeholder. 8pm.me is an educational
             demonstration and not a commercial service.
           </p>
         </div>
 
         {/* Commitment */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <ShieldIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-2xl font-semibold text-[#d4a060]">
+            <ShieldIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-2xl font-semibold text-accent">
               Our Commitment to Privacy
             </h2>
           </div>
@@ -58,34 +58,34 @@ export default function PrivacyPage() {
         </div>
 
         {/* What We Collect */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <EyeIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <EyeIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               What We Collect
             </h2>
           </div>
           <ul className="space-y-3">
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>Basic account information (email, username) if you create an account</span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>Playlists and listening preferences (stored locally in your browser)</span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>Anonymous usage statistics to improve the service</span>
             </li>
           </ul>
         </div>
 
         {/* What We Don't Collect */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <EyeOffIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <EyeOffIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               What We Don't Collect
             </h2>
           </div>
@@ -110,10 +110,10 @@ export default function PrivacyPage() {
         </div>
 
         {/* Local Storage */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <DatabaseIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <DatabaseIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Local Storage
             </h2>
           </div>
@@ -125,10 +125,10 @@ export default function PrivacyPage() {
         </div>
 
         {/* Third-Party Services */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <GlobeIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <GlobeIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Third-Party Services
             </h2>
           </div>
@@ -140,39 +140,39 @@ export default function PrivacyPage() {
         </div>
 
         {/* Your Rights */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <UserIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <UserIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Your Rights
             </h2>
           </div>
           <p className="mb-4">You have the right to:</p>
           <div className="grid sm:grid-cols-2 gap-3">
-            <div className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-surface-base rounded-lg">
+              <CheckIcon className="w-4 h-4 text-accent flex-shrink-0" />
               <span className="text-sm">Access any data we have about you</span>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-surface-base rounded-lg">
+              <CheckIcon className="w-4 h-4 text-accent flex-shrink-0" />
               <span className="text-sm">Request deletion of your account</span>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-surface-base rounded-lg">
+              <CheckIcon className="w-4 h-4 text-accent flex-shrink-0" />
               <span className="text-sm">Opt out of optional data collection</span>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-[#1c1a17] rounded-lg">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-surface-base rounded-lg">
+              <CheckIcon className="w-4 h-4 text-accent flex-shrink-0" />
               <span className="text-sm">Export your playlists and history</span>
             </div>
           </div>
         </div>
 
         {/* Changes */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <InfoIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <InfoIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Changes to This Policy
             </h2>
           </div>
@@ -182,14 +182,14 @@ export default function PrivacyPage() {
           </p>
         </div>
 
-        <div className="text-sm text-[#6a6458] italic">
+        <div className="text-sm text-tertiary italic">
           Last updated: January 29, 2026
         </div>
 
         <div className="pt-4 text-center">
           <Link
             href="/"
-            className="text-sm text-[#8a8478] hover:text-[#d4a060] transition-colors duration-200"
+            className="text-sm text-secondary hover:text-accent transition-colors duration-200"
           >
             ← Back to Home
           </Link>

@@ -142,11 +142,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
         <Dialog.Overlay className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm" />
 
         <Dialog.Content className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div className="relative bg-[#1c1a17] border border-[#3a3632] rounded-lg w-full max-w-md mx-4 p-6 shadow-xl">
+          <div className="relative bg-surface-base border border-default rounded-lg w-full max-w-md mx-4 p-6 shadow-xl">
             {/* Close button */}
             <Dialog.Close asChild>
               <button
-                className="absolute top-4 right-4 text-[#8a8478] hover:text-[#e8e0d4] transition-colors"
+                className="absolute top-4 right-4 text-secondary hover:text-primary transition-colors"
                 aria-label="Close"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,10 +158,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
             {/* Header */}
             <div className="text-center mb-4">
               <span className="text-3xl">⚡</span>
-              <Dialog.Title className="text-xl font-serif text-[#e8e0d4] mt-2">
+              <Dialog.Title className="text-xl font-serif text-primary mt-2">
                 {activeTab === 'magic' ? 'Quick Sign In' : (isRegistering ? 'Create Account' : 'Sign In')}
               </Dialog.Title>
-              <Dialog.Description className="text-[#8a8478] text-sm mt-1">
+              <Dialog.Description className="text-secondary text-sm mt-1">
                 {activeTab === 'magic'
                   ? 'Sign in without a password'
                   : (isRegistering
@@ -176,8 +176,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                 onClick={() => setActiveTab('magic')}
                 className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
                   activeTab === 'magic'
-                    ? 'bg-[#d4a060] text-black'
-                    : 'bg-[#2d2a26] text-white hover:bg-[#3a3632]'
+                    ? 'bg-accent text-black'
+                    : 'bg-surface-elevated text-white hover:bg-border'
                 }`}
               >
                 Quick Sign In
@@ -186,8 +186,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                 onClick={() => setActiveTab('password')}
                 className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
                   activeTab === 'password'
-                    ? 'bg-[#d4a060] text-black'
-                    : 'bg-[#2d2a26] text-white hover:bg-[#3a3632]'
+                    ? 'bg-accent text-black'
+                    : 'bg-surface-elevated text-white hover:bg-border'
                 }`}
               >
                 Email & Password
@@ -199,7 +199,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
               <form onSubmit={handleMagicLinkSubmit} className="space-y-4">
                 {/* Email */}
                 <div>
-                  <label htmlFor="magic-email" className="block text-sm text-[#8a8478] mb-1">
+                  <label htmlFor="magic-email" className="block text-sm text-secondary mb-1">
                     Email
                   </label>
                   <input
@@ -209,7 +209,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                     onChange={(e) => setEmail(e.target.value.slice(0, VALIDATION_LIMITS.EMAIL_MAX))}
                     maxLength={VALIDATION_LIMITS.EMAIL_MAX}
                     required
-                    className="w-full px-4 py-3 bg-[#2d2a26] border border-[#3a3632] rounded-md text-[#e8e0d4] placeholder-[#6a6458] focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:border-transparent"
+                    className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -232,7 +232,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 bg-[#d4a060] hover:bg-[#c49050] text-[#1c1a17] font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-accent hover:bg-accent-hover text-inverse font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
@@ -254,7 +254,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 {/* Email */}
                 <div>
-                  <label htmlFor="password-email" className="block text-sm text-[#8a8478] mb-1">
+                  <label htmlFor="password-email" className="block text-sm text-secondary mb-1">
                     Email
                   </label>
                   <input
@@ -264,7 +264,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                     onChange={(e) => setEmail(e.target.value.slice(0, VALIDATION_LIMITS.EMAIL_MAX))}
                     maxLength={VALIDATION_LIMITS.EMAIL_MAX}
                     required
-                    className="w-full px-4 py-3 bg-[#2d2a26] border border-[#3a3632] rounded-md text-[#e8e0d4] placeholder-[#6a6458] focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:border-transparent"
+                    className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -273,7 +273,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                 {isRegistering && (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label htmlFor="firstname" className="block text-sm text-[#8a8478] mb-1">
+                      <label htmlFor="firstname" className="block text-sm text-secondary mb-1">
                         First Name
                       </label>
                       <input
@@ -283,12 +283,12 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                         onChange={(e) => setFirstname(e.target.value.slice(0, AUTH_LIMITS.FIRSTNAME_MAX))}
                         maxLength={AUTH_LIMITS.FIRSTNAME_MAX}
                         required
-                        className="w-full px-4 py-3 bg-[#2d2a26] border border-[#3a3632] rounded-md text-[#e8e0d4] placeholder-[#6a6458] focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:border-transparent"
+                        className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                         placeholder="John"
                       />
                     </div>
                     <div>
-                      <label htmlFor="lastname" className="block text-sm text-[#8a8478] mb-1">
+                      <label htmlFor="lastname" className="block text-sm text-secondary mb-1">
                         Last Name
                       </label>
                       <input
@@ -298,7 +298,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                         onChange={(e) => setLastname(e.target.value.slice(0, AUTH_LIMITS.LASTNAME_MAX))}
                         maxLength={AUTH_LIMITS.LASTNAME_MAX}
                         required
-                        className="w-full px-4 py-3 bg-[#2d2a26] border border-[#3a3632] rounded-md text-[#e8e0d4] placeholder-[#6a6458] focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:border-transparent"
+                        className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                         placeholder="Doe"
                       />
                     </div>
@@ -307,7 +307,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
 
                 {/* Password */}
                 <div>
-                  <label htmlFor="password" className="block text-sm text-[#8a8478] mb-1">
+                  <label htmlFor="password" className="block text-sm text-secondary mb-1">
                     Password
                   </label>
                   <input
@@ -318,7 +318,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                     maxLength={AUTH_LIMITS.PASSWORD_MAX}
                     required
                     minLength={AUTH_LIMITS.PASSWORD_MIN}
-                    className="w-full px-4 py-3 bg-[#2d2a26] border border-[#3a3632] rounded-md text-[#e8e0d4] placeholder-[#6a6458] focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:border-transparent"
+                    className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                     placeholder="••••••••"
                   />
                 </div>
@@ -326,7 +326,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                 {/* Confirm Password (registration only) */}
                 {isRegistering && (
                   <div>
-                    <label htmlFor="confirmPassword" className="block text-sm text-[#8a8478] mb-1">
+                    <label htmlFor="confirmPassword" className="block text-sm text-secondary mb-1">
                       Confirm Password
                     </label>
                     <input
@@ -337,7 +337,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                       maxLength={AUTH_LIMITS.PASSWORD_MAX}
                       required
                       minLength={AUTH_LIMITS.PASSWORD_MIN}
-                      className="w-full px-4 py-3 bg-[#2d2a26] border border-[#3a3632] rounded-md text-[#e8e0d4] placeholder-[#6a6458] focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:border-transparent"
+                      className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                       placeholder="••••••••"
                     />
                   </div>
@@ -361,7 +361,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                 <button
                   type="submit"
                   disabled={isSubmitting || magentoAuth.isLoading}
-                  className="w-full py-3 bg-[#d4a060] hover:bg-[#c49050] text-[#1c1a17] font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-accent hover:bg-accent-hover text-inverse font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting || magentoAuth.isLoading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -377,7 +377,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                 </button>
 
                 {/* Toggle login/register */}
-                <p className="text-center text-sm text-[#8a8478]">
+                <p className="text-center text-sm text-secondary">
                   {isRegistering ? (
                     <>
                       Already have an account?{' '}
@@ -387,7 +387,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                           setIsRegistering(false);
                           setError(null);
                         }}
-                        className="text-[#d4a060] hover:text-[#e8c090] transition-colors"
+                        className="text-accent hover:text-accent-hover transition-colors"
                       >
                         Sign in
                       </button>
@@ -401,7 +401,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                           setIsRegistering(true);
                           setError(null);
                         }}
-                        className="text-[#d4a060] hover:text-[#e8c090] transition-colors"
+                        className="text-accent hover:text-accent-hover transition-colors"
                       >
                         Sign up
                       </button>

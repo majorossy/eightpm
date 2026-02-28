@@ -679,16 +679,49 @@ npm run refresh        # Shortcut (from frontend/)
 - Only use `bin/refresh` when HMR fails or cache is stale
 - Startup time of ~1.3s indicates healthy dev environment
 
-### Theme
-- **Only Campfire theme is available** (warm analog aesthetic)
-- Theme switcher has been removed - hardcoded to `theme-campfire`
-- Color palette: Dark backgrounds (`#1c1a17`), warm accents (`#d4a060`, `#e8a050`)
-- Layout:
-  - Desktop: Left sidebar navigation
-  - Mobile: Bottom tab navigation with haptic feedback
+### Theme System (3 themes, default: Fishman)
+
+| Theme | Class | Default? | Description |
+|-------|-------|----------|-------------|
+| Fishman | `theme-fishman` | Yes | Aurora donut theme — blue-gray base |
+| Campfire | `theme-campfire` | No | Warm analog dark theme — brown base |
+| Light | `theme-campfire mode-light` | No | Clean white theme (campfire + light mode) |
+
+**Fishman/Aurora Palette (default):**
+- Background: `#3d5a6e` (blue-gray), Cards: `#2a3a44`
+- Coral: `#c75a5a` (`--neon-pink`, `--secondary`)
+- Teal: `#5ab8a0` (`--neon-cyan`, `--tertiary`)
+- Lavender: `#9088c8` (`--neon-purple`, `--quaternary`)
+- Gold: `#c8b468` (`--neon-orange`, `--quinary`)
+- Text: `#f5f0e8` / `#8aa4b5` / `#6a8a9a`
+
+**Campfire Palette:**
+- Background: `#1c1a17` (dark brown), Cards: `#252220`, `#2d2a26`
+- Amber: `#d4a060` (`--neon-pink` in campfire), Teal: `#5a8a7a`
+
+**Design Token System:**
+- Semantic Tailwind classes: `bg-surface-card`, `text-secondary`, `border-accent`, etc.
+- Mapped to CSS variables: `--surface-card-rgb`, `--text-secondary-rgb`, etc.
+- Each theme sets its own RGB values for these tokens
+- Components should use semantic tokens, not hardcoded colors
+
+**Theme Switching:**
+- `ThemeContext.tsx` provides `useTheme()` hook
+- Stored in `localStorage('8pm-theme')`
+- SSR: `<html class="theme-fishman">` prevents FOUC
+- Client hydration swaps to user's stored preference
+
+**Variable Naming Gotchas:**
+- `--neon-pink` is NOT hot pink — it's amber (`#d4a060`) on campfire, coral (`#c75a5a`) on fishman
+- `--campfire-teal` is defined in BOTH themes (different values)
+- `--neon-cyan` = teal (`#5ab8a0`) on fishman, amber (`#d4a060`) on campfire
+
+**Layout:**
+- Desktop: Left sidebar navigation
+- Mobile: Bottom tab navigation with haptic feedback
 
 ### Key Frontend Files
-- `frontend/context/ThemeContext.tsx` - Theme provider (hardcoded to campfire)
+- `frontend/context/ThemeContext.tsx` - Theme provider (3 themes: campfire/fishman/light, default: fishman)
 - `frontend/components/ClientLayout.tsx` - Main layout wrapper
 - `frontend/components/JamifyTopBar.tsx` - Desktop top bar
 - `frontend/components/JamifyNavSidebar.tsx` - Desktop left sidebar
@@ -921,7 +954,7 @@ bin/magento archive:artwork:retry     # Retry failed albums
 ### Architecture
 - **Frontend:** Runs on HOST (port 3001) - Docker frontend service disabled in compose.yaml
 - **Backend:** Magento runs in Docker containers
-- **Theme:** Campfire (warm analog aesthetic) - theme switcher removed
+- **Themes:** Fishman/Aurora (default), Campfire, Light — switchable via UI, stored in localStorage
 
 ### Frontend Cache Management - IMPORTANT FOR CLAUDE
 

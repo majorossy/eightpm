@@ -34,12 +34,12 @@ export default function RelatedArtists({
   }
 
   return (
-    <section className="mt-12 pt-8 border-t border-[#3a3632]/30">
+    <section className="mt-12 pt-8 border-t border-default/30">
       {/* Keyword-rich heading for SEO */}
       <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
         Similar Artists to {currentArtistName}
       </h2>
-      <p className="text-sm text-[#8a8478] mb-6">
+      <p className="text-sm text-secondary mb-6">
         If you enjoy {currentArtistName}&apos;s live recordings, explore these related jam bands and improvisational artists
       </p>
 
@@ -48,10 +48,10 @@ export default function RelatedArtists({
           <Link
             key={artist.slug}
             href={`/artists/${artist.slug}`}
-            className="group block p-4 bg-[#2d2a26] rounded-lg hover:bg-[#3d3a36] transition-all duration-200 hover:scale-[1.02]"
+            className="group block p-4 bg-surface-elevated rounded-lg hover:bg-surface-elevated transition-all duration-200 hover:scale-[1.02]"
           >
             {/* Artist image */}
-            <div className="relative w-full aspect-square rounded-md overflow-hidden mb-3 bg-[#1c1a17]">
+            <div className="relative w-full aspect-square rounded-md overflow-hidden mb-3 bg-surface-base">
               {artist.image ? (
                 <Image
                   src={artist.image}
@@ -74,20 +74,20 @@ export default function RelatedArtists({
             </div>
 
             {/* Artist name */}
-            <p className="font-semibold text-[#e8e0d4] group-hover:text-[#d4a060] transition-colors truncate">
+            <p className="font-semibold text-primary group-hover:text-accent transition-colors truncate">
               {artist.name}
             </p>
 
             {/* Show count */}
             {artist.showCount !== undefined && artist.showCount > 0 && (
-              <p className="text-xs text-[#8a8478] mt-1">
+              <p className="text-xs text-secondary mt-1">
                 {artist.showCount.toLocaleString()} live recordings
               </p>
             )}
 
             {/* Genres */}
             {artist.genres && artist.genres.length > 0 && (
-              <p className="text-xs text-[#6a6458] mt-1 truncate">
+              <p className="text-xs text-tertiary mt-1 truncate">
                 {artist.genres.slice(0, 2).join(', ')}
               </p>
             )}
@@ -96,7 +96,7 @@ export default function RelatedArtists({
       </div>
 
       {/* SEO text for keyword relevance */}
-      <p className="text-xs text-[#6a6458] mt-6 text-center">
+      <p className="text-xs text-tertiary mt-6 text-center">
         Discover more jam bands and live concert recordings from Archive.org on 8pm.me
       </p>
     </section>

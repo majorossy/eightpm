@@ -219,7 +219,7 @@ interface StepNumberProps {
 
 export const StepNumber = ({ number, className = '' }: StepNumberProps) => (
   <div
-    className={`flex-shrink-0 w-10 h-10 rounded-full bg-[#d4a060] flex items-center justify-center font-bold text-[#1c1a17] text-lg ${className}`}
+    className={`flex-shrink-0 w-10 h-10 rounded-full bg-accent flex items-center justify-center font-bold text-inverse text-lg ${className}`}
   >
     {number}
   </div>
@@ -227,7 +227,7 @@ export const StepNumber = ({ number, className = '' }: StepNumberProps) => (
 
 // Step connector line
 export const StepConnector = ({ className = '' }: { className?: string }) => (
-  <div className={`absolute left-5 top-12 bottom-0 w-0.5 bg-[#3a3632] ${className}`} />
+  <div className={`absolute left-5 top-12 bottom-0 w-0.5 bg-border ${className}`} />
 );
 
 // Bug report icon

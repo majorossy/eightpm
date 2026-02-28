@@ -28,16 +28,16 @@ export default function ProfilePage() {
 
   if (isLoading || !customer) {
     return (
-      <div className="min-h-screen bg-[#1c1a17] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-base flex items-center justify-center">
         <div className="spinner" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#1c1a17] pb-[140px] md:pb-[90px]">
+    <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px]">
       <div className="p-6 md:p-8 max-w-2xl mx-auto">
-        <Link href="/account" className="text-[#d4a060] hover:underline mb-4 inline-block">
+        <Link href="/account" className="text-accent hover:underline mb-4 inline-block">
           ← Back to Account
         </Link>
         <h1 className="text-3xl font-bold text-white mb-8">Edit Profile</h1>
@@ -49,7 +49,7 @@ export default function ProfilePage() {
               type="email"
               value={customer.email}
               disabled
-              className="w-full bg-[#1c1a17] text-[#8a8478] rounded px-4 py-3 border border-[#3a3632]"
+              className="w-full bg-surface-base text-secondary rounded px-4 py-3 border border-default"
             />
           </div>
           <div>
@@ -58,7 +58,7 @@ export default function ProfilePage() {
               type="text"
               value={firstname}
               onChange={(e) => setFirstname(e.target.value)}
-              className="w-full bg-[#2d2a26] text-white rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#d4a060]"
+              className="w-full bg-surface-elevated text-white rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
           <div>
@@ -67,7 +67,7 @@ export default function ProfilePage() {
               type="text"
               value={lastname}
               onChange={(e) => setLastname(e.target.value)}
-              className="w-full bg-[#2d2a26] text-white rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#d4a060]"
+              className="w-full bg-surface-elevated text-white rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
 
@@ -80,7 +80,7 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={isSaving}
-            className="w-full py-3 px-6 rounded-full bg-[#d4a060] text-black font-medium hover:bg-[#c08a40] disabled:opacity-50 transition-colors"
+            className="w-full py-3 px-6 rounded-full bg-accent text-black font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </button>

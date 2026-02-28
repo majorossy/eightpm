@@ -21,7 +21,7 @@ export default function ThemeToggle() {
           <button
             key={themeKey}
             onClick={() => setTheme(themeKey)}
-            className="p-2 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)]"
+            className="p-2 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)]"
             style={{
               background: isActive ? 'var(--overlay-medium)' : 'transparent',
               transform: isActive ? 'scale(1.1)' : 'scale(1)',

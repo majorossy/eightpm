@@ -30,7 +30,7 @@ export default function HomePageContent({ artists, songs }: HomePageContentProps
   return (
     <div className="pb-8">
       {/* Hero section with gradient */}
-      <section className="relative mb-6 md:mb-8 pt-6 md:pt-8 pb-8 md:pb-12 bg-gradient-to-b from-[var(--neon-pink)]/30 via-[var(--bg)] to-[var(--bg)]">
+      <section className="relative mb-6 md:mb-8 pt-6 md:pt-8 pb-8 md:pb-12 bg-gradient-to-b from-[var(--secondary)]/30 via-[var(--bg)] to-[var(--bg)]">
         <div className="max-w-[1000px] mx-auto px-4 md:px-8">
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text)] mb-2">
             {getGreeting()}

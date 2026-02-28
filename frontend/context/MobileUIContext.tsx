@@ -7,6 +7,7 @@ interface MobileUIState {
   isSidebarOpen: boolean;
   isMobile: boolean;
   isPlayerExpanded: boolean;
+  isPlayerMinimized: boolean;
   isTransitioning: boolean;
   dragOffset: number;
 }
@@ -18,6 +19,8 @@ interface MobileUIContextType extends MobileUIState {
   expandPlayer: () => void;
   collapsePlayer: () => void;
   togglePlayer: () => void;
+  minimizePlayer: () => void;
+  restorePlayer: () => void;
   setDragOffset: (offset: number) => void;
 }
 
@@ -31,6 +34,7 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
+  const [isPlayerMinimized, setIsPlayerMinimized] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const isProgrammaticBackRef = useRef(false);
@@ -110,6 +114,14 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setIsTransitioning(false), 300);
   }, [isTransitioning]);
 
+  const minimizePlayer = useCallback(() => {
+    setIsPlayerMinimized(true);
+  }, []);
+
+  const restorePlayer = useCallback(() => {
+    setIsPlayerMinimized(false);
+  }, []);
+
   // Handle Android back button: collapse player instead of navigating away
   useEffect(() => {
     if (!isMobile) return;
@@ -133,6 +145,7 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
     isSidebarOpen,
     isMobile: isHydrated ? isMobile : false,
     isPlayerExpanded,
+    isPlayerMinimized,
     isTransitioning,
     dragOffset,
     toggleSidebar,
@@ -141,6 +154,8 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
     expandPlayer,
     collapsePlayer,
     togglePlayer,
+    minimizePlayer,
+    restorePlayer,
     setDragOffset,
   };
 

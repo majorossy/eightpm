@@ -70,29 +70,29 @@ export default function DMCAPage() {
     <div className="max-w-[800px] mx-auto px-4 py-12 md:py-16">
       {/* Header with icon */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-[#2a2825] rounded-lg border border-[#3a3632]">
-          <ScaleIcon className="w-8 h-8 text-[#d4a060]" />
+        <div className="p-3 bg-surface-card rounded-lg border border-default">
+          <ScaleIcon className="w-8 h-8 text-accent" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-[#d4a060] tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-bold text-accent tracking-tight">
           DMCA Policy
         </h1>
       </div>
 
-      <div className="space-y-6 text-[#8a8478] leading-relaxed">
+      <div className="space-y-6 text-secondary leading-relaxed">
         {/* Student project notice */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-4 flex items-start gap-3">
-          <InfoIcon className="w-5 h-5 text-[#d4a060] flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-[#d4a060]">
+        <div className="bg-surface-card border border-default rounded-lg p-4 flex items-start gap-3">
+          <InfoIcon className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-accent">
             <strong>Note:</strong> This is a student project placeholder. 8pm.me is an educational
             demonstration and not a commercial service.
           </p>
         </div>
 
         {/* Introduction */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <DMCAIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-2xl font-semibold text-[#d4a060]">
+            <DMCAIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-2xl font-semibold text-accent">
               Copyright Compliance
             </h2>
           </div>
@@ -108,21 +108,21 @@ export default function DMCAPage() {
         </div>
 
         {/* Important: Archive.org Relationship */}
-        <div className="bg-[#1c1a17] border-2 border-[#d4a060]/50 rounded-lg p-6">
+        <div className="bg-surface-base border-2 border-accent/50 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <ArchiveIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <ArchiveIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Important: Content Hosted by Archive.org
             </h2>
           </div>
           <p className="mb-4">
-            <strong className="text-[#e8e4dc]">8pm.me does not host any audio recordings.</strong>{' '}
+            <strong className="text-primary">8pm.me does not host any audio recordings.</strong>{' '}
             All live music recordings are hosted by and stream directly from the{' '}
             <a
               href="https://archive.org/details/etree"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#d4a060] hover:underline"
+              className="text-accent hover:underline"
             >
               Internet Archive's Live Music Archive
             </a>
@@ -132,21 +132,21 @@ export default function DMCAPage() {
             If you believe a recording on Archive.org infringes your copyright, you must
             submit your DMCA takedown notice directly to the Internet Archive:
           </p>
-          <div className="bg-[#2a2825] rounded-lg p-4">
-            <p className="font-semibold text-[#e8e4dc] mb-2">Internet Archive DMCA Agent:</p>
+          <div className="bg-surface-card rounded-lg p-4">
+            <p className="font-semibold text-primary mb-2">Internet Archive DMCA Agent:</p>
             <p className="mb-1">
               <a
                 href="https://archive.org/about/dmca.php"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#d4a060] hover:underline"
+                className="text-accent hover:underline"
               >
                 https://archive.org/about/dmca.php
               </a>
             </p>
             <p className="text-sm">
               Email:{' '}
-              <a href="mailto:info@archive.org" className="text-[#d4a060] hover:underline">
+              <a href="mailto:info@archive.org" className="text-accent hover:underline">
                 info@archive.org
               </a>
             </p>
@@ -157,10 +157,10 @@ export default function DMCAPage() {
         </div>
 
         {/* What 8pm.me Hosts */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <DocumentCheckIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <DocumentCheckIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               What 8pm.me Does Host
             </h2>
           </div>
@@ -169,19 +169,19 @@ export default function DMCAPage() {
           </p>
           <ul className="space-y-2">
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>The 8pm.me website interface and software</span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>Metadata and descriptions we create about shows</span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>Artist images and biographies sourced from Wikipedia</span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>User-created playlists (stored locally in users' browsers)</span>
             </li>
           </ul>
@@ -191,10 +191,10 @@ export default function DMCAPage() {
         </div>
 
         {/* Filing a DMCA Notice */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <MailIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <MailIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Filing a DMCA Takedown Notice
             </h2>
           </div>
@@ -204,32 +204,32 @@ export default function DMCAPage() {
           </p>
           <ol className="space-y-3 list-decimal list-inside">
             <li className="pl-2">
-              <span className="text-[#e8e4dc]">Identification of the copyrighted work</span>
+              <span className="text-primary">Identification of the copyrighted work</span>
               <p className="text-sm mt-1 ml-6">
                 Describe the copyrighted work you claim has been infringed.
               </p>
             </li>
             <li className="pl-2">
-              <span className="text-[#e8e4dc]">Identification of the infringing material</span>
+              <span className="text-primary">Identification of the infringing material</span>
               <p className="text-sm mt-1 ml-6">
                 Provide the specific URL(s) where the infringing material is located.
               </p>
             </li>
             <li className="pl-2">
-              <span className="text-[#e8e4dc]">Your contact information</span>
+              <span className="text-primary">Your contact information</span>
               <p className="text-sm mt-1 ml-6">
                 Include your name, address, phone number, and email address.
               </p>
             </li>
             <li className="pl-2">
-              <span className="text-[#e8e4dc]">Good faith statement</span>
+              <span className="text-primary">Good faith statement</span>
               <p className="text-sm mt-1 ml-6">
                 A statement that you have a good faith belief that the use is not authorized
                 by the copyright owner, its agent, or the law.
               </p>
             </li>
             <li className="pl-2">
-              <span className="text-[#e8e4dc]">Accuracy statement</span>
+              <span className="text-primary">Accuracy statement</span>
               <p className="text-sm mt-1 ml-6">
                 A statement, under penalty of perjury, that the information in your notice
                 is accurate and that you are the copyright owner or authorized to act on
@@ -237,7 +237,7 @@ export default function DMCAPage() {
               </p>
             </li>
             <li className="pl-2">
-              <span className="text-[#e8e4dc]">Your signature</span>
+              <span className="text-primary">Your signature</span>
               <p className="text-sm mt-1 ml-6">
                 Physical or electronic signature of the copyright owner or authorized person.
               </p>
@@ -246,32 +246,32 @@ export default function DMCAPage() {
         </div>
 
         {/* DMCA Agent */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-[#d4a060] mb-4">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-accent mb-4">
             8pm.me Designated DMCA Agent
           </h3>
-          <div className="bg-[#1c1a17] rounded-lg p-4">
+          <div className="bg-surface-base rounded-lg p-4">
             <p className="mb-2">
-              <strong className="text-[#e8e4dc]">Email:</strong>{' '}
-              <a href="mailto:dmca@8pm.me" className="text-[#d4a060] hover:underline">
+              <strong className="text-primary">Email:</strong>{' '}
+              <a href="mailto:dmca@8pm.me" className="text-accent hover:underline">
                 dmca@8pm.me
               </a>
             </p>
             <p className="mb-2">
-              <strong className="text-[#e8e4dc]">Subject Line:</strong>{' '}
+              <strong className="text-primary">Subject Line:</strong>{' '}
               <span className="font-mono text-sm">DMCA Takedown Notice</span>
             </p>
-            <p className="text-sm text-[#6a6458]">
+            <p className="text-sm text-tertiary">
               We aim to respond to valid DMCA notices within 48 hours.
             </p>
           </div>
         </div>
 
         {/* Counter-Notification */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <ReplyIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <ReplyIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Counter-Notification
             </h2>
           </div>
@@ -281,33 +281,33 @@ export default function DMCAPage() {
           </p>
           <ul className="space-y-2">
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>Your physical or electronic signature</span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>Identification of the material that was removed and its prior location</span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>
                 A statement under penalty of perjury that you have a good faith belief the
                 material was removed by mistake or misidentification
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>Your name, address, and phone number</span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>
                 Consent to the jurisdiction of federal court in your district (or any judicial
                 district if outside the US)
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <CheckIcon className="w-4 h-4 text-[#d4a060] mt-1 flex-shrink-0" />
+              <CheckIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
               <span>
                 A statement that you will accept service of process from the original complainant
               </span>
@@ -321,10 +321,10 @@ export default function DMCAPage() {
         </div>
 
         {/* Repeat Infringer Policy */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <BanIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <BanIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               Repeat Infringer Policy
             </h2>
           </div>
@@ -337,10 +337,10 @@ export default function DMCAPage() {
         </div>
 
         {/* Live Music Archive Context */}
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6">
+        <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <InfoIcon className="w-6 h-6 text-[#d4a060]" />
-            <h2 className="text-xl font-semibold text-[#d4a060]">
+            <InfoIcon className="w-6 h-6 text-accent" />
+            <h2 className="text-xl font-semibold text-accent">
               About Live Music Archive Content
             </h2>
           </div>
@@ -377,7 +377,7 @@ export default function DMCAPage() {
               href="https://archive.org/about/contact.php"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#d4a060] hover:underline"
+              className="text-accent hover:underline"
             >
               Internet Archive directly
             </a>
@@ -386,8 +386,8 @@ export default function DMCAPage() {
         </div>
 
         {/* Misrepresentation Warning */}
-        <div className="bg-[#1c1a17] border border-[#d4a060]/30 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-[#d4a060] mb-3">
+        <div className="bg-surface-base border border-accent/30 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-accent mb-3">
             Warning About Misrepresentation
           </h3>
           <p className="text-sm">
@@ -399,20 +399,20 @@ export default function DMCAPage() {
         </div>
 
         {/* Related Policies */}
-        <div className="bg-[#1c1a17] border border-[#3a3632] rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-[#d4a060] mb-4">
+        <div className="bg-surface-base border border-default rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-accent mb-4">
             Related Policies
           </h3>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/terms"
-              className="px-4 py-2 bg-[#2a2825] text-[#8a8478] rounded-lg hover:text-[#d4a060] hover:border-[#d4a060] border border-[#3a3632] transition-colors"
+              className="px-4 py-2 bg-surface-card text-secondary rounded-lg hover:text-accent hover:border-accent border border-default transition-colors"
             >
               Terms of Service
             </Link>
             <Link
               href="/privacy"
-              className="px-4 py-2 bg-[#2a2825] text-[#8a8478] rounded-lg hover:text-[#d4a060] hover:border-[#d4a060] border border-[#3a3632] transition-colors"
+              className="px-4 py-2 bg-surface-card text-secondary rounded-lg hover:text-accent hover:border-accent border border-default transition-colors"
             >
               Privacy Policy
             </Link>
@@ -420,21 +420,21 @@ export default function DMCAPage() {
               href="https://archive.org/about/dmca.php"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 bg-[#2a2825] text-[#8a8478] rounded-lg hover:text-[#d4a060] hover:border-[#d4a060] border border-[#3a3632] transition-colors"
+              className="px-4 py-2 bg-surface-card text-secondary rounded-lg hover:text-accent hover:border-accent border border-default transition-colors"
             >
               Archive.org DMCA Policy
             </a>
           </div>
         </div>
 
-        <div className="text-sm text-[#6a6458] italic">
+        <div className="text-sm text-tertiary italic">
           Last updated: February 1, 2026
         </div>
 
         <div className="pt-4 text-center">
           <Link
             href="/"
-            className="text-sm text-[#8a8478] hover:text-[#d4a060] transition-colors duration-200"
+            className="text-sm text-secondary hover:text-accent transition-colors duration-200"
           >
             Back to Home
           </Link>

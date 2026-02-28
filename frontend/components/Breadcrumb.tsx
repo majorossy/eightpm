@@ -96,7 +96,7 @@ export default function Breadcrumb() {
             d="M9 5l7 7-7 7"
           />
         </svg>
-        <Link href="/" className="text-[var(--text)] font-medium hover:text-[var(--neon-pink)] transition-colors shrink-0">
+        <Link href="/" className="text-[var(--text)] font-medium hover:text-[var(--secondary)] transition-colors shrink-0">
           8pm.me
         </Link>
       </nav>

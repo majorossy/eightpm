@@ -34,9 +34,9 @@ function SortBar({ sortBy, sortDir, viewMode, onSort }: {
         return (
           <button key={s} onClick={() => onSort(s)} style={{
             padding: '4px 10px', borderRadius: 6,
-            border: active ? '1px solid var(--neon-pink)33' : '1px solid var(--overlay-light)',
+            border: active ? '1px solid var(--secondary)33' : '1px solid var(--overlay-light)',
             background: active ? 'var(--overlay-medium)' : 'transparent',
-            color: active ? 'var(--neon-pink)' : 'var(--text-subdued)',
+            color: active ? 'var(--secondary)' : 'var(--text-subdued)',
             fontSize: 11, cursor: 'pointer', fontWeight: active ? 600 : 400,
             display: 'inline-flex', alignItems: 'center', gap: 3,
           }}>
@@ -139,7 +139,7 @@ export default function RecordingSelector({ songs, currentSongId, isPlaying, onP
           }
         }
         .sortable-header:hover {
-          color: var(--neon-pink) !important;
+          color: var(--secondary) !important;
         }
         .recording-scroll::-webkit-scrollbar {
           width: 6px;
@@ -189,9 +189,9 @@ export default function RecordingSelector({ songs, currentSongId, isPlaying, onP
         </div>
       ) : (
         <div style={{
-          background: '#15120d',
+          background: 'var(--surface-sunken)',
           borderRadius: 10,
-          border: '1px solid #ffffff08',
+          border: '1px solid rgba(255,255,255,0.03)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column'
@@ -201,13 +201,13 @@ export default function RecordingSelector({ songs, currentSongId, isPlaying, onP
             display: 'grid',
             gap: 8,
             padding: '6px 12px',
-            borderBottom: '1px solid #ffffff0a',
-            color: '#4a4030',
+            borderBottom: '1px solid rgba(255,255,255,0.04)',
+            color: 'var(--text-subdued)',
             fontSize: 9,
             fontWeight: 700,
             letterSpacing: '0.08em',
             flexShrink: 0,
-            background: '#15120d'
+            background: 'var(--surface-sunken)'
           }}>
             <span></span>
             <SortableHeader label="DATE" field="date" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />

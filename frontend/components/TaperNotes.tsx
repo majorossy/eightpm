@@ -61,17 +61,17 @@ export default function TaperNotes({
       <h3 className="text-lg md:text-xl font-bold text-white mb-4">
         Recording Information
       </h3>
-      <div className="bg-[#2d2a26] rounded-lg p-5 border border-[#3a3632]/30">
+      <div className="bg-surface-elevated rounded-lg p-5 border border-default/30">
         {/* Recording type badge */}
         {recordingType && (
           <div className="mb-4">
             <span
               className={`inline-block px-3 py-1 text-xs font-bold rounded-full ${
                 recordingType === 'Soundboard'
-                  ? 'bg-[#d4a060] text-[#1c1a17]'
+                  ? 'bg-accent text-inverse'
                   : recordingType === 'Matrix'
-                  ? 'bg-[#5a8a7a] text-white'
-                  : 'bg-[#6a6458] text-white'
+                  ? 'bg-accent-secondary text-white'
+                  : 'bg-tertiary text-white'
               }`}
             >
               {recordingType} Recording
@@ -82,30 +82,30 @@ export default function TaperNotes({
         {/* Taper info */}
         {taper && (
           <div className="mb-3">
-            <span className="text-xs text-[#8a8478] uppercase tracking-wider block mb-1">
+            <span className="text-xs text-secondary uppercase tracking-wider block mb-1">
               Recorded by
             </span>
-            <p className="text-[#e8e0d4] text-sm">{taper}</p>
+            <p className="text-primary text-sm">{taper}</p>
           </div>
         )}
 
         {/* Source equipment */}
         {source && (
           <div className="mb-3">
-            <span className="text-xs text-[#8a8478] uppercase tracking-wider block mb-1">
+            <span className="text-xs text-secondary uppercase tracking-wider block mb-1">
               Recording Source
             </span>
-            <p className="text-[#e8e0d4] text-sm font-mono">{source}</p>
+            <p className="text-primary text-sm font-mono">{source}</p>
           </div>
         )}
 
         {/* Lineage/transfer chain */}
         {lineage && (
           <div className="mb-3">
-            <span className="text-xs text-[#8a8478] uppercase tracking-wider block mb-1">
+            <span className="text-xs text-secondary uppercase tracking-wider block mb-1">
               Lineage
             </span>
-            <p className="text-[#a8a098] text-sm font-mono leading-relaxed break-words">
+            <p className="text-secondary text-sm font-mono leading-relaxed break-words">
               {lineage}
             </p>
           </div>
@@ -113,17 +113,17 @@ export default function TaperNotes({
 
         {/* Performance notes */}
         {notes && (
-          <div className="mt-4 pt-4 border-t border-[#3a3632]/30">
-            <span className="text-xs text-[#8a8478] uppercase tracking-wider block mb-2">
+          <div className="mt-4 pt-4 border-t border-default/30">
+            <span className="text-xs text-secondary uppercase tracking-wider block mb-2">
               Performance Notes
             </span>
-            <p className="text-[#8a8478] text-sm leading-relaxed">{notes}</p>
+            <p className="text-secondary text-sm leading-relaxed">{notes}</p>
           </div>
         )}
 
         {/* SEO-friendly description */}
-        <div className="mt-4 pt-4 border-t border-[#3a3632]/30">
-          <p className="text-xs text-[#6a6458] leading-relaxed">
+        <div className="mt-4 pt-4 border-t border-default/30">
+          <p className="text-xs text-tertiary leading-relaxed">
             {artistName && showVenue && showDate ? (
               <>
                 This {recordingType?.toLowerCase() || 'live'} recording of {artistName} at {showVenue} on {showDate} is part of the Archive.org collection.

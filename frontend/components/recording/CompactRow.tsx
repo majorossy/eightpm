@@ -27,7 +27,7 @@ export const CompactRow = React.memo(function CompactRow({
   return (
     <div style={{
       borderBottom: '1px solid var(--overlay-subtle)',
-      borderLeft: isSongPlaying ? '2px solid var(--neon-pink)' : '2px solid transparent',
+      borderLeft: isSongPlaying ? '2px solid var(--secondary)' : '2px solid transparent',
       background: isSongPlaying ? 'var(--bg-card)' : expanded ? 'var(--bg)' : 'transparent',
       transition: 'all 0.15s',
     }}>
@@ -37,13 +37,13 @@ export const CompactRow = React.memo(function CompactRow({
         alignItems: 'center', gap: 8, padding: '8px 12px', cursor: 'pointer',
       }}>
         {/* Playing */}
-        <div>{isSongPlaying ? <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid var(--neon-pink)', borderRadius: '50%', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} /> : null}</div>
+        <div>{isSongPlaying ? <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid var(--secondary)', borderRadius: '50%', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} /> : null}</div>
         {/* Date */}
         <span style={{ color: 'var(--text-dim)', fontSize: 12, fontFamily: "var(--font-jetbrains-mono), 'JetBrains Mono', monospace", textAlign: date ? undefined : 'center' }}>{date || '—'}</span>
         {/* Venue + Location */}
         <div style={{ minWidth: 0 }}>
           <div style={{ color: 'var(--text)', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            <VenueLink venueName={song.showVenue} className="hover:text-[var(--neon-pink)] hover:underline transition-colors" truncateLength={32} />
+            <VenueLink venueName={song.showVenue} className="hover:text-[var(--secondary)] hover:underline transition-colors" truncateLength={32} />
           </div>
           <div style={{ color: 'var(--text-subdued)', fontSize: 11 }}>{song.showLocation || ''}</div>
         </div>
@@ -58,7 +58,7 @@ export const CompactRow = React.memo(function CompactRow({
         {/* Rating */}
         <div style={{ textAlign: song.avgRating ? 'right' : 'center' }}>
           {song.avgRating ? (
-            <span style={{ color: 'var(--neon-pink)', fontSize: 12 }}>
+            <span style={{ color: 'var(--secondary)', fontSize: 12 }}>
               {'★'.repeat(Math.round(song.avgRating))}
               <span style={{ marginLeft: 3, fontWeight: 600 }}>{song.avgRating.toFixed(1)}</span>
             </span>
@@ -155,7 +155,7 @@ export const CompactRow = React.memo(function CompactRow({
           <div style={{ display: 'flex', gap: 8, marginTop: 4, maxWidth: 300 }}>
             <button onClick={(e) => { e.stopPropagation(); onPlay(); }} style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              padding: '8px', background: 'var(--neon-pink)', color: 'var(--bg)', border: 'none',
+              padding: '8px', background: 'var(--secondary)', color: 'var(--bg)', border: 'none',
               borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: 'pointer',
             }}>
               <span>▶</span> Play

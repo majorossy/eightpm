@@ -39,12 +39,12 @@ export default function VenuePageContent({ venue }: VenuePageContentProps) {
       {artists.length > 0 && <ArtistCloud artists={artists} />}
 
       {/* Tab navigation */}
-      <div className="flex gap-1 mb-6 border-b border-[#2d2a26]">
+      <div className="flex gap-1 mb-6 border-b border-default">
         <button
           onClick={() => setActiveTab('shows')}
           className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
             activeTab === 'shows'
-              ? 'border-[#d4a060] text-[#d4a060]'
+              ? 'border-accent text-accent'
               : 'border-transparent text-[var(--text-subdued)] hover:text-[var(--text)]'
           }`}
         >
@@ -54,7 +54,7 @@ export default function VenuePageContent({ venue }: VenuePageContentProps) {
           onClick={() => setActiveTab('artists')}
           className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
             activeTab === 'artists'
-              ? 'border-[#d4a060] text-[#d4a060]'
+              ? 'border-accent text-accent'
               : 'border-transparent text-[var(--text-subdued)] hover:text-[var(--text)]'
           }`}
         >

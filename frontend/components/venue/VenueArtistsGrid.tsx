@@ -23,9 +23,9 @@ export default function VenueArtistsGrid({ artists }: VenueArtistsGridProps) {
           <Link
             key={artist.slug}
             href={`/artists/${artist.slug}`}
-            className="bg-[#252220] hover:bg-[#2d2a26] rounded-lg p-4 transition-colors group"
+            className="bg-surface-card hover:bg-surface-elevated rounded-lg p-4 transition-colors group"
           >
-            <div className="text-[var(--text)] font-medium text-sm truncate group-hover:text-[#d4a060] transition-colors">
+            <div className="text-[var(--text)] font-medium text-sm truncate group-hover:text-accent transition-colors">
               {artist.name}
             </div>
             <div className="text-[var(--text-subdued)] text-xs mt-1">

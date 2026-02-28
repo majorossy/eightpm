@@ -53,7 +53,7 @@ export function SearchFilters({
         value: artist.slug,
         label: artist.name,
         icon: (
-          <svg className="w-4 h-4 text-[#6a6050]" fill="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-tertiary" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
           </svg>
         ),
@@ -68,7 +68,7 @@ export function SearchFilters({
         {[1, 2, 3, 4, 5].map(n => (
           <svg
             key={n}
-            className={`w-3 h-3 ${n <= filled ? 'text-[#d4a060]' : 'text-[#3a352f]'}`}
+            className={`w-3 h-3 ${n <= filled ? 'text-accent' : 'text-border'}`}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -144,8 +144,8 @@ export function SearchFilters({
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                     bg-[#2a2520] text-[#e8dcc8] hover:bg-[#3a352f] transition-colors
-                     border border-[#3a352f]"
+                     bg-surface-card text-primary hover:bg-border transition-colors
+                     border border-default"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -153,7 +153,7 @@ export function SearchFilters({
           </svg>
           Filters
           {activeFilterCount > 0 && (
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#d4a060] text-[#1c1a17] text-xs font-medium">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-accent text-inverse text-xs font-medium">
               {activeFilterCount}
             </span>
           )}
@@ -161,7 +161,7 @@ export function SearchFilters({
         {hasActiveFilters && (
           <button
             onClick={handleClearAll}
-            className="text-xs text-[#a09080] hover:text-[#d4a060] transition-colors"
+            className="text-xs text-secondary hover:text-accent transition-colors"
           >
             Clear all
           </button>
@@ -213,8 +213,8 @@ export function SearchFilters({
           onClick={handleSoundboardToggle}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-200
                      ${filters.isSoundboard
-                       ? 'bg-gradient-to-r from-[#d4a060] to-[#c08a40] text-[#1c1a17] font-medium shadow-md shadow-[#d4a060]/20'
-                       : 'bg-[#2a2520] text-[#e8dcc8] border border-[#3a352f] hover:border-[#d4a060]'}`}
+                       ? 'bg-gradient-to-r from-accent to-accent-hover text-inverse font-medium shadow-md shadow-accent/20'
+                       : 'bg-surface-card text-primary border border-default hover:border-accent'}`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -228,7 +228,7 @@ export function SearchFilters({
           <button
             onClick={handleClearAll}
             className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full text-sm
-                       text-[#a09080] hover:text-[#d4a060] transition-colors"
+                       text-secondary hover:text-accent transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

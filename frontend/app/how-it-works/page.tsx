@@ -60,15 +60,15 @@ export default function HowItWorksPage() {
     <div className="max-w-[800px] mx-auto px-4 py-12 md:py-16">
       {/* Header with icon */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-[#2a2825] rounded-lg border border-[#3a3632]">
-          <PlayIcon className="w-8 h-8 text-[#d4a060]" />
+        <div className="p-3 bg-surface-card rounded-lg border border-default">
+          <PlayIcon className="w-8 h-8 text-accent" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-[#d4a060] tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-bold text-accent tracking-tight">
           How It Works
         </h1>
       </div>
 
-      <p className="text-[#8a8478] text-lg mb-10">
+      <p className="text-secondary text-lg mb-10">
         8pm.me makes it easy to discover and enjoy thousands of live concert recordings
         from Archive.org. Here's how to get started:
       </p>
@@ -80,7 +80,7 @@ export default function HowItWorksPage() {
             {/* Connector line - only show if not last item */}
             {index < steps.length - 1 && (
               <div
-                className="absolute left-5 top-14 w-0.5 h-[calc(100%-16px)] bg-gradient-to-b from-[#d4a060] to-[#3a3632]"
+                className="absolute left-5 top-14 w-0.5 h-[calc(100%-16px)] bg-gradient-to-b from-accent to-border"
                 aria-hidden="true"
               />
             )}
@@ -90,11 +90,11 @@ export default function HowItWorksPage() {
               <StepNumber number={step.number} />
 
               {/* Content card */}
-              <div className="flex-1 bg-[#2a2825] border border-[#3a3632] rounded-lg p-5 md:p-6">
-                <h2 className="text-xl font-semibold text-[#d4a060] mb-2">
+              <div className="flex-1 bg-surface-card border border-default rounded-lg p-5 md:p-6">
+                <h2 className="text-xl font-semibold text-accent mb-2">
                   {step.title}
                 </h2>
-                <p className="text-[#8a8478] leading-relaxed">
+                <p className="text-secondary leading-relaxed">
                   {step.description}
                 </p>
               </div>
@@ -104,10 +104,10 @@ export default function HowItWorksPage() {
       </div>
 
       {/* Tips & Tricks Section */}
-      <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-6 md:p-8 mb-8">
+      <div className="bg-surface-card border border-default rounded-lg p-6 md:p-8 mb-8">
         <div className="flex items-center gap-3 mb-6">
-          <LightbulbIcon className="w-6 h-6 text-[#d4a060]" />
-          <h2 className="text-2xl font-semibold text-[#d4a060]">
+          <LightbulbIcon className="w-6 h-6 text-accent" />
+          <h2 className="text-2xl font-semibold text-accent">
             Tips & Tricks
           </h2>
         </div>
@@ -115,35 +115,35 @@ export default function HowItWorksPage() {
         <div className="grid sm:grid-cols-2 gap-4 mb-6">
           {/* Keyboard shortcuts */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-[#d4a060] uppercase tracking-wider mb-3">
+            <h3 className="text-sm font-medium text-accent uppercase tracking-wider mb-3">
               Keyboard Shortcuts
             </h3>
             {tips.map(tip => (
               <div key={tip.key} className="flex items-center gap-3">
-                <kbd className="px-2.5 py-1.5 bg-[#1c1a17] rounded border border-[#3a3632] text-[#d4a060] text-sm font-mono min-w-[40px] text-center">
+                <kbd className="px-2.5 py-1.5 bg-surface-base rounded border border-default text-accent text-sm font-mono min-w-[40px] text-center">
                   {tip.key}
                 </kbd>
-                <span className="text-[#8a8478] text-sm">{tip.action}</span>
+                <span className="text-secondary text-sm">{tip.action}</span>
               </div>
             ))}
           </div>
 
           {/* Quick tips */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-[#d4a060] uppercase tracking-wider mb-3">
+            <h3 className="text-sm font-medium text-accent uppercase tracking-wider mb-3">
               Pro Tips
             </h3>
             <div className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d4a060] mt-2 flex-shrink-0" />
-              <span className="text-[#8a8478] text-sm">Like songs to find them later in your library</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0" />
+              <span className="text-secondary text-sm">Like songs to find them later in your library</span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d4a060] mt-2 flex-shrink-0" />
-              <span className="text-[#8a8478] text-sm">Enable crossfade for smooth transitions</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0" />
+              <span className="text-secondary text-sm">Enable crossfade for smooth transitions</span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d4a060] mt-2 flex-shrink-0" />
-              <span className="text-[#8a8478] text-sm">Check recently played to pick up where you left off</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0" />
+              <span className="text-secondary text-sm">Check recently played to pick up where you left off</span>
             </div>
           </div>
         </div>
@@ -151,20 +151,20 @@ export default function HowItWorksPage() {
 
       {/* Feature Cards */}
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-4 text-center">
-          <SearchIcon className="w-8 h-8 text-[#d4a060] mx-auto mb-3" />
-          <h3 className="text-sm font-semibold text-[#d4a060] mb-1">Search</h3>
-          <p className="text-xs text-[#8a8478]">Find any show instantly</p>
+        <div className="bg-surface-card border border-default rounded-lg p-4 text-center">
+          <SearchIcon className="w-8 h-8 text-accent mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-accent mb-1">Search</h3>
+          <p className="text-xs text-secondary">Find any show instantly</p>
         </div>
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-4 text-center">
-          <PlaylistIcon className="w-8 h-8 text-[#d4a060] mx-auto mb-3" />
-          <h3 className="text-sm font-semibold text-[#d4a060] mb-1">Playlists</h3>
-          <p className="text-xs text-[#8a8478]">Organize your favorites</p>
+        <div className="bg-surface-card border border-default rounded-lg p-4 text-center">
+          <PlaylistIcon className="w-8 h-8 text-accent mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-accent mb-1">Playlists</h3>
+          <p className="text-xs text-secondary">Organize your favorites</p>
         </div>
-        <div className="bg-[#2a2825] border border-[#3a3632] rounded-lg p-4 text-center">
-          <ShareIcon className="w-8 h-8 text-[#d4a060] mx-auto mb-3" />
-          <h3 className="text-sm font-semibold text-[#d4a060] mb-1">Share</h3>
-          <p className="text-xs text-[#8a8478]">Spread the music</p>
+        <div className="bg-surface-card border border-default rounded-lg p-4 text-center">
+          <ShareIcon className="w-8 h-8 text-accent mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-accent mb-1">Share</h3>
+          <p className="text-xs text-secondary">Spread the music</p>
         </div>
       </div>
 
@@ -172,7 +172,7 @@ export default function HowItWorksPage() {
       <div className="text-center pt-4">
         <Link
           href="/faq"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#d4a060] text-[#1c1a17] font-semibold rounded hover:bg-[#e8a050] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a060] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1c1a17]"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-inverse font-semibold rounded hover:bg-accent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
         >
           <QuestionIcon className="w-5 h-5" />
           Read the FAQ
@@ -182,7 +182,7 @@ export default function HowItWorksPage() {
       <div className="pt-8 text-center">
         <Link
           href="/"
-          className="text-sm text-[#8a8478] hover:text-[#d4a060] transition-colors duration-200"
+          className="text-sm text-secondary hover:text-accent transition-colors duration-200"
         >
           ← Back to Home
         </Link>

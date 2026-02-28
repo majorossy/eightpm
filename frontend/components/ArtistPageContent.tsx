@@ -138,21 +138,21 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
           <div
             className="absolute top-10 left-[5%] w-[400px] h-[350px] rounded-full opacity-[0.08]"
             style={{
-              background: 'radial-gradient(ellipse, rgba(90,138,122,0.6) 0%, transparent 70%)',
+              background: 'radial-gradient(ellipse, color-mix(in srgb, var(--accent-secondary) 60%, transparent) 0%, transparent 70%)',
               filter: 'blur(40px)',
             }}
           />
           <div
             className="absolute top-20 right-[10%] w-[300px] h-[400px] rounded-full opacity-[0.06]"
             style={{
-              background: 'radial-gradient(ellipse, rgba(212,160,96,0.6) 0%, transparent 70%)',
+              background: 'radial-gradient(ellipse, var(--accent-ambient) 0%, transparent 70%)',
               filter: 'blur(50px)',
             }}
           />
           <div
             className="absolute bottom-0 left-[30%] w-[500px] h-[300px] rounded-full opacity-[0.05]"
             style={{
-              background: 'radial-gradient(ellipse, rgba(168,90,56,0.5) 0%, transparent 70%)',
+              background: 'radial-gradient(ellipse, var(--accent-ambient-cool) 0%, transparent 70%)',
               filter: 'blur(60px)',
             }}
           />
@@ -228,7 +228,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
             <div
               className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[250px] h-[60px] opacity-40"
               style={{
-                background: 'radial-gradient(ellipse at 50% 100%, rgba(212,120,50,0.5) 0%, rgba(180,100,40,0.2) 40%, transparent 70%)',
+                background: 'radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--accent-primary) 50%, transparent) 0%, color-mix(in srgb, var(--accent-primary) 20%, transparent) 40%, transparent 70%)',
                 filter: 'blur(12px)',
                 animation: 'flicker 3s ease-in-out infinite',
               }}
@@ -238,7 +238,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
           {/* Artist info */}
           <div className="flex-1 text-left">
             {/* Artist badge */}
-            <span className="inline-block px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase text-[#d4a060] bg-[#d4a060]/10 rounded-full mb-4">
+            <span className="inline-block px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase text-accent bg-accent/10 rounded-full mb-4">
               Artist
             </span>
 
@@ -252,13 +252,13 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
 
             {/* Full name subtitle if different */}
             {artist.wikipediaSummary?.title && artist.wikipediaSummary.title !== artist.name && (
-              <p className="text-base md:text-lg text-[#8a8478] mb-4">
+              <p className="text-base md:text-lg text-secondary mb-4">
                 {artist.wikipediaSummary.title}
               </p>
             )}
 
             {/* Stats line */}
-            <p className="text-sm md:text-base text-[#6a6458] mb-6">
+            <p className="text-sm md:text-base text-tertiary mb-6">
               {artist.albums.length} {artist.albums.length === 1 ? 'album' : 'albums'} &bull; {artist.songCount} {artist.songCount === 1 ? 'recording' : 'recordings'}
               {artist.originLocation && (
                 <> &bull; {artist.originLocation}</>
@@ -270,13 +270,13 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
               {/* Follow/Heart button */}
               <button
                 onClick={handleFollowToggle}
-                className="p-3 border border-[#3a3632] hover:border-[#d4a060] rounded-full transition-all hover:scale-105"
+                className="p-3 border border-default hover:border-accent rounded-full transition-all hover:scale-105"
                 aria-label={isFollowed ? 'Unfollow artist' : 'Follow artist'}
               >
                 <svg
                   className="w-5 h-5"
-                  fill={isFollowed ? '#d4a060' : 'none'}
-                  stroke={isFollowed ? '#d4a060' : '#e8e0d4'}
+                  fill={isFollowed ? 'var(--secondary)' : 'none'}
+                  stroke={isFollowed ? 'var(--secondary)' : 'var(--text)'}
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -286,11 +286,11 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
 
             {/* Quote callout box */}
             {quoteExcerpt && (
-              <div className="relative pl-4 border-l-2 border-[#d4a060]/40 max-w-3xl lg:-ml-32">
-                <p className="text-sm md:text-base text-[#a8a098] italic leading-relaxed">
+              <div className="relative pl-4 border-l-2 border-accent/40 max-w-3xl lg:-ml-32">
+                <p className="text-sm md:text-base text-secondary italic leading-relaxed">
                   &ldquo;{quoteExcerpt}&rdquo;
                 </p>
-                <p className="text-xs text-[#6a6458] mt-2">
+                <p className="text-xs text-tertiary mt-2">
                   &mdash; Wikipedia
                 </p>
               </div>
@@ -322,7 +322,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
         <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
           {artist.name} Live Recordings &amp; Concert Archive
         </h2>
-        <p className="text-sm text-[#8a8478] mb-4 text-center">
+        <p className="text-sm text-secondary mb-4 text-center">
           Stream {artist.albums.length} {artist.albums.length === 1 ? 'show' : 'shows'} - High-quality recordings from Archive.org
         </p>
         {artist.albums.length > 0 ? (
@@ -332,7 +332,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
             ))}
           </div>
         ) : (
-          <p className="text-[#8a8478] text-center">No albums available.</p>
+          <p className="text-secondary text-center">No albums available.</p>
         )}
       </section>
 
@@ -347,7 +347,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
               <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
                 About {artist.name} - Biography, Band Members &amp; History
               </h2>
-              <p className="text-sm text-[#6a6458] mb-6">
+              <p className="text-sm text-tertiary mb-6">
                 {artist.originLocation && `From ${artist.originLocation}`}
                 {artist.originLocation && artist.yearsActive && ' - '}
                 {artist.yearsActive && `Active ${artist.yearsActive}`}
@@ -394,7 +394,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
           {allImages.length > 0 && (
             <div className="mx-auto lg:mx-0 lg:sticky lg:top-24 lg:self-start space-y-4">
               {allImages.slice(0, 3).map((image, index) => (
-                <div key={index} className="bg-[#252220] rounded-lg overflow-hidden">
+                <div key={index} className="bg-surface-card rounded-lg overflow-hidden">
                   <div className="relative aspect-square">
                     <Image
                       src={image.url}
@@ -408,9 +408,9 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
                   </div>
                   {image.caption && (
                     <div className="p-3">
-                      <p className="text-xs text-[#8a8478]">{image.caption}</p>
+                      <p className="text-xs text-secondary">{image.caption}</p>
                       {image.credit && (
-                        <p className="text-[0.6rem] text-[#6a6a6a] mt-1">
+                        <p className="text-[0.6rem] text-tertiary mt-1">
                           Credit: {image.credit}
                         </p>
                       )}

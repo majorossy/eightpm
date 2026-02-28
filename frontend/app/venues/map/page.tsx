@@ -21,7 +21,7 @@ export default function VenueMapPage() {
         </div>
         <Link
           href="/venues"
-          className="px-4 py-2 bg-[#2d2a26] hover:bg-[#3a3632] text-[var(--text)] rounded-lg text-sm transition-colors"
+          className="px-4 py-2 bg-surface-elevated hover:bg-border text-[var(--text)] rounded-lg text-sm transition-colors"
         >
           List View
         </Link>

@@ -28,7 +28,7 @@ export const RecordingCard = React.memo(function RecordingCard({
   return (
     <div style={{
       background: isSongPlaying ? 'var(--bg-card)' : 'var(--bg)',
-      border: isSongPlaying ? '1px solid var(--neon-pink)44' : '1px solid var(--overlay-light)',
+      border: isSongPlaying ? '1px solid var(--secondary)44' : '1px solid var(--overlay-light)',
       borderRadius: 12, overflow: 'hidden', transition: 'all 0.2s',
       position: 'relative',
     }}>
@@ -36,12 +36,12 @@ export const RecordingCard = React.memo(function RecordingCard({
       <div style={{ padding: '14px 14px 10px', cursor: 'pointer' }} onClick={onPlay}>
         {/* Top row: date, badges, playing state */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, flexWrap: 'wrap' }}>
-          <span style={{ color: 'var(--neon-pink)', fontSize: 12, fontWeight: 600, fontFamily: "var(--font-jetbrains-mono), 'JetBrains Mono', monospace" }}>{date || '—'}</span>
+          <span style={{ color: 'var(--secondary)', fontSize: 12, fontWeight: 600, fontFamily: "var(--font-jetbrains-mono), 'JetBrains Mono', monospace" }}>{date || '—'}</span>
           <RecTypeBadge type={song.recordingType} />
           <SourceBadge source={sourceFormat} />
           {isTop && (
             <span style={{
-              background: 'var(--neon-pink)', color: 'var(--bg)', padding: '1px 6px', borderRadius: 4,
+              background: 'var(--secondary)', color: 'var(--bg)', padding: '1px 6px', borderRadius: 4,
               fontSize: 9, fontWeight: 800, letterSpacing: '0.08em',
             }}>★ TOP</span>
           )}
@@ -51,7 +51,7 @@ export const RecordingCard = React.memo(function RecordingCard({
 
         {/* Venue + Location */}
         <h3 style={{ color: 'var(--text)', fontSize: 15, fontWeight: 600, margin: '0 0 2px', lineHeight: 1.3 }}>
-          <VenueLink venueName={song.showVenue} className="hover:text-[var(--neon-pink)] hover:underline transition-colors" truncateLength={32} />
+          <VenueLink venueName={song.showVenue} className="hover:text-[var(--secondary)] hover:underline transition-colors" truncateLength={32} />
         </h3>
         <div style={{ color: 'var(--text-subdued)', fontSize: 12, marginBottom: 10 }}>{song.showLocation || ''}</div>
 
@@ -161,7 +161,7 @@ export const RecordingCard = React.memo(function RecordingCard({
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button onClick={(e) => { e.stopPropagation(); onPlay(); }} style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              padding: '10px', background: 'var(--neon-pink)', color: 'var(--bg)', border: 'none',
+              padding: '10px', background: 'var(--secondary)', color: 'var(--bg)', border: 'none',
               borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer',
             }}>
               <span>▶</span> Play

@@ -40,7 +40,7 @@ interface AlbumPageContentProps {
 export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbums = [], artist }: AlbumPageContentProps) {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { currentSong, isPlaying, togglePlay, playSong, analyzerData } = usePlayer();
-  const { currentItem, addToQueue, albumToItems } = useQueue();
+  const { currentItem, addToQueue, albumToItems, playAlbum } = useQueue();
   const { followAlbum, unfollowAlbum, isAlbumFollowed } = useWishlist();
   const { vibrate, BUTTON_PRESS } = useHaptic();
 
@@ -94,8 +94,14 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
   const handleAddToQueue = () => {
     vibrate(BUTTON_PRESS);
-    const items = albumToItems(album);
-    addToQueue(items);
+    if (!currentSong) {
+      // Nothing playing — load album and start playback
+      playAlbum(album);
+    } else {
+      // Already playing — append to end of queue
+      const items = albumToItems(album);
+      addToQueue(items);
+    }
   };
 
   const handleFollowToggle = () => {
@@ -122,63 +128,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       <div className="firefly-2 fixed top-[60%] left-[85%] w-1 h-1" />
       <div className="firefly-3 fixed top-[40%] left-[75%] w-1.5 h-1.5" />
 
-      {/* Artist discography header - compact carousel at top */}
-      {artistAlbums && artistAlbums.length > 1 && (
-        <div className="bg-[#1a1815]/80 border-b border-[#2a2520]">
-          <div className="max-w-[1000px] mx-auto px-4 sm:px-8 py-4">
-            {/* Artist name row */}
-            <div className="flex items-center justify-between mb-3">
-              <Link
-                href={`/artists/${album.artistSlug}`}
-                className="text-2xl sm:text-3xl font-serif text-[var(--text)] hover:text-[var(--neon-pink)] transition-colors"
-              >
-                {album.artistName}
-              </Link>
-              <Link
-                href={`/artists/${album.artistSlug}`}
-                className="text-sm text-[var(--text-subdued)] hover:text-[var(--text)] flex items-center gap-1"
-              >
-                All shows <span className="text-[var(--neon-pink)]">→</span>
-              </Link>
-            </div>
-
-            {/* Compact album carousel */}
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-[#4a4038] scrollbar-track-transparent">
-              {artistAlbums.map((a) => (
-                <Link
-                  key={a.id}
-                  href={`/artists/${a.artistSlug}/album/${a.slug}`}
-                  className={`flex-shrink-0 group ${
-                    a.slug === album.slug ? 'pointer-events-none' : ''
-                  }`}
-                >
-                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden relative ${
-                    a.slug === album.slug
-                      ? 'ring-2 ring-[#d4a060] ring-offset-2 ring-offset-[#1a1815]'
-                      : 'opacity-70 hover:opacity-100 transition-opacity'
-                  }`}>
-                    {a.coverArt ? (
-                      <Image src={a.coverArt} alt={a.name} fill sizes="80px" className="object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-[#2a2520] flex items-center justify-center">
-                        <span className="text-[#4a4038] text-xs">♫</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className={`text-[10px] mt-1 text-center truncate w-16 sm:w-20 ${
-                    a.slug === album.slug
-                      ? 'text-[#d4a060]'
-                      : 'text-[var(--text-subdued)] group-hover:text-[var(--text)]'
-                  }`}>
-                    {a.showDate || a.name.slice(0, 10)}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Vault header badge */}
       <div className="text-center pt-8 pb-4">
         <div className="text-[var(--text-subdued)] text-[11px] tracking-[4px]">
@@ -198,7 +147,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
           {/* Album info */}
           <div className="pt-4 max-w-[400px] text-center lg:text-left">
-            <div className="text-[var(--campfire-teal)] text-[10px] tracking-[3px] mb-2.5">
+            <div className="text-[var(--tertiary)] text-[10px] tracking-[3px] mb-2.5">
               ☮ LIVE ALBUM
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl text-[var(--text)] mb-2 leading-tight">
@@ -206,11 +155,11 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
             </h1>
             {album.showVenue && (
               <div className="text-xl text-[var(--text-dim)] mb-1.5 italic">
-                <VenueLink venueName={album.showVenue} className="text-[var(--text-dim)] hover:text-[#d4a060] hover:underline transition-colors" />
+                <VenueLink venueName={album.showVenue} className="text-[var(--text-dim)] hover:text-accent hover:underline transition-colors" />
               </div>
             )}
             <div className="text-[var(--text-subdued)] text-sm mb-6">
-              <Link href={`/artists/${album.artistSlug}`} className="text-[var(--neon-pink)] hover:underline">
+              <Link href={`/artists/${album.artistSlug}`} className="text-[var(--secondary)] hover:underline">
                 {album.artistName}
               </Link>
               {album.showDate && <> • {album.showDate}</>}
@@ -220,7 +169,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
             {/* Quote box */}
             {album.description && (
               <div
-                className="album-quote-box text-[var(--text-subdued)] text-sm italic mb-6 px-4 py-3 rounded-lg border-l-[3px] border-[var(--campfire-teal)]"
+                className="album-quote-box text-[var(--text-subdued)] text-sm italic mb-6 px-4 py-3 rounded-lg border-l-[3px] border-[var(--tertiary)]"
               >
                 "{album.description}"
               </div>
@@ -293,6 +242,61 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
 
 
+        {/* Artist discography carousel */}
+        {artistAlbums && artistAlbums.length > 1 && (
+          <div className="mt-12 rounded-lg border border-surface-card bg-surface-sunken/80 p-4 sm:p-6">
+            {/* Artist name row */}
+            <div className="flex items-center justify-between mb-3">
+              <Link
+                href={`/artists/${album.artistSlug}`}
+                className="text-2xl sm:text-3xl font-serif text-[var(--text)] hover:text-[var(--secondary)] transition-colors"
+              >
+                {album.artistName}
+              </Link>
+              <Link
+                href={`/artists/${album.artistSlug}`}
+                className="text-sm text-[var(--text-subdued)] hover:text-[var(--text)] flex items-center gap-1"
+              >
+                All shows <span className="text-[var(--secondary)]">→</span>
+              </Link>
+            </div>
+
+            {/* Compact album carousel */}
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+              {artistAlbums.map((a) => (
+                <Link
+                  key={a.id}
+                  href={`/artists/${a.artistSlug}/album/${a.slug}`}
+                  className={`flex-shrink-0 group ${
+                    a.slug === album.slug ? 'pointer-events-none' : ''
+                  }`}
+                >
+                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden relative ${
+                    a.slug === album.slug
+                      ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface-sunken'
+                      : 'opacity-70 hover:opacity-100 transition-opacity'
+                  }`}>
+                    {a.coverArt ? (
+                      <Image src={a.coverArt} alt={a.name} fill sizes="80px" className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-surface-card flex items-center justify-center">
+                        <span className="text-tertiary text-xs">♫</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className={`text-[10px] mt-1 text-center truncate w-16 sm:w-20 ${
+                    a.slug === album.slug
+                      ? 'text-accent'
+                      : 'text-[var(--text-subdued)] group-hover:text-[var(--text)]'
+                  }`}>
+                    {a.showDate || a.name.slice(0, 10)}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* More from this Venue - Internal Linking for SEO */}
         {moreFromVenue.length > 0 && album.showVenue && (
           <div className="mt-12">
@@ -302,9 +306,9 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                 style={{ background: 'linear-gradient(90deg, transparent, var(--overlay-light))' }}
               />
               <div className="text-[var(--text-subdued)] text-[11px] tracking-[4px] flex items-center gap-2.5">
-                <span className="text-[var(--neon-pink)]">🏛</span>
+                <span className="text-[var(--secondary)]">🏛</span>
                 MORE FROM {album.showVenue.toUpperCase()}
-                <span className="text-[var(--neon-pink)]">🏛</span>
+                <span className="text-[var(--secondary)]">🏛</span>
               </div>
               <div
                 className="flex-1 h-px"
@@ -319,7 +323,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                   href={`/artists/${show.artistSlug}/album/${show.slug}`}
                   className="group block"
                 >
-                  <div className="relative aspect-square rounded-lg overflow-hidden mb-2 bg-[#2a2520]">
+                  <div className="relative aspect-square rounded-lg overflow-hidden mb-2 bg-surface-card">
                     {show.coverArt ? (
                       <Image
                         src={show.coverArt}
@@ -329,7 +333,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-[#8a7a68]">
+                      <div className="absolute inset-0 flex items-center justify-center text-secondary">
                         <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
                           <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" fill="none"/>
                           <circle cx="12" cy="12" r="3" fill="currentColor"/>

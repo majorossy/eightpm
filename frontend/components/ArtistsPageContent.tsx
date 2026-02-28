@@ -224,14 +224,14 @@ function ArtistsContentInner() {
                   {isComingSoon && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div
-                        className="transform -rotate-12 border-2 border-[var(--neon-pink)] bg-[var(--bg)]/90 px-3 py-1.5 backdrop-blur-sm"
+                        className="transform -rotate-12 border-2 border-[var(--secondary)] bg-[var(--bg)]/90 px-3 py-1.5 backdrop-blur-sm"
                         style={{
-                          boxShadow: '0 2px 12px rgba(var(--neon-pink-rgb, 212, 160, 96), 0.3)',
+                          boxShadow: '0 2px 12px var(--secondary-muted)',
                         }}
                       >
                         <div className="text-center">
                           <div
-                            className="text-xs font-bold tracking-wider text-[var(--neon-pink)]"
+                            className="text-xs font-bold tracking-wider text-[var(--secondary)]"
                             style={{
                               fontFamily: 'Georgia, serif',
                             }}
@@ -239,7 +239,7 @@ function ArtistsContentInner() {
                             COMING
                           </div>
                           <div
-                            className="text-xs font-bold tracking-wider text-[var(--neon-pink)] -mt-0.5"
+                            className="text-xs font-bold tracking-wider text-[var(--secondary)] -mt-0.5"
                             style={{
                               fontFamily: 'Georgia, serif',
                             }}

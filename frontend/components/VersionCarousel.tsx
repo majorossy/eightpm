@@ -40,7 +40,7 @@ function StarRating({ rating, count }: { rating?: number; count?: number }) {
 
   return (
     <div className="flex items-center gap-1" title={`${rating.toFixed(1)} out of 5 stars (${count} reviews)`}>
-      <div className="flex text-[#d4a060]">
+      <div className="flex text-accent">
         {Array.from({ length: fullStars }).map((_, i) => (
           <svg key={`full-${i}`} className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -58,12 +58,12 @@ function StarRating({ rating, count }: { rating?: number; count?: number }) {
           </svg>
         )}
         {Array.from({ length: emptyStars }).map((_, i) => (
-          <svg key={`empty-${i}`} className="w-3 h-3 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
+          <svg key={`empty-${i}`} className="w-3 h-3 text-border" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </svg>
         ))}
       </div>
-      <span className="text-[#8a8478] text-[10px]">({count})</span>
+      <span className="text-secondary text-[10px]">({count})</span>
     </div>
   );
 }
@@ -112,8 +112,8 @@ function VersionCard({
       className={`
         flex-shrink-0 w-[280px] p-5 cursor-pointer transition-all duration-200 snap-start rounded-lg
         ${isSelected
-          ? 'bg-[#2d2a26] ring-2 ring-[#d4a060]'
-          : 'bg-[#252220] hover:bg-[#2d2a26]'
+          ? 'bg-surface-elevated ring-2 ring-accent'
+          : 'bg-surface-card hover:bg-surface-elevated'
         }
       `}
     >
@@ -123,44 +123,44 @@ function VersionCard({
           {year || '—'}
         </span>
         {isSelected && (
-          <span className="text-[10px] px-2 py-1 bg-[#d4a060] text-black rounded-full font-bold uppercase">
+          <span className="text-[10px] px-2 py-1 bg-accent text-black rounded-full font-bold uppercase">
             Selected
           </span>
         )}
       </div>
 
       {/* Meta info */}
-      <div className="text-xs text-[#8a8478] space-y-2">
+      <div className="text-xs text-secondary space-y-2">
         {/* Venue */}
         <div className="flex justify-between">
-          <span className="text-[#d4a060]">Venue</span>
+          <span className="text-accent">Venue</span>
           <span className="text-white" title={song.showVenue || undefined}>
-            {song.showVenue ? <VenueLink venueName={song.showVenue} className="text-white hover:text-[#d4a060] hover:underline transition-colors" truncateLength={20} /> : (truncate(venue, 20) || '—')}
+            {song.showVenue ? <VenueLink venueName={song.showVenue} className="text-white hover:text-accent hover:underline transition-colors" truncateLength={20} /> : (truncate(venue, 20) || '—')}
           </span>
         </div>
         {/* Location */}
         <div className="flex justify-between">
-          <span className="text-[#d4a060]">Location</span>
+          <span className="text-accent">Location</span>
           <span title={song.showLocation || undefined}>{truncate(song.showLocation, 20) || '—'}</span>
         </div>
         {/* Date */}
         <div className="flex justify-between">
-          <span className="text-[#d4a060]">Date</span>
+          <span className="text-accent">Date</span>
           <span>{formattedDate || '—'}</span>
         </div>
         {/* Rating */}
         <div className="flex justify-between items-center">
-          <span className="text-[#d4a060]">Rating</span>
+          <span className="text-accent">Rating</span>
           {song.avgRating ? <StarRating rating={song.avgRating} count={song.numReviews} /> : <span>—</span>}
         </div>
         {/* Length */}
         <div className="flex justify-between">
-          <span className="text-[#d4a060]">Length</span>
+          <span className="text-accent">Length</span>
           <span>{formatDuration(song.duration)}</span>
         </div>
         {/* Taper */}
         <div className="flex justify-between">
-          <span className="text-[#d4a060]">Taper</span>
+          <span className="text-accent">Taper</span>
           <span title={song.taper || undefined}>{truncate(song.taper, 18) || '—'}</span>
         </div>
       </div>
@@ -172,8 +172,8 @@ function VersionCard({
           className={`
             py-2.5 text-xs font-bold rounded-full transition-all
             ${isPlaying
-              ? 'bg-[#d4a060] text-black'
-              : 'bg-[#d4a060] text-black hover:bg-[#c08a40] hover:scale-105'
+              ? 'bg-accent text-black'
+              : 'bg-accent text-black hover:bg-accent-hover hover:scale-105'
             }
           `}
         >
@@ -185,8 +185,8 @@ function VersionCard({
           className={`
             py-2.5 text-xs font-bold rounded-full transition-all border
             ${isInQueue
-              ? 'border-[#d4a060]/50 text-[#d4a060]/50 cursor-default'
-              : 'border-[#3a3632] text-white hover:border-white'
+              ? 'border-accent/50 text-accent/50 cursor-default'
+              : 'border-default text-white hover:border-white'
             }
           `}
         >
@@ -285,16 +285,16 @@ export default function VersionCarousel({
     <div className="mt-4">
       {/* Controls bar */}
       {sortedSongs.length > 1 && (
-        <div className="flex items-center justify-between py-4 mb-4 border-b border-[#2d2a26]">
-          <span className="text-xs text-[#8a8478]">
+        <div className="flex items-center justify-between py-4 mb-4 border-b border-default">
+          <span className="text-xs text-secondary">
             Available Recordings
           </span>
-          <div className="flex items-center gap-2 text-xs text-[#8a8478]">
+          <div className="flex items-center gap-2 text-xs text-secondary">
             <span>Sort:</span>
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-              className="bg-[#2d2a26] border border-[#3a3632] rounded px-2 py-1 text-white text-xs"
+              className="bg-surface-elevated border border-default rounded px-2 py-1 text-white text-xs"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -308,10 +308,10 @@ export default function VersionCarousel({
         {/* Left fade + arrow */}
         {canScrollLeft && (
           <>
-            <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#252220] to-transparent pointer-events-none z-[5]" />
+            <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-surface-card to-transparent pointer-events-none z-[5]" />
             <button
               onClick={() => scrollByCard('left')}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-all bg-[#2d2a26] border border-[#3a3632] hover:border-white text-white"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-all bg-surface-elevated border border-default hover:border-white text-white"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -345,10 +345,10 @@ export default function VersionCarousel({
         {/* Right fade + arrow */}
         {canScrollRight && (
           <>
-            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#252220] to-transparent pointer-events-none z-[5]" />
+            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-surface-card to-transparent pointer-events-none z-[5]" />
             <button
               onClick={() => scrollByCard('right')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-all bg-[#2d2a26] border border-[#3a3632] hover:border-white text-white"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-all bg-surface-elevated border border-default hover:border-white text-white"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

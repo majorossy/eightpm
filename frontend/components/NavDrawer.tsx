@@ -103,23 +103,23 @@ export default function NavDrawer() {
           <aside
             className={`fixed z-50 left-0 top-0 bottom-0 flex flex-col ${
               isMobile
-                ? 'w-[280px] bg-gradient-to-b from-[#3a3632] to-[#1c1a17] safe-top safe-bottom'
-                : 'w-72 bg-[#1c1a17] border-r border-[#2d2a26]'
+                ? 'w-[280px] bg-gradient-to-b from-border to-surface-base safe-top safe-bottom'
+                : 'w-72 bg-surface-base border-r border-default'
             }`}
             aria-label="Navigation menu"
           >
             {/* Header */}
-            <div className={`flex items-center justify-between px-4 ${isMobile ? 'py-4' : 'p-4 border-b border-[#2d2a26]'}`}>
+            <div className={`flex items-center justify-between px-4 ${isMobile ? 'py-4' : 'p-4 border-b border-default'}`}>
               <Link
                 href="/"
                 onClick={closeSidebar}
-                className="text-xl font-bold text-[#d4a060] hover:text-[#e8c090] transition-colors"
+                className="text-xl font-bold text-accent hover:text-accent-hover transition-colors"
               >
                 8pm.me
               </Link>
               <Dialog.Close asChild>
                 <button
-                  className="p-2 text-[#8a8478] hover:text-white transition-colors"
+                  className="p-2 text-secondary hover:text-white transition-colors"
                   aria-label="Close menu"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,11 +143,11 @@ export default function NavDrawer() {
                         onClick={closeSidebar}
                         className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${
                           active
-                            ? 'bg-[#2d2a26] text-white'
-                            : 'text-[#8a8478] hover:text-white hover:bg-[#2d2a26]/50'
+                            ? 'bg-surface-elevated text-white'
+                            : 'text-secondary hover:text-white hover:bg-surface-elevated/50'
                         }`}
                       >
-                        <span className={active ? 'text-[#d4a060]' : ''}>{item.icon}</span>
+                        <span className={active ? 'text-accent' : ''}>{item.icon}</span>
                         <span className="font-medium">{item.label}</span>
                       </Link>
                     </li>
@@ -156,7 +156,7 @@ export default function NavDrawer() {
               </ul>
 
               {/* Divider */}
-              <div className="my-4 mx-4 border-t border-[#2d2a26]" />
+              <div className="my-4 mx-4 border-t border-default" />
 
               {/* Bottom nav items */}
               <ul className="space-y-1 px-2">
@@ -169,11 +169,11 @@ export default function NavDrawer() {
                         onClick={closeSidebar}
                         className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${
                           active
-                            ? 'bg-[#2d2a26] text-white'
-                            : 'text-[#8a8478] hover:text-white hover:bg-[#2d2a26]/50'
+                            ? 'bg-surface-elevated text-white'
+                            : 'text-secondary hover:text-white hover:bg-surface-elevated/50'
                         }`}
                       >
-                        <span className={active ? 'text-[#d4a060]' : ''}>{item.icon}</span>
+                        <span className={active ? 'text-accent' : ''}>{item.icon}</span>
                         <span className="font-medium">{item.label}</span>
                       </Link>
                     </li>
@@ -183,8 +183,8 @@ export default function NavDrawer() {
             </nav>
 
             {/* Footer */}
-            <div className="px-4 py-4 border-t border-[#2d2a26]">
-              <p className="text-xs text-[#6a6458] text-center">
+            <div className="px-4 py-4 border-t border-default">
+              <p className="text-xs text-tertiary text-center">
                 Please copy freely - never sell
               </p>
             </div>

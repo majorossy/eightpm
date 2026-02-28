@@ -1,33 +1,35 @@
 'use client';
 
-import Image from 'next/image';
-import TicketStubCard from '@/components/TicketStubCard';
+import QueueChip from '@/components/player/QueueChip';
 import type { QueueItem } from '@/lib/queueTypes';
-import type { Song } from '@/lib/types';
+import type { Song, AudioQuality } from '@/lib/types';
 import {
-  SortableContext,
   useSortable,
-  horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 
-export function SortableTicketChip({
+export function SortableQueueChip({
   item,
   chipIndex,
   absoluteIndex,
   onPlay,
+  onRemove,
   onSelectVersion,
+  preferredQuality,
+  isActive,
 }: {
   item: QueueItem;
   chipIndex: number;
   absoluteIndex: number;
   onPlay: (index: number) => void;
-  onSelectVersion: (queueId: string, song: Song) => void;
+  onRemove?: (queueId: string) => void;
+  onSelectVersion?: (queueId: string, song: Song) => void;
+  preferredQuality?: AudioQuality;
+  isActive?: boolean;
 }) {
   const {
     attributes,
     listeners,
     setNodeRef,
-    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -41,17 +43,21 @@ export function SortableTicketChip({
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
-      <TicketStubCard
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <QueueChip
         item={item}
-        index={chipIndex}
+        chipIndex={chipIndex}
         absoluteIndex={absoluteIndex}
         onPlay={onPlay}
+        onRemove={onRemove}
         onSelectVersion={onSelectVersion}
-        variant="horizontal"
-        dragHandleRef={setActivatorNodeRef}
-        dragHandleProps={{ ...attributes, ...listeners }}
+        preferredQuality={preferredQuality}
+        isDragging={isDragging}
+        isActive={isActive}
       />
     </div>
   );
 }
+
+// Re-export Song type for callers that need it
+export type { Song } from '@/lib/types';

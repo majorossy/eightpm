@@ -4,8 +4,8 @@
   "description": "Stream live concert recordings",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1c1a17",
-  "theme_color": "#d4a060",
+  "background_color": "#3d5a6e",
+  "theme_color": "#5ab8a0",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [

@@ -35,7 +35,7 @@ export function SettingsPanel({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className="bg-[#2d2a26] w-full md:w-96 md:rounded-lg p-6 space-y-4 safe-bottom"
+        className="bg-surface-elevated w-full md:w-96 md:rounded-lg p-6 space-y-4 safe-bottom"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -45,7 +45,7 @@ export function SettingsPanel({
               vibrate(BUTTON_PRESS);
               onClose();
             }}
-            className="p-2 text-[#8a8478] hover:text-white"
+            className="p-2 text-secondary hover:text-white"
             aria-label="Close settings"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,14 +56,14 @@ export function SettingsPanel({
 
         {/* Active timer display */}
         {sleepTimer.isActive && (
-          <div className="bg-[#d4a060]/20 border border-[#d4a060] rounded-lg p-4 mb-4">
+          <div className="bg-accent/20 border border-accent rounded-lg p-4 mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[#d4a060] text-sm font-medium">Timer Active</p>
+                <p className="text-accent text-sm font-medium">Timer Active</p>
                 <p className="text-white text-2xl font-bold font-mono mt-1">
                   {Math.floor(sleepTimer.timeRemaining / 60)}:{(sleepTimer.timeRemaining % 60).toString().padStart(2, '0')}
                 </p>
-                <p className="text-[#8a8478] text-xs mt-1">
+                <p className="text-secondary text-xs mt-1">
                   Music will stop in {Math.floor(sleepTimer.timeRemaining / 60)} minute{Math.floor(sleepTimer.timeRemaining / 60) !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -72,7 +72,7 @@ export function SettingsPanel({
                   vibrate(BUTTON_PRESS);
                   sleepTimer.cancelTimer();
                 }}
-                className="px-4 py-2 bg-[#8a8478]/20 text-white rounded-full text-sm font-medium hover:bg-[#8a8478]/30"
+                className="px-4 py-2 bg-secondary/20 text-white rounded-full text-sm font-medium hover:bg-secondary/30"
               >
                 Cancel
               </button>
@@ -82,7 +82,7 @@ export function SettingsPanel({
 
         {/* Timer presets */}
         <div className="space-y-2">
-          <p className="text-[#8a8478] text-sm mb-3">Set a timer to automatically stop music</p>
+          <p className="text-secondary text-sm mb-3">Set a timer to automatically stop music</p>
           {(['5min', '15min', '30min', '1hr', 'end-of-track'] as const).map((preset) => {
             const labels: Record<string, string> = {
               '5min': '5 minutes',
@@ -99,7 +99,7 @@ export function SettingsPanel({
                   sleepTimer.startTimer(preset);
                   onClose();
                 }}
-                className="w-full px-4 py-3 bg-[#3a3632] hover:bg-[#3a3632] text-white rounded-lg text-left font-medium transition-colors"
+                className="w-full px-4 py-3 bg-border hover:bg-border text-white rounded-lg text-left font-medium transition-colors"
               >
                 {labels[preset]}
               </button>
@@ -108,13 +108,13 @@ export function SettingsPanel({
         </div>
 
         {/* Crossfade Settings */}
-        <div className="border-t border-[#3a3632] pt-4 mt-4">
+        <div className="border-t border-default pt-4 mt-4">
           <h4 className="text-white text-sm font-medium mb-3">Crossfade</h4>
-          <p className="text-[#8a8478] text-xs mb-3">Seamless transition between songs</p>
+          <p className="text-secondary text-xs mb-3">Seamless transition between songs</p>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[#8a8478] text-sm">
+              <span className="text-secondary text-sm">
                 {crossfadeDuration === 0 ? 'Off' : `${crossfadeDuration} second${crossfadeDuration !== 1 ? 's' : ''}`}
               </span>
             </div>
@@ -126,13 +126,13 @@ export function SettingsPanel({
               step="1"
               value={crossfadeDuration}
               onChange={(e) => setCrossfadeDuration(Number(e.target.value))}
-              className="w-full h-1 bg-[#3a3632] rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-border rounded-lg appearance-none cursor-pointer"
               style={{
-                background: `linear-gradient(to right, #d4a060 0%, #d4a060 ${(crossfadeDuration / 12) * 100}%, #3a3632 ${(crossfadeDuration / 12) * 100}%, #3a3632 100%)`
+                background: `linear-gradient(to right, var(--secondary) 0%, var(--secondary) ${(crossfadeDuration / 12) * 100}%, var(--border-color, #3a3632) ${(crossfadeDuration / 12) * 100}%, var(--border-color, #3a3632) 100%)`
               }}
             />
 
-            <div className="flex justify-between text-[10px] text-[#8a8478]">
+            <div className="flex justify-between text-[10px] text-secondary">
               <span>Off</span>
               <span>12s</span>
             </div>

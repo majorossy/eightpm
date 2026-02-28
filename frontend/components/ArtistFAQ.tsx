@@ -88,11 +88,11 @@ export default function ArtistFAQ({
   };
 
   return (
-    <section className="mt-12 pt-8 border-t border-[#3a3632]/30">
+    <section className="mt-12 pt-8 border-t border-default/30">
       <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
         Frequently Asked Questions About {artistName}
       </h2>
-      <p className="text-sm text-[#8a8478] mb-6">
+      <p className="text-sm text-secondary mb-6">
         Common questions about streaming {artistName} live recordings on 8pm.me
       </p>
 
@@ -100,18 +100,18 @@ export default function ArtistFAQ({
         {faqs.map((faq, index) => (
           <div
             key={index}
-            className="bg-[#2d2a26] rounded-lg border border-[#3a3632]/30 overflow-hidden"
+            className="bg-surface-elevated rounded-lg border border-default/30 overflow-hidden"
           >
             <button
               onClick={() => toggleFAQ(index)}
-              className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-[#353230] transition-colors"
+              className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-border transition-colors"
               aria-expanded={openIndex === index}
             >
-              <span className="text-[#e8e0d4] text-sm md:text-base font-medium">
+              <span className="text-primary text-sm md:text-base font-medium">
                 {faq.question}
               </span>
               <span
-                className={`text-[#d4a060] transition-transform duration-200 flex-shrink-0 ${
+                className={`text-accent transition-transform duration-200 flex-shrink-0 ${
                   openIndex === index ? 'rotate-180' : ''
                 }`}
               >
@@ -132,7 +132,7 @@ export default function ArtistFAQ({
             </button>
             {openIndex === index && (
               <div className="px-5 pb-4">
-                <p className="text-[#8a8478] text-sm leading-relaxed">
+                <p className="text-secondary text-sm leading-relaxed">
                   {faq.answer}
                 </p>
               </div>

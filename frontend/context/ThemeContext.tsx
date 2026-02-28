@@ -22,7 +22,7 @@ export const THEMES: Record<ThemeType, ThemeConfig> = {
   fishman: {
     name: 'fishman',
     label: 'Fishman',
-    description: 'Blue-gray donut theme',
+    description: 'Aurora donut theme',
     icon: '🍩',
   },
   light: {
@@ -43,18 +43,18 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Get initial theme from localStorage
 function getInitialTheme(): ThemeType {
-  if (typeof window === 'undefined') return 'campfire';
+  if (typeof window === 'undefined') return 'fishman';
 
   const stored = localStorage.getItem('8pm-theme');
   if (stored === 'campfire' || stored === 'fishman' || stored === 'light') {
     return stored;
   }
 
-  return 'campfire';
+  return 'fishman';
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeType>('campfire');
+  const [theme, setThemeState] = useState<ThemeType>('fishman');
   const [mounted, setMounted] = useState(false);
 
   // Initialize theme on mount
@@ -74,12 +74,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     );
 
     // Add appropriate theme class
-    if (theme === 'fishman') {
-      document.documentElement.classList.add('theme-fishman');
+    if (theme === 'campfire') {
+      document.documentElement.classList.add('theme-campfire');
     } else if (theme === 'light') {
       document.documentElement.classList.add('theme-campfire', 'mode-light');
     } else {
-      document.documentElement.classList.add('theme-campfire');
+      document.documentElement.classList.add('theme-fishman');
     }
   }, [mounted, theme]);
 
@@ -105,7 +105,7 @@ export function useTheme() {
   if (context === undefined) {
     // Return default values if context not yet available (during SSR/hydration)
     return {
-      theme: 'campfire' as ThemeType,
+      theme: 'fishman' as ThemeType,
       setTheme: () => {},
       themes: THEMES,
     };

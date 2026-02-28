@@ -139,13 +139,13 @@ export default function DetailedCassette({
           <div className="px-3 py-2 h-full flex flex-col justify-between">
             {/* Top row: brand + side indicator */}
             <div className="flex justify-between items-start">
-              <span className="text-[8px] font-bold text-[#8a7a68] tracking-wider uppercase">
+              <span className="text-[8px] font-bold text-secondary tracking-wider uppercase">
                 {year ? `Est. ${year}` : 'Live Recording'}
               </span>
               <span
                 className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                   isTop
-                    ? 'bg-[#d4a060] text-[#1c1a17]'
+                    ? 'bg-accent text-inverse'
                     : 'bg-[#a89080] text-[#2a2420]'
                 }`}
               >
@@ -164,7 +164,7 @@ export default function DetailedCassette({
                 {artistName}
               </p>
               {artistFullName && artistFullName !== artistName && (
-                <p className="text-[9px] text-[#6a5a48] tracking-wider uppercase">
+                <p className="text-[9px] text-tertiary tracking-wider uppercase">
                   {artistFullName}
                 </p>
               )}
@@ -172,10 +172,10 @@ export default function DetailedCassette({
 
             {/* Bottom row: location */}
             <div className="flex justify-between items-end">
-              <span className="text-[8px] text-[#8a7a68]">
+              <span className="text-[8px] text-secondary">
                 {location || 'USA'}
               </span>
-              <span className="text-[8px] text-[#8a7a68]">90 MIN</span>
+              <span className="text-[8px] text-secondary">90 MIN</span>
             </div>
           </div>
         </div>

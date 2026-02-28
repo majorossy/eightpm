@@ -366,13 +366,13 @@ export default function PolaroidCard({ imageUrl, artistName, caption, socialLink
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'scale(1.15) rotate(-5deg)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(212,160,96,0.3)';
-                      e.currentTarget.style.borderColor = '#d4a060';
+                      e.currentTarget.style.boxShadow = `0 4px 12px var(--accent-glow-subtle)`;
+                      e.currentTarget.style.borderColor = 'var(--secondary)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                      e.currentTarget.style.borderColor = '#e8e0d4';
+                      e.currentTarget.style.borderColor = 'var(--text)';
                     }}
                     title={social.name}
                   >

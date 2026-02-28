@@ -78,35 +78,35 @@ export default function FAQPage() {
     <div className="max-w-[800px] mx-auto px-4 py-12 md:py-16">
       {/* Header with icon */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-[#2a2825] rounded-lg border border-[#3a3632]">
-          <QuestionIcon className="w-8 h-8 text-[#d4a060]" />
+        <div className="p-3 bg-surface-card rounded-lg border border-default">
+          <QuestionIcon className="w-8 h-8 text-accent" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-[#d4a060] tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-bold text-accent tracking-tight">
           Frequently Asked Questions
         </h1>
       </div>
 
-      <p className="text-[#8a8478] text-lg mb-8">
+      <p className="text-secondary text-lg mb-8">
         Find answers to common questions about 8pm.me and how it works.
       </p>
 
       {/* Search input */}
       <div className="relative mb-8">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <SearchIcon className="w-5 h-5 text-[#6a6458]" />
+          <SearchIcon className="w-5 h-5 text-tertiary" />
         </div>
         <input
           type="text"
           placeholder="Search questions..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-12 py-3 bg-[#2a2825] border border-[#3a3632] rounded-lg text-[#c9c5bc] placeholder-[#6a6458] focus:outline-none focus:ring-2 focus:ring-[#d4a060] focus:border-transparent transition-all duration-200"
+          className="w-full pl-12 pr-12 py-3 bg-surface-card border border-default rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
           aria-label="Search FAQs"
         />
         {searchQuery && (
           <button
             onClick={clearSearch}
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#6a6458] hover:text-[#8a8478] transition-colors duration-150"
+            className="absolute inset-y-0 right-0 pr-4 flex items-center text-tertiary hover:text-secondary transition-colors duration-150"
             aria-label="Clear search"
           >
             <XMarkIcon className="w-5 h-5" />
@@ -116,7 +116,7 @@ export default function FAQPage() {
 
       {/* Results count when searching */}
       {searchQuery && (
-        <p className="text-sm text-[#6a6458] mb-4">
+        <p className="text-sm text-tertiary mb-4">
           {filteredFaqs.length === 0
             ? 'No questions found'
             : `${filteredFaqs.length} question${filteredFaqs.length === 1 ? '' : 's'} found`}
@@ -133,12 +133,12 @@ export default function FAQPage() {
           ))}
         </AccordionGroup>
       ) : (
-        <div className="text-center py-12 bg-[#2a2825] border border-[#3a3632] rounded-lg">
-          <QuestionIcon className="w-12 h-12 text-[#6a6458] mx-auto mb-4" />
-          <p className="text-[#8a8478] mb-2">No questions match your search.</p>
+        <div className="text-center py-12 bg-surface-card border border-default rounded-lg">
+          <QuestionIcon className="w-12 h-12 text-tertiary mx-auto mb-4" />
+          <p className="text-secondary mb-2">No questions match your search.</p>
           <button
             onClick={clearSearch}
-            className="text-[#d4a060] hover:text-[#e8a050] transition-colors duration-200 underline"
+            className="text-accent hover:text-accent transition-colors duration-200 underline"
           >
             Clear search and view all questions
           </button>
@@ -146,16 +146,16 @@ export default function FAQPage() {
       )}
 
       {/* Still have questions section */}
-      <div className="mt-12 pt-8 border-t border-[#3a3632]/30">
-        <h2 className="text-2xl font-semibold text-[#d4a060] mb-4">
+      <div className="mt-12 pt-8 border-t border-default/30">
+        <h2 className="text-2xl font-semibold text-accent mb-4">
           Still have questions?
         </h2>
-        <p className="text-[#8a8478] mb-6">
+        <p className="text-secondary mb-6">
           Can't find the answer you're looking for? We're here to help!
         </p>
         <Link
           href="/contact"
-          className="inline-block px-6 py-3 bg-[#d4a060] text-[#1c1a17] font-semibold rounded hover:bg-[#e8a050] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a060] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1c1a17]"
+          className="inline-block px-6 py-3 bg-accent text-inverse font-semibold rounded hover:bg-accent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
         >
           Contact Us
         </Link>
@@ -164,7 +164,7 @@ export default function FAQPage() {
       <div className="pt-8 text-center">
         <Link
           href="/"
-          className="text-sm text-[#8a8478] hover:text-[#d4a060] transition-colors duration-200"
+          className="text-sm text-secondary hover:text-accent transition-colors duration-200"
         >
           ← Back to Home
         </Link>

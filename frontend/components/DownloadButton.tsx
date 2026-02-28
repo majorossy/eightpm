@@ -41,7 +41,7 @@ export default function DownloadButton({
     <button
       onClick={handleDownload}
       disabled={!streamUrl}
-      className={`text-[#8a8478] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4a060] rounded disabled:opacity-30 disabled:cursor-not-allowed ${className}`}
+      className={`text-secondary hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-accent rounded disabled:opacity-30 disabled:cursor-not-allowed ${className}`}
       aria-label="Download from Archive.org"
       title="Download from Archive.org"
     >

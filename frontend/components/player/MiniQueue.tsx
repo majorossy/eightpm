@@ -109,11 +109,11 @@ export const MiniQueue = React.memo(function MiniQueue({
         }}
         className="w-full flex items-center justify-between py-2 text-left"
       >
-        <span className="text-xs text-[#8a8478] uppercase tracking-[0.15em]">
-          Up Next <span className="text-[#d4a060]">&middot; {totalUpcoming} tracks</span>
+        <span className="text-xs text-secondary uppercase tracking-[0.15em]">
+          Up Next <span className="text-accent">&middot; {totalUpcoming} tracks</span>
         </span>
         <svg
-          className={`w-4 h-4 text-[#8a8478] transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-secondary transition-transform ${isExpanded ? 'rotate-180' : ''}`}
           fill="none" stroke="currentColor" viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -143,17 +143,17 @@ export const MiniQueue = React.memo(function MiniQueue({
           </SortableContext>
           <DragOverlay dropAnimation={null}>
             {activeDragItem && (
-              <div className="flex items-center gap-3 py-3 px-3 rounded-xl bg-[#2d2a26] shadow-lg shadow-black/50 border border-[#d4a060]/30">
+              <div className="flex items-center gap-3 py-3 px-3 rounded-xl bg-surface-elevated shadow-lg shadow-black/50 border border-accent/30">
                 {activeDragItem.item.albumSource?.coverArt ? (
                   <Image src={activeDragItem.item.albumSource.coverArt} alt="" width={40} height={40} quality={60} className="object-cover rounded-md flex-shrink-0" />
                 ) : (
-                  <div className="w-10 h-10 bg-[#2d2a26] rounded-md flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-[#3a3632]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
+                  <div className="w-10 h-10 bg-surface-elevated rounded-md flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-border" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{activeDragItem.item.trackTitle}</p>
-                  <p className="text-xs text-[#8a8478] truncate">{activeDragItem.item.song.artistName}</p>
+                  <p className="text-xs text-secondary truncate">{activeDragItem.item.song.artistName}</p>
                 </div>
               </div>
             )}
@@ -161,7 +161,7 @@ export const MiniQueue = React.memo(function MiniQueue({
         </DndContext>
 
         {hasMoreItems && !isExpanded && (
-          <p className="text-[10px] text-[#6a6458] text-center py-1 italic mt-2">
+          <p className="text-[10px] text-tertiary text-center py-1 italic mt-2">
             +{totalUpcoming - upcomingItems.length} more &middot; tap to expand
           </p>
         )}

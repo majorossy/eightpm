@@ -63,9 +63,9 @@ export default function SongCard({ song, index }: SongCardProps) {
     >
         {/* Index or play icon */}
         <div className="w-4 flex items-center justify-center">
-          <span className={`text-sm group-hover:hidden ${isCurrentSong ? 'text-[var(--neon-pink)]' : 'text-[var(--text-dim)]'}`}>
+          <span className={`text-sm group-hover:hidden ${isCurrentSong ? 'text-[var(--secondary)]' : 'text-[var(--text-dim)]'}`}>
             {isCurrentSong && isPlaying ? (
-              <svg className="w-4 h-4 text-[var(--neon-pink)]" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[var(--secondary)]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
               </svg>
             ) : (
@@ -92,7 +92,7 @@ export default function SongCard({ song, index }: SongCardProps) {
 
         {/* Song info */}
         <div className="flex flex-col min-w-0">
-          <p className={`text-base truncate ${isCurrentSong ? 'text-[var(--neon-pink)]' : 'text-[var(--text)]'}`}>
+          <p className={`text-base truncate ${isCurrentSong ? 'text-[var(--secondary)]' : 'text-[var(--text)]'}`}>
             {song.title}
           </p>
           <p className="text-sm text-[var(--text-dim)] truncate">
@@ -110,7 +110,7 @@ export default function SongCard({ song, index }: SongCardProps) {
           onClick={handleAddToFavorites}
           disabled={inFavorites}
           className={`transition-colors opacity-0 group-hover:opacity-100 ${
-            inFavorites ? 'text-[var(--neon-pink)] opacity-100' : 'text-[var(--text-dim)] hover:text-[var(--text)]'
+            inFavorites ? 'text-[var(--secondary)] opacity-100' : 'text-[var(--text-dim)] hover:text-[var(--text)]'
           }`}
           aria-label={inFavorites ? `${song.title} is in favorites` : `Add ${song.title} to favorites`}
           aria-pressed={inFavorites}

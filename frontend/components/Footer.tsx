@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer
       aria-label="Site footer"
-      className="border-t border-[#3a3632]/30 bg-[var(--bg)] mb-[60px] md:mb-0"
+      className="border-t border-default/30 bg-[var(--bg)] mb-[60px] md:mb-0"
     >
       <div className="max-w-[1200px] mx-auto py-12 px-8 md:py-12 md:px-8 py-8 px-4">
         {/* 4-Column Grid */}
@@ -20,7 +20,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/artists"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Browse Artists
                 </Link>
@@ -28,7 +28,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/search"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Search Shows
                 </Link>
@@ -36,7 +36,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/library"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Your Library
                 </Link>
@@ -44,7 +44,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/playlists"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Playlists
                 </Link>
@@ -61,7 +61,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/library?tab=recent"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Recently Played
                 </Link>
@@ -69,7 +69,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/library?tab=liked"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Liked Songs
                 </Link>
@@ -96,7 +96,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/account"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Sign In / Profile
                 </Link>
@@ -104,7 +104,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/account/settings"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Account Settings
                 </Link>
@@ -112,7 +112,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/account/orders"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Orders
                 </Link>
@@ -129,7 +129,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/about"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   About
                 </Link>
@@ -137,7 +137,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/how-it-works"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   How It Works
                 </Link>
@@ -145,7 +145,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/faq"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   FAQ
                 </Link>
@@ -153,7 +153,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/privacy"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Privacy Policy
                 </Link>
@@ -161,7 +161,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/cookie-policy"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Cookie Policy
                 </Link>
@@ -169,7 +169,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/terms"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Terms of Service
                 </Link>
@@ -177,7 +177,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/dmca"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   DMCA Policy
                 </Link>
@@ -185,7 +185,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Contact
                 </Link>
@@ -193,7 +193,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/tapers"
-                  className="text-sm text-[var(--text-dim)] hover:text-[var(--neon-pink)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+                  className="text-sm text-[var(--text-dim)] hover:text-[var(--secondary)] leading-relaxed transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
                 >
                   Tapers
                 </Link>
@@ -206,7 +206,7 @@ export default function Footer() {
         <div className="border-t border-[var(--bg-elevated)]/20 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
 
           {/* Left: Ethos */}
-          <div className="text-sm text-[var(--neon-pink)] font-medium tracking-wide">
+          <div className="text-sm text-[var(--secondary)] font-medium tracking-wide">
             Please copy freely — never sell
           </div>
 
@@ -215,13 +215,13 @@ export default function Footer() {
             href="https://archive.org"
             target="_blank"
             rel="noopener noreferrer"
-            className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-pink)] rounded"
+            className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] rounded"
             aria-label="Powered by Archive.org (opens in new tab)"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 27 30"
-              className="w-8 h-8 fill-[var(--text-dim)] group-hover:fill-[var(--neon-pink)] transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(199,90,90,0.4)]"
+              className="w-8 h-8 fill-[var(--text-dim)] group-hover:fill-[var(--secondary)] transition-all duration-300 group-hover:drop-shadow-[0_0_8px_var(--secondary-muted)]"
               role="img"
               aria-label="Archive.org logo"
             >

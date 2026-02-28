@@ -38,7 +38,7 @@ const KeyboardShortcutsHelp = dynamic(() => import('@/components/KeyboardShortcu
 
 // Inner layout that can access player state and contexts
 function InnerLayout({ children }: { children: ReactNode }) {
-  const { isMobile } = useMobileUI();
+  const { isMobile, isPlayerMinimized, minimizePlayer, restorePlayer } = useMobileUI();
   const player = usePlayer();
   const queue = useQueue();
   const wishlist = useWishlist();
@@ -90,6 +90,11 @@ function InnerLayout({ children }: { children: ReactNode }) {
     onToggleQueue: player.toggleQueue,
     onOpenSearch: () => setIsSearchOpen(true),
     onShowHelp: () => setIsHelpOpen(true),
+    onToggleMinimize: () => {
+      if (!isMobile && player.currentSong) {
+        isPlayerMinimized ? restorePlayer() : minimizePlayer();
+      }
+    },
     isQueueOpen: player.isQueueOpen,
   });
 

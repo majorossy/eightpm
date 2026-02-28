@@ -119,14 +119,14 @@ export default function TicketStubCard({
         }`}
       >
         {/* FRONT FACE */}
-        <div className={`absolute inset-0 [backface-visibility:hidden] rounded-lg overflow-hidden border border-white/5 bg-[#252220]`}>
+        <div className={`absolute inset-0 [backface-visibility:hidden] rounded-lg overflow-hidden border border-white/5 bg-surface-card`}>
           <div className="flex h-full">
             {/* Drag handle (vertical variants only) */}
             {!isHorizontal && dragHandleRef && (
               <button
                 ref={dragHandleRef}
                 {...(dragHandleProps || {})}
-                className="flex-shrink-0 w-6 flex items-center justify-center text-[#3a3632] hover:text-[#8a8478] cursor-grab active:cursor-grabbing touch-none"
+                className="flex-shrink-0 w-6 flex items-center justify-center text-border hover:text-secondary cursor-grab active:cursor-grabbing touch-none"
                 aria-label={`Reorder ${item.trackTitle}`}
                 onClick={(e) => e.stopPropagation()}
               >
@@ -145,7 +145,7 @@ export default function TicketStubCard({
             <div className="flex-1 min-w-0 flex flex-col justify-between p-2">
               {/* Top row: track number + art + title */}
               <div className="flex items-start gap-2">
-                <span className={`font-mono text-[#6a6458] flex-shrink-0 leading-none ${isHorizontal ? 'text-[10px] mt-0.5' : isCompact ? 'text-xs' : 'text-sm'}`}>
+                <span className={`font-mono text-tertiary flex-shrink-0 leading-none ${isHorizontal ? 'text-[10px] mt-0.5' : isCompact ? 'text-xs' : 'text-sm'}`}>
                   {index}
                 </span>
                 {/* Album art */}
@@ -160,8 +160,8 @@ export default function TicketStubCard({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#2d2a26] flex items-center justify-center">
-                      <svg className={`${isHorizontal ? 'w-3 h-3' : 'w-4 h-4'} text-[#3a3632]`} fill="currentColor" viewBox="0 0 24 24">
+                    <div className="w-full h-full bg-surface-elevated flex items-center justify-center">
+                      <svg className={`${isHorizontal ? 'w-3 h-3' : 'w-4 h-4'} text-border`} fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
                       </svg>
                     </div>
@@ -172,7 +172,7 @@ export default function TicketStubCard({
                   <p className={`font-medium text-white truncate ${isHorizontal ? 'text-[11px]' : isCompact ? 'text-xs' : 'text-sm'}`}>
                     {item.trackTitle}
                   </p>
-                  <p className={`font-mono text-[#8a8478] truncate ${isHorizontal ? 'text-[9px]' : 'text-[10px]'}`}>
+                  <p className={`font-mono text-secondary truncate ${isHorizontal ? 'text-[9px]' : 'text-[10px]'}`}>
                     {song.showVenue ? `${song.showVenue}` : song.artistName}
                     {song.showVenue && year !== '\u2014' ? ` \u00b7 ${year}` : ''}
                   </p>
@@ -182,7 +182,7 @@ export default function TicketStubCard({
               {/* Bottom row: duration + badge + flip hint */}
               <div className="flex items-center gap-2 mt-auto">
                 {song.duration > 0 && (
-                  <span className={`font-mono text-[#6a6458] ${isHorizontal ? 'text-[9px]' : 'text-[10px]'}`}>
+                  <span className={`font-mono text-tertiary ${isHorizontal ? 'text-[9px]' : 'text-[10px]'}`}>
                     {formatDuration(song.duration)}
                   </span>
                 )}
@@ -203,12 +203,12 @@ export default function TicketStubCard({
             {/* Dashed separator + stub */}
             {hasVersions && (
               <>
-                <div className="w-px border-l border-dashed border-[#d4a060]/20 self-stretch my-2" />
-                <div className={`flex-shrink-0 flex flex-col items-center justify-center ${isHorizontal ? 'w-8' : 'w-10'} bg-[#2d2a26]/50`}>
-                  <span className={`text-[#d4a060] font-bold font-mono leading-none ${isHorizontal ? 'text-sm' : 'text-base'}`}>
+                <div className="w-px border-l border-dashed border-accent/20 self-stretch my-2" />
+                <div className={`flex-shrink-0 flex flex-col items-center justify-center ${isHorizontal ? 'w-8' : 'w-10'} bg-surface-elevated/50`}>
+                  <span className={`text-accent font-bold font-mono leading-none ${isHorizontal ? 'text-sm' : 'text-base'}`}>
                     {versions.length}
                   </span>
-                  <span className="text-[7px] text-[#8a8478] uppercase tracking-wider mt-0.5">VER</span>
+                  <span className="text-[7px] text-secondary uppercase tracking-wider mt-0.5">VER</span>
                 </div>
               </>
             )}
@@ -217,7 +217,7 @@ export default function TicketStubCard({
             {!isHorizontal && onRemove && (
               <button
                 onClick={handleRemove}
-                className="flex-shrink-0 w-6 flex items-center justify-center text-[#3a3632] hover:text-[#8a8478] transition-colors"
+                className="flex-shrink-0 w-6 flex items-center justify-center text-border hover:text-secondary transition-colors"
                 aria-label={`Remove ${item.trackTitle} from queue`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,15 +229,15 @@ export default function TicketStubCard({
         </div>
 
         {/* BACK FACE */}
-        <div className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-lg overflow-hidden border border-[#d4a060]/15 bg-[#1c1a17]`}>
+        <div className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-lg overflow-hidden border border-accent/15 bg-surface-base`}>
           <div className="flex flex-col h-full">
             {/* Version header */}
-            <div className={`flex items-center gap-2 bg-[#252220] border-b border-[#3a3632]/40 ${isHorizontal ? 'px-2 py-1' : 'px-3 py-1.5'}`}>
+            <div className={`flex items-center gap-2 bg-surface-card border-b border-default/40 ${isHorizontal ? 'px-2 py-1' : 'px-3 py-1.5'}`}>
               {hasVersions && (
                 <button
                   onClick={handlePrev}
                   disabled={vIdx <= 0}
-                  className="text-[#8a8478] hover:text-[#d4a060] disabled:opacity-20 disabled:text-[#3a3632] transition-colors flex-shrink-0"
+                  className="text-secondary hover:text-accent disabled:opacity-20 disabled:text-border transition-colors flex-shrink-0"
                   aria-label="Previous version"
                 >
                   <svg className={`${isHorizontal ? 'w-3 h-3' : 'w-3.5 h-3.5'}`} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -245,14 +245,14 @@ export default function TicketStubCard({
                   </svg>
                 </button>
               )}
-              <span className={`font-mono font-bold text-[#d4a060] tracking-wider ${isHorizontal ? 'text-[9px]' : 'text-[10px]'}`}>
+              <span className={`font-mono font-bold text-accent tracking-wider ${isHorizontal ? 'text-[9px]' : 'text-[10px]'}`}>
                 VERSION {vIdx + 1} / {versions.length}
               </span>
               {hasVersions && (
                 <button
                   onClick={handleNext}
                   disabled={vIdx >= versions.length - 1}
-                  className="text-[#8a8478] hover:text-[#d4a060] disabled:opacity-20 disabled:text-[#3a3632] transition-colors flex-shrink-0"
+                  className="text-secondary hover:text-accent disabled:opacity-20 disabled:text-border transition-colors flex-shrink-0"
                   aria-label="Next version"
                 >
                   <svg className={`${isHorizontal ? 'w-3 h-3' : 'w-3.5 h-3.5'}`} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -271,8 +271,8 @@ export default function TicketStubCard({
               <BackRow label="Source" value={song.source} truncLen={isHorizontal ? 14 : isCompact ? 20 : 30} isHorizontal={isHorizontal} />
               {!isHorizontal && song.lineage && (
                 <div className="flex justify-between gap-1">
-                  <span className="text-[#d4a060] flex-shrink-0">Lineage</span>
-                  <span className="text-[#6a6458] font-mono truncate text-right" title={song.lineage}>
+                  <span className="text-accent flex-shrink-0">Lineage</span>
+                  <span className="text-tertiary font-mono truncate text-right" title={song.lineage}>
                     {formatLineage(song.lineage, isCompact ? 20 : 30)}
                   </span>
                 </div>
@@ -283,7 +283,7 @@ export default function TicketStubCard({
             <div className={`${isHorizontal ? 'px-2 pb-1.5' : 'px-3 pb-2'}`}>
               <button
                 onClick={handlePlay}
-                className={`w-full bg-[#d4a060] hover:bg-[#c08a40] text-[#1c1a17] rounded-md font-bold uppercase tracking-wider transition-colors ${
+                className={`w-full bg-accent hover:bg-accent-hover text-inverse rounded-md font-bold uppercase tracking-wider transition-colors ${
                   isHorizontal ? 'py-1 text-[8px]' : 'py-1.5 text-[10px]'
                 }`}
               >
@@ -313,8 +313,8 @@ function BackRow({
   const display = truncLen && value.length > truncLen ? value.slice(0, truncLen) + '\u2026' : value;
   return (
     <div className="flex justify-between gap-1">
-      <span className="text-[#d4a060] flex-shrink-0">{label}</span>
-      <span className={`${isHorizontal ? 'text-[#8a8478]' : 'text-[#a89a8c]'} truncate text-right`} title={value}>
+      <span className="text-accent flex-shrink-0">{label}</span>
+      <span className={`${isHorizontal ? 'text-secondary' : 'text-[#a89a8c]'} truncate text-right`} title={value}>
         {display}
       </span>
     </div>

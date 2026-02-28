@@ -83,7 +83,7 @@ function LibraryPageInner() {
       ? `${song.showVenue} · ${formatShowDate(song.showDate)}`
       : song.showVenue || formatShowDate(song.showDate);
     return (
-      <Link href={getAlbumHref(song)} className="text-[#5a564e] text-xs hover:text-[#8a8478] truncate block">
+      <Link href={getAlbumHref(song)} className="text-tertiary text-xs hover:text-secondary truncate block">
         {text}
       </Link>
     );
@@ -93,11 +93,11 @@ function LibraryPageInner() {
     if (wishlist.items.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <svg className="w-16 h-16 text-[#3a3632] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-16 h-16 text-border mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
           <h3 className="text-white font-bold text-lg mb-2">No liked songs yet</h3>
-          <p className="text-[#8a8478] text-sm text-center">
+          <p className="text-secondary text-sm text-center">
             Songs you like will appear here. Tap the heart icon to save your favorites.
           </p>
         </div>
@@ -112,12 +112,12 @@ function LibraryPageInner() {
             className="flex items-center gap-3 p-3 rounded hover:bg-white/10 transition-colors group"
           >
             {/* Album art */}
-            <Link href={getAlbumHref(item.song)} className="w-10 h-10 flex-shrink-0 rounded overflow-hidden bg-[#2d2a26] relative">
+            <Link href={getAlbumHref(item.song)} className="w-10 h-10 flex-shrink-0 rounded overflow-hidden bg-surface-elevated relative">
               {item.song.albumArt ? (
                 <Image src={item.song.albumArt} alt={item.song.albumName || 'Album'} fill sizes="40px" quality={75} className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-border" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
                   </svg>
                 </div>
@@ -130,7 +130,7 @@ function LibraryPageInner() {
                 vibrate(BUTTON_PRESS);
                 addToQueue(trackToItem(item.song));
               }}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-[#d4a060] text-black opacity-0 md:group-hover:opacity-100 hover:scale-105 transition-all btn-touch"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-accent text-black opacity-0 md:group-hover:opacity-100 hover:scale-105 transition-all btn-touch"
               aria-label={`Play ${item.song.title}`}
             >
               <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
@@ -148,7 +148,7 @@ function LibraryPageInner() {
               </div>
               <Link
                 href={`/artists/${item.song.artistSlug}`}
-                className="text-[#8a8478] text-sm hover:text-white hover:underline truncate block"
+                className="text-secondary text-sm hover:text-white hover:underline truncate block"
               >
                 {item.song.artistName}
               </Link>
@@ -156,7 +156,7 @@ function LibraryPageInner() {
             </div>
 
             {/* Duration */}
-            <div className="text-[#8a8478] text-sm font-mono hidden md:block">
+            <div className="text-secondary text-sm font-mono hidden md:block">
               {formatDuration(item.song.duration)}
             </div>
 
@@ -166,7 +166,7 @@ function LibraryPageInner() {
                 vibrate(DELETE_ACTION);
                 removeFromWishlist(item.id);
               }}
-              className="p-2 text-[#d4a060] hover:text-white transition-colors btn-touch"
+              className="p-2 text-accent hover:text-white transition-colors btn-touch"
               aria-label="Remove from favorites"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -183,11 +183,11 @@ function LibraryPageInner() {
     if (followedArtists.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <svg className="w-16 h-16 text-[#3a3632] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-16 h-16 text-border mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
           <h3 className="text-white font-bold text-lg mb-2">No followed artists</h3>
-          <p className="text-[#8a8478] text-sm text-center">
+          <p className="text-secondary text-sm text-center">
             Follow artists to see them here. Tap the heart icon on an artist page.
           </p>
         </div>
@@ -232,12 +232,12 @@ function LibraryPageInner() {
               href={`/artists/${slug}`}
               className="flex flex-col gap-3 p-4 rounded-lg hover:bg-white/10 transition-colors group"
             >
-              <div className="w-full aspect-square rounded-full bg-[#2d2a26] overflow-hidden relative">
+              <div className="w-full aspect-square rounded-full bg-surface-elevated overflow-hidden relative">
                 {art ? (
                   <Image src={art} alt={name} fill sizes="200px" quality={80} className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <svg className="w-12 h-12 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-12 h-12 text-border" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                     </svg>
                   </div>
@@ -245,7 +245,7 @@ function LibraryPageInner() {
               </div>
               <div>
                 <p className="text-white font-medium truncate">{name}</p>
-                <p className="text-[#8a8478] text-sm">
+                <p className="text-secondary text-sm">
                   {likedCount > 0 ? `${likedCount} liked song${likedCount !== 1 ? 's' : ''}` : 'Following'}
                 </p>
               </div>
@@ -260,11 +260,11 @@ function LibraryPageInner() {
     if (followedAlbums.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <svg className="w-16 h-16 text-[#3a3632] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-16 h-16 text-border mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
           <h3 className="text-white font-bold text-lg mb-2">No followed albums</h3>
-          <p className="text-[#8a8478] text-sm text-center">
+          <p className="text-secondary text-sm text-center">
             Follow albums to see them here. Tap the heart icon on an album page.
           </p>
         </div>
@@ -329,12 +329,12 @@ function LibraryPageInner() {
               href={href}
               className="flex flex-col gap-3 p-4 rounded-lg hover:bg-white/10 transition-colors group"
             >
-              <div className="w-full aspect-square rounded bg-[#2d2a26] overflow-hidden relative">
+              <div className="w-full aspect-square rounded bg-surface-elevated overflow-hidden relative">
                 {art ? (
                   <Image src={art} alt={artistName} fill sizes="200px" quality={80} className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <svg className="w-12 h-12 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-12 h-12 text-border" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
                     </svg>
                   </div>
@@ -343,11 +343,11 @@ function LibraryPageInner() {
               <div>
                 <p className="text-white font-medium truncate">{artistName}</p>
                 {(venue || date) && (
-                  <p className="text-[#5a564e] text-xs truncate">
+                  <p className="text-tertiary text-xs truncate">
                     {venue && date ? `${venue} · ${formatShowDate(date)}` : venue || formatShowDate(date)}
                   </p>
                 )}
-                <p className="text-[#8a8478] text-xs">
+                <p className="text-secondary text-xs">
                   {likedCount > 0 ? `${likedCount} liked song${likedCount !== 1 ? 's' : ''}` : 'Following'}
                 </p>
               </div>
@@ -362,11 +362,11 @@ function LibraryPageInner() {
     if (recentlyPlayed.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <svg className="w-16 h-16 text-[#3a3632] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-16 h-16 text-border mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <h3 className="text-white font-bold text-lg mb-2">No listening history</h3>
-          <p className="text-[#8a8478] text-sm text-center">
+          <p className="text-secondary text-sm text-center">
             Songs you play will appear here. Listen to at least 30 seconds to track them.
           </p>
         </div>
@@ -381,12 +381,12 @@ function LibraryPageInner() {
             className="flex items-center gap-3 p-3 rounded hover:bg-white/10 transition-colors group"
           >
             {/* Album art - links to album */}
-            <Link href={getAlbumHref(item.song)} className="w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-[#2d2a26] relative">
+            <Link href={getAlbumHref(item.song)} className="w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-surface-elevated relative">
               {item.song.albumArt ? (
                 <Image src={item.song.albumArt} alt={item.song.albumName || 'Album'} fill sizes="48px" quality={75} className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[#3a3632]" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-border" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
                   </svg>
                 </div>
@@ -399,7 +399,7 @@ function LibraryPageInner() {
                 vibrate(BUTTON_PRESS);
                 addToQueue(trackToItem(item.song));
               }}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-[#d4a060] text-black opacity-0 md:group-hover:opacity-100 hover:scale-105 transition-all btn-touch"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-accent text-black opacity-0 md:group-hover:opacity-100 hover:scale-105 transition-all btn-touch"
               aria-label={`Play ${item.song.title}`}
             >
               <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
@@ -417,7 +417,7 @@ function LibraryPageInner() {
               </div>
               <Link
                 href={`/artists/${item.song.artistSlug}`}
-                className="text-[#8a8478] text-sm hover:text-white hover:underline truncate block"
+                className="text-secondary text-sm hover:text-white hover:underline truncate block"
               >
                 {item.song.artistName}
               </Link>
@@ -426,18 +426,18 @@ function LibraryPageInner() {
 
             {/* Play count and time */}
             <div className="text-right flex-shrink-0">
-              <p className="text-[#8a8478] text-xs">
+              <p className="text-secondary text-xs">
                 {formatRelativeTime(item.playedAt)}
               </p>
               {item.playCount > 1 && (
-                <p className="text-[#3a3632] text-xs">
+                <p className="text-border text-xs">
                   {item.playCount} plays
                 </p>
               )}
             </div>
 
             {/* Duration */}
-            <div className="text-[#8a8478] text-sm font-mono hidden md:block">
+            <div className="text-secondary text-sm font-mono hidden md:block">
               {formatDuration(item.song.duration)}
             </div>
           </div>
@@ -447,12 +447,12 @@ function LibraryPageInner() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1c1a17] pb-[140px] md:pb-[90px] safe-top">
+    <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px] safe-top">
       <div className="max-w-[1000px] mx-auto">
         {/* Header */}
         <div className="p-6 md:p-8">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Your Library</h1>
-          <p className="text-[#8a8478]">{wishlist.itemCount} liked songs</p>
+          <p className="text-secondary">{wishlist.itemCount} liked songs</p>
         </div>
 
         {/* Tabs */}
@@ -461,8 +461,8 @@ function LibraryPageInner() {
           onClick={() => changeTab('songs')}
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === 'songs'
-              ? 'text-white border-b-2 border-[#d4a060]'
-              : 'text-[#8a8478] hover:text-white'
+              ? 'text-white border-b-2 border-accent'
+              : 'text-secondary hover:text-white'
           }`}
         >
           Songs
@@ -471,8 +471,8 @@ function LibraryPageInner() {
           onClick={() => changeTab('artists')}
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === 'artists'
-              ? 'text-white border-b-2 border-[#d4a060]'
-              : 'text-[#8a8478] hover:text-white'
+              ? 'text-white border-b-2 border-accent'
+              : 'text-secondary hover:text-white'
           }`}
         >
           Artists
@@ -481,8 +481,8 @@ function LibraryPageInner() {
           onClick={() => changeTab('albums')}
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === 'albums'
-              ? 'text-white border-b-2 border-[#d4a060]'
-              : 'text-[#8a8478] hover:text-white'
+              ? 'text-white border-b-2 border-accent'
+              : 'text-secondary hover:text-white'
           }`}
         >
           Albums
@@ -491,8 +491,8 @@ function LibraryPageInner() {
           onClick={() => changeTab('recent')}
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === 'recent'
-              ? 'text-white border-b-2 border-[#d4a060]'
-              : 'text-[#8a8478] hover:text-white'
+              ? 'text-white border-b-2 border-accent'
+              : 'text-secondary hover:text-white'
           }`}
         >
           Recently Played
@@ -515,10 +515,10 @@ function LibraryPageInner() {
 export default function LibraryPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#1c1a17] pb-[140px] md:pb-[90px] safe-top">
+      <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px] safe-top">
         <div className="p-6 md:p-8">
-          <div className="h-10 w-48 bg-[#2d2a26] rounded animate-pulse mb-2" />
-          <div className="h-5 w-24 bg-[#2d2a26] rounded animate-pulse" />
+          <div className="h-10 w-48 bg-surface-elevated rounded animate-pulse mb-2" />
+          <div className="h-5 w-24 bg-surface-elevated rounded animate-pulse" />
         </div>
       </div>
     }>
