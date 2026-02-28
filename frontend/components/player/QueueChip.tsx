@@ -67,7 +67,7 @@ export default function QueueChip({
         group/chip relative flex flex-shrink-0 cursor-pointer
         rounded-lg overflow-hidden select-none
         transition-all duration-200 ease-out
-        w-[174px] p-2
+        w-[194px] pl-[20px] pr-2 py-2
         ${isPlayed
           ? 'opacity-40 bg-surface-player-chip'
           : isDragging
@@ -166,9 +166,12 @@ export default function QueueChip({
         </div>
       </div>
 
-      {/* Drag handle — 3 dots, visible on hover (hidden for played items) */}
+      {/* Drag grip — 2x3 dot grid on left edge, always visible on non-played chips */}
       {!isPlayed && (
-        <div className="absolute top-1/2 right-[5px] -translate-y-1/2 flex flex-col gap-0.5 opacity-0 group-hover/chip:opacity-30 transition-opacity">
+        <div className="absolute top-1/2 left-[5px] -translate-y-1/2 grid grid-cols-2 gap-[3px] opacity-30 group-hover/chip:opacity-50 transition-opacity">
+          <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
+          <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
+          <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
           <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
           <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
           <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />

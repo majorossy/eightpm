@@ -1,8 +1,8 @@
 'use client';
 
-// Queue drawer - mockup-matched design with drag-and-drop reordering
+// Queue drawer - sidebar tabs design with album navigation + drag-and-drop reordering
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
@@ -32,10 +32,6 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-
-type RenderEntry =
-  | { type: 'group-header'; group: AlbumGroup }
-  | { type: 'track'; item: QueueItem; absoluteIndex: number };
 
 // Quality helpers (shared with QueueChip)
 function getQualityLabel(quality: AudioQuality): string {
@@ -179,7 +175,7 @@ export default function Queue() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto prevent-overscroll queue-drawer-scroll" role="region" aria-label="Queue tracks">
+        <div className="flex-1 flex flex-col min-h-0" role="region" aria-label="Queue tracks">
           {!hasItems ? (
             <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--text-secondary)' }}>
               <svg className="w-12 h-12 mb-4" style={{ color: 'var(--border-default)' }} fill="currentColor" viewBox="0 0 24 24">
@@ -195,7 +191,7 @@ export default function Queue() {
 
               {/* Divider */}
               <div
-                className="mx-[18px] mb-2"
+                className="mx-[18px] mb-2 flex-shrink-0"
                 style={{ height: '1px', background: 'linear-gradient(90deg, transparent, var(--border-subtle-player), transparent)' }}
               />
 
@@ -295,15 +291,16 @@ export default function Queue() {
 
       {/* Custom scrollbar styles */}
       <style jsx global>{`
-        .queue-drawer-scroll::-webkit-scrollbar { width: 4px; }
-        .queue-drawer-scroll::-webkit-scrollbar-track { background: transparent; }
-        .queue-drawer-scroll::-webkit-scrollbar-thumb {
+        .queue-sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .queue-sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .queue-sidebar-scroll::-webkit-scrollbar-thumb {
           background: var(--primary-muted);
           border-radius: 2px;
         }
-        .queue-drawer-scroll::-webkit-scrollbar-thumb:hover {
+        .queue-sidebar-scroll::-webkit-scrollbar-thumb:hover {
           background: var(--primary);
         }
+        .queue-sidebar-tabs::-webkit-scrollbar { width: 0; }
       `}</style>
     </>
   );
@@ -480,6 +477,7 @@ interface SortableTrackRowProps {
   playFromQueue: (index: number) => void;
   selectVersion: (queueId: string, song: Song) => void;
   preferredQuality: AudioQuality;
+  hideVenue?: boolean;
 }
 
 function SortableTrackRow({
@@ -490,6 +488,7 @@ function SortableTrackRow({
   playFromQueue,
   selectVersion,
   preferredQuality,
+  hideVenue,
 }: SortableTrackRowProps) {
   const {
     attributes,
@@ -588,12 +587,14 @@ function SortableTrackRow({
           >
             {item.trackTitle}
           </p>
-          <p
-            className="text-xs truncate"
-            style={{ color: 'var(--text-tertiary)', lineHeight: '1.4' }}
-          >
-            {venueDisplay}
-          </p>
+          {!hideVenue && (
+            <p
+              className="text-xs truncate"
+              style={{ color: 'var(--text-tertiary)', lineHeight: '1.4' }}
+            >
+              {venueDisplay}
+            </p>
+          )}
           {/* Meta row: duration + quality badge */}
           <div className="flex items-center gap-2 mt-0.5">
             {song.duration > 0 && (
@@ -668,36 +669,6 @@ function DragOverlayTrack({ item }: { item: QueueItem }) {
   );
 }
 
-function DragOverlayGroup({ group }: { group: AlbumGroup }) {
-  return (
-    <div
-      className="flex items-center gap-2 px-4 py-3 rounded"
-      style={{
-        background: 'var(--surface-elevated)',
-        boxShadow: '0 8px 32px color-mix(in srgb, black 50%, transparent)',
-        border: '1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)',
-      }}
-    >
-      <DragDots className="opacity-60" />
-      {group.albumSource.coverArt && (
-        <Image
-          src={group.albumSource.coverArt}
-          alt=""
-          width={24}
-          height={24}
-          className="rounded"
-        />
-      )}
-      <p className="text-xs text-white uppercase tracking-wider truncate">
-        {group.albumSource.albumName}
-      </p>
-      <span className="text-xs ml-auto" style={{ color: 'var(--text-secondary)' }}>
-        {group.items.length} tracks
-      </span>
-    </div>
-  );
-}
-
 // =============================================================================
 // Card Summary — compact row for DragOverlay
 // =============================================================================
@@ -738,7 +709,7 @@ function CardSummary({ item }: { item: QueueItem }) {
 }
 
 // =============================================================================
-// Upcoming Section
+// Upcoming Section — Sidebar Tabs Layout
 // =============================================================================
 
 interface UpcomingSectionProps {
@@ -761,6 +732,16 @@ interface UpcomingSectionProps {
   preferredQuality: AudioQuality;
 }
 
+interface SidebarGroupEntry {
+  id: string;
+  albumName: string;
+  venue?: string;
+  year?: string;
+  coverArt?: string;
+  items: Array<{ item: QueueItem; absoluteIndex: number }>;
+  batchId: string;
+}
+
 function UpcomingSection({
   queue,
   albumGroups,
@@ -768,7 +749,6 @@ function UpcomingSection({
   clearUpcoming,
   playFromQueue,
   moveItem,
-  moveBlock,
   selectVersion,
   onSave,
   totalItems,
@@ -776,58 +756,191 @@ function UpcomingSection({
   preferredQuality,
 }: UpcomingSectionProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [visibleGroupId, setVisibleGroupId] = useState<string | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const sectionHeaderRefs = useRef(new Map<string, HTMLDivElement>());
+  const tabRefs = useRef(new Map<string, HTMLButtonElement>());
+  const isProgrammaticScroll = useRef(false);
   const upcomingCount = queue.items.length - (queue.cursorIndex + 1);
 
-  const groupDragIdPrefix = 'group-drag-';
-
-  const renderItems = useMemo((): RenderEntry[] => {
+  // Build sidebar groups: album groups + standalone items
+  const sidebarGroups = useMemo((): SidebarGroupEntry[] => {
     const startFrom = queue.cursorIndex + 1;
     if (startFrom >= queue.items.length) return [];
 
-    const groupByStartIndex = new Map<number, AlbumGroup>();
-    albumGroups.forEach(group => {
-      groupByStartIndex.set(group.startIndex, group);
-    });
+    const groupStartMap = new Map<number, AlbumGroup>();
+    albumGroups.forEach(g => groupStartMap.set(g.startIndex, g));
 
-    const result: RenderEntry[] = [];
+    const result: SidebarGroupEntry[] = [];
+    let i = startFrom;
 
-    for (let i = startFrom; i < queue.items.length; i++) {
-      const group = groupByStartIndex.get(i);
+    while (i < queue.items.length) {
+      const group = groupStartMap.get(i);
       if (group) {
-        result.push({ type: 'group-header', group });
+        result.push({
+          id: `${group.batchId}-${group.startIndex}`,
+          albumName: group.isContinuation
+            ? `${group.albumSource.albumName} (cont.)`
+            : group.albumSource.albumName,
+          venue: group.albumSource.showVenue,
+          year: group.albumSource.showDate?.split('-')[0],
+          coverArt: group.albumSource.coverArt,
+          items: group.items.map((item, idx) => ({
+            item,
+            absoluteIndex: group.startIndex + idx,
+          })),
+          batchId: group.batchId,
+        });
+        i = group.endIndex + 1;
+      } else {
+        const item = queue.items[i];
+        result.push({
+          id: item.queueId,
+          albumName: item.albumSource?.albumName || item.trackTitle,
+          venue: item.albumSource?.showVenue || item.song.showVenue,
+          year: (item.albumSource?.showDate || item.song.showDate)?.split('-')[0],
+          coverArt: item.albumSource?.coverArt,
+          items: [{ item, absoluteIndex: i }],
+          batchId: item.batchId,
+        });
+        i++;
       }
-      result.push({ type: 'track', item: queue.items[i], absoluteIndex: i });
     }
 
     return result;
   }, [queue.items, queue.cursorIndex, albumGroups]);
 
-  const sortableIds = useMemo(() => {
-    return renderItems
-      .map(entry => {
-        if (entry.type === 'track') return entry.item.queueId;
-        if (entry.type === 'group-header') return `${groupDragIdPrefix}${entry.group.batchId}-${entry.group.startIndex}`;
-        return null;
-      })
-      .filter((id): id is string => id !== null);
-  }, [renderItems, groupDragIdPrefix]);
+  // Active group index driven by scroll-spy
+  const activeGroupIdx = useMemo(() => {
+    if (!visibleGroupId || sidebarGroups.length === 0) return 0;
+    const idx = sidebarGroups.findIndex(g => g.id === visibleGroupId);
+    return idx >= 0 ? idx : 0;
+  }, [visibleGroupId, sidebarGroups]);
 
-  const activeItem = useMemo(() => {
-    if (!activeId) return null;
-    if (activeId.startsWith(groupDragIdPrefix)) {
-      const group = albumGroups.find(g => `${groupDragIdPrefix}${g.batchId}-${g.startIndex}` === activeId);
-      return group ? { type: 'group' as const, group } : null;
+  // Progress: count tracks from same batch at or before cursor
+  const groupProgress = useMemo(() => {
+    const progress = new Map<string, number>();
+    for (let i = 0; i <= queue.cursorIndex && i < queue.items.length; i++) {
+      const bid = queue.items[i].batchId;
+      progress.set(bid, (progress.get(bid) || 0) + 1);
     }
-    const item = queue.items.find(i => i.queueId === activeId);
-    return item ? { type: 'track' as const, item } : null;
-  }, [activeId, queue.items, albumGroups, groupDragIdPrefix]);
+    return progress;
+  }, [queue.items, queue.cursorIndex]);
 
-  const pointerSensor = useSensor(PointerSensor, {
-    activationConstraint: { distance: 8 },
-  });
-  const touchSensor = useSensor(TouchSensor, {
-    activationConstraint: { delay: 200, tolerance: 5 },
-  });
+  // DnD — all tracks across all groups
+  const allSortableIds = useMemo(
+    () => sidebarGroups.flatMap(g => g.items.map(i => i.item.queueId)),
+    [sidebarGroups],
+  );
+
+  const queueIdToAbsoluteIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    sidebarGroups.forEach(g => {
+      g.items.forEach(({ item, absoluteIndex }) => {
+        map.set(item.queueId, absoluteIndex);
+      });
+    });
+    return map;
+  }, [sidebarGroups]);
+
+  const dragOverlayItem = useMemo(() => {
+    if (!activeId) return null;
+    for (const group of sidebarGroups) {
+      const found = group.items.find(i => i.item.queueId === activeId);
+      if (found) return found.item;
+    }
+    return null;
+  }, [activeId, sidebarGroups]);
+
+  // Scroll-spy via IntersectionObserver
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || sidebarGroups.length === 0) return;
+
+    const visibleHeaders = new Set<string>();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isProgrammaticScroll.current) return;
+
+        entries.forEach(entry => {
+          const groupId = entry.target.getAttribute('data-group-id');
+          if (!groupId) return;
+          if (entry.isIntersecting) {
+            visibleHeaders.add(groupId);
+          } else {
+            visibleHeaders.delete(groupId);
+          }
+        });
+
+        // Pick the first visible group in document order
+        for (const group of sidebarGroups) {
+          if (visibleHeaders.has(group.id)) {
+            setVisibleGroupId(group.id);
+            break;
+          }
+        }
+      },
+      {
+        root: container,
+        rootMargin: '0px 0px -70% 0px',
+        threshold: 0,
+      },
+    );
+
+    sectionHeaderRefs.current.forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [sidebarGroups]);
+
+  // Auto-scroll sidebar tab into view
+  useEffect(() => {
+    if (visibleGroupId) {
+      tabRefs.current.get(visibleGroupId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [visibleGroupId]);
+
+  // Click-to-scroll
+  const scrollToGroup = useCallback((groupId: string) => {
+    const container = scrollContainerRef.current;
+    const header = sectionHeaderRefs.current.get(groupId);
+    if (!container || !header) return;
+
+    isProgrammaticScroll.current = true;
+    setVisibleGroupId(groupId);
+
+    const containerRect = container.getBoundingClientRect();
+    const headerRect = header.getBoundingClientRect();
+    const offset = headerRect.top - containerRect.top + container.scrollTop;
+
+    container.scrollTo({ top: offset, behavior: 'smooth' });
+
+    setTimeout(() => {
+      isProgrammaticScroll.current = false;
+    }, 600);
+  }, []);
+
+  // Ref setters
+  const setSectionHeaderRef = useCallback((groupId: string, el: HTMLDivElement | null) => {
+    if (el) {
+      sectionHeaderRefs.current.set(groupId, el);
+    } else {
+      sectionHeaderRefs.current.delete(groupId);
+    }
+  }, []);
+
+  const setTabRef = useCallback((groupId: string, el: HTMLButtonElement | null) => {
+    if (el) {
+      tabRefs.current.set(groupId, el);
+    } else {
+      tabRefs.current.delete(groupId);
+    }
+  }, []);
+
+  const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 8 } });
+  const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } });
   const keyboardSensor = useSensor(KeyboardSensor);
   const sensors = useSensors(pointerSensor, touchSensor, keyboardSensor);
 
@@ -841,65 +954,22 @@ function UpcomingSection({
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
-      const activeIdStr = String(active.id);
-      const overIdStr = String(over.id);
+      const fromIndex = queueIdToAbsoluteIndex.get(String(active.id));
+      const toIndex = queueIdToAbsoluteIndex.get(String(over.id));
 
-      // Group header drag
-      if (activeIdStr.startsWith(groupDragIdPrefix)) {
-        const group = albumGroups.find(
-          g => `${groupDragIdPrefix}${g.batchId}-${g.startIndex}` === activeIdStr,
-        );
-        if (!group) return;
-
-        let targetIndex: number;
-        if (overIdStr.startsWith(groupDragIdPrefix)) {
-          const targetGroup = albumGroups.find(
-            g => `${groupDragIdPrefix}${g.batchId}-${g.startIndex}` === overIdStr,
-          );
-          targetIndex = targetGroup ? targetGroup.startIndex : group.startIndex;
-        } else {
-          const trackEntry = renderItems.find(
-            e => e.type === 'track' && e.item.queueId === overIdStr,
-          );
-          targetIndex = trackEntry && trackEntry.type === 'track' ? trackEntry.absoluteIndex : group.startIndex;
-        }
-
-        moveBlock(group.batchId, group.startIndex, group.endIndex, targetIndex);
-        return;
-      }
-
-      // Single track drag
-      const fromEntry = renderItems.find(
-        e => e.type === 'track' && e.item.queueId === activeIdStr,
-      );
-      if (!fromEntry || fromEntry.type !== 'track') return;
-
-      let toIndex: number;
-      if (overIdStr.startsWith(groupDragIdPrefix)) {
-        const targetGroup = albumGroups.find(
-          g => `${groupDragIdPrefix}${g.batchId}-${g.startIndex}` === overIdStr,
-        );
-        toIndex = targetGroup ? targetGroup.startIndex : fromEntry.absoluteIndex;
-      } else {
-        const toEntry = renderItems.find(
-          e => e.type === 'track' && e.item.queueId === overIdStr,
-        );
-        toIndex = toEntry && toEntry.type === 'track' ? toEntry.absoluteIndex : fromEntry.absoluteIndex;
-      }
-
-      if (fromEntry.absoluteIndex !== toIndex) {
-        moveItem(fromEntry.absoluteIndex, toIndex);
+      if (fromIndex !== undefined && toIndex !== undefined && fromIndex !== toIndex) {
+        moveItem(fromIndex, toIndex);
       }
     },
-    [renderItems, albumGroups, moveItem, moveBlock, groupDragIdPrefix],
+    [queueIdToAbsoluteIndex, moveItem],
   );
 
   if (upcomingCount <= 0) return null;
 
   return (
-    <div className="px-2.5 pb-4">
+    <div className="flex-1 flex flex-col min-h-0">
       {/* Up Next header */}
-      <div className="flex items-center justify-between px-2.5 pt-1 pb-2.5">
+      <div className="flex items-center justify-between px-5 pt-1 pb-2.5 flex-shrink-0">
         <div className="font-jb-mono text-[11px] font-semibold tracking-[0.1em] uppercase">
           <span style={{ color: 'var(--quinary)' }}>UP</span>{' '}
           <span style={{ color: 'var(--secondary)' }}>NEXT</span>{' '}
@@ -944,130 +1014,147 @@ function UpcomingSection({
         </div>
       </div>
 
-      {/* Scrollable track list */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-          <ul className="space-y-0.5">
-            {renderItems.map((entry) => {
-              if (entry.type === 'group-header') {
-                return (
-                  <SortableGroupHeader
-                    key={`group-${entry.group.batchId}-${entry.group.startIndex}`}
-                    group={entry.group}
-                    dragId={`${groupDragIdPrefix}${entry.group.batchId}-${entry.group.startIndex}`}
-                  />
-                );
-              }
-
-              return (
-                <SortableTrackRow
-                  key={entry.item.queueId}
-                  item={entry.item}
-                  absoluteIndex={entry.absoluteIndex}
-                  displayIndex={entry.absoluteIndex - queue.cursorIndex}
-                  removeItem={removeItem}
-                  playFromQueue={playFromQueue}
-                  selectVersion={selectVersion}
-                  preferredQuality={preferredQuality}
-                />
-              );
-            })}
-          </ul>
-        </SortableContext>
-
-        <DragOverlay dropAnimation={null}>
-          {activeItem?.type === 'track' && (
-            <DragOverlayTrack item={activeItem.item} />
-          )}
-          {activeItem?.type === 'group' && (
-            <DragOverlayGroup group={activeItem.group} />
-          )}
-        </DragOverlay>
-      </DndContext>
-    </div>
-  );
-}
-
-// =============================================================================
-// Sortable Group Header
-// =============================================================================
-
-interface SortableGroupHeaderProps {
-  group: AlbumGroup;
-  dragId: string;
-}
-
-function SortableGroupHeader({ group, dragId }: SortableGroupHeaderProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: dragId });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-    zIndex: isDragging ? 10 : undefined,
-  };
-
-  return (
-    <li
-      ref={setNodeRef}
-      style={style}
-      className={isDragging ? 'rounded' : ''}
-      aria-hidden="true"
-    >
-      <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-2 mb-0.5">
-        {/* Drag handle */}
-        <button
-          ref={setActivatorNodeRef}
-          {...attributes}
-          {...listeners}
-          className="opacity-30 cursor-grab active:cursor-grabbing touch-none p-1"
-          aria-label={`Reorder ${group.albumSource.albumName} group`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <DragDots />
-        </button>
-
-        {/* Album art */}
+      {/* Sidebar layout */}
+      <div className="flex-1 min-h-0 flex">
+        {/* Album tabs — scroll-spy navigation */}
         <div
-          className="w-8 h-8 rounded flex-shrink-0 flex items-center justify-center overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, var(--surface-elevated), var(--surface-card))' }}
+          className="w-[72px] flex-shrink-0 overflow-y-auto px-[7px] py-1.5 flex flex-col gap-1.5 queue-sidebar-tabs"
+          style={{ borderRight: '1px solid var(--border-subtle-player)' }}
         >
-          {group.albumSource.coverArt ? (
-            <Image
-              src={group.albumSource.coverArt}
-              alt=""
-              width={32}
-              height={32}
-              className="w-full h-full object-cover rounded"
-            />
-          ) : (
-            <VinylPlaceholder size={14} />
-          )}
+          {sidebarGroups.map((group, idx) => {
+            const isActive = idx === activeGroupIdx;
+            const played = groupProgress.get(group.batchId) || 0;
+            const total = group.items.length + played;
+            const pct = total > 0 ? (played / total) * 100 : 0;
+
+            return (
+              <button
+                key={group.id}
+                ref={(el) => setTabRef(group.id, el)}
+                onClick={() => scrollToGroup(group.id)}
+                className="w-[58px] flex-shrink-0 rounded-lg p-1 flex flex-col items-center gap-1 transition-all cursor-pointer"
+                style={{
+                  border: isActive ? '1.5px solid var(--quinary)' : '1.5px solid transparent',
+                  background: isActive ? 'var(--player-surface-chip-hover)' : 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.borderColor = 'var(--border-subtle-player)';
+                    e.currentTarget.style.background = 'var(--player-surface-chip)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.borderColor = 'transparent';
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+                aria-label={`${group.albumName} - ${group.items.length} tracks`}
+              >
+                <div
+                  className="w-[46px] h-[46px] rounded-[5px] flex items-center justify-center overflow-hidden flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, var(--surface-elevated), var(--surface-card))' }}
+                >
+                  {group.coverArt ? (
+                    <Image src={group.coverArt} alt="" width={46} height={46} quality={60} className="w-full h-full object-cover" />
+                  ) : (
+                    <VinylPlaceholder />
+                  )}
+                </div>
+                <span className="font-jb-mono text-[8px]" style={{ color: 'var(--text-tertiary)' }}>
+                  {group.items.length} trk
+                </span>
+                <div className="w-full h-[2px] rounded-sm overflow-hidden" style={{ background: 'var(--primary-muted)' }}>
+                  <div
+                    className="h-full rounded-sm"
+                    style={{
+                      width: `${pct}%`,
+                      background: 'linear-gradient(90deg, var(--quinary), var(--secondary))',
+                    }}
+                  />
+                </div>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Album name */}
-        <span
-          className="font-jb-mono text-[11px] font-semibold tracking-wider uppercase truncate"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          {group.isContinuation
-            ? `${group.albumSource.albumName} (continued)`
-            : group.albumSource.albumName}
-        </span>
+        {/* Track content — continuous list with sticky section headers */}
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto py-1.5 px-1 queue-sidebar-scroll">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={allSortableIds} strategy={verticalListSortingStrategy}>
+              <ul>
+                {sidebarGroups.map((group) => {
+                  const played = groupProgress.get(group.batchId) || 0;
+                  const total = group.items.length + played;
+                  const pct = total > 0 ? (played / total) * 100 : 0;
+
+                  return (
+                    <li key={group.id}>
+                      {/* Sticky album section header */}
+                      <div
+                        ref={(el) => setSectionHeaderRef(group.id, el)}
+                        data-group-id={group.id}
+                        className="sticky top-0 z-[2] px-2.5 pt-2 pb-2.5 mx-1 mb-1"
+                        style={{
+                          background: 'linear-gradient(180deg, var(--player-surface-queue) 80%, transparent)',
+                        }}
+                      >
+                        <p className="text-[14px] font-bold text-primary" style={{ lineHeight: '1.25' }}>
+                          {group.albumName}
+                        </p>
+                        {(group.venue || group.year) && (
+                          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                            {[group.venue, group.year].filter(Boolean).join(' \u00b7 ')}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <div className="w-12 h-[3px] rounded-sm overflow-hidden" style={{ background: 'var(--primary-muted)' }}>
+                            <div
+                              className="h-full rounded-sm"
+                              style={{
+                                width: `${pct}%`,
+                                background: 'linear-gradient(90deg, var(--quinary), var(--secondary))',
+                              }}
+                            />
+                          </div>
+                          <span className="font-jb-mono text-[9px]" style={{ color: 'var(--text-tertiary)' }}>
+                            {played}/{total} played
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Track rows with per-album numbering */}
+                      <ul>
+                        {group.items.map(({ item, absoluteIndex }, idx) => (
+                          <SortableTrackRow
+                            key={item.queueId}
+                            item={item}
+                            absoluteIndex={absoluteIndex}
+                            displayIndex={idx + 1}
+                            removeItem={removeItem}
+                            playFromQueue={playFromQueue}
+                            selectVersion={selectVersion}
+                            preferredQuality={preferredQuality}
+                            hideVenue
+                          />
+                        ))}
+                      </ul>
+                    </li>
+                  );
+                })}
+              </ul>
+            </SortableContext>
+            <DragOverlay dropAnimation={null}>
+              {dragOverlayItem && <DragOverlayTrack item={dragOverlayItem} />}
+            </DragOverlay>
+          </DndContext>
+        </div>
       </div>
-    </li>
+    </div>
   );
 }

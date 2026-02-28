@@ -23,7 +23,7 @@
 /* Skip to main content link */
 .skip-to-main {
   position: absolute;
-  top: -40px;
+  top: -100%;
   left: 0;
   background: var(--accent-primary);
   color: var(--text-inverse);

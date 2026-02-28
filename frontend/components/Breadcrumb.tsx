@@ -1,7 +1,7 @@
 'use client';
 
 // Breadcrumb - Navigation breadcrumbs for the top bar
-// Format: ☰ 8pm.me > Artist: {name} > Album: {name} > Track: {name} > Version: {year / venue}
+// Format: ☰ 8pm.me > {artist} > {album} > Track: {name} > Version: {year / venue}
 
 import Link from 'next/link';
 import { useBreadcrumbs, BreadcrumbType } from '@/context/BreadcrumbContext';
@@ -10,10 +10,6 @@ import { usePlayer } from '@/context/PlayerContext';
 // Get the prefix for each breadcrumb type
 function getTypePrefix(type?: BreadcrumbType): string {
   switch (type) {
-    case 'artist':
-      return 'Artist: ';
-    case 'album':
-      return 'Album: ';
     case 'track':
       return 'Track: ';
     case 'version':
@@ -104,7 +100,7 @@ export default function Breadcrumb() {
   }
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center text-sm gap-1 min-w-0 flex-1">
+    <nav aria-label="Breadcrumb" className="flex items-center text-sm gap-1 min-w-0 flex-1 flex-nowrap overflow-hidden">
       <HamburgerButton onClick={player.toggleQueue} />
       <svg
         className="w-4 h-4 text-[var(--text-subdued)] shrink-0"
@@ -119,9 +115,9 @@ export default function Breadcrumb() {
           d="M9 5l7 7-7 7"
         />
       </svg>
-      <ol className="flex items-center gap-1 min-w-0 flex-1">
+      <ol className="flex items-center gap-1 min-w-0 flex-1 flex-nowrap overflow-hidden">
         {/* Always show 8pm.me link first */}
-        <li className="flex items-center shrink-0">
+        <li className="flex items-center shrink-0 self-center">
           <Link
             href="/"
             className="text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
@@ -136,7 +132,7 @@ export default function Breadcrumb() {
           const displayLabel = prefix + crumb.label;
 
           return (
-            <li key={index} className="flex items-center min-w-0">
+            <li key={index} className="flex items-center min-w-0 self-center">
               {/* Chevron separator */}
               <svg
                 className="w-4 h-4 text-[var(--text-subdued)] shrink-0 mx-1"

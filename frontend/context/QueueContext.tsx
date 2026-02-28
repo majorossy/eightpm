@@ -22,6 +22,7 @@ import {
   albumToQueueItems,
   trackToQueueItem,
   computeAlbumGroups,
+  generateBatchId,
 } from '@/lib/queueTypes';
 
 // =============================================================================
@@ -49,6 +50,7 @@ export type QueueAction =
   | { type: 'RESET_PLAYED' }
   | { type: 'SET_REPEAT'; mode: 'off' | 'all' | 'one' }
   | { type: 'CLEAR_QUEUE' }
+  | { type: 'DETACH_ITEM'; queueId: string; targetIndex: number }
   | { type: 'CLEAR_UPCOMING' };
 
 // =============================================================================
@@ -222,6 +224,32 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
         items: newItems,
         cursorIndex: newCursor,
       };
+    }
+
+    case 'DETACH_ITEM': {
+      const { queueId, targetIndex } = action;
+      const fromIndex = state.items.findIndex(item => item.queueId === queueId);
+      if (fromIndex === -1) return state;
+      if (targetIndex < 0 || targetIndex > state.items.length) return state;
+
+      const newItems = [...state.items];
+      const [item] = newItems.splice(fromIndex, 1);
+      const adjustedTarget = targetIndex > fromIndex ? targetIndex - 1 : targetIndex;
+      const detachedItem = { ...item, batchId: generateBatchId() };
+      newItems.splice(adjustedTarget, 0, detachedItem);
+
+      let newCursor = state.cursorIndex;
+      if (fromIndex === state.cursorIndex) {
+        newCursor = adjustedTarget;
+      } else {
+        if (fromIndex < state.cursorIndex && adjustedTarget >= state.cursorIndex) {
+          newCursor = state.cursorIndex - 1;
+        } else if (fromIndex > state.cursorIndex && adjustedTarget <= state.cursorIndex) {
+          newCursor = state.cursorIndex + 1;
+        }
+      }
+
+      return { ...state, items: newItems, cursorIndex: newCursor };
     }
 
     case 'SET_CURSOR': {
@@ -399,6 +427,7 @@ interface QueueContextType {
   addToQueue: (items: QueueItem | QueueItem[]) => void;
   removeItem: (queueId: string) => void;
   moveItem: (fromIndex: number, toIndex: number) => void;
+  detachItem: (queueId: string, targetIndex: number) => void;
   moveBlock: (
     batchId: string,
     startIndex: number,
@@ -611,6 +640,10 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'MOVE_ITEM', fromIndex, toIndex });
   }, []);
 
+  const detachItem = useCallback((queueId: string, targetIndex: number) => {
+    dispatch({ type: 'DETACH_ITEM', queueId, targetIndex });
+  }, []);
+
   const moveBlock = useCallback(
     (
       batchId: string,
@@ -715,6 +748,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       addToQueue,
       removeItem,
       moveItem,
+      detachItem,
       moveBlock,
       setCursor,
       advanceCursor,
@@ -744,6 +778,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       addToQueue,
       removeItem,
       moveItem,
+      detachItem,
       moveBlock,
       setCursor,
       advanceCursor,

@@ -56,6 +56,7 @@ export default function BottomPlayer() {
     isLastItem,
     setRepeat,
     moveItem,
+    detachItem,
     removeItem,
     selectVersion,
   } = useQueue();
@@ -333,6 +334,7 @@ export default function BottomPlayer() {
         onRemoveItem={removeItem}
         onSelectVersion={selectVersion}
         onMoveItem={moveItem}
+        onDetachItem={detachItem}
         isInWishlist={isInWishlist}
         wishlistItems={wishlist.items}
         onAddToWishlist={addToWishlist}

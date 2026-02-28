@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useMemo, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { formatDuration } from '@/lib/api';
 import { formatLineage, getRecordingBadge } from '@/lib/lineageUtils';
@@ -10,22 +10,7 @@ import ShareButton from '@/components/ShareButton';
 import DownloadButton from '@/components/DownloadButton';
 import QueuePreview from '@/components/QueuePreview';
 import type { QueueItem } from '@/lib/queueTypes';
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragOverlay,
-  DragStartEvent,
-  DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  horizontalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { SortableQueueChip } from '@/components/player/QueueStrip';
-import QueueChip from '@/components/player/QueueChip';
+import QueueAccordion from '@/components/player/QueueAccordion';
 import type { AudioQuality } from '@/lib/types';
 
 interface StreamingStats {
@@ -87,6 +72,7 @@ interface DesktopPlayerBarProps {
   onRemoveItem: (queueId: string) => void;
   onSelectVersion: (queueId: string, song: any) => void;
   onMoveItem: (from: number, to: number) => void;
+  onDetachItem: (queueId: string, targetIndex: number) => void;
   // Wishlist
   isInWishlist: (id: string) => boolean;
   wishlistItems: { id: string; song: { id: string } }[];
@@ -138,6 +124,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
     onRemoveItem,
     onSelectVersion,
     onMoveItem,
+    onDetachItem,
     isInWishlist,
     wishlistItems,
     onAddToWishlist,
@@ -151,64 +138,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
   const recordingBadge = getRecordingBadge(currentSong.lineage, currentSong.recordingType);
   const qualityInfo = getQualityBadge(preferredQuality);
 
-  // DnD for reordering queue chips
-  const pointerSensor = useSensor(PointerSensor, {
-    activationConstraint: { distance: 8 },
-  });
-  const dndSensors = useSensors(pointerSensor);
-
-  const sortableIds = useMemo(
-    () => queueChips.filter(c => !c.isPlayed).map(({ item }) => item.queueId),
-    [queueChips]
-  );
-
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
-
-  const activeDragItem = useMemo(() => {
-    if (!activeDragId) return null;
-    return queueChips.find(({ item }) => item.queueId === activeDragId) ?? null;
-  }, [activeDragId, queueChips]);
-
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveDragId(String(event.active.id));
-  }, []);
-
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    setActiveDragId(null);
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const fromEntry = queueChips.find(({ item }) => item.queueId === String(active.id));
-    const toEntry = queueChips.find(({ item }) => item.queueId === String(over.id));
-    if (fromEntry && toEntry) {
-      onMoveItem(fromEntry.absoluteIndex, toEntry.absoluteIndex);
-    }
-  }, [queueChips, onMoveItem]);
-
-  // Auto-scroll and left fade state for queue strip
-  const queueScrollRef = useRef<HTMLDivElement>(null);
-  const [showLeftFade, setShowLeftFade] = useState(false);
-
   const playedCount = useMemo(() => queueChips.filter(c => c.isPlayed).length, [queueChips]);
-
-  // Auto-scroll to keep current song visible when cursor advances
-  useEffect(() => {
-    const el = queueScrollRef.current;
-    if (!el || playedCount === 0) return;
-    const chipWidth = 182; // 174px chip + 8px gap
-    const targetScroll = Math.max(0, (playedCount - 1) * chipWidth);
-    el.scrollTo({ left: targetScroll, behavior: 'smooth' });
-  }, [playedCount]);
-
-  // Track scroll position for left fade mask
-  useEffect(() => {
-    const el = queueScrollRef.current;
-    if (!el) return;
-    const handleScroll = () => setShowLeftFade(el.scrollLeft > 0);
-    el.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // check initial state
-    return () => el.removeEventListener('scroll', handleScroll);
-  }, [queueChips.length]);
 
   return (
     <div
@@ -324,7 +254,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
         </div>
       </div>
 
-      {/* Queue strip — draggable cards with grip handles */}
+      {/* Queue strip — accordion album groups */}
       {queueChips.length > 0 && (
         <div className="px-6 pt-2.5 pb-3.5" style={{ background: 'var(--player-surface-queue)', borderTop: '1px solid color-mix(in srgb, var(--player-surface-bar) 20%, transparent)' }}>
           <div className="flex items-center gap-2 mb-2">
@@ -336,54 +266,20 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
             <span className="text-[10px] text-tertiary font-jb-mono uppercase tracking-wider">&middot; {totalUpcoming} tracks</span>
             <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--quinary) 25%, transparent), transparent)' }} />
             {totalUpcoming > 0 && (
-              <span className="text-[10px] text-tertiary italic">drag to reorder</span>
+              <span className="text-[10px] text-tertiary italic">click album to expand</span>
             )}
           </div>
-          <div className="relative">
-            <DndContext
-              sensors={dndSensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
-                <div ref={queueScrollRef} className="flex gap-2 overflow-x-auto queue-scrollbar pb-1">
-                  {queueChips.map(({ item, absoluteIndex, isPlayed }, i) => (
-                    <SortableQueueChip
-                      key={item.queueId}
-                      item={item}
-                      chipIndex={absoluteIndex + 1}
-                      absoluteIndex={absoluteIndex}
-                      onPlay={onChipPlay}
-                      onRemove={onRemoveItem}
-                      onSelectVersion={(queueId, song) => onSelectVersion(queueId, song)}
-                      preferredQuality={preferredQuality}
-                      isActive={!isPlayed && i === playedCount}
-                      isPlayed={isPlayed}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-              <DragOverlay dropAnimation={null}>
-                {activeDragItem ? (
-                  <QueueChip
-                    item={activeDragItem.item}
-                    chipIndex={queueChips.findIndex(t => t.item.queueId === activeDragItem.item.queueId) + 1}
-                    absoluteIndex={activeDragItem.absoluteIndex}
-                    onPlay={() => {}}
-                    preferredQuality={preferredQuality}
-                    isDragging
-                  />
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-            {/* Left fade mask — visible when scrolled */}
-            {showLeftFade && (
-              <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-surface-player-queue to-transparent pointer-events-none z-[1]" />
-            )}
-            {/* Right fade mask */}
-            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-surface-player-queue to-transparent pointer-events-none" />
-          </div>
+          <QueueAccordion
+            queueChips={queueChips}
+            totalUpcoming={totalUpcoming}
+            playedCount={playedCount}
+            onChipPlay={onChipPlay}
+            onRemoveItem={onRemoveItem}
+            onSelectVersion={onSelectVersion}
+            onMoveItem={onMoveItem}
+            onDetachItem={onDetachItem}
+            preferredQuality={preferredQuality}
+          />
         </div>
       )}
     </div>

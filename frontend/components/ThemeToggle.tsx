@@ -8,7 +8,7 @@ export default function ThemeToggle() {
 
   return (
     <div
-      className="flex items-center gap-1 p-1 rounded-full transition-all duration-300"
+      className="flex items-center gap-0.5 p-0.5 rounded-full transition-all duration-300"
       style={{ background: 'var(--overlay-subtle)' }}
       role="radiogroup"
       aria-label="Theme selector"
@@ -21,7 +21,7 @@ export default function ThemeToggle() {
           <button
             key={themeKey}
             onClick={() => setTheme(themeKey)}
-            className="p-2 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)]"
+            className="p-1 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)]"
             style={{
               background: isActive ? 'var(--overlay-medium)' : 'transparent',
               transform: isActive ? 'scale(1.1)' : 'scale(1)',
@@ -32,10 +32,11 @@ export default function ThemeToggle() {
             aria-checked={isActive}
           >
             <span
-              className="block text-lg leading-none transition-all duration-300"
+              className="block text-2xs leading-none transition-all duration-300"
               style={{
                 opacity: isActive ? 1 : 0.5,
                 filter: `grayscale(${isActive ? 0 : 100}%)`,
+                fontSize: '0.6rem',
               }}
             >
               {themeConfig.icon}

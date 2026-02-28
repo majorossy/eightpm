@@ -108,13 +108,10 @@ export default function LoadingBar() {
   useEffect(() => {
     if (pathname !== prevPathname.current) {
       prevPathname.current = pathname;
-
-      if (isNavigating) {
-        // Navigation completed - finish the animation
-        completeLoading();
-      }
+      // Navigation completed - finish the animation
+      completeLoading();
     }
-  }, [pathname, isNavigating, completeLoading]);
+  }, [pathname, completeLoading]);
 
   // Safety timeout - complete after 10 seconds if navigation seems stuck
   useEffect(() => {
