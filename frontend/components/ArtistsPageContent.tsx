@@ -122,7 +122,7 @@ function ArtistsContentInner() {
   }, [sortedArtists]);
 
   return (
-    <div className="pb-8 max-w-[1800px]">
+    <div className="pb-8 max-w-[1800px] mx-auto">
       {/* Festival Hero */}
       <FestivalHero
         artists={sortedArtists.map((a: any) => {

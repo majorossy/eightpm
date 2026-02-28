@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { AudioQuality, Song } from '@/lib/types';
+import { sanitizeStreamUrl } from '@/lib/urlUtils';
 
 interface NetworkInformation {
   effectiveType?: string;
@@ -24,17 +25,6 @@ const QUALITY_LABELS: Record<AudioQuality, string> = {
   low: 'Low',
 };
 
-/**
- * Ensure a stream URL is browser-playable.
- * - Fix double-slash in path after domain (e.g., //24/items/ -> /24/items/)
- * - Convert .flac -> .mp3 (Archive.org derives VBR MP3 for every FLAC)
- */
-function sanitizeStreamUrl(url: string): string {
-  if (!url) return url;
-  url = url.replace(/^(https?:\/\/[^/]+)\/\//, '$1/');
-  if (url.endsWith('.flac')) url = url.replace(/\.flac$/, '.mp3');
-  return url;
-}
 
 function getDefaultQuality(): AudioQuality {
   if (typeof navigator === 'undefined') return 'high';

@@ -125,19 +125,20 @@ html, body {
     min-width: auto;
   }
 
-  /* Disable hover effects on touch devices */
-  @media (hover: none) {
-    .version-card-glow:hover {
-      transform: none;
-      box-shadow: none;
-    }
+}
 
-    .btn-neon:hover {
-      box-shadow: none;
-    }
+/* Disable hover effects on touch devices at mobile widths */
+@media (max-width: 767px) and (hover: none) {
+  .version-card-glow:hover {
+    transform: none;
+    box-shadow: none;
+  }
 
-    .track-card-hover:hover {
-      border-color: transparent;
-    }
+  .btn-neon:hover {
+    box-shadow: none;
+  }
+
+  .track-card-hover:hover {
+    border-color: transparent;
   }
 }

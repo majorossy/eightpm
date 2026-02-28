@@ -98,7 +98,7 @@ const withPWA = require('next-pwa')({
     },
     // Static assets from same origin
     {
-      urlPattern: /^https?:\/\/localhost:3001\/_next\/static\/.*/i,
+      urlPattern: /\/_next\/static\/.*/i,
       handler: 'CacheFirst',
       options: {
         cacheName: 'static-resources',

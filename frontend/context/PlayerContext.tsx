@@ -244,6 +244,37 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setAnalyzerVolume(state.volume);
   }, [state.volume, setAnalyzerVolume]);
 
+  // Skip to next track after all retries are exhausted
+  const skipToNextTrack = useCallback((failedSong: Song, errorMessage: string, audio: HTMLAudioElement) => {
+    const songTitle = failedSong.title || 'Unknown track';
+    trackPlaybackError(failedSong, `final_skip: ${errorMessage}`);
+    retryCountRef.current = 0;
+    retryingSongIdRef.current = null;
+    clearStallTimers();
+    setState(prev => ({ ...prev, isBuffering: false }));
+
+    if (toast) {
+      const nextItem = queueContext.peekNext();
+      if (nextItem) {
+        toast.showError(`Couldn't play "${songTitle}", skipping...`);
+      } else {
+        toast.showError(`Couldn't play "${songTitle}"`);
+      }
+    }
+
+    const advancedItem = queueContext.advanceCursor();
+    if (advancedItem) {
+      audio.src = '';
+      audio.src = getStreamUrl(advancedItem.song);
+      audio.play().catch((err) => {
+        console.error('[PlayerContext] Next track also failed:', err);
+        setState(prev => ({ ...prev, isPlaying: false }));
+      });
+    } else {
+      setState(prev => ({ ...prev, isPlaying: false }));
+    }
+  }, [queueContext, toast, getStreamUrl, clearStallTimers]);
+
   // Helper to handle playback errors with retry logic
   const handlePlaybackError = useCallback((failedSong: Song | null, error: Error | MediaError | Event) => {
     const songTitle = failedSong?.title || 'Unknown track';
@@ -317,40 +348,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       } else {
         // No lower quality available, skip directly
         retryCountRef.current = 2;
-        handlePlaybackError(failedSong, error);
+        skipToNextTrack(failedSong, errorMessage, audio);
         return;
       }
     } else {
       // Retries exhausted - skip to next track
-      trackPlaybackError(failedSong, `final_skip: ${errorMessage}`);
-      retryCountRef.current = 0;
-      retryingSongIdRef.current = null;
-      clearStallTimers();
-      setState(prev => ({ ...prev, isBuffering: false }));
-
-      if (toast) {
-        const nextItem = queueContext.peekNext();
-        if (nextItem) {
-          toast.showError(`Couldn't play "${songTitle}", skipping...`);
-        } else {
-          toast.showError(`Couldn't play "${songTitle}"`);
-        }
-      }
-
-      // Skip to next track
-      const advancedItem = queueContext.advanceCursor();
-      if (advancedItem) {
-        audio.src = '';
-        audio.src = getStreamUrl(advancedItem.song);
-        audio.play().catch((err) => {
-          console.error('[PlayerContext] Next track also failed:', err);
-          setState(prev => ({ ...prev, isPlaying: false }));
-        });
-      } else {
-        setState(prev => ({ ...prev, isPlaying: false }));
-      }
+      skipToNextTrack(failedSong, errorMessage, audio);
     }
-  }, [queueContext, toast, getStreamUrl, getLowerQualityUrl, clearStallTimers]);
+  }, [queueContext, toast, getStreamUrl, getLowerQualityUrl, clearStallTimers, skipToNextTrack]);
 
   // Initialize audio element event handlers
   useEffect(() => {
@@ -577,6 +582,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [currentSong, state.isPlaying, state.currentTime, state.duration]);
 
   // Clear tracked songs and retry state when song changes
+  const prevSongIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (currentSong) {
       // Reset tracking for new song (allow same song to be tracked again if replayed later)
@@ -586,24 +592,34 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       retryCountRef.current = 0;
       retryingSongIdRef.current = null;
       clearStallTimers();
-      // Announce song change for screen readers
+      prevSongIdRef.current = currentSong.id;
+    }
+  }, [currentSong, clearStallTimers]);
+
+  // Unified screen reader announcement for song changes and play/pause
+  const prevIsPlayingRef = useRef(state.isPlaying);
+  useEffect(() => {
+    if (!currentSong) return;
+
+    const songChanged = currentSong.id !== prevSongIdRef.current;
+    const playStateChanged = state.isPlaying !== prevIsPlayingRef.current;
+    prevIsPlayingRef.current = state.isPlaying;
+
+    if (songChanged && state.isPlaying) {
+      // New song started — announce full title
       setState(prev => ({
         ...prev,
         isBuffering: false,
         announcement: `Now playing ${currentSong.title} by ${currentSong.artistName}`
       }));
-    }
-  }, [currentSong, clearStallTimers]);
-
-  // Announce playback state changes for screen readers
-  useEffect(() => {
-    if (currentSong) {
+    } else if (playStateChanged) {
+      // Same song, play state toggled
       setState(prev => ({
         ...prev,
         announcement: state.isPlaying ? 'Playing' : 'Paused'
       }));
     }
-  }, [state.isPlaying, currentSong]);
+  }, [currentSong, state.isPlaying]);
 
   // Periodically save playback progress while playing (every 30 seconds)
   useEffect(() => {

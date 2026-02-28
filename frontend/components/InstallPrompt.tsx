@@ -31,7 +31,7 @@ export default function InstallPrompt() {
   return (
     <>
       {/* Install Banner */}
-      <div className="fixed bottom-[140px] md:bottom-[100px] left-4 right-4 md:left-auto md:right-4 md:w-80 bg-surface-elevated border border-default rounded-lg shadow-xl z-50 overflow-hidden">
+      <div className="fixed bottom-[140px] md:bottom-[100px] right-4 w-80 max-w-[calc(100vw-2rem)] bg-surface-elevated border border-default rounded-lg shadow-xl z-50 overflow-hidden">
         <div className="p-4">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 w-10 h-10 bg-accent rounded-lg flex items-center justify-center">

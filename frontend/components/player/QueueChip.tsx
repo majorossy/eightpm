@@ -5,27 +5,9 @@
 
 import Image from 'next/image';
 import { formatDuration } from '@/lib/api';
+import { getQualityLabel, getEffectiveQuality } from '@/lib/qualityUtils';
 import type { QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
-
-// Compact quality label for the chip
-function getQualityLabel(quality: AudioQuality): string {
-  switch (quality) {
-    case 'high': return 'FLAC';
-    case 'medium': return '320k';
-    case 'low': return '128k';
-  }
-}
-
-// Determine effective quality for this song (what it will actually play at)
-function getEffectiveQuality(song: Song, preferred: AudioQuality): AudioQuality {
-  if (!song.qualityUrls) return preferred;
-  if (song.qualityUrls[preferred]) return preferred;
-  if (song.qualityUrls.medium) return 'medium';
-  if (song.qualityUrls.high) return 'high';
-  if (song.qualityUrls.low) return 'low';
-  return preferred;
-}
 
 export interface QueueChipProps {
   item: QueueItem;

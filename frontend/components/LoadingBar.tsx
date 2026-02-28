@@ -117,9 +117,7 @@ export default function LoadingBar() {
   useEffect(() => {
     if (isNavigating) {
       const safetyTimeout = setTimeout(() => {
-        if (isNavigating) {
-          completeLoading();
-        }
+        completeLoading();
       }, 10000);
       return () => clearTimeout(safetyTimeout);
     }

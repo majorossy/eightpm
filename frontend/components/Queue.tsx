@@ -13,6 +13,7 @@ import { formatDuration } from '@/lib/api';
 import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
 
+import { getQualityLabel, getEffectiveQuality } from '@/lib/qualityUtils';
 import { VALIDATION_LIMITS } from '@/lib/validation';
 import {
   DndContext,
@@ -33,23 +34,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-// Quality helpers (shared with QueueChip)
-function getQualityLabel(quality: AudioQuality): string {
-  switch (quality) {
-    case 'high': return 'FLAC';
-    case 'medium': return '320k';
-    case 'low': return '128k';
-  }
-}
-
-function getEffectiveQuality(song: Song, preferred: AudioQuality): AudioQuality {
-  if (!song.qualityUrls) return preferred;
-  if (song.qualityUrls[preferred]) return preferred;
-  if (song.qualityUrls.medium) return 'medium';
-  if (song.qualityUrls.high) return 'high';
-  if (song.qualityUrls.low) return 'low';
-  return preferred;
-}
 
 export default function Queue() {
   const { isMobile } = useMobileUI();
