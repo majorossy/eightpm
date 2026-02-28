@@ -36,30 +36,18 @@ class UpdateVenueStats
             $optionValueTable = $connection->getTableName('eav_attribute_option_value');
             $optionTable = $connection->getTableName('eav_attribute_option');
 
-            // Get attribute IDs
-            $venueAttrId = (int)$connection->fetchOne(
-                $connection->select()->from($eavAttr, ['attribute_id'])
-                    ->where('attribute_code = ?', 'show_venue')
+            // Batch attribute ID lookup — single query instead of 4
+            $attrRows = $connection->fetchPairs(
+                $connection->select()
+                    ->from($eavAttr, ['attribute_code', 'attribute_id'])
+                    ->where('attribute_code IN (?)', ['show_venue', 'identifier', 'archive_collection', 'show_date'])
                     ->where('entity_type_id = ?', 4)
             );
 
-            $identifierAttrId = (int)$connection->fetchOne(
-                $connection->select()->from($eavAttr, ['attribute_id'])
-                    ->where('attribute_code = ?', 'identifier')
-                    ->where('entity_type_id = ?', 4)
-            );
-
-            $collectionAttrId = (int)$connection->fetchOne(
-                $connection->select()->from($eavAttr, ['attribute_id'])
-                    ->where('attribute_code = ?', 'archive_collection')
-                    ->where('entity_type_id = ?', 4)
-            );
-
-            $showDateAttrId = (int)$connection->fetchOne(
-                $connection->select()->from($eavAttr, ['attribute_id'])
-                    ->where('attribute_code = ?', 'show_date')
-                    ->where('entity_type_id = ?', 4)
-            );
+            $venueAttrId = (int)($attrRows['show_venue'] ?? 0);
+            $identifierAttrId = (int)($attrRows['identifier'] ?? 0);
+            $collectionAttrId = (int)($attrRows['archive_collection'] ?? 0);
+            $showDateAttrId = (int)($attrRows['show_date'] ?? 0);
 
             if (!$venueAttrId) {
                 $this->logger->warning('show_venue attribute not found, skipping venue stats update');
@@ -71,14 +59,21 @@ class UpdateVenueStats
                 $connection->select()->from($venueTable)
             );
 
+            // Preload all venue aliases in one query, grouped by venue_id
+            $allAliases = $connection->fetchAll(
+                $connection->select()->from($aliasTable, ['venue_id', 'raw_name'])
+            );
+            $aliasesByVenueId = [];
+            foreach ($allAliases as $alias) {
+                $aliasesByVenueId[(int)$alias['venue_id']][] = $alias['raw_name'];
+            }
+
             $updated = 0;
             foreach ($venues as $venue) {
                 $venueId = (int)$venue['venue_id'];
 
-                // Get raw names for this venue
-                $rawNames = $connection->fetchCol(
-                    $connection->select()->from($aliasTable, ['raw_name'])->where('venue_id = ?', $venueId)
-                );
+                // Get raw names for this venue from preloaded data
+                $rawNames = $aliasesByVenueId[$venueId] ?? [];
 
                 if (empty($rawNames)) {
                     continue;

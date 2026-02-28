@@ -20,6 +20,10 @@ use Magento\Framework\Setup\Patch\PatchRevertableInterface;
  *
  * Creates archive_avg_rating and archive_num_reviews product attributes
  * for storing Archive.org rating/review data.
+ *
+ * NOTE: AddRatingAttributes patch creates the same attributes. Both patches have
+ * idempotent guards (EavSetup skips existing attributes), so running both is safe.
+ * Cannot remove either patch — Magento tracks applied patches in the patch_list table.
  */
 class CreateRatingAttributes implements DataPatchInterface, PatchRevertableInterface
 {

@@ -111,9 +111,7 @@
                 <item name="archivedotorg_status" xsi:type="object">ArchiveDotOrg\Core\Console\Command\StatusCommand</item>
                 <item name="archivedotorg_cleanup_products" xsi:type="object">ArchiveDotOrg\Core\Console\Command\CleanupProductsCommand</item>
                 <item name="archivedotorg_refresh_products" xsi:type="object">ArchiveDotOrg\Core\Console\Command\RefreshProductsCommand</item>
-                <item name="archivedotorg_download_metadata" xsi:type="object">ArchiveDotOrg\Core\Console\Command\DownloadMetadataCommand</item>
                 <item name="archivedotorg_download" xsi:type="object">ArchiveDotOrg\Core\Console\Command\DownloadCommand</item>
-                <item name="archivedotorg_populate_tracks" xsi:type="object">ArchiveDotOrg\Core\Console\Command\PopulateTracksCommand</item>
                 <item name="archivedotorg_populate" xsi:type="object">ArchiveDotOrg\Core\Console\Command\PopulateCommand</item>
                 <item name="archivedotorg_show_unmatched" xsi:type="object">ArchiveDotOrg\Core\Console\Command\ShowUnmatchedCommand</item>
                 <item name="archivedotorg_download_album_art" xsi:type="object">ArchiveDotOrg\Core\Console\Command\DownloadAlbumArtCommand</item>
