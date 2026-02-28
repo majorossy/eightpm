@@ -179,7 +179,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
             <div className="flex gap-3.5 items-center justify-center lg:justify-start">
               <button
                 onClick={handleAddToQueue}
-                className="album-play-button px-6 py-3.5 rounded-full flex items-center justify-center text-[var(--bg)] text-sm font-semibold shadow-lg transition-all hover:scale-105 gap-2"
+                className="album-play-button px-6 py-3.5 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 gap-2"
               >
                 + Add Album to Queue
               </button>

@@ -31,7 +31,7 @@
 }
 
 .album-play-button {
-  background: linear-gradient(135deg, var(--secondary), var(--quinary));
+  background: var(--secondary);
   box-shadow: 0 4px 20px var(--accent-glow);
 }
 
