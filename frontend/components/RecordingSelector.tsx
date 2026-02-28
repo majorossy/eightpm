@@ -58,7 +58,7 @@ const COMPACT_MAX_ROWS = 8;
 // ============ Main RecordingSelector ============
 
 export default function RecordingSelector({ songs, currentSongId, isPlaying, onPlay, onQueue }: RecordingSelectorProps) {
-  const viewMode = 'compact' as const;
+  const [viewMode] = useState<'cards' | 'compact'>('compact');
   const [sortBy, setSortBy] = useState('rating');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());

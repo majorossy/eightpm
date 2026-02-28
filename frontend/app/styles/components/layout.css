@@ -1,0 +1,110 @@
+/* ========================================
+   Layout Styles
+   Side dividers, gradient text, stats/section borders,
+   base resets, selects
+   ======================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--bg);
+  overflow-x: hidden;
+  overflow-y: visible; /* Prevent overflow-y: auto which breaks sticky positioning */
+}
+
+body {
+  background-color: transparent;
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: visible; /* Prevent overflow-y: auto which breaks sticky positioning */
+  position: relative;
+}
+
+/* Side A/B dividers */
+.side-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 28px 0;
+}
+
+.side-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-tertiary) 30%, transparent), transparent);
+}
+
+.side-divider-text {
+  color: var(--text-secondary);
+  font-size: 11px;
+  letter-spacing: 4px;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.side-divider-symbol {
+  color: var(--quaternary);
+}
+
+.side-divider-symbol-b {
+  color: var(--tertiary);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--cream), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-title {
+  background: linear-gradient(180deg, var(--cream) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+/* Stats bar border */
+.stats-border {
+  border-top: 1px solid color-mix(in srgb, var(--secondary) 10%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--secondary) 10%, transparent);
+}
+
+/* Section header border */
+.section-border {
+  border-bottom: 1px solid color-mix(in srgb, var(--secondary) 10%, transparent);
+}
+
+/* Neon select dropdown */
+select.neon-select {
+  font-family: var(--font-space-mono), monospace;
+  font-size: 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--text-dim);
+  color: var(--text);
+  padding: 0.5rem 1rem;
+}
+
+select.neon-select:focus {
+  border-color: var(--tertiary);
+  outline: none;
+}
+
+/* Hide time column on small screens */
+@media (max-width: 639px) {
+  .recording-col-time {
+    display: none;
+  }
+  .recording-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

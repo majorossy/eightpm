@@ -81,6 +81,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {
+  args: {} as any,
   render: () => (
     <ToastProvider>
       <div style={{ padding: '2rem', minHeight: 400 }}>

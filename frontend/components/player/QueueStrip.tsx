@@ -16,6 +16,7 @@ export function SortableQueueChip({
   onSelectVersion,
   preferredQuality,
   isActive,
+  isPlayed,
 }: {
   item: QueueItem;
   chipIndex: number;
@@ -25,6 +26,7 @@ export function SortableQueueChip({
   onSelectVersion?: (queueId: string, song: Song) => void;
   preferredQuality?: AudioQuality;
   isActive?: boolean;
+  isPlayed?: boolean;
 }) {
   const {
     attributes,
@@ -33,7 +35,7 @@ export function SortableQueueChip({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.queueId });
+  } = useSortable({ id: item.queueId, disabled: !!isPlayed });
 
   const style = {
     transform: transform ? `translate3d(${transform.x}px, 0, 0)` : undefined,
@@ -49,11 +51,12 @@ export function SortableQueueChip({
         chipIndex={chipIndex}
         absoluteIndex={absoluteIndex}
         onPlay={onPlay}
-        onRemove={onRemove}
+        onRemove={isPlayed ? undefined : onRemove}
         onSelectVersion={onSelectVersion}
         preferredQuality={preferredQuality}
         isDragging={isDragging}
         isActive={isActive}
+        isPlayed={isPlayed}
       />
     </div>
   );

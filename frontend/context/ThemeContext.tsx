@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
-// Three themes: Campfire (dark), Fishman (blue-gray), Light (white)
-export type ThemeType = 'campfire' | 'fishman' | 'light';
+// Three themes: Camp (dark), Lot (blue-gray), Shore (white)
+export type ThemeType = 'camp' | 'lot' | 'shore';
 
 interface ThemeConfig {
   name: string;
@@ -13,21 +13,21 @@ interface ThemeConfig {
 }
 
 export const THEMES: Record<ThemeType, ThemeConfig> = {
-  campfire: {
-    name: 'campfire',
-    label: 'Campfire',
+  camp: {
+    name: 'camp',
+    label: 'Camp',
     description: 'Warm analog dark theme',
     icon: '🔥',
   },
-  fishman: {
-    name: 'fishman',
-    label: 'Fishman',
+  lot: {
+    name: 'lot',
+    label: 'Lot',
     description: 'Aurora donut theme',
     icon: '🍩',
   },
-  light: {
-    name: 'light',
-    label: 'Light',
+  shore: {
+    name: 'shore',
+    label: 'Shore',
     description: 'Clean white theme',
     icon: '☀️',
   },
@@ -43,18 +43,24 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Get initial theme from localStorage
 function getInitialTheme(): ThemeType {
-  if (typeof window === 'undefined') return 'fishman';
+  if (typeof window === 'undefined') return 'lot';
 
   const stored = localStorage.getItem('8pm-theme');
-  if (stored === 'campfire' || stored === 'fishman' || stored === 'light') {
+
+  // Support legacy theme names during migration
+  if (stored === 'fishman') return 'lot';
+  if (stored === 'campfire') return 'camp';
+  if (stored === 'light') return 'shore';
+
+  if (stored === 'camp' || stored === 'lot' || stored === 'shore') {
     return stored;
   }
 
-  return 'fishman';
+  return 'lot';
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeType>('fishman');
+  const [theme, setThemeState] = useState<ThemeType>('lot');
   const [mounted, setMounted] = useState(false);
 
   // Initialize theme on mount
@@ -70,16 +76,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     // Remove all theme classes
     document.documentElement.classList.remove(
+      'theme-camp', 'theme-lot', 'mode-shore',
+      // Legacy classes — remove if present
       'theme-campfire', 'theme-fishman', 'mode-light', 'mode-dark'
     );
 
     // Add appropriate theme class
-    if (theme === 'campfire') {
-      document.documentElement.classList.add('theme-campfire');
-    } else if (theme === 'light') {
-      document.documentElement.classList.add('theme-campfire', 'mode-light');
+    if (theme === 'camp') {
+      document.documentElement.classList.add('theme-camp');
+    } else if (theme === 'shore') {
+      document.documentElement.classList.add('theme-camp', 'mode-shore');
     } else {
-      document.documentElement.classList.add('theme-fishman');
+      document.documentElement.classList.add('theme-lot');
     }
   }, [mounted, theme]);
 
@@ -105,7 +113,7 @@ export function useTheme() {
   if (context === undefined) {
     // Return default values if context not yet available (during SSR/hydration)
     return {
-      theme: 'fishman' as ThemeType,
+      theme: 'lot' as ThemeType,
       setTheme: () => {},
       themes: THEMES,
     };

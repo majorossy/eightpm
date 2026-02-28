@@ -44,6 +44,7 @@ export const LongTitle: Story = {
 };
 
 export const Grid: Story = {
+  args: {} as any,
   decorators: [
     (Story) => (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem', maxWidth: 800 }}>

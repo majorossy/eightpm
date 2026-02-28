@@ -3,6 +3,7 @@
 // QueueChip - Compact card for the queue strip under the bottom player.
 // Dense chip design: small art area + text stack + teal FLAC badge.
 
+import Image from 'next/image';
 import { formatDuration } from '@/lib/api';
 import type { QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
@@ -36,6 +37,7 @@ export interface QueueChipProps {
   absoluteIndex: number;
   isDragging?: boolean;
   isActive?: boolean;
+  isPlayed?: boolean;
 }
 
 export default function QueueChip({
@@ -47,6 +49,7 @@ export default function QueueChip({
   absoluteIndex,
   isDragging,
   isActive,
+  isPlayed,
 }: QueueChipProps) {
   const song = item.song;
   const venue = song.showVenue;
@@ -65,55 +68,72 @@ export default function QueueChip({
         rounded-lg overflow-hidden select-none
         transition-all duration-200 ease-out
         w-[174px] p-2
-        ${isDragging
-          ? 'shadow-[0_8px_24px_rgba(0,0,0,0.5)] scale-[1.03] bg-surface-player-chip-hover'
-          : isActive
-            ? 'bg-surface-player-chip-hover'
-            : 'bg-surface-player-chip hover:bg-surface-player-chip-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]'
+        ${isPlayed
+          ? 'opacity-40 bg-surface-player-chip'
+          : isDragging
+            ? 'shadow-[0_8px_24px_rgba(0,0,0,0.5)] scale-[1.03] bg-surface-player-chip-hover'
+            : isActive
+              ? 'bg-surface-player-chip-hover'
+              : 'bg-surface-player-chip hover:bg-surface-player-chip-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]'
         }
       `}
       style={{
-        border: isActive || isDragging
-          ? '1px solid var(--quinary)'
-          : '1px solid var(--border-subtle-player)',
+        border: isPlayed
+          ? '1px solid var(--border-subtle-player)'
+          : isActive || isDragging
+            ? '1px solid var(--quinary)'
+            : '1px solid var(--border-subtle-player)',
       }}
     >
       {/* Left-edge color bar */}
       <div
         className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-md transition-colors duration-200 ${
-          isDragging || isActive
+          isPlayed
             ? ''
-            : 'bg-transparent group-hover/chip:bg-accent-secondary'
+            : isDragging || isActive
+              ? ''
+              : 'bg-transparent group-hover/chip:bg-accent-secondary'
         }`}
         style={{
-          backgroundColor: isDragging || isActive ? 'var(--quinary)' : undefined,
+          backgroundColor: isPlayed
+            ? 'color-mix(in srgb, var(--quinary) 25%, transparent)'
+            : isDragging || isActive ? 'var(--quinary)' : undefined,
         }}
       />
 
       {/* Card content: art + info */}
       <div className="flex gap-[9px] min-w-0">
-        {/* Art area — 36x36 with vinyl icon + track number */}
+        {/* Art area — 48x48 with cover art or vinyl fallback */}
         <div
-          className="relative w-12 h-12 flex-shrink-0 rounded flex items-center justify-center"
+          className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden flex items-center justify-center"
           style={{
             background: 'linear-gradient(135deg, var(--player-surface-chip-hover), var(--player-surface-deep))',
           }}
         >
-          {/* Vinyl SVG */}
-          <svg
-            className="w-4 h-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            style={{ color: 'var(--text-tertiary)', opacity: 0.5 }}
-          >
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1" />
-            <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="0.5" opacity="0.4" />
-            <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="0.5" opacity="0.35" />
-            <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity="0.5" />
-          </svg>
+          {item.albumSource?.coverArt ? (
+            <Image
+              src={item.albumSource.coverArt}
+              alt=""
+              width={48}
+              height={48}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              style={{ color: 'var(--text-tertiary)', opacity: 0.5 }}
+            >
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1" />
+              <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="0.5" opacity="0.4" />
+              <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="0.5" opacity="0.35" />
+              <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity="0.5" />
+            </svg>
+          )}
 
           {/* Track number overlay */}
-          <span className="absolute top-0.5 left-1 font-jb-mono text-[9px] font-semibold text-accent-secondary opacity-60">
+          <span className="absolute top-0.5 left-1 font-jb-mono text-[9px] font-semibold text-accent-secondary opacity-60 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
             {chipIndex}
           </span>
         </div>
@@ -146,12 +166,14 @@ export default function QueueChip({
         </div>
       </div>
 
-      {/* Drag handle — 3 dots, visible on hover */}
-      <div className="absolute top-1/2 right-[5px] -translate-y-1/2 flex flex-col gap-0.5 opacity-0 group-hover/chip:opacity-30 transition-opacity">
-        <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
-        <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
-        <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
-      </div>
+      {/* Drag handle — 3 dots, visible on hover (hidden for played items) */}
+      {!isPlayed && (
+        <div className="absolute top-1/2 right-[5px] -translate-y-1/2 flex flex-col gap-0.5 opacity-0 group-hover/chip:opacity-30 transition-opacity">
+          <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
+          <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
+          <span className="w-[3px] h-[3px] rounded-full bg-accent-secondary" />
+        </div>
+      )}
 
       {/* Remove button — visible on active card or hover */}
       {onRemove && (

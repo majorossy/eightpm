@@ -1,0 +1,84 @@
+/* ========================================
+   Reduced Motion for Battery/Accessibility
+   Disable animations when battery is low
+   or user prefers reduced motion
+   ======================================== */
+.reduce-motion,
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Disable specific animations when reduced motion is active */
+.reduce-motion .player-slide-up,
+.reduce-motion .player-slide-down,
+.reduce-motion .pulse-glow,
+.reduce-motion .mini-player,
+.reduce-motion .jamify-eq-bars span {
+  animation: none !important;
+}
+
+.reduce-motion .btn-ripple::after {
+  animation: none !important;
+}
+
+.reduce-motion .glow-orb {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+.reduce-motion .album-frame {
+  animation: none !important;
+  filter: none !important;
+}
+
+.reduce-motion .now-playing-badge {
+  animation: none !important;
+}
+
+.reduce-motion [data-radix-dialog-overlay],
+.reduce-motion [data-radix-dialog-content],
+.reduce-motion [data-radix-select-content],
+.reduce-motion [data-radix-dropdown-menu-content],
+.reduce-motion [data-radix-popover-content],
+.reduce-motion [data-radix-accordion-content] {
+  animation: none !important;
+}
+
+.reduce-motion .blink-dot {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+.reduce-motion .skeleton {
+  animation: none !important;
+}
+
+.reduce-motion .spinner {
+  animation: none !important;
+}
+
+/* Also apply to prefers-reduced-motion media query */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .glow-orb {
+    opacity: 0 !important;
+  }
+
+  [data-radix-dialog-overlay],
+  [data-radix-dialog-content],
+  [data-radix-select-content],
+  [data-radix-dropdown-menu-content],
+  [data-radix-popover-content],
+  [data-radix-accordion-content] {
+    animation: none !important;
+  }
+}

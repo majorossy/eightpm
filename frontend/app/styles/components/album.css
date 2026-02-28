@@ -1,0 +1,65 @@
+/* ========================================
+   Album Page Styles
+   Album frame, shuffle/follow buttons, play button, quote box
+   ======================================== */
+
+/* Album action buttons */
+.album-shuffle-btn {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--text-secondary) 30%, transparent);
+  color: var(--text-secondary);
+}
+
+.album-shuffle-btn:hover {
+  border-color: color-mix(in srgb, var(--text-secondary) 50%, transparent);
+  color: var(--text-primary);
+}
+
+.album-follow-btn {
+  border: 1px solid color-mix(in srgb, var(--text-secondary) 30%, transparent);
+  color: var(--text-tertiary);
+}
+
+.album-follow-btn:hover {
+  border-color: color-mix(in srgb, var(--text-secondary) 50%, transparent);
+  color: var(--text-primary);
+}
+
+/* Album page elements */
+.album-quote-box {
+  background: color-mix(in srgb, var(--tertiary) 10%, transparent);
+}
+
+.album-play-button {
+  background: linear-gradient(135deg, var(--secondary), var(--quinary));
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+/* Album frame with animated gradient border */
+.album-frame {
+  position: relative;
+  padding: 4px;
+  background: linear-gradient(135deg, var(--tertiary), var(--secondary), var(--quaternary));
+  animation: border-glow 3s linear infinite;
+}
+
+/* Now playing badge */
+.now-playing-badge {
+  background: linear-gradient(135deg, var(--secondary), color-mix(in srgb, var(--secondary) 80%, black));
+  padding: 0.5rem 1.5rem;
+  border: none;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--cream);
+  border-radius: 4px;
+}
+
+/* Neon text glow */
+.neon-text-cyan {
+  text-shadow: 0 0 20px var(--tertiary);
+}
+
+.neon-text-pink {
+  text-shadow: 0 0 20px var(--secondary);
+}

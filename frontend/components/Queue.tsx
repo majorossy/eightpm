@@ -1,17 +1,17 @@
 'use client';
 
-// Queue drawer - card-stack layout with expand/collapse detail panels (Campfire theme)
+// Queue drawer - mockup-matched design with drag-and-drop reordering
 
 import { useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
+import { useQuality } from '@/context/QualityContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { useMobileUI } from '@/context/MobileUIContext';
 import { formatDuration } from '@/lib/api';
 import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
-import type { Song } from '@/lib/types';
-import TicketStubCard from '@/components/TicketStubCard';
+import type { Song, AudioQuality } from '@/lib/types';
 
 import { VALIDATION_LIMITS } from '@/lib/validation';
 import {
@@ -37,6 +37,24 @@ type RenderEntry =
   | { type: 'group-header'; group: AlbumGroup }
   | { type: 'track'; item: QueueItem; absoluteIndex: number };
 
+// Quality helpers (shared with QueueChip)
+function getQualityLabel(quality: AudioQuality): string {
+  switch (quality) {
+    case 'high': return 'FLAC';
+    case 'medium': return '320k';
+    case 'low': return '128k';
+  }
+}
+
+function getEffectiveQuality(song: Song, preferred: AudioQuality): AudioQuality {
+  if (!song.qualityUrls) return preferred;
+  if (song.qualityUrls[preferred]) return preferred;
+  if (song.qualityUrls.medium) return 'medium';
+  if (song.qualityUrls.high) return 'high';
+  if (song.qualityUrls.low) return 'low';
+  return preferred;
+}
+
 export default function Queue() {
   const { isMobile } = useMobileUI();
   const {
@@ -60,6 +78,7 @@ export default function Queue() {
     selectVersion,
   } = useQueue();
 
+  const { preferredQuality } = useQuality();
   const { createPlaylist, addToPlaylist } = usePlaylists();
 
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -96,7 +115,6 @@ export default function Queue() {
     }
   };
 
-  // Jamify/Spotify style - slides from right, positioned above bottom player
   return (
     <>
       {/* Backdrop */}
@@ -106,177 +124,224 @@ export default function Queue() {
         aria-hidden="true"
       />
 
-      {/* Drawer - Full screen on mobile */}
+      {/* Drawer */}
       <aside
         className={`fixed z-[70] flex flex-col ${
           isMobile
-            ? 'inset-0 bg-surface-base safe-top safe-bottom'
-            : 'left-0 top-0 bottom-0 w-96 bg-surface-base border-r border-default/50'
+            ? 'inset-0 safe-top safe-bottom'
+            : 'left-0 top-0 bottom-0 w-[420px]'
         }`}
+        style={{
+          background: 'linear-gradient(180deg, var(--player-surface-deep) 0%, var(--player-surface-queue) 100%)',
+          borderRight: isMobile ? 'none' : '1px solid var(--border-subtle-player)',
+          boxShadow: '24px 0 80px color-mix(in srgb, black 50%, transparent), 0 0 0 1px color-mix(in srgb, var(--primary) 10%, transparent)',
+        }}
         role="dialog"
         aria-modal="true"
         aria-label="Queue"
       >
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="text-xs font-medium text-secondary uppercase tracking-[0.2em]">Queue</h2>
-            <button
-              onClick={toggleQueue}
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-default text-secondary hover:text-white hover:border-tertiary transition-colors"
-              aria-label="Close queue"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        {/* Top glow line */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px z-[1] pointer-events-none"
+          style={{ background: 'linear-gradient(90deg, transparent, var(--quinary-muted), var(--tertiary-muted), transparent)' }}
+        />
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3.5 flex-shrink-0">
+          <span className="font-jb-mono text-[13px] font-semibold tracking-[0.14em] uppercase text-primary">
+            Queue
+          </span>
+          <button
+            onClick={toggleQueue}
+            className="w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all"
+            style={{
+              border: '1.5px solid color-mix(in srgb, var(--primary) 23%, transparent)',
+              background: 'transparent',
+              color: 'var(--text-secondary)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--text-secondary)';
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.background = 'var(--primary-muted)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--primary) 23%, transparent)';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+            aria-label="Close queue"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto prevent-overscroll queue-drawer-scroll" role="region" aria-label="Queue tracks">
+          {!hasItems ? (
+            <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--text-secondary)' }}>
+              <svg className="w-12 h-12 mb-4" style={{ color: 'var(--border-default)' }} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z" />
               </svg>
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto prevent-overscroll px-4" role="region" aria-label="Queue tracks">
-            {!hasItems ? (
-              <div className="flex flex-col items-center justify-center h-full text-secondary">
-                <svg className="w-12 h-12 mb-4 text-border" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z" />
-                </svg>
-                <p className="font-semibold">Queue is empty</p>
-                <p className="text-sm mt-1">Add songs or albums to get started</p>
-              </div>
-            ) : (
-              <>
-                {/* Now Playing */}
-                <NowPlayingSection currentItem={currentItem} currentTime={currentTime} duration={duration} />
-
-                {/* Upcoming Queue */}
-                <UpcomingSection
-                  queue={queue}
-                  albumGroups={albumGroups}
-                  removeItem={removeItem}
-                  clearUpcoming={clearUpcoming}
-                  playFromQueue={playFromQueue}
-                  moveItem={moveItem}
-                  moveBlock={moveBlock}
-                  selectVersion={selectVersion}
-                  onSave={() => setShowSaveModal(true)}
-                  totalItems={totalItems}
-                  hasItems={hasItems}
-                />
-              </>
-            )}
-          </div>
-
-      {/* Save Playlist Modal */}
-      {showSaveModal && (
-        <>
-          {/* Modal Backdrop */}
-          <div
-            className="fixed inset-0 z-[60] bg-black/80"
-            onClick={() => !isSaving && setShowSaveModal(false)}
-          />
-
-          {/* Modal Content */}
-          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-            <div className="bg-surface-elevated rounded-lg max-w-md w-full p-6">
-              {saveSuccess ? (
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">Playlist Created!</h3>
-                  <p className="text-secondary text-sm">
-                    {totalItems} {totalItems === 1 ? 'song' : 'songs'} saved to &quot;{playlistName}&quot;
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <h3 className="text-xl font-bold text-white mb-4">Save Queue as Playlist</h3>
-                  <p className="text-secondary text-sm mb-4">
-                    {totalItems} {totalItems === 1 ? 'song' : 'songs'} will be saved
-                  </p>
-                  <input
-                    type="text"
-                    value={playlistName}
-                    onChange={(e) => setPlaylistName(e.target.value.slice(0, VALIDATION_LIMITS.PLAYLIST_NAME_MAX))}
-                    maxLength={VALIDATION_LIMITS.PLAYLIST_NAME_MAX}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && playlistName.trim()) {
-                        handleSaveQueue();
-                      }
-                    }}
-                    placeholder="Playlist name"
-                    className="w-full px-4 py-3 bg-border text-white rounded border border-default focus:border-accent focus:outline-none mb-6"
-                    autoFocus
-                    disabled={isSaving}
-                  />
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => {
-                        setShowSaveModal(false);
-                        setPlaylistName('');
-                      }}
-                      disabled={isSaving}
-                      className="flex-1 py-3 px-4 bg-transparent border border-default text-white text-sm font-semibold rounded-full hover:border-white transition-colors disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSaveQueue}
-                      disabled={!playlistName.trim() || isSaving}
-                      className="flex-1 py-3 px-4 bg-accent hover:bg-accent-hover text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSaving ? 'Saving...' : 'Save'}
-                    </button>
-                  </div>
-                </>
-              )}
+              <p className="font-semibold">Queue is empty</p>
+              <p className="text-sm mt-1">Add songs or albums to get started</p>
             </div>
-          </div>
-        </>
-      )}
-    </aside>
-  </>
+          ) : (
+            <>
+              {/* Now Playing */}
+              <NowPlayingSection currentItem={currentItem} currentTime={currentTime} duration={duration} />
+
+              {/* Divider */}
+              <div
+                className="mx-[18px] mb-2"
+                style={{ height: '1px', background: 'linear-gradient(90deg, transparent, var(--border-subtle-player), transparent)' }}
+              />
+
+              {/* Upcoming Queue */}
+              <UpcomingSection
+                queue={queue}
+                albumGroups={albumGroups}
+                removeItem={removeItem}
+                clearUpcoming={clearUpcoming}
+                playFromQueue={playFromQueue}
+                moveItem={moveItem}
+                moveBlock={moveBlock}
+                selectVersion={selectVersion}
+                onSave={() => setShowSaveModal(true)}
+                totalItems={totalItems}
+                hasItems={hasItems}
+                preferredQuality={preferredQuality}
+              />
+            </>
+          )}
+        </div>
+
+        {/* Save Playlist Modal */}
+        {showSaveModal && (
+          <>
+            <div
+              className="fixed inset-0 z-[60] bg-black/80"
+              onClick={() => !isSaving && setShowSaveModal(false)}
+            />
+            <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+              <div className="rounded-lg max-w-md w-full p-6" style={{ background: 'var(--surface-elevated)' }}>
+                {saveSuccess ? (
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'var(--accent-primary)' }}>
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Playlist Created!</h3>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      {totalItems} {totalItems === 1 ? 'song' : 'songs'} saved to &quot;{playlistName}&quot;
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-xl font-bold text-white mb-4">Save Queue as Playlist</h3>
+                    <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+                      {totalItems} {totalItems === 1 ? 'song' : 'songs'} will be saved
+                    </p>
+                    <input
+                      type="text"
+                      value={playlistName}
+                      onChange={(e) => setPlaylistName(e.target.value.slice(0, VALIDATION_LIMITS.PLAYLIST_NAME_MAX))}
+                      maxLength={VALIDATION_LIMITS.PLAYLIST_NAME_MAX}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && playlistName.trim()) {
+                          handleSaveQueue();
+                        }
+                      }}
+                      placeholder="Playlist name"
+                      className="w-full px-4 py-3 text-white rounded border focus:outline-none mb-6"
+                      style={{
+                        background: 'var(--border-default)',
+                        borderColor: 'var(--border-default)',
+                      }}
+                      autoFocus
+                      disabled={isSaving}
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setShowSaveModal(false);
+                          setPlaylistName('');
+                        }}
+                        disabled={isSaving}
+                        className="flex-1 py-3 px-4 bg-transparent text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-50"
+                        style={{ border: '1px solid var(--border-default)' }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveQueue}
+                        disabled={!playlistName.trim() || isSaving}
+                        className="flex-1 py-3 px-4 text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ background: 'var(--accent-primary)' }}
+                      >
+                        {isSaving ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </aside>
+
+      {/* Custom scrollbar styles */}
+      <style jsx global>{`
+        .queue-drawer-scroll::-webkit-scrollbar { width: 4px; }
+        .queue-drawer-scroll::-webkit-scrollbar-track { background: transparent; }
+        .queue-drawer-scroll::-webkit-scrollbar-thumb {
+          background: var(--primary-muted);
+          border-radius: 2px;
+        }
+        .queue-drawer-scroll::-webkit-scrollbar-thumb:hover {
+          background: var(--primary);
+        }
+      `}</style>
+    </>
   );
 }
 
 // =============================================================================
-// Compact Card Summary — used by DragOverlay only
+// Drag Dot Handle — 6-dot grip pattern (3 rows × 2 dots)
 // =============================================================================
 
-function CardSummary({ item }: { item: QueueItem }) {
-  const song = item.song;
-
+function DragDots({ className = '' }: { className?: string }) {
   return (
-    <div className="flex items-center gap-3 flex-1 min-w-0">
-      {/* Album art */}
-      {item.albumSource?.coverArt ? (
-        <Image
-          src={item.albumSource.coverArt}
-          alt=""
-          width={48}
-          height={48}
-          quality={80}
-          className="object-cover rounded-md flex-shrink-0"
-        />
-      ) : (
-        <div className="w-12 h-12 bg-surface-elevated rounded-md flex items-center justify-center flex-shrink-0">
-          <svg className="w-6 h-6 text-border" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-          </svg>
-        </div>
-      )}
-
-      {/* Text content */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{item.trackTitle}</p>
-        <p className="text-xs text-secondary truncate">{song.artistName}</p>
-      </div>
-
-      {/* Duration */}
-      {song.duration > 0 && (
-        <span className="text-xs text-tertiary font-mono flex-shrink-0">{formatDuration(song.duration)}</span>
-      )}
+    <div className={`flex flex-col gap-[2px] ${className}`}>
+      {[0, 1, 2].map(row => (
+        <span key={row} className="flex gap-[3px]">
+          <span className="w-[3.5px] h-[3.5px] rounded-full" style={{ background: 'var(--text-tertiary)' }} />
+          <span className="w-[3.5px] h-[3.5px] rounded-full" style={{ background: 'var(--text-tertiary)' }} />
+        </span>
+      ))}
     </div>
+  );
+}
+
+// =============================================================================
+// Vinyl Placeholder — used when no album art
+// =============================================================================
+
+function VinylPlaceholder({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      style={{ color: 'var(--text-tertiary)', opacity: 0.4 }}
+    >
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
   );
 }
 
@@ -294,82 +359,117 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="mb-5">
-      <div className="rounded-xl border border-default/60 bg-surface-card p-4">
-        {/* Now Playing label */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-2 h-2 bg-accent rounded-full" />
-          <span className="text-[10px] font-bold text-accent uppercase tracking-[0.15em]">Now Playing</span>
-        </div>
+    <div
+      className="mx-4 mb-4 p-4 rounded-xl relative overflow-hidden flex-shrink-0"
+      style={{
+        background: 'linear-gradient(135deg, var(--player-surface-bar) 0%, var(--player-surface-chip) 100%)',
+        border: '1px solid var(--quinary-muted)',
+      }}
+    >
+      {/* Warm inner glow */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: '-50%',
+          right: '-50%',
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, var(--quinary-muted) 0%, transparent 70%)',
+          opacity: 0.3,
+        }}
+      />
 
-        {/* Track info */}
-        <div className="flex items-center gap-3 mb-3">
+      {/* NOW PLAYING label */}
+      <div
+        className="font-jb-mono text-[9.5px] font-semibold tracking-[0.14em] uppercase mb-3 relative z-[1]"
+        style={{ color: 'var(--quinary)' }}
+      >
+        Now Playing
+      </div>
+
+      {/* Content row */}
+      <div className="flex gap-3.5 items-center mb-3.5 relative z-[1]">
+        {/* Album art */}
+        <div
+          className="w-16 h-16 rounded-lg flex-shrink-0 flex items-center justify-center relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, var(--surface-elevated), var(--surface-card))',
+            boxShadow: '0 2px 10px color-mix(in srgb, black 30%, transparent)',
+          }}
+        >
           {currentItem.albumSource?.coverArt ? (
             <Image
               src={currentItem.albumSource.coverArt}
               alt={currentItem.albumSource.albumName || 'Album cover'}
-              width={56}
-              height={56}
+              width={64}
+              height={64}
               quality={80}
-              className="object-cover rounded-lg flex-shrink-0"
+              className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-14 h-14 bg-surface-elevated rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-7 h-7 text-border" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-              </svg>
-            </div>
+            <VinylPlaceholder size={26} />
           )}
-          <div className="flex-1 min-w-0">
-            <p className="text-base font-bold text-white truncate">{currentItem.song.title}</p>
-            <p className="text-sm text-secondary truncate">{currentItem.song.artistName}</p>
-            {showInfo && (
-              <p className="text-xs text-tertiary truncate mt-0.5">{showInfo}</p>
-            )}
-          </div>
+          {/* Gold sheen overlay */}
+          <div
+            className="absolute inset-0 rounded-lg pointer-events-none"
+            style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--quinary) 10%, transparent), transparent)' }}
+          />
         </div>
 
-        {/* Progress bar */}
-        <div>
-          <div className="w-full h-[3px] bg-border rounded-full overflow-hidden">
-            <div
-              className="h-full bg-accent rounded-full transition-all duration-150"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-1.5">
-            <span className="text-[11px] text-secondary font-mono">{formatDuration(Math.floor(currentTime))}</span>
-            <span className="text-[11px] text-secondary font-mono">{formatDuration(Math.floor(duration))}</span>
-          </div>
+        {/* Track info */}
+        <div className="flex-1 min-w-0">
+          <p className="text-[17px] font-bold text-primary truncate" style={{ lineHeight: '1.25' }}>
+            {currentItem.song.title}
+          </p>
+          <p className="text-sm font-medium truncate" style={{ color: 'var(--tertiary)', lineHeight: '1.3' }}>
+            {currentItem.song.artistName}
+          </p>
+          {showInfo && (
+            <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)', lineHeight: '1.4' }}>
+              {showInfo}
+            </p>
+          )}
         </div>
+      </div>
+
+      {/* Mini progress bar */}
+      <div className="flex items-center gap-2.5 relative z-[1]">
+        <span className="font-jb-mono text-[11px] min-w-[34px]" style={{ color: 'var(--text-tertiary)' }}>
+          {formatDuration(Math.floor(currentTime))}
+        </span>
+        <div
+          className="flex-1 h-[3px] rounded-sm relative overflow-hidden"
+          style={{ background: 'var(--primary-muted)' }}
+        >
+          <div
+            className="absolute left-0 top-0 h-full rounded-sm"
+            style={{
+              width: `${progress}%`,
+              background: 'linear-gradient(90deg, var(--quinary), var(--secondary))',
+            }}
+          />
+          <div
+            className="absolute top-1/2 rounded-full"
+            style={{
+              left: `${progress}%`,
+              transform: 'translate(-50%, -50%)',
+              width: '8px',
+              height: '8px',
+              background: 'var(--quinary)',
+              boxShadow: '0 0 6px color-mix(in srgb, var(--quinary) 40%, transparent)',
+            }}
+          />
+        </div>
+        <span className="font-jb-mono text-[11px] min-w-[34px] text-right" style={{ color: 'var(--text-tertiary)' }}>
+          {formatDuration(Math.floor(duration))}
+        </span>
       </div>
     </div>
   );
 }
 
 // =============================================================================
-// Drag Handle Icon (6-dot grip)
-// =============================================================================
-
-function DragHandleIcon({ className = '' }: { className?: string }) {
-  return (
-    <svg
-      className={`w-4 h-4 ${className}`}
-      viewBox="0 0 16 16"
-      fill="currentColor"
-    >
-      <circle cx="5" cy="3" r="1.5" />
-      <circle cx="11" cy="3" r="1.5" />
-      <circle cx="5" cy="8" r="1.5" />
-      <circle cx="11" cy="8" r="1.5" />
-      <circle cx="5" cy="13" r="1.5" />
-      <circle cx="11" cy="13" r="1.5" />
-    </svg>
-  );
-}
-
-// =============================================================================
-// Sortable Track Row — ticket stub flip card with drag handle
+// Sortable Track Row — clean row design with drag handle
 // =============================================================================
 
 interface SortableTrackRowProps {
@@ -379,6 +479,7 @@ interface SortableTrackRowProps {
   removeItem: (queueId: string) => void;
   playFromQueue: (index: number) => void;
   selectVersion: (queueId: string, song: Song) => void;
+  preferredQuality: AudioQuality;
 }
 
 function SortableTrackRow({
@@ -388,6 +489,7 @@ function SortableTrackRow({
   removeItem,
   playFromQueue,
   selectVersion,
+  preferredQuality,
 }: SortableTrackRowProps) {
   const {
     attributes,
@@ -406,33 +508,161 @@ function SortableTrackRow({
     zIndex: isDragging ? 10 : undefined,
   };
 
+  const song = item.song;
+  const year = song.showDate?.split('-')[0] || '';
+  const venue = song.showVenue || '';
+  const venueDisplay = venue
+    ? venue + (year ? ` \u00b7 ${year}` : '')
+    : song.artistName;
+  const effectiveQuality = getEffectiveQuality(song, preferredQuality);
+  const qualityLabel = getQualityLabel(effectiveQuality);
+
   return (
     <li ref={setNodeRef} style={style}>
-      <TicketStubCard
-        item={item}
-        index={displayIndex}
-        absoluteIndex={absoluteIndex}
-        onPlay={playFromQueue}
-        onSelectVersion={selectVersion}
-        onRemove={removeItem}
-        variant="vertical"
-        dragHandleRef={setActivatorNodeRef}
-        dragHandleProps={{ ...attributes, ...listeners }}
-      />
+      <div
+        onClick={() => playFromQueue(absoluteIndex)}
+        className="group/row flex items-center gap-0 py-2.5 px-2 mx-1.5 mb-1 rounded-[10px] cursor-pointer transition-all relative"
+        style={{
+          border: '1px solid transparent',
+          background: 'transparent',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'var(--player-surface-chip)';
+          e.currentTarget.style.borderColor = 'var(--border-subtle-player)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.borderColor = 'transparent';
+        }}
+      >
+        {/* Left accent bar on hover */}
+        <div
+          className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-sm transition-colors opacity-0 group-hover/row:opacity-100"
+          style={{ background: 'var(--tertiary)' }}
+        />
+
+        {/* Drag handle */}
+        <button
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
+          className="flex-shrink-0 px-2 py-1 opacity-25 group-hover/row:opacity-50 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+          aria-label={`Reorder ${item.trackTitle}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DragDots />
+        </button>
+
+        {/* Track number */}
+        <span
+          className="font-jb-mono text-xs font-medium w-[22px] text-center flex-shrink-0 mr-2.5"
+          style={{ color: 'var(--text-tertiary)' }}
+        >
+          {displayIndex}
+        </span>
+
+        {/* Track art */}
+        <div
+          className="w-[46px] h-[46px] rounded-md flex-shrink-0 mr-3 flex items-center justify-center relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, var(--surface-elevated), var(--surface-card))' }}
+        >
+          {item.albumSource?.coverArt ? (
+            <Image
+              src={item.albumSource.coverArt}
+              alt=""
+              width={46}
+              height={46}
+              quality={60}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <VinylPlaceholder />
+          )}
+        </div>
+
+        {/* Track info */}
+        <div className="flex-1 min-w-0">
+          <p
+            className="text-[14.5px] font-semibold text-primary truncate"
+            style={{ lineHeight: '1.3' }}
+          >
+            {item.trackTitle}
+          </p>
+          <p
+            className="text-xs truncate"
+            style={{ color: 'var(--text-tertiary)', lineHeight: '1.4' }}
+          >
+            {venueDisplay}
+          </p>
+          {/* Meta row: duration + quality badge */}
+          <div className="flex items-center gap-2 mt-0.5">
+            {song.duration > 0 && (
+              <span
+                className="font-jb-mono text-[11px] font-medium"
+                style={{ color: 'var(--quinary)' }}
+              >
+                {formatDuration(song.duration)}
+              </span>
+            )}
+            <span
+              className="font-jb-mono text-[8.5px] font-semibold px-[5px] py-px rounded-[3px]"
+              style={{
+                background: 'var(--tertiary-muted)',
+                color: 'var(--tertiary)',
+                border: '1px solid color-mix(in srgb, var(--tertiary) 12%, transparent)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {qualityLabel}
+            </span>
+          </div>
+        </div>
+
+        {/* Remove button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            removeItem(item.queueId);
+          }}
+          className="w-7 h-7 rounded-md border-0 bg-transparent flex items-center justify-center flex-shrink-0 ml-1.5 opacity-0 group-hover/row:opacity-40 transition-all"
+          style={{ color: 'var(--text-tertiary)' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--secondary-muted)';
+            e.currentTarget.style.color = 'var(--secondary)';
+            e.currentTarget.style.opacity = '1';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = 'var(--text-tertiary)';
+            e.currentTarget.style.opacity = '';
+          }}
+          aria-label={`Remove ${item.trackTitle} from queue`}
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
     </li>
   );
 }
 
 // =============================================================================
-// Drag Overlay Track Content (rendered in DragOverlay portal) — card style
+// Drag Overlay Content — rendered during drag
 // =============================================================================
 
 function DragOverlayTrack({ item }: { item: QueueItem }) {
   return (
-    <div className="px-3 py-3 bg-surface-elevated rounded-xl shadow-lg shadow-black/50 border border-accent/30 flex items-center gap-2">
-      <div className="p-1 text-accent">
-        <DragHandleIcon />
-      </div>
+    <div
+      className="flex items-center gap-2 px-3 py-3 rounded-xl"
+      style={{
+        background: 'var(--surface-elevated)',
+        boxShadow: '0 8px 32px color-mix(in srgb, black 50%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)',
+      }}
+    >
+      <DragDots className="opacity-60" />
       <CardSummary item={item} />
     </div>
   );
@@ -440,27 +670,69 @@ function DragOverlayTrack({ item }: { item: QueueItem }) {
 
 function DragOverlayGroup({ group }: { group: AlbumGroup }) {
   return (
-    <div className="px-4 py-3 bg-surface-elevated rounded shadow-lg shadow-black/50 border border-accent/30">
-      <div className="flex items-center gap-2">
-        <div className="p-1 text-accent">
-          <DragHandleIcon />
+    <div
+      className="flex items-center gap-2 px-4 py-3 rounded"
+      style={{
+        background: 'var(--surface-elevated)',
+        boxShadow: '0 8px 32px color-mix(in srgb, black 50%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)',
+      }}
+    >
+      <DragDots className="opacity-60" />
+      {group.albumSource.coverArt && (
+        <Image
+          src={group.albumSource.coverArt}
+          alt=""
+          width={24}
+          height={24}
+          className="rounded"
+        />
+      )}
+      <p className="text-xs text-white uppercase tracking-wider truncate">
+        {group.albumSource.albumName}
+      </p>
+      <span className="text-xs ml-auto" style={{ color: 'var(--text-secondary)' }}>
+        {group.items.length} tracks
+      </span>
+    </div>
+  );
+}
+
+// =============================================================================
+// Card Summary — compact row for DragOverlay
+// =============================================================================
+
+function CardSummary({ item }: { item: QueueItem }) {
+  const song = item.song;
+
+  return (
+    <div className="flex items-center gap-3 flex-1 min-w-0">
+      {item.albumSource?.coverArt ? (
+        <Image
+          src={item.albumSource.coverArt}
+          alt=""
+          width={48}
+          height={48}
+          quality={80}
+          className="object-cover rounded-md flex-shrink-0"
+        />
+      ) : (
+        <div
+          className="w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0"
+          style={{ background: 'var(--surface-elevated)' }}
+        >
+          <VinylPlaceholder />
         </div>
-        {group.albumSource.coverArt && (
-          <Image
-            src={group.albumSource.coverArt}
-            alt=""
-            width={24}
-            height={24}
-            className="rounded"
-          />
-        )}
-        <p className="text-xs text-white uppercase tracking-wider truncate">
-          {group.albumSource.albumName}
-        </p>
-        <span className="text-xs text-secondary ml-auto">
-          {group.items.length} tracks
-        </span>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-white truncate">{item.trackTitle}</p>
+        <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{song.artistName}</p>
       </div>
+      {song.duration > 0 && (
+        <span className="text-xs font-mono flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+          {formatDuration(song.duration)}
+        </span>
+      )}
     </div>
   );
 }
@@ -486,6 +758,7 @@ interface UpcomingSectionProps {
   onSave: () => void;
   totalItems: number;
   hasItems: boolean;
+  preferredQuality: AudioQuality;
 }
 
 function UpcomingSection({
@@ -500,11 +773,11 @@ function UpcomingSection({
   onSave,
   totalItems,
   hasItems,
+  preferredQuality,
 }: UpcomingSectionProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const upcomingCount = queue.items.length - (queue.cursorIndex + 1);
 
-  // Build group-header drag IDs: "group-{batchId}-{startIndex}"
   const groupDragIdPrefix = 'group-drag-';
 
   const renderItems = useMemo((): RenderEntry[] => {
@@ -529,7 +802,6 @@ function UpcomingSection({
     return result;
   }, [queue.items, queue.cursorIndex, albumGroups]);
 
-  // Sortable IDs: track queueIds + group drag IDs
   const sortableIds = useMemo(() => {
     return renderItems
       .map(entry => {
@@ -540,7 +812,6 @@ function UpcomingSection({
       .filter((id): id is string => id !== null);
   }, [renderItems, groupDragIdPrefix]);
 
-  // Find the active item or group for DragOverlay
   const activeItem = useMemo(() => {
     if (!activeId) return null;
     if (activeId.startsWith(groupDragIdPrefix)) {
@@ -551,7 +822,6 @@ function UpcomingSection({
     return item ? { type: 'track' as const, item } : null;
   }, [activeId, queue.items, albumGroups, groupDragIdPrefix]);
 
-  // Sensors: pointer for desktop (DnD is desktop-only, mobile keeps swipe-to-delete)
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 8 },
   });
@@ -559,7 +829,6 @@ function UpcomingSection({
     activationConstraint: { delay: 200, tolerance: 5 },
   });
   const keyboardSensor = useSensor(KeyboardSensor);
-
   const sensors = useSensors(pointerSensor, touchSensor, keyboardSensor);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -582,16 +851,13 @@ function UpcomingSection({
         );
         if (!group) return;
 
-        // Find where the over item is in absolute terms
         let targetIndex: number;
         if (overIdStr.startsWith(groupDragIdPrefix)) {
-          // Dropped on another group header - find that group's start index
           const targetGroup = albumGroups.find(
             g => `${groupDragIdPrefix}${g.batchId}-${g.startIndex}` === overIdStr,
           );
           targetIndex = targetGroup ? targetGroup.startIndex : group.startIndex;
         } else {
-          // Dropped on a track - find that track's absolute index
           const trackEntry = renderItems.find(
             e => e.type === 'track' && e.item.queueId === overIdStr,
           );
@@ -610,7 +876,6 @@ function UpcomingSection({
 
       let toIndex: number;
       if (overIdStr.startsWith(groupDragIdPrefix)) {
-        // Dropped on a group header - place at group's start index
         const targetGroup = albumGroups.find(
           g => `${groupDragIdPrefix}${g.batchId}-${g.startIndex}` === overIdStr,
         );
@@ -631,31 +896,55 @@ function UpcomingSection({
 
   if (upcomingCount <= 0) return null;
 
-  // Both mobile and desktop: DnD enabled (drag handle activator works with touch)
   return (
-    <div className="mt-2">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-secondary uppercase tracking-[0.15em]">
-          Up Next <span className="text-accent">&middot; {upcomingCount} tracks</span>
-        </p>
-        <div className="flex items-center gap-3">
+    <div className="px-2.5 pb-4">
+      {/* Up Next header */}
+      <div className="flex items-center justify-between px-2.5 pt-1 pb-2.5">
+        <div className="font-jb-mono text-[11px] font-semibold tracking-[0.1em] uppercase">
+          <span style={{ color: 'var(--quinary)' }}>UP</span>{' '}
+          <span style={{ color: 'var(--secondary)' }}>NEXT</span>{' '}
+          <span className="font-normal" style={{ color: 'var(--text-tertiary)' }}>
+            &middot; {upcomingCount} TRACKS
+          </span>
+        </div>
+        <div className="flex gap-1">
           {hasItems && totalItems > 0 && (
             <button
               onClick={onSave}
-              className="text-xs text-secondary hover:text-white transition-colors"
+              className="font-jb-mono text-[10.5px] font-medium tracking-wider px-2.5 py-1 rounded transition-all"
+              style={{ color: 'var(--text-tertiary)', background: 'transparent', border: 'none' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--text-primary)';
+                e.currentTarget.style.background = 'var(--primary-muted)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--text-tertiary)';
+                e.currentTarget.style.background = 'transparent';
+              }}
             >
               Save
             </button>
           )}
           <button
             onClick={clearUpcoming}
-            className="text-xs text-secondary hover:text-white transition-colors"
+            className="font-jb-mono text-[10.5px] font-medium tracking-wider px-2.5 py-1 rounded transition-all"
+            style={{ color: 'var(--text-tertiary)', background: 'transparent', border: 'none' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.background = 'var(--primary-muted)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-tertiary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
             aria-label={`Clear upcoming queue (${upcomingCount} songs)`}
           >
             Clear
           </button>
         </div>
       </div>
+
+      {/* Scrollable track list */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -663,7 +952,7 @@ function UpcomingSection({
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-          <ul className="space-y-2">
+          <ul className="space-y-0.5">
             {renderItems.map((entry) => {
               if (entry.type === 'group-header') {
                 return (
@@ -684,6 +973,7 @@ function UpcomingSection({
                   removeItem={removeItem}
                   playFromQueue={playFromQueue}
                   selectVersion={selectVersion}
+                  preferredQuality={preferredQuality}
                 />
               );
             })}
@@ -704,7 +994,7 @@ function UpcomingSection({
 }
 
 // =============================================================================
-// Sortable Group Header (desktop only)
+// Sortable Group Header
 // =============================================================================
 
 interface SortableGroupHeaderProps {
@@ -734,33 +1024,49 @@ function SortableGroupHeader({ group, dragId }: SortableGroupHeaderProps) {
     <li
       ref={setNodeRef}
       style={style}
-      className={`p-4 pb-0 ${isDragging ? 'bg-surface-elevated rounded' : ''}`}
+      className={isDragging ? 'rounded' : ''}
       aria-hidden="true"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-2 mb-0.5">
+        {/* Drag handle */}
         <button
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
-          className="p-1 text-border hover:text-secondary cursor-grab active:cursor-grabbing touch-none"
+          className="opacity-30 cursor-grab active:cursor-grabbing touch-none p-1"
           aria-label={`Reorder ${group.albumSource.albumName} group`}
+          onClick={(e) => e.stopPropagation()}
         >
-          <DragHandleIcon />
+          <DragDots />
         </button>
-        {group.albumSource.coverArt && (
-          <Image
-            src={group.albumSource.coverArt}
-            alt=""
-            width={24}
-            height={24}
-            className="rounded"
-          />
-        )}
-        <p className="text-xs text-secondary uppercase tracking-wider truncate">
+
+        {/* Album art */}
+        <div
+          className="w-8 h-8 rounded flex-shrink-0 flex items-center justify-center overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, var(--surface-elevated), var(--surface-card))' }}
+        >
+          {group.albumSource.coverArt ? (
+            <Image
+              src={group.albumSource.coverArt}
+              alt=""
+              width={32}
+              height={32}
+              className="w-full h-full object-cover rounded"
+            />
+          ) : (
+            <VinylPlaceholder size={14} />
+          )}
+        </div>
+
+        {/* Album name */}
+        <span
+          className="font-jb-mono text-[11px] font-semibold tracking-wider uppercase truncate"
+          style={{ color: 'var(--text-secondary)' }}
+        >
           {group.isContinuation
             ? `${group.albumSource.albumName} (continued)`
             : group.albumSource.albumName}
-        </p>
+        </span>
       </div>
     </li>
   );

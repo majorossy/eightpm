@@ -693,6 +693,10 @@ interface MagentoCategory {
   band_total_recordings?: number;
   band_total_hours?: number;
   band_total_venues?: number;
+  podcast_spotify_url?: string;
+  podcast_apple_url?: string;
+  podcast_youtube_url?: string;
+  podcast_rss_feed?: string;
 }
 
 interface MagentoProduct {
@@ -729,6 +733,8 @@ interface MagentoProduct {
   show_subject?: string;            // Genre/event tags
   track_original_file?: string;     // Original source file for derivatives
   track_album?: string;             // Album name from file metadata
+  show_date?: string;               // Show date (YYYY-MM-DD format)
+  created_at?: string;              // Product creation timestamp
   categories?: Array<{ uid: string; name: string; url_key: string }>;
 }
 
@@ -2411,7 +2417,7 @@ export async function getPodcastBySlug(slug: string): Promise<PodcastDetail | nu
         currentPage,
       });
 
-      const pageEpisodes = pageData.items || [];
+      const pageEpisodes = pageData.products.items || [];
       allEpisodes = allEpisodes.concat(pageEpisodes);
       console.log(`[getPodcastBySlug] Page ${currentPage}: got ${pageEpisodes.length} more episodes`);
     }

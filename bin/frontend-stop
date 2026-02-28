@@ -11,7 +11,7 @@ if command -v pm2 &> /dev/null && pm2 list 2>/dev/null | grep -q '8pm-frontend.*
   # Verify port is actually free after PM2 stop
   PORT_FREE=true
   if command -v lsof &> /dev/null; then
-    lsof -ti:3001 &>/dev/null && PORT_FREE=false
+    lsof -ti:3001 -sTCP:LISTEN &>/dev/null && PORT_FREE=false
   elif command -v ss &> /dev/null; then
     ss -tlnp 2>/dev/null | grep -q ':3001 ' && PORT_FREE=false
   fi
@@ -28,7 +28,7 @@ fi
 # Fallback: kill process directly (development mode)
 PID=""
 if command -v lsof &> /dev/null; then
-  PID=$(lsof -ti:3001 2>/dev/null || true)
+  PID=$(lsof -ti:3001 -sTCP:LISTEN 2>/dev/null || true)
 elif command -v ss &> /dev/null; then
   PID=$(ss -tlnp 2>/dev/null | grep ':3001 ' | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -1)
 elif command -v fuser &> /dev/null; then
@@ -67,7 +67,7 @@ fi
 # Verify port is free
 STILL_RUNNING=false
 if command -v lsof &> /dev/null; then
-  lsof -ti:3001 &>/dev/null && STILL_RUNNING=true
+  lsof -ti:3001 -sTCP:LISTEN &>/dev/null && STILL_RUNNING=true
 elif command -v ss &> /dev/null; then
   ss -tlnp 2>/dev/null | grep -q ':3001 ' && STILL_RUNNING=true
 elif command -v fuser &> /dev/null; then

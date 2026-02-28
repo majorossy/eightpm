@@ -62,6 +62,7 @@ export default function WebsiteWidget({ url }: WebsiteWidgetProps) {
           width: 100%;
           border-radius: 8px;
           overflow: hidden;
+          border: 1px solid var(--border-default);
         }
 
         .website-iframe-wrapper iframe {
@@ -89,60 +90,15 @@ export default function WebsiteWidget({ url }: WebsiteWidgetProps) {
           text-decoration: none;
           transition: all 0.3s ease;
           font-weight: 500;
+          background: color-mix(in srgb, var(--surface-elevated) 50%, transparent);
+          border: 1px solid var(--border-default);
+          color: var(--text-secondary);
         }
 
-        /* Tron Theme */
-        :global(.theme-tron) .website-iframe-wrapper {
-          border: 1px solid rgba(0, 255, 255, 0.3);
-          box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-        }
-
-        :global(.theme-tron) .website-link {
-          background: rgba(0, 255, 255, 0.05);
-          border: 1px solid rgba(0, 255, 255, 0.2);
-          color: #00ffff;
-        }
-
-        :global(.theme-tron) .website-link:hover {
-          background: rgba(0, 255, 255, 0.1);
-          border-color: #00ffff;
-          transform: translateY(-2px);
-        }
-
-        /* Metro Theme */
-        :global(.theme-metro) .website-iframe-wrapper {
-          border: 1px solid #e0e0e0;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        :global(.theme-metro) .website-link {
-          background: #f5f5f5;
-          border: 1px solid #e0e0e0;
-          color: #333333;
-        }
-
-        :global(.theme-metro) .website-link:hover {
-          background: #f97316;
-          border-color: #f97316;
-          color: white;
-          transform: translateY(-2px);
-        }
-
-        /* Jamify Theme */
-        :global(.theme-jamify) .website-iframe-wrapper {
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        :global(.theme-jamify) .website-link {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: rgba(255, 255, 255, 0.9);
-        }
-
-        :global(.theme-jamify) .website-link:hover {
-          background: rgba(34, 197, 94, 0.1);
-          border-color: #22c55e;
-          color: #22c55e;
+        .website-link:hover {
+          background: var(--interactive-hover-bg);
+          border-color: var(--accent-primary);
+          color: var(--accent-primary);
           transform: translateY(-2px);
         }
       `}</style>

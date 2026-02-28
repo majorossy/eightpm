@@ -47,6 +47,7 @@ export const WithFullName: Story = {
 };
 
 export const CassetteStack: Story = {
+  args: {} as any,
   decorators: [
     (Story) => (
       <div style={{ position: 'relative', width: 340, height: 300, margin: '2rem auto' }}>

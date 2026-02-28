@@ -97,7 +97,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} ${instrumentSans.variable} ${outfit.variable} theme-fishman`}>
+    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} ${instrumentSans.variable} ${outfit.variable} theme-lot`}>
       <head>
         {/* Preconnect hints for critical resources - improves LCP */}
         <link rel="preconnect" href="https://magento.test" />

@@ -47,46 +47,15 @@ export default function FacebookWidget({ artistName, url }: FacebookWidgetProps)
           text-decoration: none;
           transition: all 0.3s ease;
           font-weight: 500;
+          background: color-mix(in srgb, var(--surface-elevated) 50%, transparent);
+          border: 1px solid var(--border-default);
+          color: var(--text-secondary);
         }
 
-        /* Tron Theme */
-        :global(.theme-tron) .facebook-link {
-          background: rgba(0, 255, 255, 0.05);
-          border: 1px solid rgba(0, 255, 255, 0.2);
-          color: #00ffff;
-        }
-
-        :global(.theme-tron) .facebook-link:hover {
-          background: rgba(0, 255, 255, 0.1);
-          border-color: #00ffff;
-          transform: translateY(-2px);
-        }
-
-        /* Metro Theme */
-        :global(.theme-metro) .facebook-link {
-          background: #f5f5f5;
-          border: 1px solid #e0e0e0;
-          color: #333333;
-        }
-
-        :global(.theme-metro) .facebook-link:hover {
-          background: #f97316;
-          border-color: #f97316;
-          color: white;
-          transform: translateY(-2px);
-        }
-
-        /* Jamify Theme */
-        :global(.theme-jamify) .facebook-link {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: rgba(255, 255, 255, 0.9);
-        }
-
-        :global(.theme-jamify) .facebook-link:hover {
-          background: rgba(34, 197, 94, 0.1);
-          border-color: #22c55e;
-          color: #22c55e;
+        .facebook-link:hover {
+          background: var(--interactive-hover-bg);
+          border-color: var(--accent-primary);
+          color: var(--accent-primary);
           transform: translateY(-2px);
         }
       `}</style>

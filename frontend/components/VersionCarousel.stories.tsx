@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 import VersionCarousel from './VersionCarousel';
 import { mockSong, mockSong2, mockSong3 } from '../.storybook/fixtures';
 import type { Song } from '../lib/types';

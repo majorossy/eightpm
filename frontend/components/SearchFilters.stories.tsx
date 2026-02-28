@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 import { SearchFilters } from './SearchFilters';
 
 const availableYears = [2024, 2023, 2022, 2021, 2020, 2019, 2018];

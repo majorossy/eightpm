@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 import SwipeableQueueItem from './SwipeableQueueItem';
 import { mockQueueItem } from '../.storybook/fixtures';
 
@@ -56,6 +56,7 @@ export const WithCustomClassName: Story = {
 };
 
 export const MultipleItems: Story = {
+  args: {} as any,
   render: (args) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {['Bird in a House', 'Elko', 'Warhead Boogie'].map((title) => (

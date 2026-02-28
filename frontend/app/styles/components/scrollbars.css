@@ -1,0 +1,122 @@
+/* ========================================
+   Scrollbar Styles
+   Custom scrollbars, thin scrollbars, hidden scrollbars
+   ======================================== */
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-elevated);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary);
+}
+
+/* Recording scroll container */
+.recording-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.recording-scroll::-webkit-scrollbar-thumb {
+  background: var(--text-subdued);
+  border-radius: 3px;
+}
+.recording-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Thin scrollbar utility for horizontal carousels */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--surface-card);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--tertiary);
+}
+
+/* Firefox thin scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tertiary) var(--bg);
+}
+
+/* Hide scrollbar completely (queue strip, carousels) */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Queue scrollbar - visible thin styled scrollbar */
+.queue-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--surface-elevated) 25%, transparent) transparent;
+}
+.queue-scrollbar::-webkit-scrollbar { height: 4px; }
+.queue-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.queue-scrollbar::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--surface-elevated) 25%, transparent); border-radius: 2px; }
+.queue-scrollbar::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--surface-elevated) 50%, transparent); }
+
+/* Audio range slider styling */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  background: var(--surface-elevated);
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  margin-top: -4px;
+}
+
+input[type='range']:hover::-webkit-slider-thumb {
+  background: var(--secondary);
+}
+
+input[type='range']::-moz-range-track {
+  background: var(--surface-elevated);
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  border: none;
+}

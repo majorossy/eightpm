@@ -1,0 +1,61 @@
+/* ========================================
+   Card Styles
+   Selected card, version card glow, track card hover
+   ======================================== */
+
+/* Selected card */
+.card-selected {
+  background: linear-gradient(180deg, var(--cream) 0%, color-mix(in srgb, var(--cream) 90%, var(--primary)) 100%);
+  border: 2px solid var(--secondary);
+  color: var(--surface-sunken);
+}
+
+.card-selected .card-title {
+  color: var(--surface-sunken);
+}
+
+.card-selected .card-subtitle {
+  color: color-mix(in srgb, var(--primary) 70%, white);
+}
+
+.card-selected .card-meta {
+  color: var(--text-tertiary);
+}
+
+/* Version card hover glow */
+.version-card-glow:hover {
+  transform: translateY(-2px);
+  background: var(--surface-elevated);
+  box-shadow: 0 12px 32px color-mix(in srgb, black 25%, transparent);
+}
+
+.version-card-glow.selected {
+  border-color: var(--secondary);
+  box-shadow: none;
+}
+
+/* Track card border glow on hover */
+.track-card-hover {
+  transition: all 0.3s;
+}
+
+.track-card-hover:hover {
+  background: var(--row-hover-bg);
+  border-color: transparent;
+}
+
+/* Track list container */
+.track-list-container {
+  background: linear-gradient(145deg, var(--surface-card) 0%, var(--surface-sunken) 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px color-mix(in srgb, black 20%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+}
+
+/* Recording table row hover */
+.recording-table-row:hover {
+  background: var(--row-hover-bg) !important;
+}

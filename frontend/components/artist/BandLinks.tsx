@@ -150,9 +150,9 @@ const BandLinks: React.FC<BandLinksProps> = ({ links, artistName }) => {
           border-radius: 8px;
           transition: all 0.3s ease;
           cursor: pointer;
-          background: transparent;
-          border: none;
           width: 100%;
+          background: color-mix(in srgb, var(--surface-elevated) 50%, transparent);
+          border: 1px solid var(--border-default);
         }
 
         .widget-container {
@@ -173,6 +173,7 @@ const BandLinks: React.FC<BandLinksProps> = ({ links, artistName }) => {
           width: 100%;
           height: 100%;
           transition: all 0.3s ease;
+          color: var(--text-secondary);
         }
 
         .band-link-label {
@@ -180,134 +181,35 @@ const BandLinks: React.FC<BandLinksProps> = ({ links, artistName }) => {
           font-weight: 500;
           text-align: center;
           transition: all 0.3s ease;
+          color: var(--text-secondary);
         }
 
-        /* Tron Theme */
-        :global(.theme-tron) .band-link {
-          background: rgba(0, 255, 255, 0.05);
-          border: 1px solid rgba(0, 255, 255, 0.2);
-        }
-
-        :global(.theme-tron) .band-link-icon svg {
-          color: #00ffff;
-          filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.5));
-        }
-
-        :global(.theme-tron) .band-link-label {
-          color: #00ffff;
-          text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
-        }
-
-        :global(.theme-tron) .band-link:hover {
-          background: rgba(0, 255, 255, 0.1);
-          border-color: #00ffff;
+        .band-link:hover {
+          background: var(--interactive-hover-bg);
+          border-color: var(--accent-primary);
           transform: translateY(-2px);
         }
 
-        :global(.theme-tron) .band-link:hover .band-link-icon svg {
-          filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.8));
+        .band-link:hover .band-link-icon svg {
+          color: var(--accent-primary);
           transform: scale(1.1);
         }
 
-        :global(.theme-tron) .band-link:hover .band-link-label {
-          text-shadow: 0 0 12px rgba(0, 255, 255, 0.8);
+        .band-link:hover .band-link-label {
+          color: var(--accent-primary);
         }
 
-        :global(.theme-tron) .band-link.active {
-          background: rgba(0, 255, 255, 0.15);
-          border-color: #00ffff;
-          box-shadow: 0 0 16px rgba(0, 255, 255, 0.4);
+        .band-link.active {
+          background: var(--accent-primary-muted);
+          border-color: var(--accent-primary);
         }
 
-        :global(.theme-tron) .band-link.active .band-link-icon svg {
-          filter: drop-shadow(0 0 12px rgba(0, 255, 255, 1));
+        .band-link.active .band-link-icon svg {
+          color: var(--accent-primary);
         }
 
-        /* Metro Theme */
-        :global(.theme-metro) .band-link {
-          background: #ffffff;
-          border: 1px solid #e0e0e0;
-        }
-
-        :global(.theme-metro) .band-link-icon svg {
-          color: #333333;
-        }
-
-        :global(.theme-metro) .band-link-label {
-          color: #333333;
-        }
-
-        :global(.theme-metro) .band-link:hover {
-          background: #f97316;
-          border-color: #f97316;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
-        }
-
-        :global(.theme-metro) .band-link:hover .band-link-icon svg {
-          color: #ffffff;
-          transform: scale(1.1);
-        }
-
-        :global(.theme-metro) .band-link:hover .band-link-label {
-          color: #ffffff;
-        }
-
-        :global(.theme-metro) .band-link.active {
-          background: #f97316;
-          border-color: #f97316;
-          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
-        }
-
-        :global(.theme-metro) .band-link.active .band-link-icon svg {
-          color: #ffffff;
-        }
-
-        :global(.theme-metro) .band-link.active .band-link-label {
-          color: #ffffff;
-        }
-
-        /* Jamify Theme */
-        :global(.theme-jamify) .band-link {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        :global(.theme-jamify) .band-link-icon svg {
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        :global(.theme-jamify) .band-link-label {
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        :global(.theme-jamify) .band-link:hover {
-          background: rgba(34, 197, 94, 0.1);
-          border-color: #22c55e;
-          transform: translateY(-2px);
-        }
-
-        :global(.theme-jamify) .band-link:hover .band-link-icon svg {
-          color: #22c55e;
-          transform: scale(1.1);
-        }
-
-        :global(.theme-jamify) .band-link:hover .band-link-label {
-          color: #22c55e;
-        }
-
-        :global(.theme-jamify) .band-link.active {
-          background: rgba(34, 197, 94, 0.15);
-          border-color: #22c55e;
-          box-shadow: 0 0 16px rgba(34, 197, 94, 0.2);
-        }
-
-        :global(.theme-jamify) .band-link.active .band-link-icon svg {
-          color: #22c55e;
-        }
-
-        :global(.theme-jamify) .band-link.active .band-link-label {
-          color: #22c55e;
+        .band-link.active .band-link-label {
+          color: var(--accent-primary);
         }
 
         /* Responsive */

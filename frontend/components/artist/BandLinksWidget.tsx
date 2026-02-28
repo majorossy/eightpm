@@ -86,33 +86,14 @@ export default function BandLinksWidget({
         {renderWidget()}
       </div>
 
-      {/* Theme-specific styling */}
       <style jsx>{`
         .band-links-widget {
           margin-top: 1rem;
           border-radius: 8px;
           overflow: hidden;
           animation: slideDown 0.3s ease-out;
-        }
-
-        /* Tron theme */
-        :global(.theme-tron) .band-links-widget {
-          background: rgba(0, 0, 0, 0.8);
-          border: 1px solid #00ffff;
-          box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-        }
-
-        /* Metro theme */
-        :global(.theme-metro) .band-links-widget {
-          background: white;
-          border: 1px solid #d4d0c8;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Jamify theme */
-        :global(.theme-jamify) .band-links-widget {
-          background: #252220;
-          border: 1px solid #2d2a26;
+          background: var(--surface-card);
+          border: 1px solid var(--border-default);
         }
 
         @keyframes slideDown {
@@ -132,6 +113,7 @@ export default function BandLinksWidget({
           align-items: center;
           padding: 1rem;
           gap: 1rem;
+          border-bottom: 1px solid var(--border-default);
         }
 
         .widget-title {
@@ -139,34 +121,7 @@ export default function BandLinksWidget({
           font-size: 1rem;
           font-weight: 600;
           flex: 1;
-        }
-
-        /* Tron theme header */
-        :global(.theme-tron) .widget-header {
-          border-bottom: 1px solid rgba(0, 255, 255, 0.3);
-        }
-
-        :global(.theme-tron) .widget-title {
-          color: #00ffff;
-          text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
-        }
-
-        /* Metro theme header */
-        :global(.theme-metro) .widget-header {
-          border-bottom: 1px solid #e0e0e0;
-        }
-
-        :global(.theme-metro) .widget-title {
-          color: #333333;
-        }
-
-        /* Jamify theme header */
-        :global(.theme-jamify) .widget-header {
-          border-bottom: 1px solid #2d2a26;
-        }
-
-        :global(.theme-jamify) .widget-title {
-          color: rgba(255, 255, 255, 0.9);
+          color: var(--text-primary);
         }
 
         .widget-actions {
@@ -186,42 +141,14 @@ export default function BandLinksWidget({
           font-weight: 500;
           transition: all 0.2s ease;
           white-space: nowrap;
+          background: var(--accent-primary-muted);
+          border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
+          color: var(--accent-primary);
         }
 
-        /* Tron external button */
-        :global(.theme-tron) .open-external-btn {
-          background: rgba(0, 255, 255, 0.1);
-          border: 1px solid rgba(0, 255, 255, 0.3);
-          color: #00ffff;
-        }
-
-        :global(.theme-tron) .open-external-btn:hover {
-          background: rgba(0, 255, 255, 0.2);
-          border-color: #00ffff;
-        }
-
-        /* Metro external button */
-        :global(.theme-metro) .open-external-btn {
-          background: #f97316;
-          border: 1px solid #f97316;
-          color: white;
-        }
-
-        :global(.theme-metro) .open-external-btn:hover {
-          background: #ea580c;
-          border-color: #ea580c;
-        }
-
-        /* Jamify external button */
-        :global(.theme-jamify) .open-external-btn {
-          background: rgba(34, 197, 94, 0.1);
-          border: 1px solid rgba(34, 197, 94, 0.3);
-          color: #22c55e;
-        }
-
-        :global(.theme-jamify) .open-external-btn:hover {
-          background: rgba(34, 197, 94, 0.2);
-          border-color: #22c55e;
+        .open-external-btn:hover {
+          background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+          border-color: var(--accent-primary);
         }
 
         .close-btn {
@@ -234,35 +161,12 @@ export default function BandLinksWidget({
           background: transparent;
           cursor: pointer;
           transition: all 0.2s ease;
+          color: var(--text-tertiary);
         }
 
-        /* Tron close button */
-        :global(.theme-tron) .close-btn {
-          color: #00ffff;
-        }
-
-        :global(.theme-tron) .close-btn:hover {
-          background: rgba(0, 255, 255, 0.2);
-        }
-
-        /* Metro close button */
-        :global(.theme-metro) .close-btn {
-          color: #666666;
-        }
-
-        :global(.theme-metro) .close-btn:hover {
-          background: #f5f5f5;
-          color: #333333;
-        }
-
-        /* Jamify close button */
-        :global(.theme-jamify) .close-btn {
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        :global(.theme-jamify) .close-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: rgba(255, 255, 255, 0.9);
+        .close-btn:hover {
+          background: var(--interactive-hover-bg);
+          color: var(--text-primary);
         }
 
         .widget-content {
@@ -271,58 +175,21 @@ export default function BandLinksWidget({
           overflow-y: auto;
         }
 
-        /* Tron scrollbar */
-        :global(.theme-tron) .widget-content::-webkit-scrollbar {
+        .widget-content::-webkit-scrollbar {
           width: 8px;
         }
 
-        :global(.theme-tron) .widget-content::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.5);
+        .widget-content::-webkit-scrollbar-track {
+          background: var(--surface-sunken);
         }
 
-        :global(.theme-tron) .widget-content::-webkit-scrollbar-thumb {
-          background: rgba(0, 255, 255, 0.3);
+        .widget-content::-webkit-scrollbar-thumb {
+          background: var(--border-default);
           border-radius: 4px;
         }
 
-        :global(.theme-tron) .widget-content::-webkit-scrollbar-thumb:hover {
-          background: rgba(0, 255, 255, 0.5);
-        }
-
-        /* Metro scrollbar */
-        :global(.theme-metro) .widget-content::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        :global(.theme-metro) .widget-content::-webkit-scrollbar-track {
-          background: #f5f5f5;
-        }
-
-        :global(.theme-metro) .widget-content::-webkit-scrollbar-thumb {
-          background: #d4d0c8;
-          border-radius: 4px;
-        }
-
-        :global(.theme-metro) .widget-content::-webkit-scrollbar-thumb:hover {
-          background: #b0b0b0;
-        }
-
-        /* Jamify scrollbar */
-        :global(.theme-jamify) .widget-content::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        :global(.theme-jamify) .widget-content::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.3);
-        }
-
-        :global(.theme-jamify) .widget-content::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 4px;
-        }
-
-        :global(.theme-jamify) .widget-content::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
+        .widget-content::-webkit-scrollbar-thumb:hover {
+          background: var(--text-tertiary);
         }
 
         /* Responsive */

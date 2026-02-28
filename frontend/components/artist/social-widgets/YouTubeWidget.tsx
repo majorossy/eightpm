@@ -48,6 +48,7 @@ export default function YouTubeWidget({ artistName, url }: YouTubeWidgetProps) {
           border-radius: 8px;
           overflow: hidden;
           background: #000;
+          border: 1px solid var(--border-default);
         }
 
         .youtube-embed iframe {
@@ -59,35 +60,7 @@ export default function YouTubeWidget({ artistName, url }: YouTubeWidgetProps) {
           text-align: center;
           font-size: 0.875rem;
           opacity: 0.7;
-        }
-
-        /* Tron Theme */
-        :global(.theme-tron) .youtube-embed {
-          border: 1px solid rgba(0, 255, 255, 0.3);
-          box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-        }
-
-        :global(.theme-tron) .youtube-note {
-          color: #00ffff;
-        }
-
-        /* Metro Theme */
-        :global(.theme-metro) .youtube-embed {
-          border: 1px solid #e0e0e0;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        :global(.theme-metro) .youtube-note {
-          color: #666666;
-        }
-
-        /* Jamify Theme */
-        :global(.theme-jamify) .youtube-embed {
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        :global(.theme-jamify) .youtube-note {
-          color: rgba(255, 255, 255, 0.6);
+          color: var(--text-tertiary);
         }
       `}</style>
     </div>

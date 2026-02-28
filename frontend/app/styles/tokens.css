@@ -1,0 +1,175 @@
+/* ========================================
+   ROOT: Lot defaults (prevents FOUC)
+   ======================================== */
+:root {
+  /* ========================================
+     PALETTE DEFAULTS (Lot — prevents FOUC)
+     ======================================== */
+  --primary: #4e6d7a;
+  --secondary: #c4706e;
+  --tertiary: #5ab8a0;
+  --quaternary: #9088c8;
+  --quinary: #c8b468;
+  --primary-muted: #4e6d7a40;
+  --secondary-muted: #c4706e40;
+  --tertiary-muted: #5ab8a040;
+  --quaternary-muted: #9088c840;
+  --quinary-muted: #c8b46840;
+
+  /* ========================================
+     DERIVED DESIGN TOKENS
+     Resolve from palette vars via color-mix().
+     Defined once, work across all dark themes.
+     Light theme overrides these explicitly.
+     ======================================== */
+
+  /* Surfaces */
+  --surface-base: var(--primary);
+  --surface-card: color-mix(in srgb, var(--primary) 65%, black);
+  --surface-elevated: color-mix(in srgb, var(--primary) 90%, white);
+  --surface-sunken: color-mix(in srgb, var(--primary) 43%, black);
+
+  /* Text */
+  --text-primary: color-mix(in srgb, white 95%, var(--primary));
+  --text-secondary: color-mix(in srgb, white 55%, var(--primary));
+  --text-tertiary: color-mix(in srgb, white 40%, var(--primary));
+  --text-inverse: var(--primary);
+
+  /* Accents */
+  --accent-primary: var(--secondary);
+  --accent-primary-hover: color-mix(in srgb, var(--secondary) 80%, white);
+  --accent-primary-muted: color-mix(in srgb, var(--secondary) 25%, transparent);
+  --accent-secondary: var(--tertiary);
+
+  /* Borders */
+  --border-default: var(--surface-elevated);
+  --border-subtle-token: color-mix(in srgb, var(--primary) 55%, black);
+  --border-accent: var(--secondary);
+
+  /* Interactive */
+  --interactive-hover-bg: var(--surface-elevated);
+  --interactive-active-bg: color-mix(in srgb, var(--primary) 75%, white);
+
+  /* Placeholder & Ring */
+  --placeholder: var(--text-tertiary);
+  --ring-accent: var(--quaternary);
+
+  /* Player surfaces */
+  --player-surface-deep: color-mix(in srgb, var(--primary) 40%, black);
+  --player-surface-bar: color-mix(in srgb, var(--primary) 48%, black);
+  --player-surface-queue: color-mix(in srgb, var(--primary) 33%, black);
+  --player-surface-chip: color-mix(in srgb, var(--primary) 45%, black);
+  --player-surface-chip-hover: color-mix(in srgb, var(--primary) 52%, black);
+
+  /* Player glow & button */
+  --player-glow-line: linear-gradient(90deg, transparent, color-mix(in srgb, var(--tertiary) 25%, transparent), color-mix(in srgb, var(--quaternary) 25%, transparent), transparent);
+  --player-play-btn: var(--quinary);
+  --player-play-btn-shadow: color-mix(in srgb, var(--quinary) 25%, transparent);
+  --player-play-btn-text: var(--player-surface-deep);
+
+  /* Player borders */
+  --border-subtle-player: color-mix(in srgb, var(--surface-elevated) 19%, transparent);
+  --border-active-player: color-mix(in srgb, var(--tertiary) 38%, transparent);
+
+  /* Accent glows & decorative */
+  --accent-glow: color-mix(in srgb, var(--tertiary) 50%, transparent);
+  --accent-glow-strong: color-mix(in srgb, var(--tertiary) 60%, transparent);
+  --accent-glow-subtle: color-mix(in srgb, var(--tertiary) 30%, transparent);
+  --accent-border-decorative: color-mix(in srgb, var(--tertiary) 25%, transparent);
+  --accent-border-strong: color-mix(in srgb, var(--tertiary) 50%, transparent);
+  --accent-gradient-warm: color-mix(in srgb, var(--tertiary) 6%, transparent);
+  --accent-gradient-faint: color-mix(in srgb, var(--tertiary) 2%, transparent);
+  --accent-ambient: color-mix(in srgb, var(--quaternary) 60%, transparent);
+  --accent-ambient-cool: color-mix(in srgb, var(--tertiary) 50%, transparent);
+  --row-hover-bg: color-mix(in srgb, var(--tertiary) 5%, transparent);
+  --loading-bar-from: var(--tertiary);
+  --loading-bar-to: color-mix(in srgb, var(--tertiary) 80%, black);
+  --vinyl-glow: color-mix(in srgb, var(--tertiary) 40%, transparent);
+  --vinyl-glow-strong: color-mix(in srgb, var(--tertiary) 70%, transparent);
+
+  /* Stats & table */
+  --stats-gradient: linear-gradient(180deg, color-mix(in srgb, var(--tertiary) 15%, white) 0%, var(--tertiary) 30%, var(--secondary) 60%, var(--quaternary) 100%);
+  --stats-label-color: var(--tertiary);
+  --thead-bg: color-mix(in srgb, var(--surface-card) 95%, transparent);
+  --expanded-row-bg: color-mix(in srgb, var(--surface-card) 80%, transparent);
+
+  /* Chip & border */
+  --chip-border: var(--quinary-muted);
+  --chip-date-text: var(--quinary);
+  --border-subtle: color-mix(in srgb, var(--surface-elevated) 50%, transparent);
+  --border-color: var(--surface-elevated);
+
+  /* ========================================
+     LAYOUT ALIASES (generic semantic names)
+     ======================================== */
+  --bg: var(--surface-base);
+  --bg-card: var(--surface-card);
+  --bg-elevated: var(--surface-elevated);
+  --text: var(--text-primary);
+  --text-dim: var(--text-secondary);
+  --text-subdued: var(--text-tertiary);
+  --cream: color-mix(in srgb, var(--quinary) 15%, white);
+
+  /* ========================================
+     BADGES — recording type
+     ======================================== */
+  --badge-sbd-bg: color-mix(in srgb, var(--tertiary) 30%, black);
+  --badge-sbd-border: color-mix(in srgb, var(--tertiary) 60%, black);
+  --badge-sbd-text: color-mix(in srgb, var(--tertiary) 55%, white);
+
+  --badge-aud-bg: color-mix(in srgb, var(--quaternary) 25%, black);
+  --badge-aud-border: color-mix(in srgb, var(--quaternary) 55%, black);
+  --badge-aud-text: color-mix(in srgb, var(--quaternary) 45%, white);
+
+  --badge-mx-bg: color-mix(in srgb, var(--quinary) 30%, black);
+  --badge-mx-border: color-mix(in srgb, var(--quinary) 55%, black);
+  --badge-mx-text: color-mix(in srgb, var(--quinary) 55%, white);
+
+  --badge-other-bg: var(--surface-sunken);
+  --badge-other-border: var(--border-default);
+  --badge-other-text: var(--text-secondary);
+
+  /* Badges — source format */
+  --badge-flac24-bg: color-mix(in srgb, var(--tertiary) 20%, transparent);
+  --badge-flac24-text: color-mix(in srgb, var(--tertiary) 55%, black);
+
+  --badge-flac16-bg: color-mix(in srgb, var(--quaternary) 20%, transparent);
+  --badge-flac16-text: color-mix(in srgb, var(--quaternary) 55%, black);
+
+  --badge-mp3-bg: color-mix(in srgb, var(--secondary) 20%, transparent);
+  --badge-mp3-text: color-mix(in srgb, var(--secondary) 50%, black);
+
+  /* Stars */
+  --star-empty: color-mix(in srgb, var(--quinary) 25%, black);
+  --star-filled: var(--secondary);
+
+  /* Overlays */
+  --overlay-subtle: color-mix(in srgb, white 6%, transparent);
+  --overlay-light: color-mix(in srgb, white 8%, transparent);
+  --overlay-medium: color-mix(in srgb, white 12%, transparent);
+
+  /* ========================================
+     CASSETTE TAPE (decorative)
+     ======================================== */
+  --cassette-label-text: color-mix(in srgb, var(--quinary) 35%, black);
+  --cassette-label-subtle: color-mix(in srgb, var(--quinary) 55%, black);
+  --cassette-label-muted: color-mix(in srgb, var(--quinary) 45%, black);
+  --cassette-label-accent: var(--secondary);
+  --cassette-label-ruled: color-mix(in srgb, var(--quinary) 10%, transparent);
+
+  --cassette-body: linear-gradient(180deg, var(--surface-elevated), var(--primary), var(--surface-sunken));
+  --cassette-window: var(--surface-sunken);
+  --cassette-reel: radial-gradient(circle at 40% 40%, var(--surface-card), var(--surface-sunken));
+  --cassette-tape: linear-gradient(180deg, var(--surface-sunken), color-mix(in srgb, var(--primary) 25%, black), var(--surface-sunken));
+  --cassette-screw: radial-gradient(circle at 35% 35%, var(--surface-elevated), var(--surface-card));
+  --cassette-header: linear-gradient(180deg, var(--secondary), var(--quaternary));
+  --cassette-glow: var(--secondary);
+  --cassette-border: var(--surface-card);
+
+  /* Non-palette vars */
+  --grid-color: color-mix(in srgb, white 5%, transparent);
+  --show-grid: 0;
+  --show-orbs: 0;
+  --orb-pink-opacity: 0;
+  --orb-cyan-opacity: 0;
+}

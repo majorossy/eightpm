@@ -1,0 +1,105 @@
+/* ========================================
+   SHORE THEME
+   Clean white background with warm brown text
+   ======================================== */
+.mode-shore.theme-camp {
+  /* Light mode palette */
+  --primary: #ffffff;
+  --secondary: #e8a050;
+  --tertiary: #7a9aaa;
+  --quaternary: #c49040;
+  --quinary: #d4a060;
+  --primary-muted: #ffffff40;
+  --secondary-muted: #e8a05040;
+  --tertiary-muted: #7a9aaa40;
+  --quaternary-muted: #c4904040;
+  --quinary-muted: #d4a06040;
+
+  /* Override derived tokens for light mode (color-mix formulas assume dark primary) */
+  --surface-base: var(--primary);
+  --surface-card: color-mix(in srgb, var(--primary) 96%, var(--text-primary));
+  --surface-elevated: color-mix(in srgb, var(--primary) 85%, var(--quinary));
+  --surface-sunken: color-mix(in srgb, var(--primary) 95%, var(--text-primary));
+
+  --text-primary: color-mix(in srgb, black 85%, var(--quinary));
+  --text-secondary: color-mix(in srgb, black 70%, var(--quinary));
+  --text-tertiary: color-mix(in srgb, black 55%, var(--quinary));
+  --text-inverse: var(--primary);
+
+  --border-default: color-mix(in srgb, var(--primary) 75%, var(--quinary));
+  --border-subtle-token: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
+
+  --interactive-hover-bg: var(--surface-elevated);
+  --interactive-active-bg: var(--border-default);
+
+  --placeholder: var(--text-tertiary);
+  --ring-accent: var(--quaternary);
+
+  /* Player surfaces */
+  --player-surface-deep: color-mix(in srgb, var(--primary) 93%, var(--quinary));
+  --player-surface-bar: color-mix(in srgb, var(--primary) 96%, var(--quinary));
+  --player-surface-queue: color-mix(in srgb, var(--primary) 90%, var(--quinary));
+  --player-surface-chip: color-mix(in srgb, var(--primary) 98%, var(--quinary));
+  --player-surface-chip-hover: var(--primary);
+  --player-glow-line: linear-gradient(90deg, transparent, color-mix(in srgb, var(--secondary) 20%, transparent), transparent);
+  --player-play-btn: var(--secondary);
+  --player-play-btn-shadow: color-mix(in srgb, var(--secondary) 20%, transparent);
+  --player-play-btn-text: var(--primary);
+
+  /* Player borders */
+  --border-subtle-player: color-mix(in srgb, var(--text-tertiary) 15%, transparent);
+  --border-active-player: color-mix(in srgb, var(--secondary) 35%, transparent);
+
+  /* Non-palette vars */
+  --grid-color: color-mix(in srgb, black 5%, transparent);
+  --border-color: var(--border-default);
+  --border-subtle: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
+
+  /* Badges — light backgrounds with dark text for contrast on white */
+  --badge-sbd-bg: color-mix(in srgb, var(--tertiary) 15%, white);
+  --badge-sbd-border: color-mix(in srgb, var(--tertiary) 55%, white);
+  --badge-sbd-text: color-mix(in srgb, var(--tertiary) 80%, black);
+
+  --badge-aud-bg: color-mix(in srgb, var(--quaternary) 15%, white);
+  --badge-aud-border: color-mix(in srgb, var(--quaternary) 55%, white);
+  --badge-aud-text: color-mix(in srgb, var(--quaternary) 80%, black);
+
+  --badge-mx-bg: color-mix(in srgb, var(--quinary) 15%, white);
+  --badge-mx-border: color-mix(in srgb, var(--quinary) 55%, white);
+  --badge-mx-text: color-mix(in srgb, var(--quinary) 80%, black);
+
+  --badge-other-bg: color-mix(in srgb, var(--text-tertiary) 10%, transparent);
+  --badge-other-border: var(--text-tertiary);
+  --badge-other-text: var(--text-secondary);
+
+  --badge-flac24-bg: color-mix(in srgb, var(--tertiary) 15%, transparent);
+  --badge-flac24-text: color-mix(in srgb, var(--tertiary) 80%, black);
+
+  --badge-flac16-bg: color-mix(in srgb, var(--quaternary) 15%, transparent);
+  --badge-flac16-text: color-mix(in srgb, var(--quaternary) 80%, black);
+
+  --badge-mp3-bg: color-mix(in srgb, var(--secondary) 15%, transparent);
+  --badge-mp3-text: color-mix(in srgb, var(--secondary) 80%, black);
+
+  /* Stars */
+  --star-empty: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
+  --star-filled: var(--secondary);
+
+  /* Overlays — dark on white */
+  --overlay-subtle: color-mix(in srgb, black 4%, transparent);
+  --overlay-light: color-mix(in srgb, black 6%, transparent);
+  --overlay-medium: color-mix(in srgb, black 10%, transparent);
+
+  /* Cassette tape */
+  --cassette-body: linear-gradient(180deg, var(--border-default), color-mix(in srgb, var(--border-default) 90%, black), color-mix(in srgb, var(--border-default) 80%, black));
+  --cassette-window: var(--text-tertiary);
+  --cassette-reel: radial-gradient(circle at 40% 40%, color-mix(in srgb, var(--text-tertiary) 60%, white), color-mix(in srgb, var(--text-tertiary) 80%, white));
+  --cassette-tape: linear-gradient(180deg, color-mix(in srgb, var(--text-tertiary) 80%, white), color-mix(in srgb, var(--text-tertiary) 90%, black), color-mix(in srgb, var(--text-tertiary) 80%, white));
+  --cassette-screw: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--border-default) 90%, black), var(--text-tertiary));
+  --cassette-header: linear-gradient(180deg, var(--secondary), var(--quinary));
+  --cassette-glow: var(--secondary);
+  --cassette-border: color-mix(in srgb, var(--text-tertiary) 60%, white);
+
+  /* Light mode cream — darker for contrast on white background */
+  --cream: color-mix(in srgb, var(--quinary) 55%, black);
+}

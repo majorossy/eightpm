@@ -139,7 +139,7 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
       // MUST await before createMediaElementSource or audio routes through suspended context
       if (audioContextRef.current.state === 'suspended') {
         await audioContextRef.current.resume();
-        if (audioContextRef.current.state !== 'running') {
+        if ((audioContextRef.current.state as string) !== 'running') {
           throw new Error(`AudioContext failed to resume, state: ${audioContextRef.current.state}`);
         }
       }

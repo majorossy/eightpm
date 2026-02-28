@@ -1,0 +1,15 @@
+/* ========================================
+   LOT THEME - AURORA PALETTE
+   ======================================== */
+.theme-lot {
+  --primary: #4e6d7a;
+  --secondary: #c4706e;
+  --tertiary: #5ab8a0;
+  --quaternary: #9088c8;
+  --quinary: #c8b468;
+  --primary-muted: #4e6d7a40;
+  --secondary-muted: #c4706e40;
+  --tertiary-muted: #5ab8a040;
+  --quaternary-muted: #9088c840;
+  --quinary-muted: #c8b46840;
+}

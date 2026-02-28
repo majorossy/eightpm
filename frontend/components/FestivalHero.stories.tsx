@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 import FestivalHero from './FestivalHero';
 import { FestivalSortProvider } from '@/context/FestivalSortContext';
 import { mockArtist, mockArtist2 } from '../.storybook/fixtures';

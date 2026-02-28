@@ -1,0 +1,39 @@
+/* ========================================
+   Button Styles
+   btn-neon, btn-ghost
+   ======================================== */
+
+/* Neon button styles */
+.btn-neon {
+  border: none;
+  background: linear-gradient(135deg, var(--secondary), var(--quinary));
+  color: var(--cream);
+  border-radius: 9999px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.btn-neon::before {
+  display: none;
+}
+
+.btn-neon:hover {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--secondary) 80%, white), var(--secondary));
+  color: var(--cream);
+  box-shadow: 0 4px 20px var(--accent-glow-subtle);
+  transform: scale(1.04);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 2px solid var(--border-default);
+  color: var(--text-secondary);
+  transition: all 0.3s;
+}
+
+.btn-ghost:hover {
+  border-color: var(--secondary);
+  color: var(--text-primary);
+  box-shadow: none;
+}

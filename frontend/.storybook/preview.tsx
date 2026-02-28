@@ -4,13 +4,13 @@ import type { Preview } from '@storybook/nextjs-vite';
 const preview: Preview = {
   globalTypes: {
     mode: {
-      description: 'Light/Dark mode for Campfire theme',
+      description: 'Light/Dark mode for Camp theme',
       toolbar: {
         title: 'Mode',
         icon: 'circlehollow',
         items: [
           { value: 'dark', title: 'Dark Mode', icon: 'moon' },
-          { value: 'light', title: 'Light Mode', icon: 'sun' },
+          { value: 'shore', title: 'Shore Mode', icon: 'sun' },
           { value: 'side-by-side', title: 'Side by Side', icon: 'sidebar' },
         ],
         dynamicTitle: true,
@@ -28,7 +28,7 @@ const preview: Preview = {
         return (
           <div style={{ display: 'flex', minHeight: '100vh' }}>
             <div
-              className="theme-campfire mode-dark"
+              className="theme-camp"
               style={{ flex: 1, backgroundColor: '#1c1a17', padding: '2rem' }}
             >
               <div style={{ color: '#9a9488', fontSize: '0.75rem', marginBottom: '1rem', fontFamily: 'var(--font-space-mono)' }}>
@@ -37,11 +37,11 @@ const preview: Preview = {
               <Story />
             </div>
             <div
-              className="theme-campfire mode-light"
-              style={{ flex: 1, backgroundColor: '#3d5a6e', padding: '2rem' }}
+              className="theme-camp mode-shore"
+              style={{ flex: 1, backgroundColor: '#4e6d7a', padding: '2rem' }}
             >
               <div style={{ color: '#8aa4b5', fontSize: '0.75rem', marginBottom: '1rem', fontFamily: 'var(--font-space-mono)' }}>
-                LIGHT MODE
+                SHORE MODE
               </div>
               <Story />
             </div>
@@ -49,11 +49,11 @@ const preview: Preview = {
         );
       }
 
-      const modeClass = mode === 'light' ? 'mode-light' : 'mode-dark';
-      const bgColor = mode === 'light' ? '#3d5a6e' : '#1c1a17';
+      const modeClass = mode === 'shore' ? 'mode-shore' : '';
+      const bgColor = mode === 'shore' ? '#4e6d7a' : '#1c1a17';
 
       return (
-        <div className={`theme-campfire ${modeClass}`} style={{ backgroundColor: bgColor, minHeight: '100vh', padding: '2rem' }}>
+        <div className={`theme-camp ${modeClass}`} style={{ backgroundColor: bgColor, minHeight: '100vh', padding: '2rem' }}>
           <Story />
         </div>
       );

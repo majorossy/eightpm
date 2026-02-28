@@ -1,0 +1,40 @@
+/* ========================================
+   THEME: Camp
+   Earthy, organic, warm analog vibes
+   ======================================== */
+.theme-camp {
+  /* Campfire palette */
+  --primary: #1c1a17;
+  --secondary: #d4a060;
+  --tertiary: #5a8a7a;
+  --quaternary: #a85a38;
+  --quinary: #c08a40;
+  --primary-muted: #1c1a1740;
+  --secondary-muted: #d4a06040;
+  --tertiary-muted: #5a8a7a40;
+  --quaternary-muted: #a85a3840;
+  --quinary-muted: #c08a4040;
+
+  /* Surface overrides — near-black primary needs to lighten, not darken */
+  --surface-card: color-mix(in srgb, var(--primary) 96%, white);
+  --surface-elevated: color-mix(in srgb, var(--primary) 93%, white);
+  --surface-sunken: color-mix(in srgb, var(--primary) 93%, black);
+
+  /* Border overrides — slightly lighter than elevated for near-black base */
+  --border-default: color-mix(in srgb, var(--primary) 88%, white);
+  --border-subtle-token: var(--surface-elevated);
+
+  /* Player surfaces — deeper darks for near-black theme */
+  --player-surface-deep: color-mix(in srgb, var(--primary) 75%, black);
+  --player-surface-bar: color-mix(in srgb, var(--primary) 97%, black);
+  --player-surface-queue: color-mix(in srgb, var(--primary) 65%, black);
+  --player-surface-chip: color-mix(in srgb, var(--primary) 98%, white);
+  --player-surface-chip-hover: color-mix(in srgb, var(--primary) 94%, white);
+  --player-glow-line: linear-gradient(90deg, transparent, color-mix(in srgb, var(--secondary) 25%, transparent), color-mix(in srgb, var(--quinary) 15%, transparent), transparent);
+  --player-play-btn: var(--secondary);
+  --player-play-btn-shadow: color-mix(in srgb, var(--secondary) 30%, transparent);
+  --player-play-btn-text: var(--player-surface-deep);
+  --border-subtle-player: color-mix(in srgb, var(--surface-elevated) 19%, transparent);
+  --border-active-player: color-mix(in srgb, var(--secondary) 38%, transparent);
+
+}

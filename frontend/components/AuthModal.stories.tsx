@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 import AuthModal from './AuthModal';
 import { AuthProvider } from '@/context/AuthContext';
 import { MagentoAuthProvider } from '@/context/MagentoAuthContext';

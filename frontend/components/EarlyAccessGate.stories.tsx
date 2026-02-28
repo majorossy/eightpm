@@ -28,6 +28,7 @@ export const Default: Story = {
 
 // Static preview of the login form (no localStorage dependency)
 export const LoginFormPreview: Story = {
+  args: {} as any,
   render: () => (
     <div style={{
       position: 'fixed', inset: 0, background: '#1c1a17',
