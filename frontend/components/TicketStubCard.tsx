@@ -146,7 +146,7 @@ export default function TicketStubCard({
               {/* Top row: track number + art + title */}
               <div className="flex items-start gap-2">
                 <span className={`font-mono text-tertiary flex-shrink-0 leading-none ${isHorizontal ? 'text-[10px] mt-0.5' : isCompact ? 'text-xs' : 'text-sm'}`}>
-                  {index}
+                  {item.albumSource ? (item.albumSource.originalTrackIndex ?? 0) + 1 : index}
                 </span>
                 {/* Album art */}
                 <div className={`flex-shrink-0 rounded overflow-hidden ${isHorizontal ? 'w-7 h-7' : isCompact ? 'w-8 h-8' : 'w-10 h-10'}`}>

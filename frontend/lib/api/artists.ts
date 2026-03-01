@@ -77,6 +77,23 @@ const GET_CHILD_CATEGORIES_QUERY = `
       image
       wikipedia_artwork_url
       product_count
+      children {
+        uid
+        name
+        url_key
+        product_count
+      }
+    }
+  }
+`;
+
+const STUDIO_ALBUMS_QUERY = `
+  query GetStudioAlbums($artistName: String!) {
+    studioAlbums(artistName: $artistName) {
+      items {
+        album_title
+        release_year
+      }
     }
   }
 `;
@@ -181,6 +198,7 @@ export async function getArtist(slug: string): Promise<ArtistDetail | null> {
     }
 
     const albumCategories = allAlbumCategories;
+    const yearMap = await fetchReleaseYearMap(category.name);
 
     const albums: Album[] = await Promise.all(
       albumCategories.map(async (albumCat) => {
@@ -285,6 +303,7 @@ export async function getArtist(slug: string): Promise<ArtistDetail | null> {
           totalDuration,
           coverArt: albumCat.wikipedia_artwork_url || getAlbumCoverArt(albumCat.url_key),
           wikipediaArtworkUrl: albumCat.wikipedia_artwork_url,
+          releaseYear: yearMap.get(albumCat.name) || undefined,
         };
       })
     );
@@ -310,6 +329,21 @@ export async function getArtist(slug: string): Promise<ArtistDetail | null> {
   }
 }
 
+async function fetchReleaseYearMap(artistName: string): Promise<Map<string, number>> {
+  const yearMap = new Map<string, number>();
+  try {
+    const data = await graphqlFetch<{
+      studioAlbums: { items: Array<{ album_title: string; release_year: number | null }> } | null;
+    }>(STUDIO_ALBUMS_QUERY, { artistName });
+    for (const sa of data.studioAlbums?.items ?? []) {
+      if (sa.release_year) yearMap.set(sa.album_title, sa.release_year);
+    }
+  } catch {
+    // Non-critical — albums will just render without years
+  }
+  return yearMap;
+}
+
 export async function getArtistAlbums(slug: string): Promise<{ artist: Artist; albums: Album[] } | null> {
   try {
     const artistData = await graphqlFetch<{ categoryList: MagentoCategory[] }>(
@@ -324,10 +358,13 @@ export async function getArtistAlbums(slug: string): Promise<{ artist: Artist; a
     const category = artistData.categoryList[0];
     const artist = categoryToArtist(category);
 
-    const albumCategoriesData = await graphqlFetch<{ categoryList: MagentoCategory[] }>(
-      GET_CHILD_CATEGORIES_QUERY,
-      { parentUid: category.uid }
-    );
+    const [albumCategoriesData, yearMap] = await Promise.all([
+      graphqlFetch<{ categoryList: MagentoCategory[] }>(
+        GET_CHILD_CATEGORIES_QUERY,
+        { parentUid: category.uid }
+      ),
+      fetchReleaseYearMap(category.name),
+    ]);
 
     const albumCategories = albumCategoriesData.categoryList || [];
 
@@ -345,6 +382,13 @@ export async function getArtistAlbums(slug: string): Promise<{ artist: Artist; a
         totalDuration: 0,
         coverArt: albumCat.wikipedia_artwork_url || getAlbumCoverArt(albumCat.url_key),
         wikipediaArtworkUrl: albumCat.wikipedia_artwork_url,
+        releaseYear: yearMap.get(albumCat.name) || undefined,
+        trackChildren: (albumCat.children || []).map(child => ({
+          id: child.uid,
+          name: child.name,
+          slug: child.url_key,
+          versionCount: child.product_count || 0,
+        })),
       }
     ));
 

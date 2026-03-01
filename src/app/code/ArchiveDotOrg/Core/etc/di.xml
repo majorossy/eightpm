@@ -132,6 +132,7 @@
                 <item name="archivedotorg_discover_venues" xsi:type="object">ArchiveDotOrg\Core\Console\Command\DiscoverVenuesCommand</item>
                 <item name="archivedotorg_backfill_song_urls" xsi:type="object">ArchiveDotOrg\Core\Console\Command\BackfillSongUrlsCommand</item>
                 <item name="archivedotorg_dedup_recordings" xsi:type="object">ArchiveDotOrg\Core\Console\Command\DeduplicateRecordingsCommand</item>
+                <item name="archivedotorg_populate_album_years" xsi:type="object">ArchiveDotOrg\Core\Console\Command\PopulateAlbumYearsCommand</item>
             </argument>
         </arguments>
     </type>

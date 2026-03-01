@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useLineStartDetection } from '@/hooks/useLineStartDetection';
+import { useStarOverlay } from '@/hooks/useStarOverlay';
 import { useFestivalSort } from '@/hooks/useFestivalSort';
 import AlgorithmSelector from '@/components/AlgorithmSelector';
 
@@ -209,34 +209,32 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
   }, []);
 
   // Get sorted artists and algorithm from context
-  const { sortedArtists, algorithm } = useFestivalSort();
+  const { sortedArtists, algorithm, isAlphaMode } = useFestivalSort();
 
   // Use sortedArtists from context instead of local sorting
   const lineupArtists = sortedArtists.length > 0 ? sortedArtists : artists;
 
-  // Detect line starts to hide star separators via direct DOM manipulation (no flicker)
-  const { containerRef, setItemRef, setStarRef, detectAndHideLineStarts } = useLineStartDetection(lineupArtists.length);
+  const { containerRef, stars, starsReady, hideStars, drawStars } =
+    useStarOverlay();
 
-  // Debounce star detection after animations
-  const detectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleLayoutAnimationComplete = useCallback(() => {
-    // Clear any pending detection
-    if (detectionTimeoutRef.current) {
-      clearTimeout(detectionTimeoutRef.current);
+  // Pill click OR alpha-mode toggle: hide stars, wait for animation, redraw
+  const sortKey = `${algorithm}-${isAlphaMode}`;
+  const prevSortKeyRef = useRef(sortKey);
+  const sortTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (prevSortKeyRef.current !== sortKey) {
+      prevSortKeyRef.current = sortKey;
+      hideStars();
+      if (sortTimerRef.current) clearTimeout(sortTimerRef.current);
+      sortTimerRef.current = setTimeout(() => {
+        drawStars();
+        sortTimerRef.current = null;
+      }, prefersReducedMotion ? 50 : 500);
     }
-
-    // Debounce: wait for all animations to complete before detecting
-    detectionTimeoutRef.current = setTimeout(() => {
-      // Use double RAF to ensure DOM is fully settled
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          detectAndHideLineStarts();
-          detectionTimeoutRef.current = null;
-        });
-      });
-    }, 50); // Small delay after last animation completes
-  }, [detectAndHideLineStarts]);
+    return () => {
+      if (sortTimerRef.current) clearTimeout(sortTimerRef.current);
+    };
+  }, [sortKey, hideStars, drawStars, prefersReducedMotion]);
 
   const getFontSize = (artist: LineupArtist) => {
     let value: number;
@@ -462,14 +460,13 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
             {/* Artist names */}
             <div
               ref={containerRef}
-              className="flex flex-wrap items-baseline justify-center gap-x-2 md:gap-x-4 gap-y-2 text-[var(--text)] font-bold uppercase tracking-[1px] md:tracking-[2px]"
+              className="relative flex flex-wrap items-baseline justify-center gap-x-8 md:gap-x-14 gap-y-2 text-[var(--text)] font-bold uppercase tracking-[1px] md:tracking-[2px]"
             >
               {lineupArtists.map((artist, index) => {
                 const fontSize = getFontSize(artist);
                 return (
                   <motion.span
                     key={artist.slug}
-                    ref={setItemRef(index)}
                     layout
                     transition={{
                       layout: {
@@ -477,24 +474,15 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
                         ease: 'easeOut',
                       },
                     }}
-                    onLayoutAnimationComplete={handleLayoutAnimationComplete}
-                    className="flex items-baseline whitespace-nowrap"
+                    className="whitespace-nowrap"
                   >
-                    {/* Star separator - starts invisible, JS reveals appropriate ones after measurement */}
-                    {index > 0 && (
-                      <span
-                        ref={setStarRef(index)}
-                        className="text-[var(--secondary)] mr-2 md:mr-4 text-base invisible"
-                      >
-                        &#9733;
-                      </span>
-                    )}
                     <span className="relative group inline-block">
                       <Link
                         href={`/artists/${artist.slug}`}
                         className="artist-name-hover"
                         style={{
                           fontSize: `clamp(${fontSize.min}rem, calc(${fontSize.base.toFixed(3)}rem + ${fontSize.slope.toFixed(3)}vw), ${fontSize.max}rem)`,
+                          wordSpacing: '-0.25em',
                         }}
                       >
                         {artist.name}
@@ -511,6 +499,31 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
                   </motion.span>
                 );
               })}
+
+              {/* Star overlay — absolute positioned, removed from flex flow, non-interactive */}
+              <div
+                className="absolute inset-0 pointer-events-none overflow-hidden"
+                aria-hidden="true"
+              >
+                {stars.map((star) => (
+                  <span
+                    key={star.key}
+                    className="absolute text-[var(--secondary)] font-bold"
+                    style={{
+                      left: `${star.left}px`,
+                      top: `${star.top}px`,
+                      fontSize: `${star.fontSize}px`,
+                      transform: 'translate(-50%, -50%)',
+                      opacity: starsReady ? 1 : 0,
+                      transition: prefersReducedMotion
+                        ? 'none'
+                        : `opacity ${starsReady ? '0.3s' : '0.15s'} ease-in`,
+                    }}
+                  >
+                    &#9733;
+                  </span>
+                ))}
+              </div>
             </div>
             </div>
         </div>

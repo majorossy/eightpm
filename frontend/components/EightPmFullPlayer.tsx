@@ -19,6 +19,8 @@ import Link from 'next/link';
 import ShareModal from '@/components/ShareModal';
 import { formatLineage } from '@/lib/lineageUtils';
 import { useStreamingStats } from '@/hooks/useStreamingStats';
+import { computeSignalInfo } from '@/lib/signalUtils';
+import SignalStrengthIcon from '@/components/player/SignalStrengthIcon';
 import type { QueueItem } from '@/lib/queueTypes';
 import {
   TouchSensor,
@@ -421,16 +423,17 @@ export default function EightPmFullPlayer() {
             {formatDuration(Math.floor(currentTime))}
           </span>
 
-          {/* Streaming stats (centered) */}
-          {(streamingStats.networkType || streamingStats.downlinkMbps !== null || streamingStats.bufferedAhead > 0) && (
-            <span className="text-[9px] text-tertiary font-mono">
-              {[
-                streamingStats.networkType?.toUpperCase(),
-                streamingStats.downlinkMbps !== null ? `${streamingStats.downlinkMbps} Mbps` : null,
-                streamingStats.bufferedAhead > 0 ? `${streamingStats.bufferedAhead.toFixed(1)}s buf` : null,
-              ].filter(Boolean).join(' · ')}
-            </span>
-          )}
+          {/* Signal strength icon (centered) */}
+          <SignalStrengthIcon
+            size={16}
+            {...computeSignalInfo(
+              streamingStats.networkType,
+              streamingStats.downlinkMbps,
+              streamingStats.bufferedAhead,
+              streamingStats.isOnline,
+            )}
+            streamingStats={streamingStats}
+          />
 
           <span className="text-[11px] text-secondary font-mono">
             {formatDuration(Math.floor(duration))}

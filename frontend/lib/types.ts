@@ -72,6 +72,14 @@ export interface Track {
   songCount: number;             // Number of recordings
 }
 
+// Track child - lightweight category-level track info (for discography cards)
+export interface AlbumTrackChild {
+  id: string;
+  name: string;
+  slug: string;
+  versionCount: number;
+}
+
 // Album - a show/concert grouped by Archive.org identifier
 export interface Album {
   id: string;                    // The `identifier` attribute
@@ -91,6 +99,9 @@ export interface Album {
   totalDuration: number;         // Sum of all song durations
   coverArt?: string;             // Album cover image
   wikipediaArtworkUrl?: string;  // Wikipedia album artwork URL
+  releaseYear?: number;          // Studio album release year (from Wikipedia)
+  trackCount?: number;           // Number of unique tracks on the studio album
+  trackChildren?: AlbumTrackChild[]; // Lightweight track children from category tree
 }
 
 export interface Artist {

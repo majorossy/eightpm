@@ -37,13 +37,20 @@ class StudioAlbums implements ResolverInterface
         $connection = $this->resourceConnection->getConnection();
         $tableName = $connection->getTableName('archivedotorg_studio_albums');
 
+        $categoryTable = $connection->getTableName('catalog_category_entity');
+
         $select = $connection->select()
-            ->from($tableName)
-            ->where('artwork_url IS NOT NULL')
-            ->order('release_year DESC');
+            ->from(['sa' => $tableName])
+            ->joinLeft(
+                ['c' => $categoryTable],
+                'sa.category_id = c.entity_id',
+                ['track_count' => 'children_count']
+            )
+            ->where('sa.artwork_url IS NOT NULL')
+            ->order('sa.release_year DESC');
 
         if ($artistName !== null) {
-            $select->where('artist_name = ?', $artistName);
+            $select->where('sa.artist_name = ?', $artistName);
         }
 
         $albums = $connection->fetchAll($select);
@@ -60,6 +67,7 @@ class StudioAlbums implements ResolverInterface
                 'musicbrainz_id' => $album['musicbrainz_id'],
                 'artwork_url' => $album['artwork_url'],
                 'category_id' => $album['category_id'] ? (int)$album['category_id'] : null,
+                'track_count' => $album['track_count'] ? (int)$album['track_count'] : null,
             ];
         }
 

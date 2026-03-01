@@ -12,12 +12,16 @@ import QueuePreview from '@/components/QueuePreview';
 import type { QueueItem } from '@/lib/queueTypes';
 import QueueAccordion from '@/components/player/QueueAccordion';
 import type { AudioQuality } from '@/lib/types';
+import { computeSignalInfo } from '@/lib/signalUtils';
+import SignalStrengthIcon from '@/components/player/SignalStrengthIcon';
 
 interface StreamingStats {
   bufferedPercent: number;
   networkType: string | null;
   downlinkMbps: number | null;
   bufferedAhead: number;
+  isLoading: boolean;
+  isOnline: boolean;
 }
 
 interface DesktopPlayerBarProps {
@@ -30,6 +34,7 @@ interface DesktopPlayerBarProps {
     showVenue?: string;
     showDate?: string;
     streamUrl: string;
+    archiveDetailUrl?: string;
     qualityUrls?: Record<string, string>;
   };
   currentItem: QueueItem | null;
@@ -70,9 +75,11 @@ interface DesktopPlayerBarProps {
   totalUpcoming: number;
   onChipPlay: (index: number) => void;
   onRemoveItem: (queueId: string) => void;
+  onRemoveBatch: (batchId: string) => void;
   onSelectVersion: (queueId: string, song: any) => void;
   onMoveItem: (from: number, to: number) => void;
   onDetachItem: (queueId: string, targetIndex: number) => void;
+  onRestoreFromHistory: (queueId: string, targetIndex: number) => void;
   // Wishlist
   isInWishlist: (id: string) => boolean;
   wishlistItems: { id: string; song: { id: string } }[];
@@ -122,9 +129,11 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
     totalUpcoming,
     onChipPlay,
     onRemoveItem,
+    onRemoveBatch,
     onSelectVersion,
     onMoveItem,
     onDetachItem,
+    onRestoreFromHistory,
     isInWishlist,
     wishlistItems,
     onAddToWishlist,
@@ -147,7 +156,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         borderTop: isPlayerMinimized ? 'none' : '1px solid color-mix(in srgb, var(--border-default) 19%, transparent)',
         boxShadow: isPlayerMinimized ? 'none' : '0 -8px 40px color-mix(in srgb, black 40%, transparent)',
-        transform: isPlayerMinimized ? 'translateY(100%)' : 'translateY(0)',
+        transform: isPlayerMinimized ? 'translateY(100%)' : 'none',
         transition: reducedMotion ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         overflow: 'visible',
       }}
@@ -155,7 +164,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
       {/* Pull-tab — toggles player minimize/restore */}
       <button
         onClick={onMinimize}
-        className="absolute -top-8 right-4 px-4 py-1.5 rounded-t-lg
+        className="absolute -top-8 left-4 px-4 py-1.5 rounded-t-lg
                    flex items-center gap-2 z-50 pointer-events-auto
                    font-jb-mono text-[10px] font-semibold uppercase tracking-widest
                    transition-colors"
@@ -258,9 +267,6 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
       {queueChips.length > 0 && (
         <div className="px-6 pt-2.5 pb-3.5" style={{ background: 'var(--player-surface-queue)', borderTop: '1px solid color-mix(in srgb, var(--player-surface-bar) 20%, transparent)' }}>
           <div className="flex items-center gap-2 mb-2">
-            {playedCount > 0 && (
-              <span className="text-[10px] text-tertiary font-jb-mono uppercase tracking-wider">{playedCount} played &middot;</span>
-            )}
             <span className="text-[10px] font-jb-mono font-bold uppercase tracking-widest" style={{ color: 'var(--quinary)' }}>Up</span>
             <span className="text-[10px] font-jb-mono uppercase tracking-widest" style={{ color: 'var(--secondary)' }}>Next</span>
             <span className="text-[10px] text-tertiary font-jb-mono uppercase tracking-wider">&middot; {totalUpcoming} tracks</span>
@@ -275,9 +281,11 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
             playedCount={playedCount}
             onChipPlay={onChipPlay}
             onRemoveItem={onRemoveItem}
+            onRemoveBatch={onRemoveBatch}
             onSelectVersion={onSelectVersion}
             onMoveItem={onMoveItem}
             onDetachItem={onDetachItem}
+            onRestoreFromHistory={onRestoreFromHistory}
             preferredQuality={preferredQuality}
           />
         </div>
@@ -409,7 +417,7 @@ function DesktopLeftSection({
           {/* Share */}
           <ShareButton title={currentSong.title} artistName={currentSong.artistName} />
           {/* Download */}
-          <DownloadButton streamUrl={currentSong.streamUrl} title={currentSong.title} artistName={currentSong.artistName} />
+          <DownloadButton archiveUrl={currentSong.archiveDetailUrl} title={currentSong.title} artistName={currentSong.artistName} />
         </div>
       </div>
     </div>
@@ -624,22 +632,25 @@ function DesktopRightSection({
               {qualityInfo.bitrate}
             </span>
           </button>
-          {/* Source lineage */}
-          <span
-            className="text-[10px] text-secondary font-jb-mono leading-tight truncate max-w-[220px]"
-            title={currentSong?.lineage || 'Source not specified'}
-          >
-            {formatLineage(currentSong?.lineage, 35)}
-          </span>
-          {/* Streaming stats — compact single line */}
-          {(streamingStats.networkType || streamingStats.downlinkMbps !== null) && (
-            <span className="text-[9px] text-tertiary font-jb-mono leading-none truncate max-w-[180px]">
-              {[
-                streamingStats.networkType?.toUpperCase(),
-                streamingStats.downlinkMbps !== null ? `${streamingStats.downlinkMbps} Mbps` : null,
-              ].filter(Boolean).join(' \u00b7 ')}
+          {/* Source lineage + signal icon */}
+          <span className="flex items-center gap-1.5">
+            <span
+              className="text-[10px] text-secondary font-jb-mono leading-tight truncate max-w-[200px]"
+              title={currentSong?.lineage || 'Source not specified'}
+            >
+              {formatLineage(currentSong?.lineage, 35)}
             </span>
-          )}
+            <SignalStrengthIcon
+              size={16}
+              {...computeSignalInfo(
+                streamingStats.networkType,
+                streamingStats.downlinkMbps,
+                streamingStats.bufferedAhead,
+                streamingStats.isOnline ?? true,
+              )}
+              streamingStats={streamingStats}
+            />
+          </span>
         </div>
 
         {/* Quality popup menu */}

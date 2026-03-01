@@ -52,7 +52,9 @@ export type QueueAction =
   | { type: 'SET_REPEAT'; mode: 'off' | 'all' | 'one' }
   | { type: 'CLEAR_QUEUE' }
   | { type: 'DETACH_ITEM'; queueId: string; targetIndex: number }
-  | { type: 'CLEAR_UPCOMING' };
+  | { type: 'RESTORE_FROM_HISTORY'; queueId: string; targetIndex: number }
+  | { type: 'CLEAR_UPCOMING' }
+  | { type: 'REMOVE_BATCH'; batchId: string };
 
 // =============================================================================
 // Reducer
@@ -253,6 +255,28 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
       return { ...state, items: newItems, cursorIndex: newCursor };
     }
 
+    case 'RESTORE_FROM_HISTORY': {
+      const { queueId, targetIndex } = action;
+      const fromIndex = state.items.findIndex(item => item.queueId === queueId);
+      if (fromIndex === -1) return state;
+      // Only allow restoring items that are before the cursor (history)
+      if (fromIndex >= state.cursorIndex) return state;
+
+      const newItems = [...state.items];
+      const [item] = newItems.splice(fromIndex, 1);
+      // Cursor decrements because we removed an item before it
+      const newCursor = state.cursorIndex - 1;
+      // Adjust target for the removal, clamp to upcoming zone
+      const adjustedTarget = Math.max(
+        newCursor + 1,
+        targetIndex > fromIndex ? targetIndex - 1 : targetIndex,
+      );
+      const restoredItem = { ...item, played: false, batchId: generateBatchId() };
+      newItems.splice(adjustedTarget, 0, restoredItem);
+
+      return { ...state, items: newItems, cursorIndex: newCursor };
+    }
+
     case 'SET_CURSOR': {
       const { index } = action;
       if (index < 0 || index >= state.items.length) {
@@ -396,6 +420,20 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
       };
     }
 
+    case 'REMOVE_BATCH': {
+      const { batchId } = action;
+      const newItems = state.items.filter(
+        (item, i) => item.batchId !== batchId || i <= state.cursorIndex,
+      );
+      if (newItems.length === state.items.length) return state;
+
+      // Cursor stays the same — we only remove items after cursor
+      return {
+        ...state,
+        items: newItems,
+      };
+    }
+
     default:
       return state;
   }
@@ -429,6 +467,7 @@ interface QueueContextType {
   removeItem: (queueId: string) => void;
   moveItem: (fromIndex: number, toIndex: number) => void;
   detachItem: (queueId: string, targetIndex: number) => void;
+  restoreFromHistory: (queueId: string, targetIndex: number) => void;
   moveBlock: (
     batchId: string,
     startIndex: number,
@@ -444,6 +483,7 @@ interface QueueContextType {
   setRepeat: (mode: 'off' | 'all' | 'one') => void;
   clearQueue: () => void;
   clearUpcoming: () => void;
+  removeBatch: (batchId: string) => void;
 
   // Helpers
   albumToItems: (
@@ -494,7 +534,9 @@ function getInitialState(): UnifiedQueue {
         const items: QueueItem[] = parsed.items.map((item: QueueItem) => ({
           ...item,
           song: item.song ? sanitizeSongUrls(item.song) : item.song,
-          availableVersions: item.song ? [item.song] : [],
+          availableVersions: Array.isArray(item.availableVersions) && item.availableVersions.length > 0
+            ? item.availableVersions.map(sanitizeSongUrls)
+            : item.song ? [sanitizeSongUrls(item.song)] : [],
         }));
         return {
           items,
@@ -520,6 +562,10 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
   const queueRef = useRef(queue);
   queueRef.current = queue;
 
+  // Track whether component has hydrated (prevents clearing localStorage on mount)
+  const hasHydrated = useRef(false);
+  useEffect(() => { hasHydrated.current = true; }, []);
+
   // ---------------------------------------------------------------------------
   // Debounced localStorage save
   // ---------------------------------------------------------------------------
@@ -530,11 +576,14 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     const timer = setTimeout(() => {
       try {
         if (queue.items.length === 0) {
-          localStorage.removeItem(QUEUE_STORAGE_KEY);
+          // Only clear storage if we've hydrated — prevents nuking saved queue on mount
+          if (hasHydrated.current) {
+            localStorage.removeItem(QUEUE_STORAGE_KEY);
+          }
           return;
         }
         const snapshot = {
-          items: queue.items.map(({ availableVersions, ...rest }) => rest),
+          items: queue.items,
           cursorIndex: queue.cursorIndex,
           repeat: queue.repeat,
         };
@@ -643,6 +692,10 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'DETACH_ITEM', queueId, targetIndex });
   }, []);
 
+  const restoreFromHistory = useCallback((queueId: string, targetIndex: number) => {
+    dispatch({ type: 'RESTORE_FROM_HISTORY', queueId, targetIndex });
+  }, []);
+
   const moveBlock = useCallback(
     (
       batchId: string,
@@ -701,6 +754,10 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'CLEAR_UPCOMING' });
   }, []);
 
+  const removeBatch = useCallback((batchId: string) => {
+    dispatch({ type: 'REMOVE_BATCH', batchId });
+  }, []);
+
   // ---------------------------------------------------------------------------
   // Helpers (passthroughs)
   // ---------------------------------------------------------------------------
@@ -748,6 +805,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       removeItem,
       moveItem,
       detachItem,
+      restoreFromHistory,
       moveBlock,
       setCursor,
       advanceCursor,
@@ -758,6 +816,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       setRepeat,
       clearQueue,
       clearUpcoming,
+      removeBatch,
 
       // Helpers
       albumToItems,
@@ -778,6 +837,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       removeItem,
       moveItem,
       detachItem,
+      restoreFromHistory,
       moveBlock,
       setCursor,
       advanceCursor,
@@ -788,6 +848,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       setRepeat,
       clearQueue,
       clearUpcoming,
+      removeBatch,
       albumToItems,
       trackToItem,
     ],

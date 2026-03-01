@@ -1,5 +1,6 @@
 'use client';
 
+import type React from 'react';
 import QueueChip from '@/components/player/QueueChip';
 import type { QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
@@ -17,6 +18,7 @@ export function SortableQueueChip({
   preferredQuality,
   isActive,
   isPlayed,
+  forceEnableDrag,
 }: {
   item: QueueItem;
   chipIndex: number;
@@ -27,6 +29,7 @@ export function SortableQueueChip({
   preferredQuality?: AudioQuality;
   isActive?: boolean;
   isPlayed?: boolean;
+  forceEnableDrag?: boolean;
 }) {
   const {
     attributes,
@@ -35,29 +38,35 @@ export function SortableQueueChip({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.queueId, disabled: !!isPlayed });
+  } = useSortable({ id: item.queueId, disabled: !!isPlayed && !forceEnableDrag });
 
-  const style = {
+  const style: React.CSSProperties = {
     transform: transform ? `translate3d(${transform.x}px, 0, 0)` : undefined,
     transition,
-    opacity: isDragging ? 0.4 : 1,
-    zIndex: isDragging ? 10 : undefined,
+    // Dashed placeholder border when dragging (preserves dimensions for dnd-kit)
+    ...(isDragging ? {
+      border: '2px dashed color-mix(in srgb, var(--quinary) 25%, transparent)',
+      background: 'color-mix(in srgb, var(--quinary) 4%, transparent)',
+      borderRadius: '8px',
+    } : {}),
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <QueueChip
-        item={item}
-        chipIndex={chipIndex}
-        absoluteIndex={absoluteIndex}
-        onPlay={onPlay}
-        onRemove={isPlayed ? undefined : onRemove}
-        onSelectVersion={onSelectVersion}
-        preferredQuality={preferredQuality}
-        isDragging={isDragging}
-        isActive={isActive}
-        isPlayed={isPlayed}
-      />
+    <div ref={setNodeRef} style={style} className={isPlayed && !forceEnableDrag ? '' : 'cursor-grab active:cursor-grabbing'} {...attributes} {...listeners}>
+      <div style={{ visibility: isDragging ? 'hidden' : 'visible' }}>
+        <QueueChip
+          item={item}
+          chipIndex={chipIndex}
+          absoluteIndex={absoluteIndex}
+          onPlay={onPlay}
+          onRemove={isPlayed ? undefined : onRemove}
+          onSelectVersion={onSelectVersion}
+          preferredQuality={preferredQuality}
+          isActive={isActive}
+          isPlayed={isPlayed}
+          inSortable
+        />
+      </div>
     </div>
   );
 }

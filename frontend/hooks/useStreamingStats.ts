@@ -6,6 +6,7 @@ export interface StreamingStats {
   networkType: string | null;   // "4g", "3g", "2g", "slow-2g"
   downlinkMbps: number | null;  // estimated Mbps
   isLoading: boolean;           // audio.networkState === NETWORK_LOADING
+  isOnline: boolean;            // navigator.onLine (safe SSR default: true)
 }
 
 const EMPTY_STATS: StreamingStats = {
@@ -14,6 +15,7 @@ const EMPTY_STATS: StreamingStats = {
   networkType: null,
   downlinkMbps: null,
   isLoading: false,
+  isOnline: true,
 };
 
 interface NetworkInformation extends EventTarget {
@@ -117,6 +119,24 @@ export function useStreamingStats(
       connection.addEventListener('change', updateNetworkInfo);
       return () => connection.removeEventListener('change', updateNetworkInfo);
     }
+  }, []);
+
+  // Track online/offline status
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const goOnline = () => setStats(prev => ({ ...prev, isOnline: true }));
+    const goOffline = () => setStats(prev => ({ ...prev, isOnline: false }));
+
+    // Initial read
+    setStats(prev => ({ ...prev, isOnline: navigator.onLine }));
+
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
   }, []);
 
   return stats;

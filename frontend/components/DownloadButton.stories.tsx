@@ -20,7 +20,7 @@ type Story = StoryObj<typeof meta>;
 
 export const WithUrl: Story = {
   args: {
-    streamUrl: 'https://archive.org/download/RailroadEarth2024-01-01/track01.mp3',
+    archiveUrl: 'https://archive.org/details/RailroadEarth2024-01-01',
     title: 'Bird in a House',
     artistName: 'Railroad Earth',
     size: 'sm',
@@ -37,7 +37,7 @@ export const NoUrl: Story = {
 
 export const MediumSize: Story = {
   args: {
-    streamUrl: 'https://archive.org/download/RailroadEarth2024-01-01/track01.mp3',
+    archiveUrl: 'https://archive.org/details/RailroadEarth2024-01-01',
     title: 'Elko',
     size: 'md',
   },

@@ -346,6 +346,25 @@ const GET_CHILD_CATEGORIES_QUERY = `
       image
       wikipedia_artwork_url
       product_count
+      children {
+        uid
+        name
+        url_key
+        product_count
+      }
+    }
+  }
+`;
+
+// Get studio album metadata (release years, track counts)
+const STUDIO_ALBUMS_META_QUERY = `
+  query GetStudioAlbumMeta($artistName: String!) {
+    studioAlbums(artistName: $artistName) {
+      items {
+        album_title
+        release_year
+        track_count
+      }
     }
   }
 `;
@@ -675,6 +694,7 @@ interface MagentoCategory {
   image?: string;
   product_count?: number;
   children_count?: number;
+  children?: MagentoCategory[];
   breadcrumbs?: CategoryBreadcrumb[];
   wikipedia_artwork_url?: string;
   band_formation_date?: string;
@@ -1111,6 +1131,7 @@ export async function getArtist(slug: string): Promise<ArtistDetail | null> {
 
     console.log(`[getArtist] Total albums fetched: ${allAlbumCategories.length}`);
     const albumCategories = allAlbumCategories;
+    const studioMeta = await fetchStudioAlbumMeta(category.name);
 
     // For each album category, get its track categories and their products
     const albums: Album[] = await Promise.all(
@@ -1234,6 +1255,8 @@ export async function getArtist(slug: string): Promise<ArtistDetail | null> {
           totalDuration,
           coverArt: albumCat.wikipedia_artwork_url || getAlbumCoverArt(albumCat.url_key),
           wikipediaArtworkUrl: albumCat.wikipedia_artwork_url,
+          releaseYear: studioMeta.get(albumCat.name)?.releaseYear,
+          trackCount: studioMeta.get(albumCat.name)?.trackCount,
         };
       })
     );
@@ -1299,6 +1322,26 @@ export function formatDuration(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+interface StudioAlbumMeta { releaseYear?: number; trackCount?: number }
+
+async function fetchStudioAlbumMeta(artistName: string): Promise<Map<string, StudioAlbumMeta>> {
+  const metaMap = new Map<string, StudioAlbumMeta>();
+  try {
+    const data = await graphqlFetch<{
+      studioAlbums: { items: Array<{ album_title: string; release_year: number | null; track_count: number | null }> } | null;
+    }>(STUDIO_ALBUMS_META_QUERY, { artistName });
+    for (const sa of data.studioAlbums?.items ?? []) {
+      metaMap.set(sa.album_title, {
+        releaseYear: sa.release_year || undefined,
+        trackCount: sa.track_count || undefined,
+      });
+    }
+  } catch {
+    // Non-critical — albums will render without metadata
+  }
+  return metaMap;
+}
+
 // Lightweight function to get artist albums (no tracks/products)
 // Used by the artists listing page for better performance
 export async function getArtistAlbums(slug: string): Promise<{ artist: Artist; albums: Album[] } | null> {
@@ -1316,11 +1359,14 @@ export async function getArtistAlbums(slug: string): Promise<{ artist: Artist; a
     const category = artistData.categoryList[0];
     const artist = categoryToArtist(category);
 
-    // Get child categories (albums) - just metadata, no products
-    const albumCategoriesData = await graphqlFetch<{ categoryList: MagentoCategory[] }>(
-      GET_CHILD_CATEGORIES_QUERY,
-      { parentUid: category.uid }
-    );
+    // Get child categories (albums) and studio album metadata in parallel
+    const [albumCategoriesData, studioMeta] = await Promise.all([
+      graphqlFetch<{ categoryList: MagentoCategory[] }>(
+        GET_CHILD_CATEGORIES_QUERY,
+        { parentUid: category.uid }
+      ),
+      fetchStudioAlbumMeta(category.name),
+    ]);
 
     const albumCategories = albumCategoriesData.categoryList || [];
 
@@ -1339,6 +1385,14 @@ export async function getArtistAlbums(slug: string): Promise<{ artist: Artist; a
         totalDuration: 0,
         coverArt: albumCat.wikipedia_artwork_url || getAlbumCoverArt(albumCat.url_key),
         wikipediaArtworkUrl: albumCat.wikipedia_artwork_url,
+        releaseYear: studioMeta.get(albumCat.name)?.releaseYear,
+        trackCount: studioMeta.get(albumCat.name)?.trackCount,
+        trackChildren: (albumCat.children || []).map(child => ({
+          id: child.uid,
+          name: child.name,
+          slug: child.url_key,
+          versionCount: child.product_count || 0,
+        })),
       }
     ));
 

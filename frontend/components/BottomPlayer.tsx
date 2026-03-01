@@ -57,7 +57,9 @@ export default function BottomPlayer() {
     setRepeat,
     moveItem,
     detachItem,
+    restoreFromHistory,
     removeItem,
+    removeBatch,
     selectVersion,
   } = useQueue();
 
@@ -140,8 +142,10 @@ export default function BottomPlayer() {
     const maxUpcoming = isMobile ? 10 : 20;
     const chips: { item: QueueItem; absoluteIndex: number; isPlayed: boolean; isCurrent: boolean }[] = [];
 
-    // Include all played items (before cursor)
-    for (let i = 0; i < queue.cursorIndex; i++) {
+    // Include recent played items (before cursor), capped at 42
+    const maxHistory = 42;
+    const historyStart = Math.max(0, queue.cursorIndex - maxHistory);
+    for (let i = historyStart; i < queue.cursorIndex; i++) {
       chips.push({ item: queue.items[i], absoluteIndex: i, isPlayed: true, isCurrent: false });
     }
 
@@ -275,6 +279,7 @@ export default function BottomPlayer() {
         qualityPopupRef={qualityPopupRef}
         onExpandPlayer={handleExpandPlayer}
         onTogglePlay={handleTogglePlay}
+        streamingStats={streamingStats}
         swipeHandlers={swipeHandlers}
         announcement={announcement}
       />
@@ -332,9 +337,11 @@ export default function BottomPlayer() {
         totalUpcoming={totalUpcoming}
         onChipPlay={handleChipPlay}
         onRemoveItem={removeItem}
+        onRemoveBatch={removeBatch}
         onSelectVersion={selectVersion}
         onMoveItem={moveItem}
         onDetachItem={detachItem}
+        onRestoreFromHistory={restoreFromHistory}
         isInWishlist={isInWishlist}
         wishlistItems={wishlist.items}
         onAddToWishlist={addToWishlist}

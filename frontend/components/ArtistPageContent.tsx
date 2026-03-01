@@ -7,7 +7,7 @@ import { BandMemberData } from '@/lib/types';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useHaptic } from '@/hooks/useHaptic';
-import AlbumCard from '@/components/AlbumCard';
+import DiscographyCard from '@/components/DiscographyCard';
 import BandMembersTimeline from '@/components/artist/BandMembersTimeline';
 import BandStatistics from '@/components/artist/BandStatistics';
 import VenueCloud from '@/components/artist/VenueCloud';
@@ -326,9 +326,9 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
           Stream {artist.albums.length} {artist.albums.length === 1 ? 'show' : 'shows'} - High-quality recordings from Archive.org
         </p>
         {artist.albums.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
             {artist.albums.map((album) => (
-              <AlbumCard key={album.id} album={album} />
+              <DiscographyCard key={album.id} album={album} />
             ))}
           </div>
         ) : (

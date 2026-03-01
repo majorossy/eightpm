@@ -18,6 +18,7 @@ export interface MagentoCategory {
   image?: string;
   product_count?: number;
   children_count?: number;
+  children?: MagentoCategory[];
   breadcrumbs?: CategoryBreadcrumb[];
   wikipedia_artwork_url?: string;
   band_formation_date?: string;

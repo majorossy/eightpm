@@ -3,8 +3,11 @@
 import Image from 'next/image';
 import { QualityPopup, getQualityBadge } from '@/components/player/QualityPopup';
 import { formatLineage } from '@/lib/lineageUtils';
+import { getRecTypeBadgeConfig } from '@/lib/recTypeUtils';
 import type { QueueItem } from '@/lib/queueTypes';
 import type { AudioQuality } from '@/lib/types';
+import { computeSignalInfo } from '@/lib/signalUtils';
+import SignalStrengthIcon from '@/components/player/SignalStrengthIcon';
 
 interface SwipeHandlers {
   onTouchStart: (e: React.TouchEvent) => void;
@@ -44,6 +47,15 @@ interface MobileMiniPlayerProps {
   onTogglePlay: () => void;
   // Swipe
   swipeHandlers: SwipeHandlers;
+  // Streaming stats
+  streamingStats: {
+    networkType: string | null;
+    downlinkMbps: number | null;
+    bufferedAhead: number;
+    bufferedPercent: number;
+    isLoading: boolean;
+    isOnline: boolean;
+  };
   // Announcement
   announcement: string;
 }
@@ -67,10 +79,12 @@ export default function MobileMiniPlayer({
   qualityPopupRef,
   onExpandPlayer,
   onTogglePlay,
+  streamingStats,
   swipeHandlers,
   announcement,
 }: MobileMiniPlayerProps) {
   const qualityInfo = getQualityBadge(preferredQuality);
+  const recBadge = getRecTypeBadgeConfig(currentItem?.song?.recordingType);
 
   return (
     <>
@@ -172,18 +186,34 @@ export default function MobileMiniPlayer({
                     aria-label="Change audio quality"
                     type="button"
                   >
-                    <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />
-                    <span className="text-[10px] font-semibold text-accent uppercase tracking-wide">
-                      {qualityInfo.format}
+                    <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: recBadge.color }} />
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wide"
+                      style={{ color: recBadge.color }}
+                      title={recBadge.title}
+                    >
+                      {recBadge.label}
                     </span>
                   </button>
 
-                  {/* Source - ALWAYS VISIBLE */}
-                  <span
-                    className="text-[9px] text-tertiary italic leading-tight truncate max-w-[120px]"
-                    title={currentSong?.lineage || 'Source not specified'}
-                  >
-                    {formatLineage(currentSong?.lineage, 35)}
+                  {/* Source + signal icon */}
+                  <span className="flex items-center gap-1">
+                    <span
+                      className="text-[9px] text-tertiary italic leading-tight truncate max-w-[100px]"
+                      title={currentSong?.lineage || 'Source not specified'}
+                    >
+                      {formatLineage(currentSong?.lineage, 30)}
+                    </span>
+                    <SignalStrengthIcon
+                      size={14}
+                      {...computeSignalInfo(
+                        streamingStats.networkType,
+                        streamingStats.downlinkMbps,
+                        streamingStats.bufferedAhead,
+                        streamingStats.isOnline,
+                      )}
+                      streamingStats={streamingStats}
+                    />
                   </span>
                 </div>
 

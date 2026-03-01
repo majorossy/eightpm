@@ -6,8 +6,8 @@
 // Drag past group boundary → detach track from album (assigns new batchId).
 
 import { useState, useMemo, useCallback, useRef, useEffect, Fragment } from 'react';
-import Image from 'next/image';
 import type { QueueItem, QueueItemAlbumSource } from '@/lib/queueTypes';
+import TicketStub from '@/components/TicketStub';
 import type { Song, AudioQuality } from '@/lib/types';
 import { SortableQueueChip } from '@/components/player/QueueStrip';
 import QueueChip from '@/components/player/QueueChip';
@@ -44,15 +44,13 @@ interface StripGroup {
   albumSource: QueueItemAlbumSource | null;
   chips: ChipEntry[];
   colorVar: string;
-  isFullyPlayed: boolean;
-  playedInGroup: number;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────
 
 const ACCENT_COLORS = ['var(--quinary)', 'var(--tertiary)', 'var(--quaternary)'];
-const COLLAPSED_W = 52;
-const CHIP_STRIDE = 202; // 194px chip + 8px gap
+const COLLAPSED_W = 68;
+const CHIP_STRIDE = 228; // 220px chip + 8px gap
 
 // ─── Props ───────────────────────────────────────────────────────────
 
@@ -62,9 +60,11 @@ interface QueueAccordionProps {
   playedCount: number;
   onChipPlay: (index: number) => void;
   onRemoveItem: (queueId: string) => void;
+  onRemoveBatch: (batchId: string) => void;
   onSelectVersion: (queueId: string, song: Song) => void;
   onMoveItem: (from: number, to: number) => void;
   onDetachItem: (queueId: string, targetIndex: number) => void;
+  onRestoreFromHistory: (queueId: string, targetIndex: number) => void;
   preferredQuality: AudioQuality;
 }
 
@@ -76,46 +76,70 @@ export default function QueueAccordion({
   playedCount,
   onChipPlay,
   onRemoveItem,
+  onRemoveBatch,
   onSelectVersion,
   onMoveItem,
   onDetachItem,
+  onRestoreFromHistory,
   preferredQuality,
 }: QueueAccordionProps) {
 
-  // ─── Grouping ──────────────────────────────────────────────────────
+  // ─── History / Upcoming Split ──────────────────────────────────────
+
+  const { historyChips, upcomingChips } = useMemo(() => {
+    const history: ChipEntry[] = [];
+    const upcoming: ChipEntry[] = [];
+    for (const chip of queueChips) {
+      if (chip.isPlayed) history.push(chip);
+      else upcoming.push(chip);
+    }
+    return { historyChips: history, upcomingChips: upcoming };
+  }, [queueChips]);
+
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  // Auto-close history if all history chips disappear (e.g., queue cleared)
+  useEffect(() => {
+    if (historyChips.length === 0 && historyOpen) setHistoryOpen(false);
+  }, [historyChips.length, historyOpen]);
+
+  // ─── Grouping (upcoming only) ────────────────────────────────────
 
   const groups = useMemo(() => {
     const result: StripGroup[] = [];
+    const usedKeys = new Set<string>();
     let colorIdx = 0;
     let i = 0;
 
-    while (i < queueChips.length) {
-      const chip = queueChips[i];
+    while (i < upcomingChips.length) {
+      const chip = upcomingChips[i];
 
       // Try to form a multi-track album group
       if (chip.item.albumSource) {
         const groupChips: ChipEntry[] = [chip];
         let j = i + 1;
         while (
-          j < queueChips.length &&
-          queueChips[j].item.albumSource &&
-          queueChips[j].item.batchId === chip.item.batchId
+          j < upcomingChips.length &&
+          upcomingChips[j].item.albumSource &&
+          upcomingChips[j].item.batchId === chip.item.batchId
         ) {
-          groupChips.push(queueChips[j]);
+          groupChips.push(upcomingChips[j]);
           j++;
         }
 
         if (groupChips.length > 1) {
-          const playedInGroup = groupChips.filter(c => c.isPlayed).length;
+          // Key uses batchId for stability (index-based keys shift when queue changes).
+          // Fallback suffix for rare split-album case (same batchId, non-consecutive).
+          let key = `album-${chip.item.batchId}`;
+          if (usedKeys.has(key)) key = `${key}-${groupChips[0].item.queueId}`;
+          usedKeys.add(key);
           result.push({
             type: 'album',
-            key: `album-${chip.item.batchId}-${i}`,
+            key,
             batchId: chip.item.batchId,
             albumSource: chip.item.albumSource,
             chips: groupChips,
             colorVar: ACCENT_COLORS[colorIdx % ACCENT_COLORS.length],
-            isFullyPlayed: playedInGroup === groupChips.length,
-            playedInGroup,
           });
           colorIdx++;
           i = j;
@@ -131,14 +155,12 @@ export default function QueueAccordion({
         albumSource: chip.item.albumSource,
         chips: [chip],
         colorVar: '',
-        isFullyPlayed: chip.isPlayed,
-        playedInGroup: chip.isPlayed ? 1 : 0,
       });
       i++;
     }
 
     return result;
-  }, [queueChips]);
+  }, [upcomingChips]);
 
   // ─── Global index lookup ───────────────────────────────────────────
 
@@ -151,6 +173,7 @@ export default function QueueAccordion({
   // ─── Drop zone targets ────────────────────────────────────────────
 
   const dropZones = useMemo(() => {
+    if (groups.length === 0) return [];
     const zones: { id: string; insertAtIndex: number }[] = [];
     for (let gi = 0; gi <= groups.length; gi++) {
       if (gi < groups.length) {
@@ -173,28 +196,17 @@ export default function QueueAccordion({
   }, [groups]);
 
   // ─── Expand State ──────────────────────────────────────────────────
+  // All album groups are expanded by default. User can manually collapse individual ones.
 
-  const [expandedKey, setExpandedKey] = useState<string | null>(null);
-
-  // First non-fully-played album group
-  const firstUpcomingAlbumKey = useMemo(() => {
-    return groups.find(g => g.type === 'album' && !g.isFullyPlayed)?.key ?? null;
-  }, [groups]);
-
-  // Auto-expand: on mount or when track advances into a new group
-  useEffect(() => {
-    if (!firstUpcomingAlbumKey) return;
-    setExpandedKey(prev => {
-      if (prev) {
-        const stillValid = groups.some(g => g.key === prev && !g.isFullyPlayed);
-        if (stillValid) return prev;
-      }
-      return firstUpcomingAlbumKey;
-    });
-  }, [firstUpcomingAlbumKey, groups]);
+  const [collapsedKeys, setCollapsedKeys] = useState<Set<string>>(new Set());
 
   const toggleExpand = useCallback((key: string) => {
-    setExpandedKey(prev => prev === key ? null : key);
+    setCollapsedKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   }, []);
 
   // ─── DnD ───────────────────────────────────────────────────────────
@@ -207,15 +219,19 @@ export default function QueueAccordion({
   const [isDetaching, setIsDetaching] = useState(false);
   const isDetachingRef = useRef(false);
 
-  // Only expanded group's non-played chips are sortable
+  // Sortable IDs: history chips (when open) + all expanded album groups' chips
   const sortableIds = useMemo(() => {
-    if (!expandedKey) return [];
-    const expandedGroup = groups.find(g => g.key === expandedKey);
-    if (!expandedGroup || expandedGroup.type !== 'album') return [];
-    return expandedGroup.chips
-      .filter(c => !c.isPlayed)
-      .map(c => c.item.queueId);
-  }, [expandedKey, groups]);
+    const ids: string[] = [];
+    if (historyOpen) {
+      historyChips.forEach(c => ids.push(c.item.queueId));
+    }
+    for (const g of groups) {
+      if (g.type === 'album' && !collapsedKeys.has(g.key)) {
+        g.chips.filter(c => !c.isPlayed).forEach(c => ids.push(c.item.queueId));
+      }
+    }
+    return ids;
+  }, [historyOpen, historyChips, collapsedKeys, groups]);
 
   const activeDragItem = useMemo(() => {
     if (!activeDragId) return null;
@@ -227,7 +243,7 @@ export default function QueueAccordion({
   }, []);
 
   const handleDragMove = useCallback((event: DragMoveEvent) => {
-    if (!expandedKey || !activeDragId) {
+    if (!activeDragId) {
       if (isDetachingRef.current) {
         isDetachingRef.current = false;
         setIsDetaching(false);
@@ -235,7 +251,20 @@ export default function QueueAccordion({
       return;
     }
 
-    const groupEl = groupRefs.current.get(expandedKey);
+    // Find which expanded album group the dragged item belongs to
+    const dragGroup = groups.find(g =>
+      g.type === 'album' && !collapsedKeys.has(g.key) &&
+      g.chips.some(c => c.item.queueId === activeDragId)
+    );
+    if (!dragGroup) {
+      if (isDetachingRef.current) {
+        isDetachingRef.current = false;
+        setIsDetaching(false);
+      }
+      return;
+    }
+
+    const groupEl = groupRefs.current.get(dragGroup.key);
     if (!groupEl) return;
 
     const rect = groupEl.getBoundingClientRect();
@@ -247,7 +276,7 @@ export default function QueueAccordion({
       isDetachingRef.current = nowDetaching;
       setIsDetaching(nowDetaching);
     }
-  }, [expandedKey, activeDragId]);
+  }, [groups, collapsedKeys, activeDragId]);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const wasDetaching = isDetachingRef.current;
@@ -256,6 +285,17 @@ export default function QueueAccordion({
     isDetachingRef.current = false;
 
     const { active, over } = event;
+
+    // History restore path — dragging a played chip into upcoming zone
+    const isFromHistory = historyChips.some(c => c.item.queueId === String(active.id));
+    if (isFromHistory) {
+      const dropData = over?.data?.current as { insertAtIndex?: number; isDropZone?: boolean } | undefined;
+      if (dropData?.isDropZone && typeof dropData.insertAtIndex === 'number') {
+        onRestoreFromHistory(String(active.id), dropData.insertAtIndex);
+      }
+      // If not dropped on valid zone → snaps back (no-op)
+      return;
+    }
 
     // Detach path — pointer was outside group boundary when released
     if (wasDetaching) {
@@ -299,7 +339,7 @@ export default function QueueAccordion({
     if (fromEntry && toEntry) {
       onMoveItem(fromEntry.absoluteIndex, toEntry.absoluteIndex);
     }
-  }, [queueChips, groups, onMoveItem, onDetachItem]);
+  }, [queueChips, groups, historyChips, onMoveItem, onDetachItem, onRestoreFromHistory]);
 
   // ─── Reduced Motion ────────────────────────────────────────────────
 
@@ -308,20 +348,67 @@ export default function QueueAccordion({
     setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }, []);
 
-  // ─── Auto-scroll on expand ─────────────────────────────────────────
+  // ─── Scroll Management ─────────────────────────────────────────────
+  // Single unified effect handles ALL scroll positioning.
+  // Previously split across two effects that raced each other on history close.
 
   const groupRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const historyContainerRef = useRef<HTMLDivElement>(null);
+  const prevHistoryOpenRef = useRef(historyOpen);
 
   useEffect(() => {
-    if (!expandedKey) return;
-    const el = groupRefs.current.get(expandedKey);
-    if (el) {
-      requestAnimationFrame(() => {
-        el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      });
+    const wasHistoryOpen = prevHistoryOpenRef.current;
+    prevHistoryOpenRef.current = historyOpen;
+
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // ── History opening: scroll to history/upcoming boundary ──
+    if (historyOpen) {
+      const historyEl = historyContainerRef.current;
+      if (!historyEl) return;
+      const timer = setTimeout(() => {
+        const historyRight = historyEl.offsetLeft + historyEl.scrollWidth;
+        const viewW = container.clientWidth;
+        container.scrollLeft = Math.max(0, historyRight - viewW * 0.33);
+      }, 370);
+      return () => clearTimeout(timer);
     }
-  }, [expandedKey]);
+
+    // ── Scroll to active group or chip ──
+    const scrollToTarget = () => {
+      // 1. Group containing the active chip
+      for (const group of groups) {
+        const hasActive = group.chips.some((c) => {
+          const gIdx = chipGlobalIndexMap.get(c.item.queueId) ?? -1;
+          return !c.isPlayed && gIdx === playedCount;
+        });
+        if (hasActive) {
+          const groupEl = groupRefs.current.get(group.key);
+          if (groupEl) groupEl.scrollIntoView({ behavior: 'instant', inline: 'start', block: 'nearest' });
+          return;
+        }
+      }
+      // 3. Standalone active chip
+      const activeChip = container.querySelector('[data-queue-active]');
+      if (activeChip) {
+        (activeChip as HTMLElement).scrollIntoView({ behavior: 'instant', inline: 'start', block: 'nearest' });
+      }
+    };
+
+    if (wasHistoryOpen) {
+      // History just closed — wait for the 350ms collapse transition before scrolling.
+      // Do NOT fire rAF/early-timeout: the layout is wrong during the transition.
+      const timer = setTimeout(scrollToTarget, 370);
+      return () => clearTimeout(timer);
+    }
+
+    // Normal case (track advance, expand toggle) — scroll immediately + after transition
+    const raf = requestAnimationFrame(scrollToTarget);
+    const timer = setTimeout(scrollToTarget, 320);
+    return () => { cancelAnimationFrame(raf); clearTimeout(timer); };
+  }, [playedCount, groups, chipGlobalIndexMap, historyOpen]);
 
   // ─── Left fade mask ────────────────────────────────────────────────
 
@@ -338,6 +425,10 @@ export default function QueueAccordion({
   // ─── Render ────────────────────────────────────────────────────────
 
   const isDragActive = !!activeDragId;
+  const isHistoryDrag = useMemo(() => {
+    if (!activeDragId) return false;
+    return historyChips.some(c => c.item.queueId === activeDragId);
+  }, [activeDragId, historyChips]);
 
   return (
     <div className="relative">
@@ -349,7 +440,48 @@ export default function QueueAccordion({
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
-          <div ref={scrollContainerRef} className="flex gap-2 overflow-x-auto queue-scrollbar pb-1">
+          <div ref={scrollContainerRef} className="flex gap-2 overflow-x-auto queue-scrollbar pb-1 items-center">
+            {/* History toggle button — temporarily hidden */}
+            {/* {historyChips.length > 0 && (
+              <HistoryToggleButton
+                count={historyChips.length}
+                isOpen={historyOpen}
+                onToggle={() => setHistoryOpen(prev => !prev)}
+                sticky
+              />
+            )} */}
+
+            {/* History chips — slide in/out */}
+            {historyChips.length > 0 && (
+              <div
+                ref={historyContainerRef}
+                className="flex gap-2 items-center flex-shrink-0 overflow-hidden"
+                style={{
+                  maxWidth: historyOpen ? `${historyChips.length * CHIP_STRIDE + 40}px` : '0px',
+                  opacity: historyOpen ? 1 : 0,
+                  transition: reducedMotion ? 'none' : 'max-width 350ms cubic-bezier(0.4, 0, 0.2, 1), opacity 250ms ease',
+                }}
+              >
+                {historyChips.map((chipEntry) => {
+                  return (
+                    <SortableQueueChip
+                      key={chipEntry.item.queueId}
+                      item={chipEntry.item}
+                      chipIndex={chipEntry.absoluteIndex + 1}
+                      absoluteIndex={chipEntry.absoluteIndex}
+                      onPlay={onChipPlay}
+                      onSelectVersion={onSelectVersion}
+                      preferredQuality={preferredQuality}
+                      isPlayed
+                      forceEnableDrag
+                    />
+                  );
+                })}
+                {/* NOW separator */}
+                <HistorySeparator />
+              </div>
+            )}
+
             {groups.map((group, groupIndex) => (
               <Fragment key={group.key}>
                 {/* Drop zone before this group */}
@@ -358,6 +490,7 @@ export default function QueueAccordion({
                   insertAtIndex={dropZones[groupIndex]?.insertAtIndex ?? 0}
                   isDragActive={isDragActive}
                   isDetaching={isDetaching}
+                  isHistoryDrag={isHistoryDrag}
                 />
 
                 {group.type === 'standalone' ? (
@@ -373,15 +506,17 @@ export default function QueueAccordion({
                 ) : (
                   <AlbumGroupSection
                     group={group}
-                    isExpanded={expandedKey === group.key}
+                    isExpanded={!collapsedKeys.has(group.key)}
                     expandedWidth={COLLAPSED_W + 8 + group.chips.length * CHIP_STRIDE}
                     reducedMotion={reducedMotion}
                     playedCount={playedCount}
                     chipGlobalIndexMap={chipGlobalIndexMap}
                     groupRefs={groupRefs}
-                    onToggle={() => !group.isFullyPlayed && toggleExpand(group.key)}
+                    historyChips={historyChips}
+                    onToggle={() => toggleExpand(group.key)}
                     onChipPlay={onChipPlay}
                     onRemoveItem={onRemoveItem}
+                    onRemoveBatch={onRemoveBatch}
                     onSelectVersion={onSelectVersion}
                     preferredQuality={preferredQuality}
                   />
@@ -396,18 +531,21 @@ export default function QueueAccordion({
                 insertAtIndex={dropZones[groups.length]?.insertAtIndex ?? 0}
                 isDragActive={isDragActive}
                 isDetaching={isDetaching}
+                isHistoryDrag={isHistoryDrag}
               />
             )}
           </div>
         </SortableContext>
 
-        <DragOverlay dropAnimation={null}>
+        <DragOverlay dropAnimation={null} zIndex={9999}>
           {activeDragItem ? (
             <div
-              className="relative"
+              className="relative rounded-lg cursor-grabbing"
               style={{
                 transform: isDetaching ? 'scale(0.93)' : 'scale(1)',
                 transition: 'transform 150ms ease-out',
+                border: '1px solid var(--quinary-muted)',
+                boxShadow: '0 12px 40px color-mix(in srgb, black 55%, transparent), 0 0 0 1px color-mix(in srgb, var(--quinary) 10%, transparent)',
               }}
             >
               <QueueChip
@@ -453,19 +591,22 @@ function DropZone({
   insertAtIndex,
   isDragActive,
   isDetaching,
+  isHistoryDrag,
 }: {
   id: string;
   insertAtIndex: number;
   isDragActive: boolean;
   isDetaching: boolean;
+  isHistoryDrag?: boolean;
 }) {
-  // Only register as droppable when detaching — prevents collision
-  // interference with sortable items during within-group reorder
+  // Register as droppable when detaching OR when dragging from history
   const { setNodeRef, isOver } = useDroppable({
     id,
     data: { insertAtIndex, isDropZone: true },
-    disabled: !isDragActive || !isDetaching,
+    disabled: !isDragActive || (!isDetaching && !isHistoryDrag),
   });
+
+  const showIndicator = isDetaching || !!isHistoryDrag;
 
   return (
     <div
@@ -481,10 +622,10 @@ function DropZone({
         className="rounded-full transition-all duration-150"
         style={{
           width: '2px',
-          height: isOver ? '100%' : isDetaching ? '50%' : '0%',
+          height: isOver ? '100%' : showIndicator ? '50%' : '0%',
           background: isOver
             ? 'var(--accent-secondary)'
-            : isDetaching
+            : showIndicator
               ? 'color-mix(in srgb, var(--border-default) 40%, transparent)'
               : 'transparent',
           boxShadow: isOver
@@ -540,9 +681,11 @@ function AlbumGroupSection({
   playedCount,
   chipGlobalIndexMap,
   groupRefs,
+  historyChips,
   onToggle,
   onChipPlay,
   onRemoveItem,
+  onRemoveBatch,
   onSelectVersion,
   preferredQuality,
 }: {
@@ -553,38 +696,40 @@ function AlbumGroupSection({
   playedCount: number;
   chipGlobalIndexMap: Map<string, number>;
   groupRefs: React.MutableRefObject<Map<string, HTMLDivElement>>;
+  historyChips: ChipEntry[];
   onToggle: () => void;
   onChipPlay: (index: number) => void;
   onRemoveItem: (queueId: string) => void;
+  onRemoveBatch: (batchId: string) => void;
   onSelectVersion: (queueId: string, song: Song) => void;
   preferredQuality: AudioQuality;
 }) {
-  const canExpand = !group.isFullyPlayed;
-
   return (
     <div
       ref={(el) => {
         if (el) groupRefs.current.set(group.key, el);
         else groupRefs.current.delete(group.key);
       }}
-      className="flex-shrink-0 overflow-hidden flex"
+      className="flex-shrink-0 overflow-hidden flex rounded-lg"
       style={{
         maxWidth: isExpanded ? `${expandedWidth}px` : `${COLLAPSED_W}px`,
         transition: reducedMotion ? 'none' : 'max-width 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-        opacity: group.isFullyPlayed ? 0.4 : 1,
+        border: isExpanded ? `1px solid ${group.colorVar}` : 'none',
+        background: isExpanded ? `color-mix(in srgb, ${group.colorVar} 5%, transparent)` : 'transparent',
       }}
     >
       {/* Collapsed header strip — always visible */}
       <AlbumHeader
         group={group}
         isExpanded={isExpanded}
-        canExpand={canExpand}
+        historyChips={historyChips}
         onToggle={onToggle}
+        onRemoveBatch={onRemoveBatch}
       />
 
       {/* Expanded chips section */}
       {isExpanded && (
-        <div className="flex gap-2 pl-2">
+        <div className="flex gap-2 pl-2 py-1.5">
           {group.chips.map((chipEntry) => {
             const globalIdx = chipGlobalIndexMap.get(chipEntry.item.queueId) ?? -1;
             const isActive = !chipEntry.isPlayed && globalIdx === playedCount;
@@ -612,84 +757,150 @@ function AlbumGroupSection({
 function AlbumHeader({
   group,
   isExpanded,
-  canExpand,
+  historyChips,
   onToggle,
+  onRemoveBatch,
 }: {
   group: StripGroup;
   isExpanded: boolean;
-  canExpand: boolean;
+  historyChips: ChipEntry[];
   onToggle: () => void;
+  onRemoveBatch: (batchId: string) => void;
 }) {
-  const progressPct = (group.playedInGroup / group.chips.length) * 100;
+  // Count how many tracks from this album batch have already been played
+  const playedFromAlbum = historyChips.filter(c => c.item.batchId === group.batchId).length;
+  const isActiveAlbum = playedFromAlbum > 0;
+  // +1 for the currently-playing track (in neither history nor upcoming chips)
+  const currentTrack = playedFromAlbum + 1;
+  const totalTracks = playedFromAlbum + 1 + group.chips.length;
 
   return (
     <button
       onClick={onToggle}
-      disabled={!canExpand}
-      className={`
-        flex-shrink-0 flex flex-col items-center gap-1 py-1.5 px-0.5 rounded-lg
-        transition-colors relative
-        ${canExpand ? 'cursor-pointer hover:bg-surface-player-chip-hover' : 'cursor-default'}
-      `}
+      className="group flex-shrink-0 flex flex-col items-center gap-1 py-1.5 px-0.5 rounded-lg transition-colors relative cursor-pointer hover:bg-surface-player-chip-hover"
       style={{
         width: `${COLLAPSED_W}px`,
         background: isExpanded
           ? 'color-mix(in srgb, var(--player-surface-chip) 80%, transparent)'
           : 'var(--player-surface-chip)',
-        border: `1px solid ${isExpanded ? group.colorVar : 'var(--border-subtle-player)'}`,
-        borderLeft: `3px solid ${group.colorVar}`,
+        ...(isExpanded
+          ? { border: 'none' }
+          : { border: `1px solid var(--border-subtle-player)`, borderLeft: `3px solid ${group.colorVar}` }
+        ),
       }}
-      aria-label={`${group.albumSource?.albumName ?? 'Album'} - ${group.chips.length} tracks${isExpanded ? ', click to collapse' : ', click to expand'}`}
+      aria-label={`${group.albumSource?.albumName ?? 'Album'} - ${isActiveAlbum ? `track ${currentTrack} of ${totalTracks}` : `${group.chips.length} tracks`}${isExpanded ? ', click to collapse' : ', click to expand'}`}
       title={group.albumSource?.albumName ?? 'Album'}
     >
-      {/* Album art */}
-      <div className="w-[38px] h-[38px] rounded overflow-hidden flex-shrink-0">
-        {group.albumSource?.coverArt ? (
-          <Image
-            src={group.albumSource.coverArt}
-            alt=""
-            width={38}
-            height={38}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div
-            className="w-full h-full flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, var(--player-surface-chip-hover), var(--player-surface-deep))' }}
-          >
-            <svg className="w-4 h-4 text-tertiary opacity-50" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-            </svg>
-          </div>
-        )}
-      </div>
-
-      {/* Track count badge */}
-      <span className="font-jb-mono text-[8px] font-semibold text-secondary leading-none whitespace-nowrap">
-        {group.chips.length} trk
+      {/* Remove album button */}
+      <span
+        role="button"
+        tabIndex={0}
+        onClick={(e) => { e.stopPropagation(); onRemoveBatch(group.batchId); }}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onRemoveBatch(group.batchId); } }}
+        className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center rounded-full z-10 opacity-0 group-hover:opacity-100 bg-surface-player-deep text-tertiary hover:!text-white hover:!bg-border transition-all cursor-pointer"
+        aria-label={`Remove ${group.albumSource?.albumName ?? 'album'} from queue`}
+      >
+        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </span>
 
-      {/* Mini progress bar */}
-      <div
-        className="w-full h-[2px] rounded-full overflow-hidden"
-        style={{ background: 'color-mix(in srgb, var(--border-default) 25%, transparent)' }}
-      >
-        <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{ width: `${progressPct}%`, background: group.colorVar }}
-        />
-      </div>
+      {/* Album art — jewel case */}
+      <TicketStub coverArt={group.albumSource?.coverArt} albumName={group.albumSource?.albumName} size={52} />
 
-      {/* Chevron */}
+      {/* Track count + chevron row */}
+      <div className="flex items-center gap-1">
+        <span className="font-jb-mono text-[8px] font-semibold leading-none" style={{ color: isActiveAlbum ? group.colorVar : 'var(--text-secondary)' }}>
+          {isActiveAlbum ? `${currentTrack}/${totalTracks}` : `${group.chips.length} trk`}
+        </span>
+        <svg
+          className="w-2.5 h-2.5 transition-transform duration-200"
+          style={{
+            transform: isExpanded ? 'rotate(-90deg)' : 'rotate(90deg)',
+            color: 'var(--text-tertiary)',
+          }}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </button>
+  );
+}
+
+function HistoryToggleButton({
+  count,
+  isOpen,
+  onToggle,
+  sticky,
+}: {
+  count: number;
+  isOpen: boolean;
+  onToggle: () => void;
+  sticky?: boolean;
+}) {
+  // Both states: a thin vertical bar snapped to the left edge.
+  // Closed: subtle, just a thin line with a small right-pointing chevron.
+  // Open: accent-colored with left-pointing chevron.
+  return (
+    <button
+      onClick={onToggle}
+      className="flex-shrink-0 flex items-center justify-center self-stretch hover:opacity-100 transition-opacity cursor-pointer"
+      style={{
+        ...(sticky ? { position: 'sticky' as const, left: 0, zIndex: 2 } : {}),
+        width: '12px',
+        padding: 0,
+        background: 'none',
+        border: 'none',
+        borderRight: isOpen
+          ? '2px solid var(--secondary)'
+          : '2px solid color-mix(in srgb, var(--text-tertiary) 40%, transparent)',
+        opacity: isOpen ? 1 : 0.5,
+      }}
+      aria-label={`${isOpen ? 'Hide' : 'Show'} ${count} played tracks`}
+      title={`${isOpen ? 'Hide' : 'Show'} history (${count} played)`}
+    >
       <svg
-        className="w-3 h-3 text-tertiary transition-transform duration-200"
-        style={{ transform: isExpanded ? 'rotate(-90deg)' : 'rotate(90deg)' }}
+        width="6"
+        height="10"
+        viewBox="0 0 6 10"
         fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
+        stroke={isOpen ? 'var(--secondary)' : 'var(--text-tertiary)'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+        {isOpen
+          ? <path d="M5 1L1 5L5 9" />
+          : <path d="M1 1L5 5L1 9" />
+        }
       </svg>
     </button>
+  );
+}
+
+function HistorySeparator() {
+  return (
+    <div
+      data-history-separator
+      className="flex-shrink-0 flex flex-col items-center gap-1 self-stretch justify-center px-1"
+    >
+      <div
+        className="flex-1 w-px rounded-full"
+        style={{ background: 'linear-gradient(180deg, transparent, var(--secondary), transparent)' }}
+      />
+      <span
+        className="font-jb-mono text-[8px] font-bold tracking-widest uppercase leading-none"
+        style={{ color: 'var(--secondary)' }}
+      >
+        NOW
+      </span>
+      <div
+        className="flex-1 w-px rounded-full"
+        style={{ background: 'linear-gradient(180deg, transparent, var(--secondary), transparent)' }}
+      />
+    </div>
   );
 }

@@ -327,6 +327,96 @@ class WikipediaClient
     }
 
     /**
+     * Get album release year from Wikipedia infobox
+     *
+     * @param string $artistName Artist name
+     * @param string $albumTitle Album title
+     * @return int|null Release year or null if not found
+     */
+    public function getAlbumReleaseYear(string $artistName, string $albumTitle): ?int
+    {
+        try {
+            // Try direct title lookups first
+            $titleVariations = $this->generateTitleVariations($artistName, $albumTitle);
+            $pageTitle = null;
+
+            foreach ($titleVariations as $variation) {
+                if ($this->pageExists($variation)) {
+                    $pageTitle = $variation;
+                    break;
+                }
+            }
+
+            // Fallback to search
+            if ($pageTitle === null) {
+                $pageTitle = $this->searchAlbumPage($artistName, $albumTitle);
+            }
+
+            if ($pageTitle === null) {
+                return null;
+            }
+
+            // Fetch page HTML and parse infobox for "Released" field
+            $url = sprintf(
+                '%s?action=parse&page=%s&prop=text&format=json',
+                self::WIKIPEDIA_SEARCH_BASE,
+                rawurlencode($pageTitle)
+            );
+
+            $response = $this->httpClient->get($url);
+            $data = $this->jsonSerializer->unserialize($response->getBody()->getContents());
+
+            if (!isset($data['parse']['text']['*'])) {
+                return null;
+            }
+
+            $html = $data['parse']['text']['*'];
+            return $this->parseReleaseYear($html);
+
+        } catch (\Exception $e) {
+            $this->logger->debug("Error fetching release year for $artistName - $albumTitle: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Parse release year from album infobox HTML
+     *
+     * @param string $html Wikipedia page HTML
+     * @return int|null Release year or null
+     */
+    private function parseReleaseYear(string $html): ?int
+    {
+        $dom = new \DOMDocument();
+        @$dom->loadHTML('<?xml encoding="UTF-8">' . $html);
+        $xpath = new \DOMXPath($dom);
+
+        $infoboxNode = $xpath->query("//table[contains(@class, 'infobox')]")->item(0);
+        if (!$infoboxNode) {
+            return null;
+        }
+
+        $rows = $xpath->query(".//tr", $infoboxNode);
+        foreach ($rows as $row) {
+            $header = $xpath->query(".//th", $row)->item(0);
+            $data = $xpath->query(".//td", $row)->item(0);
+
+            if ($header && $data) {
+                $key = strtolower(trim($header->textContent));
+                if ($key === 'released') {
+                    $text = trim($data->textContent);
+                    // Extract 4-digit year from the Released field
+                    if (preg_match('/\b(19|20)\d{2}\b/', $text, $matches)) {
+                        return (int)$matches[0];
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Download artwork image data
      *
      * @param string $imageUrl Image URL from Wikipedia

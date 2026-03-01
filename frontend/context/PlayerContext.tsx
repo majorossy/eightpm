@@ -561,10 +561,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     // Check if playback has reached 30 seconds
     if (state.currentTime >= 30) {
-      trackPlay(currentSong);
+      // Enrich song with album cover art from queue item (Song.albumArt is always the default placeholder)
+      const coverArt = queueContext.currentItem?.albumSource?.coverArt;
+      const enrichedSong = coverArt ? { ...currentSong, albumArt: coverArt } : currentSong;
+      trackPlay(enrichedSong);
       trackedSongsRef.current.add(currentSong.id);
     }
-  }, [currentSong, state.isPlaying, state.currentTime, trackPlay]);
+  }, [currentSong, state.isPlaying, state.currentTime, trackPlay, queueContext.currentItem]);
 
   // Track song completion (when user listens to >90% of the song)
   useEffect(() => {

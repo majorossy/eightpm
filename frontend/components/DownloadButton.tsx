@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/useToast';
 import { useHaptic } from '@/hooks/useHaptic';
 
 interface DownloadButtonProps {
-  streamUrl?: string;
+  archiveUrl?: string;
   title: string;
   artistName?: string;
   className?: string;
@@ -13,7 +13,7 @@ interface DownloadButtonProps {
 }
 
 export default function DownloadButton({
-  streamUrl,
+  archiveUrl,
   title,
   artistName,
   className = '',
@@ -25,22 +25,22 @@ export default function DownloadButton({
   const handleDownload = useCallback(() => {
     vibrate(BUTTON_PRESS);
 
-    if (!streamUrl) {
+    if (!archiveUrl) {
       showError('Download not available');
       return;
     }
 
     // Open Archive.org link in new tab
-    window.open(streamUrl, '_blank', 'noopener,noreferrer');
+    window.open(archiveUrl, '_blank', 'noopener,noreferrer');
     showSuccess('Opening download on Archive.org');
-  }, [streamUrl, vibrate, BUTTON_PRESS, showSuccess, showError]);
+  }, [archiveUrl, vibrate, BUTTON_PRESS, showSuccess, showError]);
 
   const iconSize = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
 
   return (
     <button
       onClick={handleDownload}
-      disabled={!streamUrl}
+      disabled={!archiveUrl}
       className={`text-secondary hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-accent rounded disabled:opacity-30 disabled:cursor-not-allowed ${className}`}
       aria-label="Download from Archive.org"
       title="Download from Archive.org"

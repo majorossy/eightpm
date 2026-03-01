@@ -2,9 +2,9 @@
 
 // AlbumCarousel - responsive grid layout of album cards
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { Album } from '@/lib/api';
+import JewelCase from '@/components/JewelCase';
 
 interface AlbumCarouselProps {
   albums: Album[];
@@ -19,25 +19,9 @@ function AlbumCarouselCard({ album }: AlbumCarouselCardProps) {
   return (
     <Link href={`/artists/${album.artistSlug}/album/${album.slug}`}>
       <div className="group p-3 md:p-4 bg-surface-card rounded-lg hover:bg-surface-elevated transition-all duration-300 cursor-pointer">
-        {/* Album artwork with play button overlay */}
-        <div className="relative aspect-square mb-3 md:mb-4 rounded-md overflow-hidden shadow-lg">
-          {album.coverArt ? (
-            <Image
-              src={album.coverArt}
-              alt={album.name || 'Album cover'}
-              fill
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 200px"
-              quality={80}
-              className="object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-surface-elevated flex items-center justify-center">
-              <svg className="w-10 md:w-12 h-10 md:h-12 text-border" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                <circle cx="12" cy="12" r="3" fill="currentColor"/>
-              </svg>
-            </div>
-          )}
+        {/* Album artwork — Jewel Case */}
+        <div className="relative aspect-square mb-3 md:mb-4">
+          <JewelCase coverArt={album.coverArt} fill trackCount={album.totalTracks} />
         </div>
 
         {/* Album info */}

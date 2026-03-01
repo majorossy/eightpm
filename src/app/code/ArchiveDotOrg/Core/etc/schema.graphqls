@@ -122,6 +122,7 @@ type StudioAlbum {
     category_id: Int @doc(description: "Associated category ID")
     artwork_url: String @doc(description: "Album artwork URL")
     cached_image_path: String @doc(description: "Cached local image path")
+    track_count: Int @doc(description: "Number of tracks on the studio album")
 }
 
 type Venue {

@@ -3,7 +3,6 @@
 // Queue drawer - sidebar tabs design with album navigation + drag-and-drop reordering
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import Image from 'next/image';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { useQuality } from '@/context/QualityContext';
@@ -15,6 +14,9 @@ import type { Song, AudioQuality } from '@/lib/types';
 
 import { getQualityLabel, getEffectiveQuality } from '@/lib/qualityUtils';
 import { VALIDATION_LIMITS } from '@/lib/validation';
+import VersionPickerModal, { VersionsIcon } from '@/components/VersionPickerModal';
+import TicketStub from '@/components/TicketStub';
+import CassetteTape from '@/components/CassetteTape';
 import {
   DndContext,
   closestCenter,
@@ -52,6 +54,7 @@ export default function Queue() {
     totalItems,
     albumGroups,
     removeItem,
+    removeBatch,
     clearUpcoming,
     moveItem,
     moveBlock,
@@ -184,6 +187,7 @@ export default function Queue() {
                 queue={queue}
                 albumGroups={albumGroups}
                 removeItem={removeItem}
+                removeBatch={removeBatch}
                 clearUpcoming={clearUpcoming}
                 playFromQueue={playFromQueue}
                 moveItem={moveItem}
@@ -308,25 +312,6 @@ function DragDots({ className = '' }: { className?: string }) {
 }
 
 // =============================================================================
-// Vinyl Placeholder — used when no album art
-// =============================================================================
-
-function VinylPlaceholder({ size = 18 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      style={{ color: 'var(--text-tertiary)', opacity: 0.4 }}
-    >
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-// =============================================================================
 // Now Playing Section
 // =============================================================================
 
@@ -370,32 +355,8 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
 
       {/* Content row */}
       <div className="flex gap-3.5 items-center mb-3.5 relative z-[1]">
-        {/* Album art */}
-        <div
-          className="w-16 h-16 rounded-lg flex-shrink-0 flex items-center justify-center relative overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, var(--surface-elevated), var(--surface-card))',
-            boxShadow: '0 2px 10px color-mix(in srgb, black 30%, transparent)',
-          }}
-        >
-          {currentItem.albumSource?.coverArt ? (
-            <Image
-              src={currentItem.albumSource.coverArt}
-              alt={currentItem.albumSource.albumName || 'Album cover'}
-              width={64}
-              height={64}
-              quality={80}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <VinylPlaceholder size={26} />
-          )}
-          {/* Gold sheen overlay */}
-          <div
-            className="absolute inset-0 rounded-lg pointer-events-none"
-            style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--quinary) 10%, transparent), transparent)' }}
-          />
-        </div>
+        {/* Album art — jewel case */}
+        <CassetteTape coverArt={currentItem.albumSource?.coverArt} label={currentItem.song.artistName} size={64} />
 
         {/* Track info */}
         <div className="flex-1 min-w-0">
@@ -474,6 +435,9 @@ function SortableTrackRow({
   preferredQuality,
   hideVenue,
 }: SortableTrackRowProps) {
+  const [showVersionPicker, setShowVersionPicker] = useState(false);
+  const modalClosedAtRef = useRef(0);
+
   const {
     attributes,
     listeners,
@@ -487,8 +451,6 @@ function SortableTrackRow({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : 1,
-    zIndex: isDragging ? 10 : undefined,
   };
 
   const song = item.song;
@@ -498,26 +460,45 @@ function SortableTrackRow({
     ? venue + (year ? ` \u00b7 ${year}` : '')
     : song.artistName;
   const effectiveQuality = getEffectiveQuality(song, preferredQuality);
-  const qualityLabel = getQualityLabel(effectiveQuality);
+  const qualityLabel = getQualityLabel(effectiveQuality, song);
+
+  const versionCount = item.availableVersions.length;
+  const hasMultipleVersions = versionCount > 1;
 
   return (
     <li ref={setNodeRef} style={style}>
       <div
-        onClick={() => playFromQueue(absoluteIndex)}
+        onClick={() => {
+          if (isDragging) return;
+          // Guard against click pass-through from Radix Dialog overlay close
+          if (Date.now() - modalClosedAtRef.current < 300) return;
+          playFromQueue(absoluteIndex);
+        }}
         className="group/row flex items-center gap-0 py-2.5 px-2 mx-1.5 mb-1 rounded-[10px] cursor-pointer transition-all relative"
         style={{
-          border: '1px solid transparent',
-          background: 'transparent',
+          border: isDragging
+            ? '2px dashed color-mix(in srgb, var(--quinary) 25%, transparent)'
+            : '1px solid transparent',
+          background: isDragging
+            ? 'color-mix(in srgb, var(--quinary) 4%, transparent)'
+            : 'transparent',
         }}
         onMouseEnter={(e) => {
+          if (isDragging) return;
           e.currentTarget.style.background = 'var(--player-surface-chip)';
           e.currentTarget.style.borderColor = 'var(--border-subtle-player)';
         }}
         onMouseLeave={(e) => {
+          if (isDragging) return;
           e.currentTarget.style.background = 'transparent';
           e.currentTarget.style.borderColor = 'transparent';
         }}
       >
+        {/* Inner content — hidden when dragging to show dashed placeholder */}
+        <div
+          className="flex items-center gap-0 w-full"
+          style={{ visibility: isDragging ? 'hidden' : 'visible' }}
+        >
         {/* Left accent bar on hover */}
         <div
           className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-sm transition-colors opacity-0 group-hover/row:opacity-100"
@@ -544,24 +525,8 @@ function SortableTrackRow({
           {displayIndex}
         </span>
 
-        {/* Track art */}
-        <div
-          className="w-[46px] h-[46px] rounded-md flex-shrink-0 mr-3 flex items-center justify-center relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, var(--surface-elevated), var(--surface-card))' }}
-        >
-          {item.albumSource?.coverArt ? (
-            <Image
-              src={item.albumSource.coverArt}
-              alt=""
-              width={46}
-              height={46}
-              quality={60}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <VinylPlaceholder />
-          )}
-        </div>
+        {/* Track art — jewel case */}
+        <CassetteTape coverArt={item.albumSource?.coverArt} label={item.song.artistName} size={46} className="mr-3" />
 
         {/* Track info */}
         <div className="flex-1 min-w-0">
@@ -603,13 +568,46 @@ function SortableTrackRow({
           </div>
         </div>
 
+        {/* Versions button — hover-reveal lavender pill */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (hasMultipleVersions) setShowVersionPicker(true);
+          }}
+          className={`flex items-center gap-[3px] px-1.5 py-[3px] rounded-[4px] transition-all flex-shrink-0 ml-1 font-jb-mono text-[9px] font-semibold ${
+            hasMultipleVersions
+              ? 'cursor-pointer opacity-0 group-hover/row:opacity-100'
+              : 'cursor-default opacity-0 group-hover/row:opacity-40'
+          }`}
+          style={{
+            background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--quaternary) 30%, transparent)',
+            color: 'var(--quaternary)',
+          }}
+          onMouseEnter={(e) => {
+            if (hasMultipleVersions) {
+              e.currentTarget.style.background = 'var(--quaternary)';
+              e.currentTarget.style.color = 'white';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'color-mix(in srgb, var(--quaternary) 15%, transparent)';
+            e.currentTarget.style.color = 'var(--quaternary)';
+          }}
+          aria-label={`${versionCount} version${versionCount !== 1 ? 's' : ''} available`}
+          disabled={!hasMultipleVersions}
+        >
+          <VersionsIcon className="w-2.5 h-2.5" />
+          <span>{versionCount} ver</span>
+        </button>
+
         {/* Remove button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             removeItem(item.queueId);
           }}
-          className="w-7 h-7 rounded-md border-0 bg-transparent flex items-center justify-center flex-shrink-0 ml-1.5 opacity-0 group-hover/row:opacity-40 transition-all"
+          className="w-7 h-7 rounded-md border-0 bg-transparent flex items-center justify-center flex-shrink-0 ml-1.5 opacity-30 group-hover/row:opacity-50 transition-all"
           style={{ color: 'var(--text-tertiary)' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'var(--secondary-muted)';
@@ -628,66 +626,117 @@ function SortableTrackRow({
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
+        </div>{/* end inner content wrapper */}
       </div>
+
+      {/* Version picker modal */}
+      {showVersionPicker && hasMultipleVersions && (
+        <VersionPickerModal
+          isOpen={showVersionPicker}
+          onClose={() => { modalClosedAtRef.current = Date.now(); setShowVersionPicker(false); }}
+          trackTitle={item.trackTitle}
+          artistName={song.artistName}
+          currentSongId={song.id}
+          versions={item.availableVersions}
+          coverArt={item.albumSource?.coverArt}
+          onSwapVersion={(newSong) => selectVersion(item.queueId, newSong)}
+          preferredQuality={preferredQuality}
+        />
+      )}
     </li>
   );
 }
 
 // =============================================================================
-// Drag Overlay Content — rendered during drag
+// Drag Overlay Content — faithful clone of SortableTrackRow during drag
 // =============================================================================
 
-function DragOverlayTrack({ item }: { item: QueueItem }) {
+function DragOverlayTrack({
+  item,
+  displayIndex,
+  preferredQuality,
+}: {
+  item: QueueItem;
+  displayIndex: number;
+  preferredQuality: AudioQuality;
+}) {
+  const song = item.song;
+  const venue = song.showVenue || '';
+  const year = song.showDate?.split('-')[0] || '';
+  const venueDisplay = venue
+    ? venue + (year ? ` \u00b7 ${year}` : '')
+    : song.artistName;
+  const effectiveQuality = getEffectiveQuality(song, preferredQuality);
+  const qualityLabel = getQualityLabel(effectiveQuality, song);
+
   return (
     <div
-      className="flex items-center gap-2 px-3 py-3 rounded-xl"
+      className="flex items-center gap-0 py-2.5 px-2 rounded-[10px] relative"
       style={{
-        background: 'var(--surface-elevated)',
-        boxShadow: '0 8px 32px color-mix(in srgb, black 50%, transparent)',
-        border: '1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)',
+        background: 'var(--player-surface-chip)',
+        border: '1px solid var(--quinary-muted)',
+        boxShadow: '0 12px 40px color-mix(in srgb, black 55%, transparent), 0 0 0 1px color-mix(in srgb, var(--quinary) 10%, transparent)',
       }}
     >
-      <DragDots className="opacity-60" />
-      <CardSummary item={item} />
-    </div>
-  );
-}
+      {/* Left accent bar — always visible on overlay */}
+      <div
+        className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-sm"
+        style={{ background: 'var(--tertiary)' }}
+      />
 
-// =============================================================================
-// Card Summary — compact row for DragOverlay
-// =============================================================================
-
-function CardSummary({ item }: { item: QueueItem }) {
-  const song = item.song;
-
-  return (
-    <div className="flex items-center gap-3 flex-1 min-w-0">
-      {item.albumSource?.coverArt ? (
-        <Image
-          src={item.albumSource.coverArt}
-          alt=""
-          width={48}
-          height={48}
-          quality={80}
-          className="object-cover rounded-md flex-shrink-0"
-        />
-      ) : (
-        <div
-          className="w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0"
-          style={{ background: 'var(--surface-elevated)' }}
-        >
-          <VinylPlaceholder />
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{item.trackTitle}</p>
-        <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{song.artistName}</p>
+      {/* Drag handle */}
+      <div className="flex-shrink-0 px-2 py-1 opacity-60">
+        <DragDots />
       </div>
-      {song.duration > 0 && (
-        <span className="text-xs font-mono flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
-          {formatDuration(song.duration)}
-        </span>
-      )}
+
+      {/* Track number */}
+      <span
+        className="font-jb-mono text-xs font-medium w-[22px] text-center flex-shrink-0 mr-2.5"
+        style={{ color: 'var(--text-tertiary)' }}
+      >
+        {displayIndex}
+      </span>
+
+      {/* Track art — jewel case */}
+      <CassetteTape coverArt={item.albumSource?.coverArt} label={item.song.artistName} size={46} className="mr-3" />
+
+      {/* Track info */}
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-[14.5px] font-semibold text-primary truncate"
+          style={{ lineHeight: '1.3' }}
+        >
+          {item.trackTitle}
+        </p>
+        <p
+          className="text-xs truncate"
+          style={{ color: 'var(--text-tertiary)', lineHeight: '1.4' }}
+        >
+          {venueDisplay}
+        </p>
+        {/* Meta row: duration + quality badge */}
+        <div className="flex items-center gap-2 mt-0.5">
+          {song.duration > 0 && (
+            <span
+              className="font-jb-mono text-[11px] font-medium"
+              style={{ color: 'var(--quinary)' }}
+            >
+              {formatDuration(song.duration)}
+            </span>
+          )}
+          <span
+            className="font-jb-mono text-[8.5px] font-semibold px-[5px] py-px rounded-[3px]"
+            style={{
+              background: 'var(--tertiary-muted)',
+              color: 'var(--tertiary)',
+              border: '1px solid color-mix(in srgb, var(--tertiary) 12%, transparent)',
+              letterSpacing: '0.04em',
+            }}
+          >
+            {qualityLabel}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -710,6 +759,7 @@ interface UpcomingSectionProps {
     targetIndex: number,
   ) => void;
   selectVersion: (queueId: string, song: Song) => void;
+  removeBatch: (batchId: string) => void;
   onSave: () => void;
   totalItems: number;
   hasItems: boolean;
@@ -730,6 +780,7 @@ function UpcomingSection({
   queue,
   albumGroups,
   removeItem,
+  removeBatch,
   clearUpcoming,
   playFromQueue,
   moveItem,
@@ -739,7 +790,7 @@ function UpcomingSection({
   hasItems,
   preferredQuality,
 }: UpcomingSectionProps) {
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [dragState, setDragState] = useState<{ queueId: string; item: QueueItem; displayIndex: number } | null>(null);
   const [visibleGroupId, setVisibleGroupId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sectionHeaderRefs = useRef(new Map<string, HTMLDivElement>());
@@ -826,15 +877,6 @@ function UpcomingSection({
     });
     return map;
   }, [sidebarGroups]);
-
-  const dragOverlayItem = useMemo(() => {
-    if (!activeId) return null;
-    for (const group of sidebarGroups) {
-      const found = group.items.find(i => i.item.queueId === activeId);
-      if (found) return found.item;
-    }
-    return null;
-  }, [activeId, sidebarGroups]);
 
   // Scroll-spy via IntersectionObserver
   useEffect(() => {
@@ -929,12 +971,20 @@ function UpcomingSection({
   const sensors = useSensors(pointerSensor, touchSensor, keyboardSensor);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(String(event.active.id));
-  }, []);
+    const id = String(event.active.id);
+    for (const group of sidebarGroups) {
+      const idx = group.items.findIndex(i => i.item.queueId === id);
+      if (idx !== -1) {
+        const dragItem = group.items[idx].item;
+        setDragState({ queueId: id, item: dragItem, displayIndex: (dragItem.albumSource?.originalTrackIndex ?? idx) + 1 });
+        return;
+      }
+    }
+  }, [sidebarGroups]);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      setActiveId(null);
+      setDragState(null);
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
@@ -1035,19 +1085,7 @@ function UpcomingSection({
                 }}
                 aria-label={`${group.albumName} - ${group.items.length} tracks`}
               >
-                <div
-                  className="w-[46px] h-[46px] rounded-[5px] flex items-center justify-center overflow-hidden flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg, var(--surface-elevated), var(--surface-card))' }}
-                >
-                  {group.coverArt ? (
-                    <Image src={group.coverArt} alt="" width={46} height={46} quality={60} className="w-full h-full object-cover" />
-                  ) : (
-                    <VinylPlaceholder />
-                  )}
-                </div>
-                <span className="font-jb-mono text-[8px]" style={{ color: 'var(--text-tertiary)' }}>
-                  {group.items.length} trk
-                </span>
+                <TicketStub coverArt={group.coverArt} albumName={group.albumName} size={46} trackCount={group.items.length} />
                 <div className="w-full h-[2px] rounded-sm overflow-hidden" style={{ background: 'var(--primary-muted)' }}>
                   <div
                     className="h-full rounded-sm"
@@ -1088,9 +1126,21 @@ function UpcomingSection({
                           background: 'linear-gradient(180deg, var(--player-surface-queue) 80%, transparent)',
                         }}
                       >
-                        <p className="text-[14px] font-bold text-primary" style={{ lineHeight: '1.25' }}>
-                          {group.albumName}
-                        </p>
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-[14px] font-bold text-primary flex-1 min-w-0" style={{ lineHeight: '1.25' }}>
+                            {group.albumName}
+                          </p>
+                          <button
+                            onClick={() => removeBatch(group.batchId)}
+                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full opacity-40 hover:opacity-100 transition-opacity"
+                            style={{ color: 'var(--text-tertiary)' }}
+                            aria-label={`Remove ${group.albumName} from queue`}
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
                         {(group.venue || group.year) && (
                           <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
                             {[group.venue, group.year].filter(Boolean).join(' \u00b7 ')}
@@ -1119,7 +1169,7 @@ function UpcomingSection({
                             key={item.queueId}
                             item={item}
                             absoluteIndex={absoluteIndex}
-                            displayIndex={idx + 1}
+                            displayIndex={(item.albumSource?.originalTrackIndex ?? idx) + 1}
                             removeItem={removeItem}
                             playFromQueue={playFromQueue}
                             selectVersion={selectVersion}
@@ -1134,7 +1184,13 @@ function UpcomingSection({
               </ul>
             </SortableContext>
             <DragOverlay dropAnimation={null}>
-              {dragOverlayItem && <DragOverlayTrack item={dragOverlayItem} />}
+              {dragState && (
+                <DragOverlayTrack
+                  item={dragState.item}
+                  displayIndex={dragState.displayIndex}
+                  preferredQuality={preferredQuality}
+                />
+              )}
             </DragOverlay>
           </DndContext>
         </div>
