@@ -70,6 +70,8 @@ interface QueueAccordionProps {
   preferredQuality: AudioQuality;
   /** Compact mode for mobile — smaller chips and headers */
   compact?: boolean;
+  /** Queue ID of item just swapped (for glow animation) */
+  lastSwappedQueueId?: string | null;
 }
 
 // ─── Component ───────────────────────────────────────────────────────
@@ -87,6 +89,7 @@ export default function QueueAccordion({
   onRestoreFromHistory,
   preferredQuality,
   compact,
+  lastSwappedQueueId,
 }: QueueAccordionProps) {
 
   // ─── History / Upcoming Split ──────────────────────────────────────
@@ -509,6 +512,7 @@ export default function QueueAccordion({
                     onSelectVersion={onSelectVersion}
                     preferredQuality={preferredQuality}
                     compact={compact}
+                    lastSwappedQueueId={lastSwappedQueueId}
                   />
                 ) : (
                   <AlbumGroupSection
@@ -527,6 +531,7 @@ export default function QueueAccordion({
                     onSelectVersion={onSelectVersion}
                     preferredQuality={preferredQuality}
                     compact={compact}
+                    lastSwappedQueueId={lastSwappedQueueId}
                   />
                 )}
               </Fragment>
@@ -658,6 +663,7 @@ function StandaloneChip({
   onSelectVersion,
   preferredQuality,
   compact,
+  lastSwappedQueueId,
 }: {
   chipEntry: ChipEntry;
   playedCount: number;
@@ -667,6 +673,7 @@ function StandaloneChip({
   onSelectVersion: (queueId: string, song: Song) => void;
   preferredQuality: AudioQuality;
   compact?: boolean;
+  lastSwappedQueueId?: string | null;
 }) {
   const { item, absoluteIndex, isPlayed } = chipEntry;
   const globalIdx = chipGlobalIndexMap.get(item.queueId) ?? -1;
@@ -684,6 +691,7 @@ function StandaloneChip({
       isActive={isActive}
       isPlayed={isPlayed}
       compact={compact}
+      isJustSwapped={item.queueId === lastSwappedQueueId}
     />
   );
 }
@@ -704,6 +712,7 @@ function AlbumGroupSection({
   onSelectVersion,
   preferredQuality,
   compact,
+  lastSwappedQueueId,
 }: {
   group: StripGroup;
   isExpanded: boolean;
@@ -720,6 +729,7 @@ function AlbumGroupSection({
   onSelectVersion: (queueId: string, song: Song) => void;
   preferredQuality: AudioQuality;
   compact?: boolean;
+  lastSwappedQueueId?: string | null;
 }) {
   return (
     <div
@@ -765,6 +775,7 @@ function AlbumGroupSection({
                 isActive={isActive}
                 isPlayed={chipEntry.isPlayed}
                 compact={compact}
+                isJustSwapped={chipEntry.item.queueId === lastSwappedQueueId}
               />
             );
           })}

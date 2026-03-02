@@ -11,6 +11,7 @@ import React, {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import { Song, Album, Track } from '@/lib/types';
 import {
@@ -486,6 +487,9 @@ interface QueueContextType {
   clearUpcoming: () => void;
   removeBatch: (batchId: string) => void;
 
+  // Swap glow
+  lastSwappedQueueId: string | null;
+
   // Helpers
   albumToItems: (
     album: Album,
@@ -740,9 +744,21 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     return peekNextFromState(queueRef.current);
   }, []); // Empty deps -- uses ref
 
+  // ---------------------------------------------------------------------------
+  // Swap glow tracking (ephemeral, not persisted)
+  // ---------------------------------------------------------------------------
+
+  const [lastSwappedQueueId, setLastSwappedQueueId] = useState<string | null>(null);
+  const swapGlowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const selectVersion = useCallback((queueId: string, song: Song) => {
     dispatch({ type: 'SELECT_VERSION', queueId, song });
     trackVersionChange(song.trackTitle, song.id);
+
+    // Trigger swap glow
+    setLastSwappedQueueId(queueId);
+    if (swapGlowTimerRef.current) clearTimeout(swapGlowTimerRef.current);
+    swapGlowTimerRef.current = setTimeout(() => setLastSwappedQueueId(null), 1800);
   }, []);
 
   const markPlayed = useCallback(() => {
@@ -826,6 +842,9 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       clearUpcoming,
       removeBatch,
 
+      // Swap glow
+      lastSwappedQueueId,
+
       // Helpers
       albumToItems,
       trackToItem,
@@ -857,6 +876,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       clearQueue,
       clearUpcoming,
       removeBatch,
+      lastSwappedQueueId,
       albumToItems,
       trackToItem,
     ],

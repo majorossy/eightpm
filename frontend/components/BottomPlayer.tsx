@@ -61,6 +61,7 @@ export default function BottomPlayer() {
     removeItem,
     removeBatch,
     selectVersion,
+    lastSwappedQueueId,
   } = useQueue();
 
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlist } = useWishlist();
@@ -293,6 +294,7 @@ export default function BottomPlayer() {
         onRemoveItem={removeItem}
         onRemoveBatch={removeBatch}
         onSelectVersion={selectVersion}
+        lastSwappedQueueId={lastSwappedQueueId}
         onMoveItem={moveItem}
         onDetachItem={detachItem}
         onRestoreFromHistory={restoreFromHistory}
@@ -353,6 +355,7 @@ export default function BottomPlayer() {
         onRemoveItem={removeItem}
         onRemoveBatch={removeBatch}
         onSelectVersion={selectVersion}
+        lastSwappedQueueId={lastSwappedQueueId}
         onMoveItem={moveItem}
         onDetachItem={detachItem}
         onRestoreFromHistory={restoreFromHistory}

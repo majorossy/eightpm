@@ -192,3 +192,40 @@
     box-shadow: 0 0 4px color-mix(in srgb, var(--secondary) 20%, transparent);
   }
 }
+
+/* Swap glow — gold pulse after version swap (scale + bg flash + two-phase glow) */
+.swap-glow {
+  animation: swapGlow 1.8s ease-out;
+}
+
+@keyframes swapGlow {
+  /* Flash in — fast bright burst */
+  0%   {
+    box-shadow: 0 0 0 3px var(--quinary), 0 0 20px color-mix(in srgb, var(--quinary) 60%, transparent);
+    background-color: color-mix(in srgb, var(--quinary) 15%, transparent);
+    transform: scale(1.04);
+  }
+  /* Hold the peak briefly */
+  10%  {
+    box-shadow: 0 0 0 3px var(--quinary), 0 0 24px color-mix(in srgb, var(--quinary) 50%, transparent);
+    background-color: color-mix(in srgb, var(--quinary) 12%, transparent);
+    transform: scale(1.04);
+  }
+  /* Settle back */
+  30%  {
+    transform: scale(1);
+  }
+  /* Slow fade out */
+  100% {
+    box-shadow: 0 0 0 0px transparent, 0 0 0px transparent;
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swap-glow {
+    animation: none;
+    box-shadow: 0 0 0 2px var(--quinary);
+  }
+}

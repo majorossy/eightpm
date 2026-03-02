@@ -20,6 +20,7 @@ export function SortableQueueChip({
   isPlayed,
   forceEnableDrag,
   compact,
+  isJustSwapped,
 }: {
   item: QueueItem;
   chipIndex: number;
@@ -32,6 +33,7 @@ export function SortableQueueChip({
   isPlayed?: boolean;
   forceEnableDrag?: boolean;
   compact?: boolean;
+  isJustSwapped?: boolean;
 }) {
   const {
     attributes,
@@ -68,6 +70,7 @@ export function SortableQueueChip({
           isPlayed={isPlayed}
           inSortable
           compact={compact}
+          isJustSwapped={isJustSwapped}
         />
       </div>
     </div>

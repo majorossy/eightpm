@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { Track, Song, formatDuration } from '@/lib/api';
 import { useQueue } from '@/context/QueueContext';
 import { Waveform } from '@/components/AudioVisualizations';
@@ -35,6 +35,8 @@ export const TrackRow = React.memo(function TrackRow({
 }: TrackRowProps) {
   const [hovered, setHovered] = useState(false);
   const [showVersionModal, setShowVersionModal] = useState(false);
+  const [justSwapped, setJustSwapped] = useState(false);
+  const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { addToQueue, trackToItem } = useQueue();
   const isCurrentTrack = track.songs.some(s => s.id === currentSong?.id);
   const hasMultipleVersions = track.songs.length > 1;
@@ -52,6 +54,13 @@ export const TrackRow = React.memo(function TrackRow({
     ? track.songs.find(s => s.id === currentSong.id) || preferredSong || bestSong
     : preferredSong || bestSong;
 
+  const handleSwapVersion = useCallback((songId: string) => {
+    onSwapVersion?.(songId);
+    setJustSwapped(true);
+    if (swapTimerRef.current) clearTimeout(swapTimerRef.current);
+    swapTimerRef.current = setTimeout(() => setJustSwapped(false), 1800);
+  }, [onSwapVersion]);
+
   const handleRowClick = () => {
     if (hasMultipleVersions) {
       setShowVersionModal(true);
@@ -62,7 +71,7 @@ export const TrackRow = React.memo(function TrackRow({
 
   return (
     <div
-      className="rounded-lg mb-2 overflow-hidden transition-all"
+      className={`rounded-lg mb-2 ${justSwapped ? 'overflow-visible' : 'overflow-hidden'} transition-all ${justSwapped ? 'swap-glow' : ''}`}
       style={{
         background: isCurrentTrack
           ? 'color-mix(in srgb, var(--secondary) 8%, transparent)'
@@ -198,7 +207,7 @@ export const TrackRow = React.memo(function TrackRow({
           versions={track.songs}
           coverArt={coverArt}
           onSwapVersion={(song) => {
-            onSwapVersion?.(song.id);
+            handleSwapVersion(song.id);
           }}
           onPlayVersion={(song) => onPlay(song)}
           onQueueVersion={(song) => addToQueue(trackToItem(song))}

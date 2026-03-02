@@ -26,6 +26,8 @@ export interface QueueChipProps {
   inSortable?: boolean;
   /** Compact mode for mobile — smaller chip, reduced padding/fonts */
   compact?: boolean;
+  /** When true, apply gold glow animation after version swap */
+  isJustSwapped?: boolean;
 }
 
 export default function QueueChip({
@@ -41,6 +43,7 @@ export default function QueueChip({
   isPlayed,
   inSortable,
   compact,
+  isJustSwapped,
 }: QueueChipProps) {
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const modalClosedAtRef = useRef(0);
@@ -72,8 +75,8 @@ export default function QueueChip({
         }}
         className={`
           group/chip relative flex flex-shrink-0 ${inSortable ? '' : 'cursor-pointer'}
-          rounded-lg select-none ${isActive && !isPlayed ? 'overflow-visible' : 'overflow-hidden'}
-          transition-all duration-200 ease-out
+          rounded-lg select-none ${isActive && !isPlayed || isJustSwapped ? 'overflow-visible' : 'overflow-hidden'}
+          transition-all duration-200 ease-out ${isJustSwapped ? 'swap-glow' : ''}
           ${compact ? 'w-[230px] pl-[16px] pr-1 py-1.5' : 'w-[337px] pl-[20px] pr-2 py-2'}
           ${isPlayed
             ? 'opacity-40 bg-surface-player-chip'

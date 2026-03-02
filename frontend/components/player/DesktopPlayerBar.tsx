@@ -78,6 +78,7 @@ interface DesktopPlayerBarProps {
   onRemoveItem: (queueId: string) => void;
   onRemoveBatch: (batchId: string) => void;
   onSelectVersion: (queueId: string, song: any) => void;
+  lastSwappedQueueId?: string | null;
   onMoveItem: (from: number, to: number) => void;
   onDetachItem: (queueId: string, targetIndex: number) => void;
   onRestoreFromHistory: (queueId: string, targetIndex: number) => void;
@@ -132,6 +133,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
     onRemoveItem,
     onRemoveBatch,
     onSelectVersion,
+    lastSwappedQueueId,
     onMoveItem,
     onDetachItem,
     onRestoreFromHistory,
@@ -280,6 +282,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
             onDetachItem={onDetachItem}
             onRestoreFromHistory={onRestoreFromHistory}
             preferredQuality={preferredQuality}
+            lastSwappedQueueId={lastSwappedQueueId}
           />
         </div>
       )}

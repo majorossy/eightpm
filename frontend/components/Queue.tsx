@@ -505,6 +505,8 @@ function SortableTrackRow({
 }: SortableTrackRowProps) {
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const modalClosedAtRef = useRef(0);
+  const { lastSwappedQueueId } = useQueue();
+  const isJustSwapped = item.queueId === lastSwappedQueueId;
 
   const {
     attributes,
@@ -539,7 +541,7 @@ function SortableTrackRow({
           if (Date.now() - modalClosedAtRef.current < 300) return;
           playFromQueue(absoluteIndex);
         }}
-        className="group/row flex gap-0 py-2 px-2 mx-1.5 mb-0.5 rounded-[10px] cursor-pointer transition-all relative"
+        className={`group/row flex gap-0 py-2 px-2 mx-1.5 mb-0.5 rounded-[10px] cursor-pointer transition-all relative ${isJustSwapped ? 'swap-glow' : ''}`}
         style={{
           border: isDragging
             ? '2px dashed color-mix(in srgb, var(--quinary) 25%, transparent)'
@@ -573,6 +575,16 @@ function SortableTrackRow({
         >
           <DragDots />
         </button>
+
+        {/* Recording medium icon — tape, DAT, etc. */}
+        <div className="flex-shrink-0 self-center pr-2">
+          <RecordingMediumIcon
+            medium={song.recordingMedium}
+            lineage={song.lineage}
+            source={song.source}
+            size={0.7}
+          />
+        </div>
 
         {/* Multi-row content block */}
         <div className="flex-1 min-w-0 flex flex-col gap-1">

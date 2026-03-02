@@ -66,6 +66,7 @@ interface MobileMiniPlayerProps {
   onRemoveItem: (id: string) => void;
   onRemoveBatch: (batchId: string) => void;
   onSelectVersion: (itemId: string, song: import('@/lib/types').Song) => void;
+  lastSwappedQueueId?: string | null;
   onMoveItem: (fromIndex: number, toIndex: number) => void;
   onDetachItem: (queueId: string, targetIndex: number) => void;
   onRestoreFromHistory: (queueId: string, targetIndex: number) => void;
@@ -99,6 +100,7 @@ export default function MobileMiniPlayer({
   onRemoveItem,
   onRemoveBatch,
   onSelectVersion,
+  lastSwappedQueueId,
   onMoveItem,
   onDetachItem,
   onRestoreFromHistory,
@@ -294,6 +296,7 @@ export default function MobileMiniPlayer({
                 onRestoreFromHistory={onRestoreFromHistory}
                 preferredQuality={preferredQuality}
                 compact
+                lastSwappedQueueId={lastSwappedQueueId}
               />
             </div>
           )}

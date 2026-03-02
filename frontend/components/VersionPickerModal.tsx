@@ -412,9 +412,11 @@ function VersionRow({
   onPlay?: (song: Song) => void;
   onQueue?: (song: Song) => void;
 }) {
+  const [copied, setCopied] = useState(false);
   const recordingType = song.recordingType;
   const venue = song.showVenue || '';
   const location = song.showLocation || '';
+  const archiveUrl = song.archiveDetailUrl || `https://archive.org/details/${song.albumIdentifier}`;
 
   return (
     <div
@@ -452,38 +454,39 @@ function VersionRow({
               {venue || song.albumName || 'Unknown venue'}
             </span>
           </div>
-          {/* Location */}
-          {location && (
-            <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-              {location}
-            </span>
-          )}
 
-          {/* Row 2: Taper */}
-          {song.taper && (
-            <div className="flex items-center gap-1.5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
-                <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
-                <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
-                <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
-                <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              <a
-                href={`https://archive.org/search?query=taper:${encodeURIComponent('"' + song.taper + '"')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-jb-mono text-[11px] font-medium hover:underline transition-colors truncate"
-                style={{ color: 'var(--text-tertiary)' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {song.taper}
-              </a>
-            </div>
-          )}
-
-          {/* Row 3: Source badge · Stars · Downloads */}
-          <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Row 2: Taper · Location · Badge · Stars · Downloads */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {song.taper && (
+              <>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                  <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
+                  <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
+                  <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
+                  <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
+                  <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                <a
+                  href={`https://archive.org/search?query=taper:${encodeURIComponent('"' + song.taper + '"')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-jb-mono text-[11px] font-medium hover:underline transition-colors truncate"
+                  style={{ color: 'var(--text-tertiary)' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {song.taper}
+                </a>
+              </>
+            )}
+            {location && (
+              <>
+                {song.taper && <span className="text-[11px]" style={{ color: 'var(--text-tertiary)', opacity: 0.5 }}>&middot;</span>}
+                <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                  {location}
+                </span>
+              </>
+            )}
+            {(song.taper || location) && <span className="text-[11px]" style={{ color: 'var(--text-tertiary)', opacity: 0.5 }}>&middot;</span>}
             <RecTypeBadge type={recordingType} />
             <StarRating rating={song.avgRating} count={song.numReviews} />
             {song.downloads != null && song.downloads > 0 && (
@@ -503,6 +506,7 @@ function VersionRow({
               </span>
             )}
           </div>
+
         </div>
 
         {/* Duration (top-right) */}
@@ -513,14 +517,9 @@ function VersionRow({
         )}
       </div>
 
-      {/* Divider */}
-      <div className="mx-4" style={{ height: '1px', background: 'color-mix(in srgb, var(--text) 8%, transparent)' }} />
-
-      {/* Action bar */}
-      <div className="flex items-center justify-between px-4 py-2">
-        {/* Left: action buttons */}
+      {/* Action bar — full width */}
+      <div className="flex items-center justify-between px-4 pb-3">
         <div className="flex items-center gap-2">
-          {/* Play */}
           {onPlay && (
             <button
               onClick={(e) => { e.stopPropagation(); onPlay(song); }}
@@ -533,7 +532,6 @@ function VersionRow({
               <span className="text-[10px]">▶</span> Play
             </button>
           )}
-          {/* + Queue */}
           {onQueue && (
             <button
               onClick={(e) => { e.stopPropagation(); onQueue(song); }}
@@ -546,7 +544,6 @@ function VersionRow({
               + Queue
             </button>
           )}
-          {/* ✦ Swap */}
           <button
             onClick={(e) => { e.stopPropagation(); onSwap(song); }}
             className="font-jb-mono text-[11px] font-semibold px-3 py-1.5 rounded-md transition-all flex items-center gap-1"
@@ -561,30 +558,66 @@ function VersionRow({
           </button>
         </div>
 
-        {/* Right: star + menu icons */}
-        <div className="flex items-center gap-3">
-          <button
+        <div className="flex items-center gap-1.5">
+          {/* Open on Archive.org */}
+          <a
+            href={archiveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="transition-colors"
+            className="w-8 h-8 rounded-md flex items-center justify-center transition-all"
             style={{ color: 'var(--text-tertiary)' }}
-            aria-label="Favorite"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--quinary)';
+              e.currentTarget.style.background = 'color-mix(in srgb, var(--quinary) 12%, transparent)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-tertiary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+            title="Open on Archive.org"
+            aria-label="Open on Archive.org"
           >
             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
-          </button>
+          </a>
+          {/* Copy link */}
           <button
-            onClick={(e) => e.stopPropagation()}
-            className="transition-colors"
-            style={{ color: 'var(--text-tertiary)' }}
-            aria-label="More options"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(archiveUrl).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              });
+            }}
+            className="w-8 h-8 rounded-md flex items-center justify-center transition-all relative"
+            style={{ color: copied ? 'var(--tertiary)' : 'var(--text-tertiary)' }}
+            onMouseEnter={(e) => {
+              if (!copied) {
+                e.currentTarget.style.color = 'var(--tertiary)';
+                e.currentTarget.style.background = 'color-mix(in srgb, var(--tertiary) 12%, transparent)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!copied) {
+                e.currentTarget.style.color = 'var(--text-tertiary)';
+                e.currentTarget.style.background = 'transparent';
+              }
+            }}
+            title={copied ? 'Copied!' : 'Copy link'}
+            aria-label="Copy Archive.org link"
           >
-            <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <line x1="4" y1="18" x2="20" y2="18" />
-              <polyline points="17 9 20 12 17 15" />
-            </svg>
+            {copied ? (
+              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
