@@ -46,6 +46,7 @@ interface MobileMiniPlayerProps {
   // Actions
   onExpandPlayer: () => void;
   onTogglePlay: () => void;
+  onMinimize: () => void;
   // Swipe
   swipeHandlers: SwipeHandlers;
   // Streaming stats
@@ -91,6 +92,7 @@ export default function MobileMiniPlayer({
   qualityPopupRef,
   onExpandPlayer,
   onTogglePlay,
+  onMinimize,
   streamingStats,
   swipeHandlers,
   announcement,
@@ -270,6 +272,20 @@ export default function MobileMiniPlayer({
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 )}
+              </button>
+
+              {/* Minimize button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMinimize();
+                }}
+                className="w-8 h-8 flex items-center justify-center text-white/40 hover:text-white/70 flex-shrink-0 transition-colors"
+                aria-label="Hide player"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
             </div>
           </div>

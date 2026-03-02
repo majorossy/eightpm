@@ -568,10 +568,10 @@ function DesktopCenterSection({
             className={`h-full rounded-full relative z-[1] transition-colors ${isBuffering ? 'animate-pulse' : ''}`}
             style={{
               width: `${progress}%`,
-              background: 'linear-gradient(90deg, var(--accent-secondary), var(--quinary))',
+              background: 'var(--secondary)',
             }}
           >
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: 'var(--quinary)' }} />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: 'var(--secondary)' }} />
           </div>
         </div>
         <span className="text-[11px] text-tertiary font-jb-mono w-10 flex-shrink-0">

@@ -18,6 +18,7 @@ import type { AudioQuality } from '@/lib/types';
 import ResumeBar from '@/components/player/ResumeBar';
 // DesktopMinimizedTag removed — minimize state handled by pull-tab in DesktopPlayerBar
 import MobileMiniPlayer from '@/components/player/MobileMiniPlayer';
+import MobileMinimizedTag from '@/components/player/MobileMinimizedTag';
 import DesktopPlayerBar from '@/components/player/DesktopPlayerBar';
 
 export default function BottomPlayer() {
@@ -265,6 +266,18 @@ export default function BottomPlayer() {
   if (isMobile) {
     if (isPlayerExpanded) return null;
 
+    if (isPlayerMinimized) {
+      return (
+        <MobileMinimizedTag
+          currentSong={currentSong}
+          isPlaying={isPlaying}
+          reducedMotion={reducedMotion}
+          onRestore={handleRestore}
+          onTogglePlay={handleTogglePlay}
+        />
+      );
+    }
+
     return (
       <MobileMiniPlayer
         currentSong={currentSong}
@@ -285,6 +298,7 @@ export default function BottomPlayer() {
         qualityPopupRef={qualityPopupRef}
         onExpandPlayer={handleExpandPlayer}
         onTogglePlay={handleTogglePlay}
+        onMinimize={minimizePlayer}
         streamingStats={streamingStats}
         swipeHandlers={swipeHandlers}
         announcement={announcement}

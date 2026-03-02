@@ -14,6 +14,7 @@ import { CassetteTape } from './album/CassetteTape';
 import { TrackRow } from './album/TrackRow';
 import DiscographyCard from '@/components/DiscographyCard';
 import JewelCase from '@/components/JewelCase';
+import DecorativeStars from '@/components/DecorativeStars';
 
 interface AlbumWithTracks extends Album {
   tracks: Track[];
@@ -105,6 +106,8 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
   return (
     <div className="min-h-screen font-serif text-[var(--text)] relative">
+      {/* Decorative stars */}
+      <DecorativeStars />
       {/* Page fireflies */}
       <div className="firefly fixed top-[20%] left-[10%] w-1.5 h-1.5" />
       <div className="firefly-2 fixed top-[60%] left-[85%] w-1 h-1" />

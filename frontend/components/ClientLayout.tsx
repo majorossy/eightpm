@@ -26,6 +26,7 @@ import InstallPrompt from '@/components/InstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import LoadingBar from '@/components/LoadingBar';
 import Footer from '@/components/Footer';
+import StarField from '@/components/StarField';
 import WebVitalsMonitor from '@/components/WebVitalsMonitor';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 
@@ -148,13 +149,16 @@ function InnerLayout({ children }: { children: ReactNode }) {
       {/* Fire glow effect */}
       <div className="fire-glow" />
 
+      {/* Random star field */}
+      <StarField />
+
       {/* Top bar with breadcrumbs - OUTSIDE main for sticky positioning */}
       <EightPmTopBar />
 
       {/* Main content area */}
       <main
         id="main-content"
-        className="min-h-screen bg-[var(--bg)] relative z-10 pt-14"
+        className="min-h-screen relative z-10 pt-14"
         style={{ paddingBottom: mainPaddingBottom }}
       >
         {children}

@@ -55,16 +55,16 @@
   --ring-accent: var(--quaternary);
 
   /* Player surfaces */
-  --player-surface-deep: color-mix(in srgb, var(--primary) 40%, black);
-  --player-surface-bar: color-mix(in srgb, var(--primary) 48%, black);
-  --player-surface-queue: color-mix(in srgb, var(--primary) 33%, black);
-  --player-surface-chip: color-mix(in srgb, var(--primary) 45%, black);
-  --player-surface-chip-hover: color-mix(in srgb, var(--primary) 52%, black);
+  --player-surface-deep: color-mix(in srgb, var(--primary) 75%, black);
+  --player-surface-bar: color-mix(in srgb, var(--primary) 80%, black);
+  --player-surface-queue: color-mix(in srgb, var(--primary) 70%, black);
+  --player-surface-chip: color-mix(in srgb, var(--primary) 78%, black);
+  --player-surface-chip-hover: color-mix(in srgb, var(--primary) 85%, black);
 
   /* Player glow & button */
   --player-glow-line: linear-gradient(90deg, transparent, color-mix(in srgb, var(--tertiary) 25%, transparent), color-mix(in srgb, var(--quaternary) 25%, transparent), transparent);
-  --player-play-btn: var(--quinary);
-  --player-play-btn-shadow: color-mix(in srgb, var(--quinary) 25%, transparent);
+  --player-play-btn: var(--secondary);
+  --player-play-btn-shadow: color-mix(in srgb, var(--secondary) 25%, transparent);
   --player-play-btn-text: var(--player-surface-deep);
 
   /* Player borders */

@@ -36,6 +36,27 @@
   50% { opacity: 0.35; }
 }
 
+/* Star field background layer */
+.star-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.star-field-star {
+  position: absolute;
+  color: var(--quinary);
+  line-height: 1;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: var(--tw-base, 0.12); }
+  50% { opacity: calc(var(--tw-base, 0.12) * 2.5); }
+}
+
 /* Firefly animations */
 @keyframes firefly {
   0%, 100% { opacity: 0; transform: scale(0.5); }

@@ -15,6 +15,7 @@ import BandLinks from '@/components/artist/BandLinks';
 import DetailedCassette from '@/components/artist/DetailedCassette';
 import PolaroidCard from '@/components/artist/PolaroidCard';
 import ExpandedBiography from '@/components/ExpandedBiography';
+import DecorativeStars from '@/components/DecorativeStars';
 import { trackArtistView } from '@/lib/analytics';
 
 interface ArtistWithAlbums extends Artist {
@@ -132,6 +133,8 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
     <div className="min-h-screen">
       {/* Hero Section with Cassette Tape Design */}
       <section className="relative px-4 md:px-8 pt-4 md:pt-6 pb-8 md:pb-12 overflow-hidden">
+        {/* Decorative stars */}
+        <DecorativeStars />
         {/* Ambient background layers */}
         <div className="absolute inset-0 pointer-events-none">
           {/* Organic blob gradients */}

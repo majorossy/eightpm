@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStarOverlay } from '@/hooks/useStarOverlay';
 import { useFestivalSort } from '@/hooks/useFestivalSort';
+import DecorativeStars from '@/components/DecorativeStars';
 import AlgorithmSelector from '@/components/AlgorithmSelector';
 
 interface LineupArtist {
@@ -345,24 +346,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
       className="festival-hero-section flex flex-col items-center relative overflow-hidden pt-0.5 pb-4 px-4 md:pt-1 md:pb-6 md:px-10"
     >
       {/* Decorative stars */}
-      <span className="absolute top-[15%] left-[10%] text-4xl md:text-6xl text-[var(--secondary)] opacity-40 select-none hidden sm:block">
-        &#9733;
-      </span>
-      <span className="absolute top-[20%] right-[15%] text-3xl md:text-5xl text-[var(--secondary)] opacity-30 select-none">
-        &#9733;
-      </span>
-      <span className="absolute top-[60%] left-[5%] text-2xl md:text-4xl text-[var(--secondary)] opacity-25 select-none hidden md:block">
-        &#9733;
-      </span>
-      <span className="absolute top-[70%] right-[8%] text-3xl md:text-5xl text-[var(--secondary)] opacity-35 select-none hidden sm:block">
-        &#9733;
-      </span>
-      <span className="absolute top-[40%] left-[85%] text-xl md:text-3xl text-[var(--secondary)] opacity-20 select-none hidden lg:block">
-        &#9733;
-      </span>
-      <span className="absolute top-[85%] left-[20%] text-2xl md:text-4xl text-[var(--secondary)] opacity-30 select-none hidden md:block">
-        &#9733;
-      </span>
+      <DecorativeStars />
 
       {/* Main content */}
       <div className="flex flex-col items-center text-center z-10 max-w-[1190px] w-full">
@@ -411,7 +395,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
           </span>
           <span className="text-4xl md:text-6xl font-black text-[var(--secondary)]">.</span>
           <span
-            className="text-6xl sm:text-8xl md:text-8xl lg:text-9xl font-black tracking-tight text-[var(--text)]"
+            className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tight text-[var(--text)]"
             style={{ fontFamily: 'system-ui' }}
           >
             ME
