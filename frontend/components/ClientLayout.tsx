@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState, useCallback, lazy, Suspense } from 'react';
+import { ReactNode, useState, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider, useWishlist } from '@/context/WishlistContext';
@@ -102,6 +102,32 @@ function InnerLayout({ children }: { children: ReactNode }) {
     isQueueOpen: player.isQueueOpen,
   });
 
+  // Measure the fixed bottom player so <main> gets enough padding to avoid overlap
+  const [playerHeight, setPlayerHeight] = useState(0);
+  useEffect(() => {
+    const observe = () => {
+      const el = document.getElementById('bottom-player-bar');
+      if (!el) { setPlayerHeight(0); return null; }
+      const ro = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          setPlayerHeight(entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height);
+        }
+      });
+      ro.observe(el);
+      return ro;
+    };
+    // Re-observe whenever the player mounts/unmounts (song changes, minimize)
+    let ro = observe();
+    const mo = new MutationObserver(() => { ro?.disconnect(); ro = observe(); });
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => { ro?.disconnect(); mo.disconnect(); };
+  }, []);
+
+  // Desktop minimized: player is still in DOM but translateY(100%) off-screen
+  const effectivePlayerHeight = (!isMobile && isPlayerMinimized) ? 0 : playerHeight;
+  // 50px nav bar (all screens) + player + 16px breathing room
+  const mainPaddingBottom = effectivePlayerHeight + 50 + 16;
+
   // Jamify layout (only theme now)
   return (
     <>
@@ -128,7 +154,8 @@ function InnerLayout({ children }: { children: ReactNode }) {
       {/* Main content area */}
       <main
         id="main-content"
-        className="min-h-screen bg-[var(--bg)] relative z-10 pb-[200px] pt-14"
+        className="min-h-screen bg-[var(--bg)] relative z-10 pt-14"
+        style={{ paddingBottom: mainPaddingBottom }}
       >
         {children}
 

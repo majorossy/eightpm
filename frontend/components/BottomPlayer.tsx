@@ -139,7 +139,7 @@ export default function BottomPlayer() {
   // Compute queue chips: played items + upcoming (capped)
   const queueChips: { item: QueueItem; absoluteIndex: number; isPlayed: boolean; isCurrent: boolean }[] = useMemo(() => {
     if (queue.cursorIndex < 0) return [];
-    const maxUpcoming = isMobile ? 10 : 20;
+    const maxUpcoming = isMobile ? 10 : 555;
     const chips: { item: QueueItem; absoluteIndex: number; isPlayed: boolean; isCurrent: boolean }[] = [];
 
     // Include recent played items (before cursor), capped at 42
@@ -147,6 +147,11 @@ export default function BottomPlayer() {
     const historyStart = Math.max(0, queue.cursorIndex - maxHistory);
     for (let i = historyStart; i < queue.cursorIndex; i++) {
       chips.push({ item: queue.items[i], absoluteIndex: i, isPlayed: true, isCurrent: false });
+    }
+
+    // Include the currently-playing track
+    if (queue.cursorIndex < queue.items.length) {
+      chips.push({ item: queue.items[queue.cursorIndex], absoluteIndex: queue.cursorIndex, isPlayed: false, isCurrent: true });
     }
 
     // Include upcoming items (cursor + 1 onward, capped)

@@ -12,16 +12,14 @@
 
 html {
   background-color: var(--bg);
-  overflow-x: hidden;
-  overflow-y: visible; /* Prevent overflow-y: auto which breaks sticky positioning */
+  overflow-x: clip;
 }
 
 body {
   background-color: transparent;
   color: var(--text);
   min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: visible; /* Prevent overflow-y: auto which breaks sticky positioning */
+  overflow-x: clip;
   position: relative;
 }
 

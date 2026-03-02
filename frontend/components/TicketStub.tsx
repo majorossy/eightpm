@@ -13,21 +13,23 @@ interface TicketStubProps {
   size?: number;          // Controls width — height derives from ticket aspect ratio
   trackCount?: number;
   className?: string;
+  /** When set, renders a small chevron arrow on the left spine stripe. */
+  chevronDirection?: 'left' | 'right';
 }
 
-export default function TicketStub({ coverArt, albumName, size = 48, trackCount, className = '' }: TicketStubProps) {
+export default function TicketStub({ coverArt, albumName, size = 48, trackCount, className = '', chevronDirection }: TicketStubProps) {
   const [hovered, setHovered] = useState(false);
 
   const w = size;
-  const h = Math.round(size * 1.45);
+  const h = Math.round(size * 1.5);
   const isSmall = size <= 52;
 
   // Proportional sizing
-  const artSize = Math.round(w * 0.72);
-  const artTop = Math.round(h * 0.06);
+  const artSize = Math.round(w * 0.82);
+  const artTop = Math.round(h * 0.02);
   const stripeW = Math.max(3, Math.round(w * 0.065));
-  const perfY = Math.round(h * 0.78);
-  const tearH = h - perfY;
+  const labelTop = artTop + artSize + 1;
+  const tearH = h - labelTop;
   const radius = isSmall ? 2 : 3;
 
   // Tear-off label: album name preferred, then track count, then star
@@ -77,7 +79,7 @@ export default function TicketStub({ coverArt, albumName, size = 48, trackCount,
             top: artTop,
             width: artSize,
             height: artSize,
-            transform: 'translateX(-50%)',
+            transform: 'translateX(-47%)',
             border: '1px solid color-mix(in srgb, var(--primary) 22%, transparent)',
             imageRendering: 'auto',
           }}
@@ -102,29 +104,23 @@ export default function TicketStub({ coverArt, albumName, size = 48, trackCount,
           )}
         </div>
 
-        {/* Perforation line — crisp dashed */}
-        <div
-          className="absolute right-0"
-          style={{
-            top: perfY,
-            left: stripeW,
-            height: 0,
-            borderTop: '1px dashed color-mix(in srgb, var(--primary) 30%, transparent)',
-          }}
-        />
-
         {/* Tear-off section — album name or track count */}
         <div
-          className="absolute left-0 right-0 bottom-0 flex items-center justify-center overflow-hidden"
-          style={{ height: tearH, padding: `0 ${stripeW + 2}px` }}
+          className="absolute left-0 right-0 flex items-start justify-center overflow-hidden"
+          style={{ top: labelTop, height: tearH, padding: `1px ${stripeW + 1}px 0` }}
         >
           {tearLabel ? (
             <span
-              className="font-serif font-semibold truncate text-center w-full block"
+              className="font-jb-mono font-bold text-center w-full"
               style={{
-                fontSize: Math.max(6, Math.round(7 * (size / 48))),
-                color: 'color-mix(in srgb, var(--primary) 60%, transparent)',
-                lineHeight: 1.1,
+                fontSize: Math.max(7, Math.round(8 * (size / 48))),
+                color: 'color-mix(in srgb, var(--primary) 85%, transparent)',
+                lineHeight: 1.15,
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical' as const,
+                overflow: 'hidden',
+                wordBreak: 'break-word' as const,
               }}
             >
               {tearLabel}
@@ -151,6 +147,29 @@ export default function TicketStub({ coverArt, albumName, size = 48, trackCount,
           }}
         />
       </div>
+
+      {/* Chevron — positioned just right of the ticket, vertically centered */}
+      {chevronDirection && (
+        <svg
+          className="absolute pointer-events-none"
+          style={{
+            width: isSmall ? 6 : 8,
+            height: isSmall ? 9 : 12,
+            top: '50%',
+            right: isSmall ? -7 : -10,
+            transform: `translateY(-50%) scaleX(${chevronDirection === 'left' ? -1 : 1})`,
+            transition: 'transform 0.2s ease-out',
+          }}
+          viewBox="0 0 6 10"
+          fill="none"
+          stroke="var(--text-tertiary)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M1 1L5 5L1 9" />
+        </svg>
+      )}
     </div>
   );
 }

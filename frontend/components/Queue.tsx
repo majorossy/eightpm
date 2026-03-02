@@ -317,10 +317,10 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
   if (!currentItem) return null;
 
   const song = currentItem.song;
-  const albumName = currentItem.albumSource?.albumName;
-  const venue = song.showVenue;
-  const showInfo = [albumName, venue].filter(Boolean).join(' \u00b7 ');
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const trackNumber = currentItem.albumSource ? (currentItem.albumSource.originalTrackIndex ?? 0) + 1 : null;
+  const versionCount = currentItem.availableVersions.length;
+  const hasMultipleVersions = versionCount > 1;
 
   return (
     <div
@@ -351,23 +351,93 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
         Now Playing
       </div>
 
-      {/* Content row */}
-      <div className="flex gap-3.5 items-center mb-3.5 relative z-[1]">
-        {/* Album art — medium icon */}
-        <RecordingMediumIcon medium={currentItem.song.recordingMedium} lineage={currentItem.song.lineage} source={currentItem.song.source} size={0.55} className="flex-shrink-0" />
+      {/* Multi-row content — matches SortableTrackRow layout */}
+      <div className="flex-1 min-w-0 flex flex-col gap-1 relative z-[1] mb-3.5">
+        {/* Row 1: # + Title ........... Duration */}
+        <div className="flex items-baseline gap-1.5">
+          {trackNumber != null && (
+            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+              {trackNumber}
+            </span>
+          )}
+          <span className="text-[13.5px] font-semibold text-primary truncate" style={{ lineHeight: '1.3' }}>
+            {song.title}
+          </span>
+          {song.duration > 0 && (
+            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0 ml-auto" style={{ color: 'var(--text-tertiary)' }}>
+              {formatDuration(song.duration)}
+            </span>
+          )}
+        </div>
 
-        {/* Track info */}
-        <div className="flex-1 min-w-0">
-          <p className="text-[17px] font-bold text-primary truncate" style={{ lineHeight: '1.25' }}>
-            {currentItem.song.title}
-          </p>
-          <p className="text-sm font-medium truncate" style={{ color: 'var(--tertiary)', lineHeight: '1.3' }}>
-            {currentItem.song.artistName}
-          </p>
-          {showInfo && (
-            <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)', lineHeight: '1.4' }}>
-              {showInfo}
-            </p>
+        {/* Row 2: Date · Venue */}
+        {(song.showDate || song.showVenue) && (
+          <div className="flex items-baseline gap-2">
+            {song.showDate && (
+              <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
+                {song.showDate.replace(/-/g, '/')}
+              </span>
+            )}
+            <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
+              {song.showVenue || song.albumName || 'Unknown venue'}
+            </span>
+          </div>
+        )}
+        {/* Location */}
+        {song.showLocation && (
+          <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+            {song.showLocation}
+          </span>
+        )}
+
+        {/* Row 3: Taper */}
+        {song.taper && (
+          <div className="flex items-center gap-1.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+              <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
+              <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
+              <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
+              <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
+              <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <span className="font-jb-mono text-[11px] font-medium truncate" style={{ color: 'var(--text-tertiary)' }}>
+              {song.taper}
+            </span>
+          </div>
+        )}
+
+        {/* Row 4: Source badge · Stars · Downloads · Versions */}
+        <div className="flex items-center gap-2.5">
+          <RecTypeBadge type={song.recordingType} />
+          <StarRating rating={song.avgRating} count={song.numReviews} />
+          {song.downloads != null && song.downloads > 0 && (
+            <span className="font-jb-mono text-[11px] flex items-center gap-0.5" style={{ color: 'var(--text-tertiary)' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <path d="M12 2L2 7v1h20V7L12 2z" fill="rgba(200,180,140,0.55)"/>
+                <rect x="4.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                <rect x="9" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                <rect x="13" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                <rect x="17.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                <rect x="2" y="17" width="20" height="2" rx="0.5" fill="rgba(200,180,140,0.45)"/>
+              </svg>
+              <svg width="7" height="12" viewBox="0 0 10 16" fill="none" className="flex-shrink-0">
+                <path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" stroke="#8fa8b3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {song.downloads.toLocaleString()}
+            </span>
+          )}
+          {hasMultipleVersions && (
+            <span
+              className="flex items-center gap-[3px] px-1.5 py-[2px] rounded-[3px] font-jb-mono text-[8.5px] font-semibold ml-auto"
+              style={{
+                background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--quaternary) 30%, transparent)',
+                color: 'var(--quaternary)',
+              }}
+            >
+              <VersionsIcon className="w-2.5 h-2.5" />
+              <span>{versionCount} ver</span>
+            </span>
           )}
         </div>
       </div>
@@ -545,9 +615,9 @@ function SortableTrackRow({
             </span>
           </div>
 
-          {/* Row 2: Date · Venue · Location (matching VersionPickerModal Row 1) */}
-          {(song.showDate || song.showVenue || song.showLocation) && (
-            <div className="flex items-baseline gap-2 flex-wrap">
+          {/* Row 2: Date · Venue */}
+          {(song.showDate || song.showVenue) && (
+            <div className="flex items-baseline gap-2">
               {song.showDate && (
                 <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
                   {song.showDate.replace(/-/g, '/')}
@@ -556,18 +626,19 @@ function SortableTrackRow({
               <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
                 {song.showVenue || song.albumName || 'Unknown venue'}
               </span>
-              {song.showLocation && (
-                <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                  {song.showLocation}
-                </span>
-              )}
             </div>
           )}
+          {/* Location */}
+          {song.showLocation && (
+            <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+              {song.showLocation}
+            </span>
+          )}
 
-          {/* Row 3: Taper (own row, matching modal Row 2) */}
+          {/* Row 3: Taper */}
           {song.taper && (
             <div className="flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
                 <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
                 <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
                 <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
@@ -716,7 +787,7 @@ function DragOverlayTrack({
         {/* Row 3: Taper (own row, matching modal Row 2) */}
         {song.taper && (
           <div className="flex items-center gap-1.5">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
               <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
               <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
               <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>

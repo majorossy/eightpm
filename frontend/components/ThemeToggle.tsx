@@ -3,7 +3,11 @@
 import { useTheme, THEMES } from '@/context/ThemeContext';
 import type { ThemeType } from '@/context/ThemeContext';
 
-export default function ThemeToggle() {
+interface ThemeToggleProps {
+  iconSize?: number;
+}
+
+export default function ThemeToggle({ iconSize }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -21,8 +25,11 @@ export default function ThemeToggle() {
           <button
             key={themeKey}
             onClick={() => setTheme(themeKey)}
-            className="p-1 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)]"
+            className="rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--secondary)] flex items-center justify-center"
             style={{
+              width: iconSize ?? undefined,
+              height: iconSize ?? undefined,
+              padding: iconSize ? undefined : '0.25rem',
               background: isActive ? 'var(--overlay-medium)' : 'transparent',
               transform: isActive ? 'scale(1.1)' : 'scale(1)',
             }}
@@ -32,11 +39,11 @@ export default function ThemeToggle() {
             aria-checked={isActive}
           >
             <span
-              className="block text-2xs leading-none transition-all duration-300"
+              className="block leading-none transition-all duration-300"
               style={{
                 opacity: isActive ? 1 : 0.5,
                 filter: `grayscale(${isActive ? 0 : 100}%)`,
-                fontSize: '0.6rem',
+                fontSize: iconSize ? `${iconSize * 0.45}px` : '0.6rem',
               }}
             >
               {themeConfig.icon}

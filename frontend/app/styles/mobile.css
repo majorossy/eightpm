@@ -80,7 +80,7 @@
    Prevent horizontal overflow on mobile
    ======================================== */
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100vw;
 }
 
@@ -116,6 +116,7 @@ html, body {
 
   /* Allow smaller inline buttons/links */
   .inline,
+  .inline-flex,
   .text-xs,
   .text-sm,
   p a,

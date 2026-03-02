@@ -152,6 +152,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
 
   return (
     <div
+      id="bottom-player-bar"
       className="fixed bottom-0 left-0 right-0 z-[40] bg-surface-player-deep player-glow-line"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
@@ -267,15 +268,6 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
       {/* Queue strip — accordion album groups */}
       {queueChips.length > 0 && (
         <div className="px-6 pt-2.5 pb-3.5" style={{ background: 'var(--player-surface-queue)', borderTop: '1px solid color-mix(in srgb, var(--player-surface-bar) 20%, transparent)' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] font-jb-mono font-bold uppercase tracking-widest" style={{ color: 'var(--quinary)' }}>Up</span>
-            <span className="text-[10px] font-jb-mono uppercase tracking-widest" style={{ color: 'var(--secondary)' }}>Next</span>
-            <span className="text-[10px] text-tertiary font-jb-mono uppercase tracking-wider">&middot; {totalUpcoming} tracks</span>
-            <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--quinary) 25%, transparent), transparent)' }} />
-            {totalUpcoming > 0 && (
-              <span className="text-[10px] text-tertiary italic">click album to expand</span>
-            )}
-          </div>
           <QueueAccordion
             queueChips={queueChips}
             totalUpcoming={totalUpcoming}
@@ -321,7 +313,7 @@ function DesktopLeftSection({
   onRemoveFromWishlist: (id: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-4 min-w-0 flex-shrink-0 w-[260px] z-20">
+    <div className="flex items-start gap-3 min-w-0 flex-1 max-w-[380px] z-20">
       {/* Album art — with teal gradient overlay */}
       <div className="w-[60px] h-[60px] bg-surface-elevated flex-shrink-0 rounded-lg relative overflow-hidden" style={{ boxShadow: '0 2px 12px color-mix(in srgb, black 30%, transparent)' }}>
         {currentItem?.albumSource?.coverArt ? (
@@ -366,21 +358,59 @@ function DesktopLeftSection({
         </span>
       </div>
 
-      {/* Track meta */}
-      <div className="min-w-0 flex-1">
-        <p className="text-[15px] text-white font-semibold truncate hover:underline cursor-pointer leading-tight">
-          {currentItem?.albumSource ? <><span className="text-tertiary">{(currentItem.albumSource.originalTrackIndex ?? 0) + 1}.</span> {currentSong.title}</> : currentSong.title}
-        </p>
-        <p className="text-[13px] truncate hover:underline cursor-pointer leading-tight mt-0.5" style={{ color: 'var(--tertiary)' }}>
-          {currentSong.artistName}
-        </p>
-        {/* Venue + date line */}
-        {(currentSong.showVenue || currentSong.showDate) && (
-          <p className="text-[11.5px] text-tertiary truncate mt-0.5">
-            {currentSong.showVenue}{currentSong.showVenue && currentSong.showDate ? ' \u00b7 ' : ''}{currentSong.showDate}
-          </p>
+      {/* Track meta — multi-row layout matching queue track rows */}
+      <div className="min-w-0 flex-1 flex flex-col">
+        {/* Row 1: # + Title */}
+        <div className="flex items-baseline gap-1.5 leading-tight">
+          {currentItem?.albumSource && (
+            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+              {(currentItem.albumSource.originalTrackIndex ?? 0) + 1}
+            </span>
+          )}
+          <span className="text-[14px] font-semibold text-white truncate" style={{ lineHeight: '1.25' }}>
+            {currentSong.title}
+          </span>
+        </div>
+
+        {/* Row 2: Date · Venue */}
+        {(currentSong.showDate || currentSong.showVenue) && (
+          <div className="flex items-baseline gap-1.5 leading-tight mt-px">
+            {currentSong.showDate && (
+              <span className="font-jb-mono text-[11px] font-semibold text-primary tracking-wide flex-shrink-0">
+                {currentSong.showDate.replace(/-/g, '/')}
+              </span>
+            )}
+            {currentSong.showVenue && (
+              <span className="text-[11px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
+                {currentSong.showVenue}
+              </span>
+            )}
+          </div>
         )}
-        {/* Action buttons row */}
+        {/* Location */}
+        {currentItem?.song?.showLocation && (
+          <span className="font-mono text-[9px] leading-tight" style={{ color: 'var(--text-tertiary)' }}>
+            {currentItem.song.showLocation}
+          </span>
+        )}
+
+        {/* Row 3: Taper */}
+        {currentItem?.song?.taper && (
+          <div className="flex items-center gap-1 leading-tight mt-px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+              <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
+              <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
+              <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
+              <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
+              <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <span className="font-jb-mono text-[9px] truncate" style={{ color: 'var(--text-tertiary)' }}>
+              {currentItem.song.taper}
+            </span>
+          </div>
+        )}
+
+        {/* Row 4: Action buttons */}
         <div className="flex items-center gap-2 mt-1">
           {/* Like */}
           <button

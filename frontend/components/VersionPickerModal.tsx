@@ -191,8 +191,11 @@ export default function VersionPickerModal({
           className="fixed inset-0 z-[100] flex items-end md:items-center justify-center"
           onOpenAutoFocus={(e) => e.preventDefault()}
           onClick={(e) => {
-            // Stop backdrop clicks from bubbling through Portal to parent track row.
-            if (e.target === e.currentTarget) e.stopPropagation();
+            // Clicking the backdrop (outside the modal panel) closes the dialog.
+            if (e.target === e.currentTarget) {
+              e.stopPropagation();
+              onClose();
+            }
           }}
         >
           <div
@@ -429,36 +432,37 @@ function VersionRow({
       <div className="flex items-start gap-3.5 px-4 pt-3.5 pb-3">
         {/* Format icon */}
         <div
-          className="w-[52px] h-[52px] rounded-lg flex-shrink-0 flex items-center justify-center relative overflow-hidden"
+          className="w-[52px] h-[52px] rounded-lg flex-shrink-0 flex items-center justify-center relative"
           style={{
             background: 'linear-gradient(175deg, #2a2622 0%, #1e1a16 50%, #14120c 100%)',
             border: '1px solid rgba(200,180,140,0.08)',
           }}
         >
-          <RecordingMediumIcon medium={song.recordingMedium} lineage={song.lineage} source={song.source} size={1.3} />
+          <RecordingMediumIcon medium={song.recordingMedium} lineage={song.lineage} source={song.source} size={0.85} />
         </div>
 
         {/* Info column */}
         <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-          {/* Row 1: Date · Venue · Location */}
-          <div className="flex items-baseline gap-2 flex-wrap">
+          {/* Row 1: Date · Venue */}
+          <div className="flex items-baseline gap-2">
             <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
               {song.showDate ? song.showDate.replace(/-/g, '/') : 'Unknown date'}
             </span>
             <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
               {venue || song.albumName || 'Unknown venue'}
             </span>
-            {location && (
-              <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                {location}
-              </span>
-            )}
           </div>
+          {/* Location */}
+          {location && (
+            <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+              {location}
+            </span>
+          )}
 
           {/* Row 2: Taper */}
           {song.taper && (
             <div className="flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
                 <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
                 <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
                 <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>

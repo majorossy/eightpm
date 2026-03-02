@@ -49,10 +49,10 @@ interface StripGroup {
 // ─── Constants ───────────────────────────────────────────────────────
 
 const ACCENT_COLORS = ['var(--quinary)', 'var(--tertiary)', 'var(--quaternary)'];
-const COLLAPSED_W = 68;
-const COLLAPSED_W_COMPACT = 52;
-const CHIP_STRIDE = 228; // 220px chip + 8px gap
-const CHIP_STRIDE_COMPACT = 208; // 200px chip + 8px gap
+const COLLAPSED_W = 94;
+const COLLAPSED_W_COMPACT = 71;
+const CHIP_STRIDE = 345; // 337px chip + 8px gap
+const CHIP_STRIDE_COMPACT = 238; // 230px chip + 8px gap
 
 // ─── Props ───────────────────────────────────────────────────────────
 
@@ -445,7 +445,7 @@ export default function QueueAccordion({
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
-          <div ref={scrollContainerRef} className="relative z-[2] flex gap-2 overflow-x-auto queue-scrollbar pb-1 items-center">
+          <div ref={scrollContainerRef} className="relative z-[2] flex gap-2 overflow-x-auto queue-scrollbar pb-1 pt-4 items-center">
             {/* History toggle button — temporarily hidden */}
             {/* {historyChips.length > 0 && (
               <HistoryToggleButton
@@ -542,6 +542,9 @@ export default function QueueAccordion({
                 isHistoryDrag={isHistoryDrag}
               />
             )}
+
+            {/* Trailing spacer — last chip stops flush against album header's right edge */}
+            <div className="flex-shrink-0 pointer-events-none" style={{ minWidth: `calc(100% - ${compact ? COLLAPSED_W_COMPACT + 8 + CHIP_STRIDE_COMPACT : COLLAPSED_W + 8 + CHIP_STRIDE}px)`, height: 1 }} />
           </div>
         </SortableContext>
 
@@ -745,7 +748,7 @@ function AlbumGroupSection({
 
       {/* Expanded chips section */}
       {isExpanded && (
-        <div className={`flex gap-2 ${compact ? 'pl-1.5 items-center' : 'pl-2 py-1.5'}`}>
+        <div className={`flex gap-2 ${compact ? 'pl-1.5 items-center' : 'pl-2 py-1.5 items-center'}`}>
           {group.chips.map((chipEntry) => {
             const globalIdx = chipGlobalIndexMap.get(chipEntry.item.queueId) ?? -1;
             const isActive = !chipEntry.isPlayed && globalIdx === playedCount;
@@ -814,35 +817,21 @@ function AlbumHeader({
         tabIndex={0}
         onClick={(e) => { e.stopPropagation(); onRemoveBatch(group.batchId); }}
         onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onRemoveBatch(group.batchId); } }}
-        className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center rounded-full z-10 opacity-0 group-hover:opacity-100 bg-surface-player-deep text-tertiary hover:!text-white hover:!bg-border transition-all cursor-pointer"
+        className={`inline absolute top-0.5 right-0.5 ${compact ? 'w-3 h-3' : 'w-4 h-4'} flex items-center justify-center rounded-full z-10 opacity-0 group-hover:opacity-100 bg-surface-player-deep text-tertiary hover:!text-white hover:!bg-border transition-all cursor-pointer`}
         aria-label={`Remove ${group.albumSource?.albumName ?? 'album'} from queue`}
       >
-        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={compact ? 'w-1.5 h-1.5' : 'w-2.5 h-2.5'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
         </svg>
       </span>
 
-      {/* Album art — jewel case */}
-      <TicketStub coverArt={group.albumSource?.coverArt} albumName={group.albumSource?.albumName} size={compact ? 36 : 52} />
-
-      {/* Track count + chevron row */}
-      <div className="flex items-center gap-1">
-        <span className="font-jb-mono text-[8px] font-semibold leading-none" style={{ color: isActiveAlbum ? group.colorVar : 'var(--text-secondary)' }}>
-          {isActiveAlbum ? `${currentTrack}/${totalTracks}` : `${group.chips.length} trk`}
-        </span>
-        <svg
-          className="w-2.5 h-2.5 transition-transform duration-200"
-          style={{
-            transform: isExpanded ? 'rotate(-90deg)' : 'rotate(90deg)',
-            color: 'var(--text-tertiary)',
-          }}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-        </svg>
-      </div>
+      {/* Album art — jewel case with chevron on spine */}
+      <TicketStub
+        coverArt={group.albumSource?.coverArt}
+        albumName={group.albumSource?.albumName}
+        size={compact ? 51 : 74}
+        chevronDirection={isExpanded ? 'left' : 'right'}
+      />
     </button>
   );
 }

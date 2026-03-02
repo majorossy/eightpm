@@ -118,7 +118,7 @@ export default function MobileMiniPlayer({
         {announcement}
       </div>
 
-      <div className="fixed left-0 right-0 z-[40]" style={{ bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}>
+      <div id="bottom-player-bar" className="fixed left-0 right-0 z-[40]" style={{ bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}>
         <div className={`border-t border-accent/20 bg-gradient-to-b from-surface-elevated to-surface-card backdrop-blur-lg ${reducedMotion ? 'reduce-motion' : ''}`}>
           {/* Mini player card with swipe gesture */}
           <div

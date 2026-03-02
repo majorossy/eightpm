@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import ThemeToggle from './ThemeToggle';
 
 export default function Footer() {
   return (
@@ -252,6 +253,11 @@ export default function Footer() {
           <div className="text-xs text-[var(--text-subdued)] uppercase tracking-wider">
             © 2026 8pm.me
           </div>
+        </div>
+
+        {/* Theme Selector */}
+        <div className="flex justify-center pt-6">
+          <ThemeToggle iconSize={76} />
         </div>
       </div>
     </footer>

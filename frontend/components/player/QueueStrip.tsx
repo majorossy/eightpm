@@ -40,7 +40,7 @@ export function SortableQueueChip({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.queueId, disabled: !!isPlayed && !forceEnableDrag });
+  } = useSortable({ id: item.queueId, disabled: (!!isPlayed || !!isActive) && !forceEnableDrag });
 
   const style: React.CSSProperties = {
     transform: transform ? `translate3d(${transform.x}px, 0, 0)` : undefined,
@@ -54,7 +54,7 @@ export function SortableQueueChip({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={isPlayed && !forceEnableDrag ? '' : 'cursor-grab active:cursor-grabbing'} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} className={(isPlayed || isActive) && !forceEnableDrag ? '' : 'cursor-grab active:cursor-grabbing'} {...attributes} {...listeners}>
       <div style={{ visibility: isDragging ? 'hidden' : 'visible' }}>
         <QueueChip
           item={item}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Album, Track, Song, Artist } from '@/lib/api';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
@@ -9,10 +9,9 @@ import { useQueue } from '@/context/QueueContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useTrackPreferences } from '@/hooks/useTrackPreferences';
-import VenueLink from '@/components/VenueLink';
 import { trackAlbumView } from '@/lib/analytics';
 import { CassetteTape } from './album/CassetteTape';
-import { TrackRow, SideDivider } from './album/TrackRow';
+import { TrackRow } from './album/TrackRow';
 import DiscographyCard from '@/components/DiscographyCard';
 import JewelCase from '@/components/JewelCase';
 
@@ -47,8 +46,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const { vibrate, BUTTON_PRESS } = useHaptic();
   const { getPreferred, setPreferred, clearPreferred, getOverridesMap } = useTrackPreferences(album.identifier);
 
-  const [expandedTrack, setExpandedTrack] = useState<number>(-1);
-  const prevSongIdRef = useRef<string | null>(null);
   const hasTrackedView = useRef(false);
 
   // Check if this album is currently loaded in the queue
@@ -74,26 +71,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
     }
   }, [album]);
 
-  // Auto-expand accordion when track changes (not on every render)
-  useEffect(() => {
-    if (!currentSong || !isCurrentAlbum) return;
-
-    if (currentSong.id === prevSongIdRef.current) return;
-    prevSongIdRef.current = currentSong.id;
-
-    const trackIndex = album.tracks.findIndex(track =>
-      track.songs.some(song => song.id === currentSong.id)
-    );
-
-    if (trackIndex !== -1) {
-      setExpandedTrack(trackIndex);
-    }
-  }, [currentSong, isCurrentAlbum, album.tracks]);
-
-  // Split tracks for Side A/B
-  const midpoint = Math.ceil(album.tracks.length / 2);
-  const sideATracks = album.tracks.slice(0, midpoint);
-  const sideBTracks = album.tracks.slice(midpoint);
+  const allTracks = album.tracks;
 
   const handleAddToQueue = () => {
     vibrate(BUTTON_PRESS);
@@ -139,37 +117,15 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
         </div>
       </div>
 
-      {/* Main content - max width centered */}
-      <div className="max-w-[1000px] mx-auto px-4 sm:px-8">
+      {/* Main content - max width centered, also the sticky parent + flex container */}
+      <div className="max-w-[1000px] mx-auto px-4 sm:px-8 lg:flex lg:gap-12 lg:items-start">
 
-        {/* Two-column layout: sticky album sidebar + scrollable tracks */}
-        <div className="lg:flex lg:gap-12 lg:items-start">
-
-          {/* Left column — sticky on desktop */}
-          <div className="lg:sticky lg:top-8 lg:self-start lg:flex-shrink-0 flex flex-col items-center lg:items-start gap-6 mb-12 lg:mb-0">
+          {/* Left column — sticky on all sizes, top offset clears fixed header (h-14 mobile / h-16 desktop) */}
+          <div className="sticky top-14 md:top-16 lg:top-20 self-start z-10 bg-[var(--bg)] flex-shrink-0 flex flex-col items-center lg:items-start gap-6 pb-4 mb-8 lg:mb-0">
             <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image} />
 
             {/* Album info */}
             <div className="pt-4 max-w-[400px] text-center lg:text-left">
-              <div className="text-[var(--tertiary)] text-[10px] tracking-[3px] mb-2.5">
-                ☮ LIVE ALBUM
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl text-[var(--text)] mb-2 leading-tight">
-                {album.name}
-              </h1>
-              {album.showVenue && (
-                <div className="text-xl text-[var(--text-dim)] mb-1.5 italic">
-                  <VenueLink venueName={album.showVenue} className="text-[var(--text-dim)] hover:text-accent hover:underline transition-colors" />
-                </div>
-              )}
-              <div className="text-[var(--text-subdued)] text-sm mb-6">
-                <Link href={`/artists/${album.artistSlug}`} className="text-[var(--secondary)] hover:underline">
-                  {album.artistName}
-                </Link>
-                {album.showDate && <> • {album.showDate}</>}
-                {' • '}{album.totalTracks} tracks
-              </div>
-
               {/* Quote box */}
               {album.description && (
                 <div
@@ -180,7 +136,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
               )}
 
               {/* Action buttons */}
-              <div className="flex gap-3.5 items-center justify-center lg:justify-start">
+              <div className="flex flex-col gap-3 items-center">
                 <button
                   onClick={handleAddToQueue}
                   className="album-play-button px-6 py-3.5 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 gap-2"
@@ -199,18 +155,13 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
           {/* Right column — tracks scroll naturally */}
           <div className="flex-1 min-w-0">
-            {/* Side A divider */}
-            <SideDivider side="A" />
-
-            {/* Side A tracks */}
+            {/* Track list */}
             <div className="mb-8 track-list-container">
-              {sideATracks.map((track, idx) => (
+              {allTracks.map((track, idx) => (
                 <TrackRow
                   key={track.id}
                   track={track}
                   displayIndex={idx + 1}
-                  isExpanded={expandedTrack === idx}
-                  onToggle={() => setExpandedTrack(expandedTrack === idx ? -1 : idx)}
                   onPlay={handlePlaySong}
                   currentSong={currentSong}
                   isPlaying={isPlaying}
@@ -220,87 +171,52 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                     if (getPreferred(track.id) === songId) clearPreferred(track.id);
                     else setPreferred(track.id, songId);
                   }}
+                  artistName={album.artistName}
+                  coverArt={album.coverArt}
                 />
               ))}
             </div>
-
-            {/* Side B divider */}
-            {sideBTracks.length > 0 && (
-              <>
-                <SideDivider side="B" />
-
-                {/* Side B tracks */}
-                <div className="mb-8 track-list-container">
-                  {sideBTracks.map((track, idx) => {
-                    const actualIndex = midpoint + idx;
-                    return (
-                      <TrackRow
-                        key={track.id}
-                        track={track}
-                        displayIndex={actualIndex + 1}
-                        isExpanded={expandedTrack === actualIndex}
-                        onToggle={() => setExpandedTrack(expandedTrack === actualIndex ? -1 : actualIndex)}
-                        onPlay={handlePlaySong}
-                        currentSong={currentSong}
-                        isPlaying={isPlaying}
-                        waveform={analyzerData.waveform}
-                        preferredSongId={getPreferred(track.id)}
-                        onSwapVersion={(songId) => {
-                          if (getPreferred(track.id) === songId) clearPreferred(track.id);
-                          else setPreferred(track.id, songId);
-                        }}
-                      />
-                    );
-                  })}
+            {/* More from this Venue - Internal Linking for SEO */}
+            {moreFromVenue.length > 0 && album.showVenue && (
+              <div className="mt-12">
+                <div className="flex items-center gap-4 mb-6">
+                  <div
+                    className="flex-1 h-px"
+                    style={{ background: 'linear-gradient(90deg, transparent, var(--overlay-light))' }}
+                  />
+                  <div className="text-[var(--text-subdued)] text-[11px] tracking-[4px] flex items-center gap-2.5">
+                    <span className="text-[var(--secondary)]">🏛</span>
+                    MORE FROM {album.showVenue.toUpperCase()}
+                    <span className="text-[var(--secondary)]">🏛</span>
+                  </div>
+                  <div
+                    className="flex-1 h-px"
+                    style={{ background: 'linear-gradient(90deg, var(--overlay-light), transparent)' }}
+                  />
                 </div>
-              </>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {moreFromVenue.map((show) => (
+                    <Link
+                      key={show.slug}
+                      href={`/artists/${show.artistSlug}/album/${show.slug}`}
+                      className="group block"
+                    >
+                      <div className="relative aspect-square rounded-lg mb-2 bg-surface-card p-2">
+                        <JewelCase coverArt={show.coverArt} fill trackCount={show.totalTracks} />
+                      </div>
+                      <div className="text-sm text-[var(--text-dim)] group-hover:text-[var(--text)] transition-colors truncate">
+                        {show.showDate || show.name}
+                      </div>
+                      <div className="text-xs text-[var(--text-subdued)] truncate">
+                        {show.totalTracks} tracks
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-
-        </div>
-
-
-
-        {/* More from this Venue - Internal Linking for SEO */}
-        {moreFromVenue.length > 0 && album.showVenue && (
-          <div className="mt-12">
-            <div className="flex items-center gap-4 mb-6">
-              <div
-                className="flex-1 h-px"
-                style={{ background: 'linear-gradient(90deg, transparent, var(--overlay-light))' }}
-              />
-              <div className="text-[var(--text-subdued)] text-[11px] tracking-[4px] flex items-center gap-2.5">
-                <span className="text-[var(--secondary)]">🏛</span>
-                MORE FROM {album.showVenue.toUpperCase()}
-                <span className="text-[var(--secondary)]">🏛</span>
-              </div>
-              <div
-                className="flex-1 h-px"
-                style={{ background: 'linear-gradient(90deg, var(--overlay-light), transparent)' }}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {moreFromVenue.map((show) => (
-                <Link
-                  key={show.slug}
-                  href={`/artists/${show.artistSlug}/album/${show.slug}`}
-                  className="group block"
-                >
-                  <div className="relative aspect-square rounded-lg mb-2 bg-surface-card p-2">
-                    <JewelCase coverArt={show.coverArt} fill trackCount={show.totalTracks} />
-                  </div>
-                  <div className="text-sm text-[var(--text-dim)] group-hover:text-[var(--text)] transition-colors truncate">
-                    {show.showDate || show.name}
-                  </div>
-                  <div className="text-xs text-[var(--text-subdued)] truncate">
-                    {show.totalTracks} tracks
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Artist discography grid — full width, matches artist page layout */}

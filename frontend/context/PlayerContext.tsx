@@ -3,7 +3,7 @@
 // PlayerContext = Audio playback only
 // Queue management is handled by QueueContext
 
-import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Song, Album } from '@/lib/types';
 import { getBestVersion } from '@/lib/queueTypes';
 import { useQueue } from './QueueContext';
@@ -926,9 +926,32 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [queueContext, crossfade, connectAudioElement, state.volume, getStreamUrl]);
 
+  // Enrich song for lock screen: real cover art + formatted album line
+  const mediaSessionSong = useMemo(() => {
+    if (!currentSong) return currentSong;
+    const item = queueContext.currentItem;
+    const coverArt = item?.albumSource?.coverArt;
+
+    // Compose album line: "03/15/2024 · Red Rocks · SBD"
+    const parts: string[] = [];
+    const date = currentSong.showDate;
+    if (date) {
+      const m = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      parts.push(m ? `${m[2]}/${m[3]}/${m[1]}` : date);
+    }
+    const venue = currentSong.showVenue || item?.albumSource?.showVenue;
+    if (venue) parts.push(venue);
+    if (currentSong.recordingType && currentSong.recordingType !== 'UNKNOWN') {
+      parts.push(currentSong.recordingType);
+    }
+    const album = parts.length > 0 ? parts.join(' · ') : currentSong.albumName;
+
+    return { ...currentSong, albumArt: coverArt || currentSong.albumArt, albumName: album };
+  }, [currentSong, queueContext.currentItem]);
+
   // Media Session API integration for lock screen controls
   useMediaSession({
-    currentSong,
+    currentSong: mediaSessionSong,
     isPlaying: state.isPlaying,
     currentTime: state.currentTime,
     duration: state.duration,
