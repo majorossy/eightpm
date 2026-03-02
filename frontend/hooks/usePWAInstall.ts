@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { trackPWAInstallPrompt, trackPWAInstall, trackPWAInstallDismissed } from '@/lib/analytics';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -65,6 +66,7 @@ export function usePWAInstall(): UsePWAInstallReturn {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
+      trackPWAInstallPrompt();
     };
 
     window.addEventListener('beforeinstallprompt', handler);
@@ -99,6 +101,7 @@ export function usePWAInstall(): UsePWAInstallReturn {
         setIsInstalled(true);
         setIsInstallable(false);
         setDeferredPrompt(null);
+        trackPWAInstall();
         return true;
       }
     } catch (error) {
@@ -111,6 +114,7 @@ export function usePWAInstall(): UsePWAInstallReturn {
   const dismiss = useCallback(() => {
     setWasDismissed(true);
     localStorage.setItem(DISMISS_STORAGE_KEY, new Date().toISOString());
+    trackPWAInstallDismissed();
   }, []);
 
   return {

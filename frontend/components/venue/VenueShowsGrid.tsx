@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { VenueShow } from '@/lib/types';
 import { getVenueShows } from '@/lib/api';
-import { getRecordingBadge } from '@/lib/lineageUtils';
+import RecSourceIcon from '@/components/RecSourceIcon';
 
 interface VenueShowsGridProps {
   venueSlug: string;
@@ -113,7 +113,6 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
       <div className="divide-y divide-border/50">
         {sortedShows.map((show) => {
           const primaryType = show.recording_types?.[0];
-          const badge = primaryType ? getRecordingBadge(primaryType) : null;
 
           return (
             <Link
@@ -136,14 +135,7 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
                 {show.track_count}
               </div>
               <div className="w-16 flex justify-end">
-                {badge && badge.show && (
-                  <span
-                    className="text-[9px] px-1.5 py-0.5 rounded font-bold"
-                    style={{ backgroundColor: badge.bgColor, color: badge.textColor }}
-                  >
-                    {badge.text}
-                  </span>
-                )}
+                <RecSourceIcon type={primaryType} size={22} />
               </div>
             </Link>
           );

@@ -5,7 +5,8 @@ import { Song } from '@/lib/types';
 import { formatDuration } from '@/lib/api';
 import VenueLink from '@/components/VenueLink';
 import { formatNum, getSourceFormat, parseLicenseLabel, formatDateShort, parseDateOnly } from './recordingUtils';
-import { RecTypeBadge, SourceBadge, Row, TagPills } from './RecordingBadges';
+import { SourceBadge, Row, TagPills } from './RecordingBadges';
+import RecSourceIcon from '@/components/RecSourceIcon';
 
 interface CompactRowProps {
   song: Song;
@@ -48,7 +49,7 @@ export const CompactRow = React.memo(function CompactRow({
           <div style={{ color: 'var(--text-subdued)', fontSize: 11 }}>{song.showLocation || ''}</div>
         </div>
         {/* Rec Type */}
-        <div><RecTypeBadge type={song.recordingType} /></div>
+        <div><RecSourceIcon type={song.recordingType} lineage={song.lineage} /></div>
         {/* Source */}
         <div><SourceBadge source={sourceFormat} /></div>
         {/* Track time - hidden on mobile */}

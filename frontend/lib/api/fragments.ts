@@ -35,6 +35,13 @@ export const PRODUCT_FIELDS_FRAGMENT = `
   show_subject
   track_original_file
   track_album
+  recording_medium
+  microphone_model
+  recorder_device
+  preamp_model
+  ad_converter
+  editing_software
+  final_format
   categories {
     uid
     name
@@ -107,6 +114,13 @@ export const GET_SONG_BY_ID_QUERY = `
         archive_detail_url
         archive_license_url
         access_restriction
+        recording_medium
+        microphone_model
+        recorder_device
+        preamp_model
+        ad_converter
+        editing_software
+        final_format
         categories {
           uid
           name

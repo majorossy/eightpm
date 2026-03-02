@@ -6,7 +6,8 @@
 import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import { formatDuration } from '@/lib/api';
-import { formatLineage, getRecordingBadge } from '@/lib/lineageUtils';
+import { formatLineage } from '@/lib/lineageUtils';
+import RecSourceIcon from '@/components/RecSourceIcon';
 import type { QueueItem } from '@/lib/queueTypes';
 import type { Song } from '@/lib/types';
 
@@ -41,7 +42,7 @@ export default function TicketStubCard({
   const versions = item.availableVersions;
   const hasVersions = !item.played && versions.length > 1 && !!onSelectVersion;
   const vIdx = versions.findIndex((v) => v.id === song.id);
-  const badge = getRecordingBadge(song.lineage, song.recordingType);
+  const recordingType = song.recordingType;
 
   const year = song.showDate?.split('-')[0] || '\u2014';
   let formattedDate = song.showDate || null;
@@ -186,14 +187,7 @@ export default function TicketStubCard({
                     {formatDuration(song.duration)}
                   </span>
                 )}
-                {badge && badge.show && (
-                  <span
-                    className="px-1 py-0.5 text-[7px] font-bold rounded uppercase tracking-wider leading-none"
-                    style={{ backgroundColor: badge.bgColor, color: badge.textColor }}
-                  >
-                    {badge.text}
-                  </span>
-                )}
+                <RecSourceIcon type={recordingType} lineage={song.lineage} size={18} />
                 <span className={`text-[#5a5650] ml-auto ${isHorizontal ? 'text-[8px]' : 'text-[9px]'}`}>
                   FLIP
                 </span>

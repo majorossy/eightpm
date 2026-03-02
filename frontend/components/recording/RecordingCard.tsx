@@ -5,7 +5,8 @@ import { Song } from '@/lib/types';
 import { formatDuration } from '@/lib/api';
 import VenueLink from '@/components/VenueLink';
 import { formatNum, getSourceFormat, parseLicenseLabel, formatDateShort, parseDateOnly } from './recordingUtils';
-import { RecTypeBadge, SourceBadge, Stars, NowPlayingIndicator, Row, TagPills, DetailSection } from './RecordingBadges';
+import { SourceBadge, Stars, NowPlayingIndicator, Row, TagPills, DetailSection } from './RecordingBadges';
+import RecSourceIcon from '@/components/RecSourceIcon';
 
 interface RecordingCardProps {
   song: Song;
@@ -37,7 +38,7 @@ export const RecordingCard = React.memo(function RecordingCard({
         {/* Top row: date, badges, playing state */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, flexWrap: 'wrap' }}>
           <span style={{ color: 'var(--secondary)', fontSize: 12, fontWeight: 600, fontFamily: "var(--font-jetbrains-mono), 'JetBrains Mono', monospace" }}>{date || '—'}</span>
-          <RecTypeBadge type={song.recordingType} />
+          <RecSourceIcon type={song.recordingType} lineage={song.lineage} />
           <SourceBadge source={sourceFormat} />
           {isTop && (
             <span style={{

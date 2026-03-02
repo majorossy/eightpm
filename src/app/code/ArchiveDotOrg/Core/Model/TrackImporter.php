@@ -49,6 +49,7 @@ class TrackImporter implements TrackImporterInterface
     private ProductRepositoryInterface $productRepository;
     private ProductInterfaceFactory $productFactory;
     private RecordingTypeDetector $recordingTypeDetector;
+    private LineageParserService $lineageParser;
     private Config $config;
     private Logger $logger;
 
@@ -56,6 +57,7 @@ class TrackImporter implements TrackImporterInterface
      * @param ProductRepositoryInterface $productRepository
      * @param ProductInterfaceFactory $productFactory
      * @param RecordingTypeDetector $recordingTypeDetector
+     * @param LineageParserService $lineageParser
      * @param Config $config
      * @param Logger $logger
      */
@@ -63,12 +65,14 @@ class TrackImporter implements TrackImporterInterface
         ProductRepositoryInterface $productRepository,
         ProductInterfaceFactory $productFactory,
         RecordingTypeDetector $recordingTypeDetector,
+        LineageParserService $lineageParser,
         Config $config,
         Logger $logger
     ) {
         $this->productRepository = $productRepository;
         $this->productFactory = $productFactory;
         $this->recordingTypeDetector = $recordingTypeDetector;
+        $this->lineageParser = $lineageParser;
         $this->config = $config;
         $this->logger = $logger;
     }
@@ -361,6 +365,14 @@ class TrackImporter implements TrackImporterInterface
             $identifier
         );
         $product->setData('recording_type', $recordingType);
+
+        // Lineage-parsed attributes
+        $lineageParsed = $this->lineageParser->parse($show->getLineage(), $show->getSource());
+        foreach ($lineageParsed as $attrCode => $value) {
+            if ($value !== null) {
+                $product->setData($attrCode, $value);
+            }
+        }
 
         if ($identifier) {
             $product->setData('archive_detail_url', 'https://archive.org/details/' . $identifier);

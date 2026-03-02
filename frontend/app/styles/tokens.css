@@ -111,25 +111,8 @@
   --cream: color-mix(in srgb, var(--quinary) 15%, white);
 
   /* ========================================
-     BADGES — recording type
+     BADGES — source format
      ======================================== */
-  --badge-sbd-bg: color-mix(in srgb, var(--tertiary) 30%, black);
-  --badge-sbd-border: color-mix(in srgb, var(--tertiary) 60%, black);
-  --badge-sbd-text: color-mix(in srgb, var(--tertiary) 55%, white);
-
-  --badge-aud-bg: color-mix(in srgb, var(--quaternary) 25%, black);
-  --badge-aud-border: color-mix(in srgb, var(--quaternary) 55%, black);
-  --badge-aud-text: color-mix(in srgb, var(--quaternary) 45%, white);
-
-  --badge-mx-bg: color-mix(in srgb, var(--quinary) 30%, black);
-  --badge-mx-border: color-mix(in srgb, var(--quinary) 55%, black);
-  --badge-mx-text: color-mix(in srgb, var(--quinary) 55%, white);
-
-  --badge-other-bg: var(--surface-sunken);
-  --badge-other-border: var(--border-default);
-  --badge-other-text: var(--text-secondary);
-
-  /* Badges — source format */
   --badge-flac24-bg: color-mix(in srgb, var(--tertiary) 20%, transparent);
   --badge-flac24-text: color-mix(in srgb, var(--tertiary) 55%, black);
 

@@ -20,12 +20,14 @@ import EightPmTopBar from '@/components/EightPmTopBar';
 import EightPmMobileNav from '@/components/EightPmMobileNav';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { ToastProvider } from '@/components/ToastContainer';
 import InstallPrompt from '@/components/InstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import LoadingBar from '@/components/LoadingBar';
 import Footer from '@/components/Footer';
 import WebVitalsMonitor from '@/components/WebVitalsMonitor';
+import CookieConsentBanner from '@/components/CookieConsentBanner';
 
 // Lazy load heavy components that aren't immediately visible
 const Queue = dynamic(() => import('@/components/Queue'), { ssr: false });
@@ -44,6 +46,8 @@ function InnerLayout({ children }: { children: ReactNode }) {
   const wishlist = useWishlist();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  useAnalytics();
 
   // Volume control helpers
   const handleVolumeUp = useCallback(() => {
@@ -164,6 +168,9 @@ function InnerLayout({ children }: { children: ReactNode }) {
 
       {/* Core Web Vitals monitoring */}
       <WebVitalsMonitor />
+
+      {/* Cookie consent banner (auto-hides after consent) */}
+      <CookieConsentBanner />
 
     </>
   );

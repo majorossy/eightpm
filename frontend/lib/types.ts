@@ -55,6 +55,14 @@ export interface Song {
   // New track-level metadata
   trackOriginalFile?: string;    // Original source file for derivatives (links MP3 back to FLAC)
   trackAlbum?: string;           // Album name from file metadata
+  // Lineage-parsed recording equipment
+  recordingMedium?: string;
+  microphoneModel?: string;
+  recorderDevice?: string;
+  preampModel?: string;
+  adConverter?: string;
+  editingSoftware?: string;
+  finalFormat?: string;
 }
 
 // Track - a unique song title within an album (may have multiple recordings)

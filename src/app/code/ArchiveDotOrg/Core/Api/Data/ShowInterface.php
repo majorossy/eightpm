@@ -42,6 +42,13 @@ interface ShowInterface
     public const ACCESS_RESTRICTED = 'access_restricted';
     public const LICENSE_URL = 'license_url';
     public const SUBJECT_TAGS = 'subject_tags';
+    public const RECORDING_MEDIUM = 'recording_medium';
+    public const MICROPHONE_MODEL = 'microphone_model';
+    public const RECORDER_DEVICE = 'recorder_device';
+    public const PREAMP_MODEL = 'preamp_model';
+    public const AD_CONVERTER = 'ad_converter';
+    public const EDITING_SOFTWARE = 'editing_software';
+    public const FINAL_FORMAT = 'final_format';
 
     /**
      * Get show identifier (unique ID on Archive.org)
@@ -546,4 +553,109 @@ interface ShowInterface
      * @return ShowInterface
      */
     public function setFormatTracksByBasename(array $formatTracks): ShowInterface;
+
+    /**
+     * Get recording medium type (cassette, dat, minidisc, etc.)
+     *
+     * @return string|null
+     */
+    public function getRecordingMedium(): ?string;
+
+    /**
+     * Set recording medium type
+     *
+     * @param string|null $recordingMedium
+     * @return ShowInterface
+     */
+    public function setRecordingMedium(?string $recordingMedium): ShowInterface;
+
+    /**
+     * Get microphone model
+     *
+     * @return string|null
+     */
+    public function getMicrophoneModel(): ?string;
+
+    /**
+     * Set microphone model
+     *
+     * @param string|null $microphoneModel
+     * @return ShowInterface
+     */
+    public function setMicrophoneModel(?string $microphoneModel): ShowInterface;
+
+    /**
+     * Get recorder device model
+     *
+     * @return string|null
+     */
+    public function getRecorderDevice(): ?string;
+
+    /**
+     * Set recorder device model
+     *
+     * @param string|null $recorderDevice
+     * @return ShowInterface
+     */
+    public function setRecorderDevice(?string $recorderDevice): ShowInterface;
+
+    /**
+     * Get preamplifier model
+     *
+     * @return string|null
+     */
+    public function getPreampModel(): ?string;
+
+    /**
+     * Set preamplifier model
+     *
+     * @param string|null $preampModel
+     * @return ShowInterface
+     */
+    public function setPreampModel(?string $preampModel): ShowInterface;
+
+    /**
+     * Get A/D converter
+     *
+     * @return string|null
+     */
+    public function getAdConverter(): ?string;
+
+    /**
+     * Set A/D converter
+     *
+     * @param string|null $adConverter
+     * @return ShowInterface
+     */
+    public function setAdConverter(?string $adConverter): ShowInterface;
+
+    /**
+     * Get editing software
+     *
+     * @return string|null
+     */
+    public function getEditingSoftware(): ?string;
+
+    /**
+     * Set editing software
+     *
+     * @param string|null $editingSoftware
+     * @return ShowInterface
+     */
+    public function setEditingSoftware(?string $editingSoftware): ShowInterface;
+
+    /**
+     * Get final output format (FLAC, SHN, WAV, MP3)
+     *
+     * @return string|null
+     */
+    public function getFinalFormat(): ?string;
+
+    /**
+     * Set final output format
+     *
+     * @param string|null $finalFormat
+     * @return ShowInterface
+     */
+    public function setFinalFormat(?string $finalFormat): ShowInterface;
 }

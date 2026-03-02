@@ -50,7 +50,9 @@ interface StripGroup {
 
 const ACCENT_COLORS = ['var(--quinary)', 'var(--tertiary)', 'var(--quaternary)'];
 const COLLAPSED_W = 68;
+const COLLAPSED_W_COMPACT = 52;
 const CHIP_STRIDE = 228; // 220px chip + 8px gap
+const CHIP_STRIDE_COMPACT = 208; // 200px chip + 8px gap
 
 // ─── Props ───────────────────────────────────────────────────────────
 
@@ -66,6 +68,8 @@ interface QueueAccordionProps {
   onDetachItem: (queueId: string, targetIndex: number) => void;
   onRestoreFromHistory: (queueId: string, targetIndex: number) => void;
   preferredQuality: AudioQuality;
+  /** Compact mode for mobile — smaller chips and headers */
+  compact?: boolean;
 }
 
 // ─── Component ───────────────────────────────────────────────────────
@@ -82,6 +86,7 @@ export default function QueueAccordion({
   onDetachItem,
   onRestoreFromHistory,
   preferredQuality,
+  compact,
 }: QueueAccordionProps) {
 
   // ─── History / Upcoming Split ──────────────────────────────────────
@@ -431,7 +436,7 @@ export default function QueueAccordion({
   }, [activeDragId, historyChips]);
 
   return (
-    <div className="relative">
+    <div className="relative isolate">
       <DndContext
         sensors={dndSensors}
         collisionDetection={closestCenter}
@@ -440,7 +445,7 @@ export default function QueueAccordion({
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
-          <div ref={scrollContainerRef} className="flex gap-2 overflow-x-auto queue-scrollbar pb-1 items-center">
+          <div ref={scrollContainerRef} className="relative z-[2] flex gap-2 overflow-x-auto queue-scrollbar pb-1 items-center">
             {/* History toggle button — temporarily hidden */}
             {/* {historyChips.length > 0 && (
               <HistoryToggleButton
@@ -474,6 +479,7 @@ export default function QueueAccordion({
                       preferredQuality={preferredQuality}
                       isPlayed
                       forceEnableDrag
+                      compact={compact}
                     />
                   );
                 })}
@@ -502,12 +508,13 @@ export default function QueueAccordion({
                     onRemoveItem={onRemoveItem}
                     onSelectVersion={onSelectVersion}
                     preferredQuality={preferredQuality}
+                    compact={compact}
                   />
                 ) : (
                   <AlbumGroupSection
                     group={group}
                     isExpanded={!collapsedKeys.has(group.key)}
-                    expandedWidth={COLLAPSED_W + 8 + group.chips.length * CHIP_STRIDE}
+                    expandedWidth={(compact ? COLLAPSED_W_COMPACT : COLLAPSED_W) + 8 + group.chips.length * (compact ? CHIP_STRIDE_COMPACT : CHIP_STRIDE)}
                     reducedMotion={reducedMotion}
                     playedCount={playedCount}
                     chipGlobalIndexMap={chipGlobalIndexMap}
@@ -519,6 +526,7 @@ export default function QueueAccordion({
                     onRemoveBatch={onRemoveBatch}
                     onSelectVersion={onSelectVersion}
                     preferredQuality={preferredQuality}
+                    compact={compact}
                   />
                 )}
               </Fragment>
@@ -555,6 +563,7 @@ export default function QueueAccordion({
                 onPlay={() => {}}
                 preferredQuality={preferredQuality}
                 isDragging
+                compact={compact}
               />
               {/* Detach indicator badge */}
               {isDetaching && (
@@ -645,6 +654,7 @@ function StandaloneChip({
   onRemoveItem,
   onSelectVersion,
   preferredQuality,
+  compact,
 }: {
   chipEntry: ChipEntry;
   playedCount: number;
@@ -653,6 +663,7 @@ function StandaloneChip({
   onRemoveItem: (queueId: string) => void;
   onSelectVersion: (queueId: string, song: Song) => void;
   preferredQuality: AudioQuality;
+  compact?: boolean;
 }) {
   const { item, absoluteIndex, isPlayed } = chipEntry;
   const globalIdx = chipGlobalIndexMap.get(item.queueId) ?? -1;
@@ -669,6 +680,7 @@ function StandaloneChip({
       preferredQuality={preferredQuality}
       isActive={isActive}
       isPlayed={isPlayed}
+      compact={compact}
     />
   );
 }
@@ -688,6 +700,7 @@ function AlbumGroupSection({
   onRemoveBatch,
   onSelectVersion,
   preferredQuality,
+  compact,
 }: {
   group: StripGroup;
   isExpanded: boolean;
@@ -703,6 +716,7 @@ function AlbumGroupSection({
   onRemoveBatch: (batchId: string) => void;
   onSelectVersion: (queueId: string, song: Song) => void;
   preferredQuality: AudioQuality;
+  compact?: boolean;
 }) {
   return (
     <div
@@ -710,12 +724,13 @@ function AlbumGroupSection({
         if (el) groupRefs.current.set(group.key, el);
         else groupRefs.current.delete(group.key);
       }}
-      className="flex-shrink-0 overflow-hidden flex rounded-lg"
+      className="flex-shrink-0 flex rounded-lg"
       style={{
-        maxWidth: isExpanded ? `${expandedWidth}px` : `${COLLAPSED_W}px`,
+        maxWidth: isExpanded ? `${expandedWidth}px` : `${compact ? COLLAPSED_W_COMPACT : COLLAPSED_W}px`,
         transition: reducedMotion ? 'none' : 'max-width 300ms cubic-bezier(0.4, 0, 0.2, 1)',
         border: isExpanded ? `1px solid ${group.colorVar}` : 'none',
         background: isExpanded ? `color-mix(in srgb, ${group.colorVar} 5%, transparent)` : 'transparent',
+        overflow: 'clip',
       }}
     >
       {/* Collapsed header strip — always visible */}
@@ -725,11 +740,12 @@ function AlbumGroupSection({
         historyChips={historyChips}
         onToggle={onToggle}
         onRemoveBatch={onRemoveBatch}
+        compact={compact}
       />
 
       {/* Expanded chips section */}
       {isExpanded && (
-        <div className="flex gap-2 pl-2 py-1.5">
+        <div className={`flex gap-2 ${compact ? 'pl-1.5 items-center' : 'pl-2 py-1.5'}`}>
           {group.chips.map((chipEntry) => {
             const globalIdx = chipGlobalIndexMap.get(chipEntry.item.queueId) ?? -1;
             const isActive = !chipEntry.isPlayed && globalIdx === playedCount;
@@ -745,6 +761,7 @@ function AlbumGroupSection({
                 preferredQuality={preferredQuality}
                 isActive={isActive}
                 isPlayed={chipEntry.isPlayed}
+                compact={compact}
               />
             );
           })}
@@ -760,12 +777,14 @@ function AlbumHeader({
   historyChips,
   onToggle,
   onRemoveBatch,
+  compact,
 }: {
   group: StripGroup;
   isExpanded: boolean;
   historyChips: ChipEntry[];
   onToggle: () => void;
   onRemoveBatch: (batchId: string) => void;
+  compact?: boolean;
 }) {
   // Count how many tracks from this album batch have already been played
   const playedFromAlbum = historyChips.filter(c => c.item.batchId === group.batchId).length;
@@ -777,14 +796,12 @@ function AlbumHeader({
   return (
     <button
       onClick={onToggle}
-      className="group flex-shrink-0 flex flex-col items-center gap-1 py-1.5 px-0.5 rounded-lg transition-colors relative cursor-pointer hover:bg-surface-player-chip-hover"
+      className={`group flex-shrink-0 flex flex-col items-center ${compact ? 'gap-0.5 py-1 px-0.5' : 'gap-1 py-1.5 px-0.5'} rounded-lg transition-colors relative cursor-pointer hover:bg-surface-player-chip-hover`}
       style={{
-        width: `${COLLAPSED_W}px`,
-        background: isExpanded
-          ? 'color-mix(in srgb, var(--player-surface-chip) 80%, transparent)'
-          : 'var(--player-surface-chip)',
+        width: `${compact ? COLLAPSED_W_COMPACT : COLLAPSED_W}px`,
+        background: 'var(--player-surface-chip)',
         ...(isExpanded
-          ? { border: 'none' }
+          ? { border: 'none', position: 'sticky' as const, left: 0, zIndex: 5 }
           : { border: `1px solid var(--border-subtle-player)`, borderLeft: `3px solid ${group.colorVar}` }
         ),
       }}
@@ -806,7 +823,7 @@ function AlbumHeader({
       </span>
 
       {/* Album art — jewel case */}
-      <TicketStub coverArt={group.albumSource?.coverArt} albumName={group.albumSource?.albumName} size={52} />
+      <TicketStub coverArt={group.albumSource?.coverArt} albumName={group.albumSource?.albumName} size={compact ? 36 : 52} />
 
       {/* Track count + chevron row */}
       <div className="flex items-center gap-1">

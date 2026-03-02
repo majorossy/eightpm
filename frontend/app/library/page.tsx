@@ -8,7 +8,7 @@ import { useQueue } from '@/context/QueueContext';
 import { useRecentlyPlayed } from '@/context/RecentlyPlayedContext';
 import { useHaptic } from '@/hooks/useHaptic';
 import { formatDuration } from '@/lib/api';
-import { getRecordingBadge } from '@/lib/lineageUtils';
+import RecSourceIcon from '@/components/RecSourceIcon';
 import Link from 'next/link';
 
 type TabType = 'songs' | 'artists' | 'albums' | 'recent';
@@ -66,16 +66,9 @@ function LibraryPageInner() {
   const getAlbumHref = (song: { artistSlug: string; albumIdentifier: string }) =>
     `/artists/${song.artistSlug}/album/${song.albumIdentifier}`;
 
-  const RecordingBadge = ({ song }: { song: { lineage?: string; recordingType?: string } }) => {
-    const badge = getRecordingBadge(song.lineage, song.recordingType);
-    if (!badge || !badge.show) return null;
-    return (
-      <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-full"
-        style={{ backgroundColor: badge.bgColor, color: badge.textColor }}>
-        {badge.text}
-      </span>
-    );
-  };
+  const RecordingBadge = ({ song }: { song: { lineage?: string; recordingType?: string } }) => (
+    <RecSourceIcon type={song.recordingType} lineage={song.lineage} size={20} />
+  );
 
   const ShowContext = ({ song }: { song: { showVenue?: string; showDate?: string; artistSlug: string; albumIdentifier: string } }) => {
     if (!song.showVenue && !song.showDate) return null;

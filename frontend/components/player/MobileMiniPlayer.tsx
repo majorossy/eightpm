@@ -3,9 +3,10 @@
 import Image from 'next/image';
 import { QualityPopup, getQualityBadge } from '@/components/player/QualityPopup';
 import { formatLineage } from '@/lib/lineageUtils';
-import { getRecTypeBadgeConfig } from '@/lib/recTypeUtils';
+import RecSourceIcon from '@/components/RecSourceIcon';
 import type { QueueItem } from '@/lib/queueTypes';
 import type { AudioQuality } from '@/lib/types';
+import QueueAccordion from '@/components/player/QueueAccordion';
 import { computeSignalInfo } from '@/lib/signalUtils';
 import SignalStrengthIcon from '@/components/player/SignalStrengthIcon';
 
@@ -58,6 +59,16 @@ interface MobileMiniPlayerProps {
   };
   // Announcement
   announcement: string;
+  // Queue strip
+  queueChips: { item: QueueItem; absoluteIndex: number; isPlayed: boolean; isCurrent: boolean }[];
+  totalUpcoming: number;
+  onChipPlay: (index: number) => void;
+  onRemoveItem: (id: string) => void;
+  onRemoveBatch: (batchId: string) => void;
+  onSelectVersion: (itemId: string, song: import('@/lib/types').Song) => void;
+  onMoveItem: (fromIndex: number, toIndex: number) => void;
+  onDetachItem: (queueId: string, targetIndex: number) => void;
+  onRestoreFromHistory: (queueId: string, targetIndex: number) => void;
 }
 
 export default function MobileMiniPlayer({
@@ -82,9 +93,18 @@ export default function MobileMiniPlayer({
   streamingStats,
   swipeHandlers,
   announcement,
+  queueChips,
+  totalUpcoming,
+  onChipPlay,
+  onRemoveItem,
+  onRemoveBatch,
+  onSelectVersion,
+  onMoveItem,
+  onDetachItem,
+  onRestoreFromHistory,
 }: MobileMiniPlayerProps) {
   const qualityInfo = getQualityBadge(preferredQuality);
-  const recBadge = getRecTypeBadgeConfig(currentItem?.song?.recordingType);
+  const recordingType = currentItem?.song?.recordingType;
 
   return (
     <>
@@ -186,14 +206,7 @@ export default function MobileMiniPlayer({
                     aria-label="Change audio quality"
                     type="button"
                   >
-                    <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: recBadge.color }} />
-                    <span
-                      className="text-[10px] font-semibold uppercase tracking-wide"
-                      style={{ color: recBadge.color }}
-                      title={recBadge.title}
-                    >
-                      {recBadge.label}
-                    </span>
+                    <RecSourceIcon type={recordingType} lineage={currentSong?.lineage} size={20} />
                   </button>
 
                   {/* Source + signal icon */}
@@ -259,7 +272,31 @@ export default function MobileMiniPlayer({
             </div>
           </div>
 
-          {/* Queue strip hidden on mobile — takes up too much space. Queue accessible via full player. */}
+          {/* Queue strip — compact accordion album groups */}
+          {queueChips.length > 0 && (
+            <div className="px-3 pt-1.5 pb-2" style={{ background: 'var(--player-surface-queue)', borderTop: '1px solid color-mix(in srgb, var(--player-surface-bar) 20%, transparent)' }}>
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-[9px] font-jb-mono font-bold uppercase tracking-widest" style={{ color: 'var(--quinary)' }}>Up</span>
+                <span className="text-[9px] font-jb-mono uppercase tracking-widest" style={{ color: 'var(--secondary)' }}>Next</span>
+                <span className="text-[9px] text-tertiary font-jb-mono uppercase tracking-wider">&middot; {totalUpcoming}</span>
+                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--quinary) 25%, transparent), transparent)' }} />
+              </div>
+              <QueueAccordion
+                queueChips={queueChips}
+                totalUpcoming={totalUpcoming}
+                playedCount={queueChips.filter(c => c.isPlayed).length}
+                onChipPlay={onChipPlay}
+                onRemoveItem={onRemoveItem}
+                onRemoveBatch={onRemoveBatch}
+                onSelectVersion={onSelectVersion}
+                onMoveItem={onMoveItem}
+                onDetachItem={onDetachItem}
+                onRestoreFromHistory={onRestoreFromHistory}
+                preferredQuality={preferredQuality}
+                compact
+              />
+            </div>
+          )}
         </div>
       </div>
     </>

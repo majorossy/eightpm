@@ -10,7 +10,7 @@ import { AddToPlaylistModal } from '@/components/Playlists/AddToPlaylistModal';
 import VersionCarousel from './VersionCarousel';
 import { useShare } from '@/hooks/useShare';
 import ShareModal from '@/components/ShareModal';
-import { getRecordingBadge } from '@/lib/lineageUtils';
+import RecSourceIcon from '@/components/RecSourceIcon';
 
 interface TrackCardProps {
   track: Track;
@@ -47,10 +47,8 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
   // Check if the selected song is streamable
   const isUnavailable = selectedSong?.isStreamable === false;
 
-  // Get recording type badge for the selected song
-  const recordingBadge = selectedSong
-    ? getRecordingBadge(selectedSong.lineage, selectedSong.recordingType)
-    : null;
+  // Recording type resolved for icon display
+  const recordingType = selectedSong?.recordingType;
 
   const handlePlayClick = () => {
     if (!selectedSong || isUnavailable) return;
@@ -168,16 +166,8 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
               <span className={`text-base truncate ${isUnavailable ? 'text-secondary' : isCurrentTrack ? 'text-accent' : 'text-white'}`}>
                 {track.title}
               </span>
-              {/* Recording type badge */}
-              {recordingBadge && (
-                <span
-                  className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-full"
-                  style={{ backgroundColor: recordingBadge.bgColor, color: recordingBadge.textColor }}
-                  title={`${recordingBadge.text} Recording`}
-                >
-                  {recordingBadge.text}
-                </span>
-              )}
+              {/* Recording type icon */}
+              <RecSourceIcon type={recordingType} lineage={selectedSong?.lineage} size={20} />
               {/* CC license badge */}
               {selectedSong?.archiveLicenseUrl && (
                 <button

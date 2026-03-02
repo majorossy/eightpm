@@ -7,9 +7,8 @@ import { useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import * as Dialog from '@radix-ui/react-dialog';
 import { formatDuration } from '@/lib/api';
-import { getRecordingBadge } from '@/lib/lineageUtils';
-import { getQualityLabel, getEffectiveQuality } from '@/lib/qualityUtils';
-import type { Song, AudioQuality } from '@/lib/types';
+import RecordingMediumIcon from '@/components/RecordingMediumIcon';
+import type { Song } from '@/lib/types';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -22,7 +21,8 @@ interface VersionPickerModalProps {
   versions: Song[];
   coverArt?: string;
   onSwapVersion: (song: Song) => void;
-  preferredQuality?: AudioQuality;
+  onPlayVersion?: (song: Song) => void;
+  onQueueVersion?: (song: Song) => void;
 }
 
 type SortKey = 'date' | 'rating' | 'length';
@@ -81,6 +81,29 @@ function VersionsIcon({ className = 'w-3 h-3' }: { className?: string }) {
   );
 }
 
+// ─── Recording Type Badge ─────────────────────────────────────────────
+
+const REC_TYPE_STYLES: Record<string, { bg: string; color: string }> = {
+  SBD:     { bg: 'rgba(200,168,72,0.15)',  color: '#c8a848' },
+  AUD:     { bg: 'rgba(196,112,110,0.15)', color: '#c4706e' },
+  MX:      { bg: 'rgba(180,140,200,0.15)', color: '#b48cc8' },
+  FM:      { bg: 'rgba(106,154,74,0.15)',  color: '#6a9a4a' },
+  WEBCAST: { bg: 'rgba(106,154,74,0.15)',  color: '#6a9a4a' },
+};
+
+function RecTypeBadge({ type }: { type?: string }) {
+  const label = type || 'AUD';
+  const style = REC_TYPE_STYLES[label] || REC_TYPE_STYLES.AUD;
+  return (
+    <span
+      className="font-jb-mono text-[9px] font-bold px-1.5 py-0.5 rounded-[3px] tracking-wide"
+      style={{ background: style.bg, color: style.color }}
+    >
+      {label}
+    </span>
+  );
+}
+
 // ─── Component ───────────────────────────────────────────────────────
 
 export default function VersionPickerModal({
@@ -92,7 +115,8 @@ export default function VersionPickerModal({
   versions,
   coverArt,
   onSwapVersion,
-  preferredQuality = 'medium',
+  onPlayVersion,
+  onQueueVersion,
 }: VersionPickerModalProps) {
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -356,8 +380,9 @@ export default function VersionPickerModal({
                     key={song.id}
                     song={song}
                     isCurrent={song.id === currentSongId}
-                    preferredQuality={preferredQuality}
                     onSwap={handleSwap}
+                    onPlay={onPlayVersion}
+                    onQueue={onQueueVersion}
                   />
                 ))
               )}
@@ -374,156 +399,190 @@ export default function VersionPickerModal({
 function VersionRow({
   song,
   isCurrent,
-  preferredQuality,
   onSwap,
+  onPlay,
+  onQueue,
 }: {
   song: Song;
   isCurrent: boolean;
-  preferredQuality: AudioQuality;
   onSwap: (song: Song) => void;
+  onPlay?: (song: Song) => void;
+  onQueue?: (song: Song) => void;
 }) {
-  const badge = getRecordingBadge(song.lineage, song.recordingType);
-  const effectiveQuality = getEffectiveQuality(song, preferredQuality);
-  const qualityLabel = getQualityLabel(effectiveQuality, song);
-
+  const recordingType = song.recordingType;
   const venue = song.showVenue || '';
   const location = song.showLocation || '';
-  const venueDisplay = [venue, location].filter(Boolean).join(', ');
-  const year = song.showDate?.split('-')[0] || '';
 
   return (
     <div
-      className="group/vrow flex items-center gap-2.5 px-2.5 py-2.5 mx-0.5 mb-1 rounded-lg transition-all relative cursor-pointer"
+      className="group/vrow mx-0.5 mb-2 rounded-lg transition-all overflow-hidden"
       style={{
         background: isCurrent
           ? 'color-mix(in srgb, var(--quinary) 10%, transparent)'
-          : 'transparent',
+          : 'color-mix(in srgb, var(--text) 2%, transparent)',
         border: isCurrent
           ? '1px solid color-mix(in srgb, var(--quinary) 25%, transparent)'
-          : '1px solid transparent',
+          : '1px solid color-mix(in srgb, var(--text) 6%, transparent)',
       }}
-      onMouseEnter={(e) => {
-        if (!isCurrent) {
-          e.currentTarget.style.background = 'var(--player-surface-chip)';
-          e.currentTarget.style.borderColor = 'var(--border-subtle-player)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isCurrent) {
-          e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.borderColor = 'transparent';
-        }
-      }}
-      onClick={() => !isCurrent && onSwap(song)}
     >
-      {/* Left teal accent bar on hover (non-current only) */}
-      {!isCurrent && (
+      {/* Top section: icon + info + duration */}
+      <div className="flex items-start gap-3.5 px-4 pt-3.5 pb-3">
+        {/* Format icon */}
         <div
-          className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-sm transition-opacity opacity-0 group-hover/vrow:opacity-100"
-          style={{ background: 'var(--tertiary)' }}
-        />
-      )}
+          className="w-[52px] h-[52px] rounded-lg flex-shrink-0 flex items-center justify-center relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(175deg, #2a2622 0%, #1e1a16 50%, #14120c 100%)',
+            border: '1px solid rgba(200,180,140,0.08)',
+          }}
+        >
+          <RecordingMediumIcon medium={song.recordingMedium} lineage={song.lineage} source={song.source} size={1.3} />
+        </div>
 
-      {/* Current indicator bar */}
-      {isCurrent && (
-        <div
-          className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-sm"
-          style={{ background: 'var(--quinary)' }}
-        />
-      )}
-
-      {/* Venue + date column */}
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-primary truncate leading-tight">
-          {venueDisplay || song.albumName || 'Unknown venue'}
-        </p>
-        <p className="text-[11px] truncate" style={{ color: 'var(--text-tertiary)', lineHeight: '1.4' }}>
-          {song.albumName && venueDisplay ? song.albumName : ''}
-        </p>
-
-        {/* Meta row: date + duration + badges */}
-        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          {year && (
-            <span className="font-jb-mono text-[10px] font-medium" style={{ color: 'var(--tertiary)' }}>
-              {song.showDate || year}
+        {/* Info column */}
+        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+          {/* Row 1: Date · Venue · Location */}
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
+              {song.showDate ? song.showDate.replace(/-/g, '/') : 'Unknown date'}
             </span>
-          )}
-          {song.duration > 0 && (
-            <span className="font-jb-mono text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
-              {formatDuration(song.duration)}
+            <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
+              {venue || song.albumName || 'Unknown venue'}
             </span>
+            {location && (
+              <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                {location}
+              </span>
+            )}
+          </div>
+
+          {/* Row 2: Taper */}
+          {song.taper && (
+            <div className="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
+                <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
+                <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
+                <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
+                <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              <a
+                href={`https://archive.org/search?query=taper:${encodeURIComponent('"' + song.taper + '"')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-jb-mono text-[11px] font-medium hover:underline transition-colors truncate"
+                style={{ color: 'var(--text-tertiary)' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {song.taper}
+              </a>
+            </div>
           )}
-          {/* Quality badge */}
-          <span
-            className="font-jb-mono text-[8px] font-semibold px-[4px] py-px rounded-[2px]"
-            style={{
-              background: 'color-mix(in srgb, var(--tertiary) 15%, transparent)',
-              color: 'var(--tertiary)',
-              border: '1px solid color-mix(in srgb, var(--tertiary) 12%, transparent)',
-            }}
-          >
-            {qualityLabel}
+
+          {/* Row 3: Source badge · Stars · Downloads */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <RecTypeBadge type={recordingType} />
+            <StarRating rating={song.avgRating} count={song.numReviews} />
+            {song.downloads != null && song.downloads > 0 && (
+              <span className="font-jb-mono text-[11px] flex items-center gap-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                  <path d="M12 2L2 7v1h20V7L12 2z" fill="rgba(200,180,140,0.55)"/>
+                  <rect x="4.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                  <rect x="9" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                  <rect x="13" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                  <rect x="17.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                  <rect x="2" y="17" width="20" height="2" rx="0.5" fill="rgba(200,180,140,0.45)"/>
+                </svg>
+                <svg width="7" height="12" viewBox="0 0 10 16" fill="none" className="flex-shrink-0">
+                  <path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" stroke="#8fa8b3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {song.downloads.toLocaleString()}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Duration (top-right) */}
+        {song.duration > 0 && (
+          <span className="font-jb-mono text-[12px] font-medium flex-shrink-0 pt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+            {formatDuration(song.duration)}
           </span>
-          {/* Recording type badge (SBD, MX, etc.) */}
-          {badge && badge.show && (
-            <span
-              className="font-jb-mono text-[8px] font-bold px-[4px] py-px rounded-[2px] uppercase"
-              style={{ backgroundColor: badge.bgColor, color: badge.textColor }}
-            >
-              {badge.text}
-            </span>
-          )}
-          {/* Download count */}
-          {song.downloads != null && song.downloads > 0 && (
-            <span className="font-jb-mono text-[9px]" style={{ color: 'var(--text-tertiary)' }}>
-              {song.downloads.toLocaleString()} dl
-            </span>
-          )}
-        </div>
-
-        {/* Star rating */}
-        <div className="mt-0.5">
-          <StarRating rating={song.avgRating} count={song.numReviews} />
-        </div>
+        )}
       </div>
 
-      {/* Right side: IN QUEUE badge or Swap button */}
-      <div className="flex-shrink-0 ml-1">
-        {isCurrent ? (
-          <span
-            className="font-jb-mono text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-wider"
-            style={{
-              background: 'color-mix(in srgb, var(--quinary) 20%, transparent)',
-              color: 'var(--quinary)',
-              border: '1px solid color-mix(in srgb, var(--quinary) 30%, transparent)',
-            }}
-          >
-            In Queue
-          </span>
-        ) : (
+      {/* Divider */}
+      <div className="mx-4" style={{ height: '1px', background: 'color-mix(in srgb, var(--text) 8%, transparent)' }} />
+
+      {/* Action bar */}
+      <div className="flex items-center justify-between px-4 py-2">
+        {/* Left: action buttons */}
+        <div className="flex items-center gap-2">
+          {/* Play */}
+          {onPlay && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onPlay(song); }}
+              className="font-jb-mono text-[11px] font-semibold px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5"
+              style={{
+                color: 'var(--tertiary)',
+                border: '1px solid color-mix(in srgb, var(--tertiary) 30%, transparent)',
+              }}
+            >
+              <span className="text-[10px]">▶</span> Play
+            </button>
+          )}
+          {/* + Queue */}
+          {onQueue && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onQueue(song); }}
+              className="font-jb-mono text-[11px] font-semibold px-3 py-1.5 rounded-md transition-all flex items-center gap-1"
+              style={{
+                color: 'var(--text-tertiary)',
+                border: '1px solid color-mix(in srgb, var(--text) 10%, transparent)',
+              }}
+            >
+              + Queue
+            </button>
+          )}
+          {/* ✦ Swap */}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSwap(song);
-            }}
-            className="font-jb-mono text-[10px] font-semibold px-2.5 py-1.5 rounded-md transition-all opacity-0 group-hover/vrow:opacity-100"
+            onClick={(e) => { e.stopPropagation(); onSwap(song); }}
+            className="font-jb-mono text-[11px] font-semibold px-3 py-1.5 rounded-md transition-all flex items-center gap-1"
             style={{
-              background: 'color-mix(in srgb, var(--tertiary) 15%, transparent)',
-              color: 'var(--tertiary)',
-              border: '1px solid color-mix(in srgb, var(--tertiary) 25%, transparent)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--tertiary)';
-              e.currentTarget.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'color-mix(in srgb, var(--tertiary) 15%, transparent)';
-              e.currentTarget.style.color = 'var(--tertiary)';
+              color: isCurrent ? 'var(--quinary)' : 'var(--text-tertiary)',
+              border: isCurrent
+                ? '1px solid color-mix(in srgb, var(--quinary) 30%, transparent)'
+                : '1px solid color-mix(in srgb, var(--text) 10%, transparent)',
             }}
           >
-            Swap In
+            ✦ Swap
           </button>
-        )}
+        </div>
+
+        {/* Right: star + menu icons */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={(e) => e.stopPropagation()}
+            className="transition-colors"
+            style={{ color: 'var(--text-tertiary)' }}
+            aria-label="Favorite"
+          >
+            <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+          </button>
+          <button
+            onClick={(e) => e.stopPropagation()}
+            className="transition-colors"
+            style={{ color: 'var(--text-tertiary)' }}
+            aria-label="More options"
+          >
+            <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+              <polyline points="17 9 20 12 17 15" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -531,4 +590,4 @@ function VersionRow({
 
 // ─── Export icon for use in other components ──────────────────────────
 
-export { VersionsIcon };
+export { VersionsIcon, StarRating, RecTypeBadge };

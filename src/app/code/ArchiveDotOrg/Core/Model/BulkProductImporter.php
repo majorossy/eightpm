@@ -42,6 +42,7 @@ class BulkProductImporter implements BulkProductImporterInterface
     private ProductResource $productResource;
     private ProductCollectionFactory $productCollectionFactory;
     private RecordingTypeDetector $recordingTypeDetector;
+    private LineageParserService $lineageParser;
     private IndexerRegistry $indexerRegistry;
     private ResourceConnection $resourceConnection;
     private Config $config;
@@ -58,6 +59,7 @@ class BulkProductImporter implements BulkProductImporterInterface
      * @param ProductResource $productResource
      * @param ProductCollectionFactory $productCollectionFactory
      * @param RecordingTypeDetector $recordingTypeDetector
+     * @param LineageParserService $lineageParser
      * @param IndexerRegistry $indexerRegistry
      * @param ResourceConnection $resourceConnection
      * @param Config $config
@@ -67,6 +69,7 @@ class BulkProductImporter implements BulkProductImporterInterface
         ProductResource $productResource,
         ProductCollectionFactory $productCollectionFactory,
         RecordingTypeDetector $recordingTypeDetector,
+        LineageParserService $lineageParser,
         IndexerRegistry $indexerRegistry,
         ResourceConnection $resourceConnection,
         Config $config,
@@ -75,6 +78,7 @@ class BulkProductImporter implements BulkProductImporterInterface
         $this->productResource = $productResource;
         $this->productCollectionFactory = $productCollectionFactory;
         $this->recordingTypeDetector = $recordingTypeDetector;
+        $this->lineageParser = $lineageParser;
         $this->indexerRegistry = $indexerRegistry;
         $this->resourceConnection = $resourceConnection;
         $this->config = $config;
@@ -401,6 +405,9 @@ class BulkProductImporter implements BulkProductImporterInterface
         ShowInterface $show,
         string $artistName
     ): void {
+        // Parse lineage into structured attributes
+        $lineageParsed = $this->lineageParser->parse($show->getLineage(), $show->getSource());
+
         // Generate product name
         $name = sprintf(
             '%s %s %s %s',
@@ -442,6 +449,14 @@ class BulkProductImporter implements BulkProductImporterInterface
             'show_location' => $show->getCoverage() ?: null,
             'show_source' => $show->getSource() ?: null,
             'archive_collection' => $artistName ?: null,
+            // Lineage-parsed attributes
+            'recording_medium' => $lineageParsed['recording_medium'],
+            'microphone_model' => $lineageParsed['microphone_model'],
+            'recorder_device' => $lineageParsed['recorder_device'],
+            'preamp_model' => $lineageParsed['preamp_model'],
+            'ad_converter' => $lineageParsed['ad_converter'],
+            'editing_software' => $lineageParsed['editing_software'],
+            'final_format' => $lineageParsed['final_format'],
         ];
 
         // SEO Meta Fields

@@ -11,6 +11,15 @@ interface ProductInterface {
     recording_type: String @doc(description: "Recording type: SBD, AUD, MX, FM, WEBCAST, or UNKNOWN")
     access_restriction: String @doc(description: "Access restriction type, e.g. stream_only")
 
+    # Lineage-parsed recording equipment
+    recording_medium: String @doc(description: "Recording medium type: cassette, dat, minidisc, cd, reel_to_reel, sd_card, compact_flash, flash_recorder, microcassette")
+    microphone_model: String @doc(description: "Microphone model used for recording")
+    recorder_device: String @doc(description: "Recording device model")
+    preamp_model: String @doc(description: "Preamplifier model")
+    ad_converter: String @doc(description: "A/D converter used")
+    editing_software: String @doc(description: "Audio editing software used")
+    final_format: String @doc(description: "Final output format: FLAC, SHN, WAV, MP3")
+
     # Archive.org identifiers and URLs
     identifier: String @doc(description: "Archive.org show identifier (e.g., gd1977-05-08.sbd.miller.32601)")
     archive_detail_url: String @doc(description: "Archive.org detail page URL")

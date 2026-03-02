@@ -52,6 +52,13 @@ class Show implements ShowInterface
     private ?string $addedDate = null;
     private ?string $publicDate = null;
     private ?string $subject = null;
+    private ?string $recordingMedium = null;
+    private ?string $microphoneModel = null;
+    private ?string $recorderDevice = null;
+    private ?string $preampModel = null;
+    private ?string $adConverter = null;
+    private ?string $editingSoftware = null;
+    private ?string $finalFormat = null;
 
     /** @var TrackInterface[] */
     private array $tracks = [];
@@ -711,6 +718,125 @@ class Show implements ShowInterface
     public function setFormatTracksByBasename(array $formatTracks): ShowInterface
     {
         $this->formatTracksByBasename = $formatTracks;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRecordingMedium(): ?string
+    {
+        return $this->recordingMedium;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRecordingMedium(?string $recordingMedium): ShowInterface
+    {
+        $this->recordingMedium = $recordingMedium;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMicrophoneModel(): ?string
+    {
+        return $this->microphoneModel;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setMicrophoneModel(?string $microphoneModel): ShowInterface
+    {
+        $this->microphoneModel = $microphoneModel;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRecorderDevice(): ?string
+    {
+        return $this->recorderDevice;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRecorderDevice(?string $recorderDevice): ShowInterface
+    {
+        $this->recorderDevice = $recorderDevice;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPreampModel(): ?string
+    {
+        return $this->preampModel;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setPreampModel(?string $preampModel): ShowInterface
+    {
+        $this->preampModel = $preampModel;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAdConverter(): ?string
+    {
+        return $this->adConverter;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAdConverter(?string $adConverter): ShowInterface
+    {
+        $this->adConverter = $adConverter;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEditingSoftware(): ?string
+    {
+        return $this->editingSoftware;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setEditingSoftware(?string $editingSoftware): ShowInterface
+    {
+        $this->editingSoftware = $editingSoftware;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFinalFormat(): ?string
+    {
+        return $this->finalFormat;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setFinalFormat(?string $finalFormat): ShowInterface
+    {
+        $this->finalFormat = $finalFormat;
         return $this;
     }
 }

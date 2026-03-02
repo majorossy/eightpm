@@ -13,7 +13,7 @@ import { useMediaSession } from '@/hooks/useMediaSession';
 import { useCrossfade } from '@/hooks/useCrossfade';
 import { useToast } from '@/hooks/useToast';
 import { useAudioAnalyzer, AudioAnalyzerData } from '@/hooks/useAudioAnalyzer';
-import { trackSongPlay, trackSongComplete, trackPlaybackError } from '@/lib/analytics';
+import { trackSongPlay, trackSongComplete, trackPlaybackError, trackSeek } from '@/lib/analytics';
 
 interface PlayerState {
   isPlaying: boolean;
@@ -758,7 +758,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (!audio) return;
     audio.currentTime = time;
     setState(prev => ({ ...prev, currentTime: time }));
-  }, [crossfade]);
+    if (currentSong) {
+      trackSeek(currentSong, state.duration > 0 ? (time / state.duration) * 100 : 0);
+    }
+  }, [crossfade, currentSong, state.duration]);
 
   const playNextHandler = useCallback(() => {
     let nextItem = queueContext.advanceCursor();

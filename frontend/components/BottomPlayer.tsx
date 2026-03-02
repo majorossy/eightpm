@@ -282,6 +282,15 @@ export default function BottomPlayer() {
         streamingStats={streamingStats}
         swipeHandlers={swipeHandlers}
         announcement={announcement}
+        queueChips={queueChips}
+        totalUpcoming={totalUpcoming}
+        onChipPlay={handleChipPlay}
+        onRemoveItem={removeItem}
+        onRemoveBatch={removeBatch}
+        onSelectVersion={selectVersion}
+        onMoveItem={moveItem}
+        onDetachItem={detachItem}
+        onRestoreFromHistory={restoreFromHistory}
       />
     );
   }

@@ -1,8 +1,8 @@
 'use client';
 
-// Queue drawer - sidebar tabs design with album navigation + drag-and-drop reordering
+// Queue drawer - single-column with sticky album cards + drag-and-drop reordering
 
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { useQuality } from '@/context/QualityContext';
@@ -12,11 +12,10 @@ import { formatDuration } from '@/lib/api';
 import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
 
-import { getQualityLabel, getEffectiveQuality } from '@/lib/qualityUtils';
 import { VALIDATION_LIMITS } from '@/lib/validation';
-import VersionPickerModal, { VersionsIcon } from '@/components/VersionPickerModal';
+import VersionPickerModal, { VersionsIcon, StarRating, RecTypeBadge } from '@/components/VersionPickerModal';
 import TicketStub from '@/components/TicketStub';
-import CassetteTape from '@/components/CassetteTape';
+import RecordingMediumIcon from '@/components/RecordingMediumIcon';
 import {
   DndContext,
   closestCenter,
@@ -288,7 +287,6 @@ export default function Queue() {
         .queue-sidebar-scroll::-webkit-scrollbar-thumb:hover {
           background: var(--primary);
         }
-        .queue-sidebar-tabs::-webkit-scrollbar { width: 0; }
       `}</style>
     </>
   );
@@ -355,8 +353,8 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
 
       {/* Content row */}
       <div className="flex gap-3.5 items-center mb-3.5 relative z-[1]">
-        {/* Album art — jewel case */}
-        <CassetteTape coverArt={currentItem.albumSource?.coverArt} label={currentItem.song.artistName} size={64} />
+        {/* Album art — medium icon */}
+        <RecordingMediumIcon medium={currentItem.song.recordingMedium} lineage={currentItem.song.lineage} source={currentItem.song.source} size={0.55} className="flex-shrink-0" />
 
         {/* Track info */}
         <div className="flex-1 min-w-0">
@@ -459,8 +457,6 @@ function SortableTrackRow({
   const venueDisplay = venue
     ? venue + (year ? ` \u00b7 ${year}` : '')
     : song.artistName;
-  const effectiveQuality = getEffectiveQuality(song, preferredQuality);
-  const qualityLabel = getQualityLabel(effectiveQuality, song);
 
   const versionCount = item.availableVersions.length;
   const hasMultipleVersions = versionCount > 1;
@@ -470,15 +466,14 @@ function SortableTrackRow({
       <div
         onClick={() => {
           if (isDragging) return;
-          // Guard against click pass-through from Radix Dialog overlay close
           if (Date.now() - modalClosedAtRef.current < 300) return;
           playFromQueue(absoluteIndex);
         }}
-        className="group/row flex items-center gap-0 py-2.5 px-2 mx-1.5 mb-1 rounded-[10px] cursor-pointer transition-all relative"
+        className="group/row flex gap-0 py-2 px-2 mx-1.5 mb-0.5 rounded-[10px] cursor-pointer transition-all relative"
         style={{
           border: isDragging
             ? '2px dashed color-mix(in srgb, var(--quinary) 25%, transparent)'
-            : '1px solid transparent',
+            : '1px solid color-mix(in srgb, var(--border-subtle-player) 50%, transparent)',
           background: isDragging
             ? 'color-mix(in srgb, var(--quinary) 4%, transparent)'
             : 'transparent',
@@ -486,146 +481,151 @@ function SortableTrackRow({
         onMouseEnter={(e) => {
           if (isDragging) return;
           e.currentTarget.style.background = 'var(--player-surface-chip)';
-          e.currentTarget.style.borderColor = 'var(--border-subtle-player)';
         }}
         onMouseLeave={(e) => {
           if (isDragging) return;
           e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.borderColor = 'transparent';
         }}
       >
         {/* Inner content — hidden when dragging to show dashed placeholder */}
         <div
-          className="flex items-center gap-0 w-full"
+          className="flex gap-0 w-full"
           style={{ visibility: isDragging ? 'hidden' : 'visible' }}
         >
-        {/* Left accent bar on hover */}
-        <div
-          className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-sm transition-colors opacity-0 group-hover/row:opacity-100"
-          style={{ background: 'var(--tertiary)' }}
-        />
-
-        {/* Drag handle */}
+        {/* Drag handle — self-centering */}
         <button
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
-          className="flex-shrink-0 px-2 py-1 opacity-25 group-hover/row:opacity-50 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+          className="flex-shrink-0 px-1.5 pt-0.5 opacity-25 group-hover/row:opacity-50 transition-opacity cursor-grab active:cursor-grabbing touch-none self-start"
           aria-label={`Reorder ${item.trackTitle}`}
           onClick={(e) => e.stopPropagation()}
         >
           <DragDots />
         </button>
 
-        {/* Track number */}
-        <span
-          className="font-jb-mono text-xs font-medium w-[22px] text-center flex-shrink-0 mr-2.5"
-          style={{ color: 'var(--text-tertiary)' }}
-        >
-          {displayIndex}
-        </span>
-
-        {/* Track art — jewel case */}
-        <CassetteTape coverArt={item.albumSource?.coverArt} label={item.song.artistName} size={46} className="mr-3" />
-
-        {/* Track info */}
-        <div className="flex-1 min-w-0">
-          <p
-            className="text-[14.5px] font-semibold text-primary truncate"
-            style={{ lineHeight: '1.3' }}
-          >
-            {item.trackTitle}
-          </p>
-          {!hideVenue && (
-            <p
-              className="text-xs truncate"
-              style={{ color: 'var(--text-tertiary)', lineHeight: '1.4' }}
-            >
-              {venueDisplay}
-            </p>
-          )}
-          {/* Meta row: duration + quality badge */}
-          <div className="flex items-center gap-2 mt-0.5">
-            {song.duration > 0 && (
-              <span
-                className="font-jb-mono text-[11px] font-medium"
-                style={{ color: 'var(--quinary)' }}
+        {/* Multi-row content block */}
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+          {/* Row 1: # + Title ........... Duration × */}
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+              {displayIndex}
+            </span>
+            <span className="text-[13.5px] font-semibold text-primary truncate" style={{ lineHeight: '1.3' }}>
+              {item.trackTitle}
+            </span>
+            <span className="flex items-center gap-1 flex-shrink-0 ml-auto">
+              {song.duration > 0 && (
+                <span className="font-jb-mono text-[11px] font-medium" style={{ color: 'var(--text-tertiary)' }}>
+                  {formatDuration(song.duration)}
+                </span>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeItem(item.queueId);
+                }}
+                className="w-5 h-5 rounded-md border-0 bg-transparent flex items-center justify-center flex-shrink-0 opacity-40 hover:!opacity-100 transition-all"
+                style={{ color: 'var(--text-tertiary)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--secondary-muted)';
+                  e.currentTarget.style.color = 'var(--secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = 'var(--text-tertiary)';
+                }}
+                aria-label={`Remove ${item.trackTitle} from queue`}
               >
-                {formatDuration(song.duration)}
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </span>
+          </div>
+
+          {/* Row 2: Date · Venue · Location (matching VersionPickerModal Row 1) */}
+          {(song.showDate || song.showVenue || song.showLocation) && (
+            <div className="flex items-baseline gap-2 flex-wrap">
+              {song.showDate && (
+                <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
+                  {song.showDate.replace(/-/g, '/')}
+                </span>
+              )}
+              <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
+                {song.showVenue || song.albumName || 'Unknown venue'}
+              </span>
+              {song.showLocation && (
+                <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                  {song.showLocation}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Row 3: Taper (own row, matching modal Row 2) */}
+          {song.taper && (
+            <div className="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
+                <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
+                <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
+                <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
+                <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              <span className="font-jb-mono text-[11px] font-medium truncate" style={{ color: 'var(--text-tertiary)' }}>
+                {song.taper}
+              </span>
+            </div>
+          )}
+
+          {/* Row 4: Source badge · Stars · Downloads ........... Versions (right) */}
+          <div className="flex items-center gap-2.5">
+            <RecTypeBadge type={song.recordingType} />
+            <StarRating rating={song.avgRating} count={song.numReviews} />
+            {song.downloads != null && song.downloads > 0 && (
+              <span className="font-jb-mono text-[11px] flex items-center gap-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                  <path d="M12 2L2 7v1h20V7L12 2z" fill="rgba(200,180,140,0.55)"/>
+                  <rect x="4.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                  <rect x="9" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                  <rect x="13" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                  <rect x="17.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                  <rect x="2" y="17" width="20" height="2" rx="0.5" fill="rgba(200,180,140,0.45)"/>
+                </svg>
+                <svg width="7" height="12" viewBox="0 0 10 16" fill="none" className="flex-shrink-0">
+                  <path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" stroke="#8fa8b3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {song.downloads.toLocaleString()}
               </span>
             )}
-            <span
-              className="font-jb-mono text-[8.5px] font-semibold px-[5px] py-px rounded-[3px]"
-              style={{
-                background: 'var(--tertiary-muted)',
-                color: 'var(--tertiary)',
-                border: '1px solid color-mix(in srgb, var(--tertiary) 12%, transparent)',
-                letterSpacing: '0.04em',
-              }}
-            >
-              {qualityLabel}
-            </span>
+            {hasMultipleVersions && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowVersionPicker(true); }}
+                className="flex items-center gap-[3px] px-1.5 py-[2px] rounded-[3px] transition-all font-jb-mono text-[8.5px] font-semibold cursor-pointer ml-auto"
+                style={{
+                  background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
+                  border: '1px solid color-mix(in srgb, var(--quaternary) 30%, transparent)',
+                  color: 'var(--quaternary)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--quaternary)';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'color-mix(in srgb, var(--quaternary) 15%, transparent)';
+                  e.currentTarget.style.color = 'var(--quaternary)';
+                }}
+                aria-label={`${versionCount} version${versionCount !== 1 ? 's' : ''} available`}
+              >
+                <VersionsIcon className="w-2.5 h-2.5" />
+                <span>{versionCount} ver</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Versions button — hover-reveal lavender pill */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (hasMultipleVersions) setShowVersionPicker(true);
-          }}
-          className={`flex items-center gap-[3px] px-1.5 py-[3px] rounded-[4px] transition-all flex-shrink-0 ml-1 font-jb-mono text-[9px] font-semibold ${
-            hasMultipleVersions
-              ? 'cursor-pointer opacity-0 group-hover/row:opacity-100'
-              : 'cursor-default opacity-0 group-hover/row:opacity-40'
-          }`}
-          style={{
-            background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
-            border: '1px solid color-mix(in srgb, var(--quaternary) 30%, transparent)',
-            color: 'var(--quaternary)',
-          }}
-          onMouseEnter={(e) => {
-            if (hasMultipleVersions) {
-              e.currentTarget.style.background = 'var(--quaternary)';
-              e.currentTarget.style.color = 'white';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'color-mix(in srgb, var(--quaternary) 15%, transparent)';
-            e.currentTarget.style.color = 'var(--quaternary)';
-          }}
-          aria-label={`${versionCount} version${versionCount !== 1 ? 's' : ''} available`}
-          disabled={!hasMultipleVersions}
-        >
-          <VersionsIcon className="w-2.5 h-2.5" />
-          <span>{versionCount} ver</span>
-        </button>
-
-        {/* Remove button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            removeItem(item.queueId);
-          }}
-          className="w-7 h-7 rounded-md border-0 bg-transparent flex items-center justify-center flex-shrink-0 ml-1.5 opacity-30 group-hover/row:opacity-50 transition-all"
-          style={{ color: 'var(--text-tertiary)' }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--secondary-muted)';
-            e.currentTarget.style.color = 'var(--secondary)';
-            e.currentTarget.style.opacity = '1';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = 'var(--text-tertiary)';
-            e.currentTarget.style.opacity = '';
-          }}
-          aria-label={`Remove ${item.trackTitle} from queue`}
-        >
-          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
         </div>{/* end inner content wrapper */}
       </div>
 
@@ -640,7 +640,6 @@ function SortableTrackRow({
           versions={item.availableVersions}
           coverArt={item.albumSource?.coverArt}
           onSwapVersion={(newSong) => selectVersion(item.queueId, newSong)}
-          preferredQuality={preferredQuality}
         />
       )}
     </li>
@@ -661,80 +660,108 @@ function DragOverlayTrack({
   preferredQuality: AudioQuality;
 }) {
   const song = item.song;
-  const venue = song.showVenue || '';
-  const year = song.showDate?.split('-')[0] || '';
-  const venueDisplay = venue
-    ? venue + (year ? ` \u00b7 ${year}` : '')
-    : song.artistName;
-  const effectiveQuality = getEffectiveQuality(song, preferredQuality);
-  const qualityLabel = getQualityLabel(effectiveQuality, song);
+  const versionCount = item.availableVersions.length;
+  const hasMultipleVersions = versionCount > 1;
 
   return (
     <div
-      className="flex items-center gap-0 py-2.5 px-2 rounded-[10px] relative"
+      className="flex gap-0 py-2 px-2 rounded-[10px]"
       style={{
         background: 'var(--player-surface-chip)',
         border: '1px solid var(--quinary-muted)',
         boxShadow: '0 12px 40px color-mix(in srgb, black 55%, transparent), 0 0 0 1px color-mix(in srgb, var(--quinary) 10%, transparent)',
       }}
     >
-      {/* Left accent bar — always visible on overlay */}
-      <div
-        className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-sm"
-        style={{ background: 'var(--tertiary)' }}
-      />
-
       {/* Drag handle */}
-      <div className="flex-shrink-0 px-2 py-1 opacity-60">
+      <div className="flex-shrink-0 px-1.5 pt-0.5 opacity-60">
         <DragDots />
       </div>
 
-      {/* Track number */}
-      <span
-        className="font-jb-mono text-xs font-medium w-[22px] text-center flex-shrink-0 mr-2.5"
-        style={{ color: 'var(--text-tertiary)' }}
-      >
-        {displayIndex}
-      </span>
-
-      {/* Track art — jewel case */}
-      <CassetteTape coverArt={item.albumSource?.coverArt} label={item.song.artistName} size={46} className="mr-3" />
-
-      {/* Track info */}
-      <div className="flex-1 min-w-0">
-        <p
-          className="text-[14.5px] font-semibold text-primary truncate"
-          style={{ lineHeight: '1.3' }}
-        >
-          {item.trackTitle}
-        </p>
-        <p
-          className="text-xs truncate"
-          style={{ color: 'var(--text-tertiary)', lineHeight: '1.4' }}
-        >
-          {venueDisplay}
-        </p>
-        {/* Meta row: duration + quality badge */}
-        <div className="flex items-center gap-2 mt-0.5">
+      {/* Multi-row content block */}
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        {/* Row 1: # + Title ........... Duration */}
+        <div className="flex items-baseline gap-1.5">
+          <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+            {displayIndex}
+          </span>
+          <span className="text-[13.5px] font-semibold text-primary truncate" style={{ lineHeight: '1.3' }}>
+            {item.trackTitle}
+          </span>
           {song.duration > 0 && (
-            <span
-              className="font-jb-mono text-[11px] font-medium"
-              style={{ color: 'var(--quinary)' }}
-            >
+            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0 ml-auto" style={{ color: 'var(--text-tertiary)' }}>
               {formatDuration(song.duration)}
             </span>
           )}
-          <span
-            className="font-jb-mono text-[8.5px] font-semibold px-[5px] py-px rounded-[3px]"
-            style={{
-              background: 'var(--tertiary-muted)',
-              color: 'var(--tertiary)',
-              border: '1px solid color-mix(in srgb, var(--tertiary) 12%, transparent)',
-              letterSpacing: '0.04em',
-            }}
-          >
-            {qualityLabel}
-          </span>
+        </div>
+
+        {/* Row 2: Date · Venue · Location (matching modal Row 1) */}
+        {(song.showDate || song.showVenue || song.showLocation) && (
+          <div className="flex items-baseline gap-2 flex-wrap">
+            {song.showDate && (
+              <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
+                {song.showDate.replace(/-/g, '/')}
+              </span>
+            )}
+            <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
+              {song.showVenue || song.albumName || 'Unknown venue'}
+            </span>
+            {song.showLocation && (
+              <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                {song.showLocation}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Row 3: Taper (own row, matching modal Row 2) */}
+        {song.taper && (
+          <div className="flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+              <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
+              <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
+              <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
+              <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
+              <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <span className="font-jb-mono text-[11px] font-medium truncate" style={{ color: 'var(--text-tertiary)' }}>
+              {song.taper}
+            </span>
+          </div>
+        )}
+
+        {/* Row 4: Source badge · Stars · Downloads ........... Versions (right) */}
+        <div className="flex items-center gap-2.5">
+          <RecTypeBadge type={song.recordingType} />
+          <StarRating rating={song.avgRating} count={song.numReviews} />
+          {song.downloads != null && song.downloads > 0 && (
+            <span className="font-jb-mono text-[11px] flex items-center gap-0.5" style={{ color: 'var(--text-tertiary)' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <path d="M12 2L2 7v1h20V7L12 2z" fill="rgba(200,180,140,0.55)"/>
+                <rect x="4.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                <rect x="9" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                <rect x="13" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                <rect x="17.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
+                <rect x="2" y="17" width="20" height="2" rx="0.5" fill="rgba(200,180,140,0.45)"/>
+              </svg>
+              <svg width="7" height="12" viewBox="0 0 10 16" fill="none" className="flex-shrink-0">
+                <path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" stroke="#8fa8b3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {song.downloads.toLocaleString()}
+            </span>
+          )}
+          {hasMultipleVersions && (
+            <span
+              className="flex items-center gap-[3px] font-jb-mono text-[8.5px] font-semibold px-1.5 py-[2px] rounded-[3px] ml-auto"
+              style={{
+                background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--quaternary) 30%, transparent)',
+                color: 'var(--quaternary)',
+              }}
+            >
+              <VersionsIcon className="w-2.5 h-2.5" />
+              {versionCount} ver
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -776,6 +803,9 @@ interface SidebarGroupEntry {
   batchId: string;
 }
 
+// Same palette as QueueAccordion — cycles per album group for visual consistency
+const ACCENT_COLORS = ['var(--quinary)', 'var(--tertiary)', 'var(--quaternary)'];
+
 function UpcomingSection({
   queue,
   albumGroups,
@@ -791,12 +821,21 @@ function UpcomingSection({
   preferredQuality,
 }: UpcomingSectionProps) {
   const [dragState, setDragState] = useState<{ queueId: string; item: QueueItem; displayIndex: number } | null>(null);
-  const [visibleGroupId, setVisibleGroupId] = useState<string | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const sectionHeaderRefs = useRef(new Map<string, HTMLDivElement>());
-  const tabRefs = useRef(new Map<string, HTMLButtonElement>());
-  const isProgrammaticScroll = useRef(false);
   const upcomingCount = queue.items.length - (queue.cursorIndex + 1);
+
+  const toggleGroup = useCallback((groupId: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupId)) {
+        next.delete(groupId);
+      } else {
+        next.add(groupId);
+      }
+      return next;
+    });
+  }, []);
 
   // Build sidebar groups: album groups + standalone items
   const sidebarGroups = useMemo((): SidebarGroupEntry[] => {
@@ -845,13 +884,6 @@ function UpcomingSection({
     return result;
   }, [queue.items, queue.cursorIndex, albumGroups]);
 
-  // Active group index driven by scroll-spy
-  const activeGroupIdx = useMemo(() => {
-    if (!visibleGroupId || sidebarGroups.length === 0) return 0;
-    const idx = sidebarGroups.findIndex(g => g.id === visibleGroupId);
-    return idx >= 0 ? idx : 0;
-  }, [visibleGroupId, sidebarGroups]);
-
   // Progress: count tracks from same batch at or before cursor
   const groupProgress = useMemo(() => {
     const progress = new Map<string, number>();
@@ -877,93 +909,6 @@ function UpcomingSection({
     });
     return map;
   }, [sidebarGroups]);
-
-  // Scroll-spy via IntersectionObserver
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container || sidebarGroups.length === 0) return;
-
-    const visibleHeaders = new Set<string>();
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isProgrammaticScroll.current) return;
-
-        entries.forEach(entry => {
-          const groupId = entry.target.getAttribute('data-group-id');
-          if (!groupId) return;
-          if (entry.isIntersecting) {
-            visibleHeaders.add(groupId);
-          } else {
-            visibleHeaders.delete(groupId);
-          }
-        });
-
-        // Pick the first visible group in document order
-        for (const group of sidebarGroups) {
-          if (visibleHeaders.has(group.id)) {
-            setVisibleGroupId(group.id);
-            break;
-          }
-        }
-      },
-      {
-        root: container,
-        rootMargin: '0px 0px -70% 0px',
-        threshold: 0,
-      },
-    );
-
-    sectionHeaderRefs.current.forEach((el) => {
-      observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [sidebarGroups]);
-
-  // Auto-scroll sidebar tab into view
-  useEffect(() => {
-    if (visibleGroupId) {
-      tabRefs.current.get(visibleGroupId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }, [visibleGroupId]);
-
-  // Click-to-scroll
-  const scrollToGroup = useCallback((groupId: string) => {
-    const container = scrollContainerRef.current;
-    const header = sectionHeaderRefs.current.get(groupId);
-    if (!container || !header) return;
-
-    isProgrammaticScroll.current = true;
-    setVisibleGroupId(groupId);
-
-    const containerRect = container.getBoundingClientRect();
-    const headerRect = header.getBoundingClientRect();
-    const offset = headerRect.top - containerRect.top + container.scrollTop;
-
-    container.scrollTo({ top: offset, behavior: 'smooth' });
-
-    setTimeout(() => {
-      isProgrammaticScroll.current = false;
-    }, 600);
-  }, []);
-
-  // Ref setters
-  const setSectionHeaderRef = useCallback((groupId: string, el: HTMLDivElement | null) => {
-    if (el) {
-      sectionHeaderRefs.current.set(groupId, el);
-    } else {
-      sectionHeaderRefs.current.delete(groupId);
-    }
-  }, []);
-
-  const setTabRef = useCallback((groupId: string, el: HTMLButtonElement | null) => {
-    if (el) {
-      tabRefs.current.set(groupId, el);
-    } else {
-      tabRefs.current.delete(groupId);
-    }
-  }, []);
 
   const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 8 } });
   const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } });
@@ -1048,122 +993,107 @@ function UpcomingSection({
         </div>
       </div>
 
-      {/* Sidebar layout */}
-      <div className="flex-1 min-h-0 flex">
-        {/* Album tabs — scroll-spy navigation */}
-        <div
-          className="w-[72px] flex-shrink-0 overflow-y-auto px-[7px] py-1.5 flex flex-col gap-1.5 queue-sidebar-tabs"
-          style={{ borderRight: '1px solid var(--border-subtle-player)' }}
+      {/* Single-column track list with inline sticky album cards */}
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto py-1.5 px-1 queue-sidebar-scroll min-h-0">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
         >
-          {sidebarGroups.map((group, idx) => {
-            const isActive = idx === activeGroupIdx;
-            const played = groupProgress.get(group.batchId) || 0;
-            const total = group.items.length + played;
-            const pct = total > 0 ? (played / total) * 100 : 0;
+          <SortableContext items={allSortableIds} strategy={verticalListSortingStrategy}>
+            <ul>
+              {sidebarGroups.map((group, groupIdx) => {
+                const played = groupProgress.get(group.batchId) || 0;
+                const total = group.items.length + played;
+                const pct = total > 0 ? (played / total) * 100 : 0;
+                const isCollapsed = collapsedGroups.has(group.id);
+                const totalDuration = group.items.reduce((sum, { item }) => sum + (item.song.duration || 0), 0);
+                const accentColor = ACCENT_COLORS[groupIdx % ACCENT_COLORS.length];
 
-            return (
-              <button
-                key={group.id}
-                ref={(el) => setTabRef(group.id, el)}
-                onClick={() => scrollToGroup(group.id)}
-                className="w-[58px] flex-shrink-0 rounded-lg p-1 flex flex-col items-center gap-1 transition-all cursor-pointer"
-                style={{
-                  border: isActive ? '1.5px solid var(--quinary)' : '1.5px solid transparent',
-                  background: isActive ? 'var(--player-surface-chip-hover)' : 'transparent',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.borderColor = 'var(--border-subtle-player)';
-                    e.currentTarget.style.background = 'var(--player-surface-chip)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.borderColor = 'transparent';
-                    e.currentTarget.style.background = 'transparent';
-                  }
-                }}
-                aria-label={`${group.albumName} - ${group.items.length} tracks`}
-              >
-                <TicketStub coverArt={group.coverArt} albumName={group.albumName} size={46} trackCount={group.items.length} />
-                <div className="w-full h-[2px] rounded-sm overflow-hidden" style={{ background: 'var(--primary-muted)' }}>
-                  <div
-                    className="h-full rounded-sm"
+                return (
+                  <li
+                    key={group.id}
+                    className="mx-1.5 mb-2 rounded-xl"
                     style={{
-                      width: `${pct}%`,
-                      background: 'linear-gradient(90deg, var(--quinary), var(--secondary))',
+                      border: `1px solid color-mix(in srgb, ${accentColor} 25%, transparent)`,
+                      borderLeft: `3px solid color-mix(in srgb, ${accentColor} 50%, transparent)`,
+                      background: `color-mix(in srgb, ${accentColor} 4%, transparent)`,
                     }}
-                  />
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Track content — continuous list with sticky section headers */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto py-1.5 px-1 queue-sidebar-scroll">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={allSortableIds} strategy={verticalListSortingStrategy}>
-              <ul>
-                {sidebarGroups.map((group) => {
-                  const played = groupProgress.get(group.batchId) || 0;
-                  const total = group.items.length + played;
-                  const pct = total > 0 ? (played / total) * 100 : 0;
-
-                  return (
-                    <li key={group.id}>
-                      {/* Sticky album section header */}
+                  >
+                    {/* Album card — sticky when expanded, static when collapsed */}
+                    <div
+                      className={`${isCollapsed ? '' : 'sticky top-0'} z-[3] p-1.5 ${isCollapsed ? 'pb-1.5' : 'pb-1'}`}
+                      style={{
+                        background: `color-mix(in srgb, ${accentColor} 6%, var(--player-surface-queue))`,
+                        boxShadow: isCollapsed ? 'none' : '0 4px 12px -2px color-mix(in srgb, var(--primary) 60%, black)',
+                      }}
+                    >
                       <div
-                        ref={(el) => setSectionHeaderRef(group.id, el)}
-                        data-group-id={group.id}
-                        className="sticky top-0 z-[2] px-2.5 pt-2 pb-2.5 mx-1 mb-1"
-                        style={{
-                          background: 'linear-gradient(180deg, var(--player-surface-queue) 80%, transparent)',
-                        }}
+                        className="group/album flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all"
+                        style={{}}
+                        onClick={() => toggleGroup(group.id)}
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-[14px] font-bold text-primary flex-1 min-w-0" style={{ lineHeight: '1.25' }}>
+                        {/* Chevron */}
+                        <svg
+                          className="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200"
+                          style={{
+                            color: accentColor,
+                            transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                          }}
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                        <TicketStub coverArt={group.coverArt} albumName={group.albumName} size={46} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] font-bold text-primary truncate" style={{ lineHeight: '1.25' }}>
                             {group.albumName}
                           </p>
-                          <button
-                            onClick={() => removeBatch(group.batchId)}
-                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full opacity-40 hover:opacity-100 transition-opacity"
-                            style={{ color: 'var(--text-tertiary)' }}
-                            aria-label={`Remove ${group.albumName} from queue`}
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                        {(group.venue || group.year) && (
-                          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                            {[group.venue, group.year].filter(Boolean).join(' \u00b7 ')}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <div className="w-12 h-[3px] rounded-sm overflow-hidden" style={{ background: 'var(--primary-muted)' }}>
-                            <div
-                              className="h-full rounded-sm"
-                              style={{
-                                width: `${pct}%`,
-                                background: 'linear-gradient(90deg, var(--quinary), var(--secondary))',
-                              }}
-                            />
+                          {(group.venue || group.year) && (
+                            <p className="text-[11px] truncate" style={{ color: 'var(--text-tertiary)' }}>
+                              {[group.venue, group.year].filter(Boolean).join(' \u00b7 ')}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <div className="w-12 h-[3px] rounded-sm overflow-hidden" style={{ background: 'var(--primary-muted)' }}>
+                              <div
+                                className="h-full rounded-sm"
+                                style={{
+                                  width: `${pct}%`,
+                                  background: accentColor,
+                                }}
+                              />
+                            </div>
+                            <span className="font-jb-mono text-[9px]" style={{ color: 'var(--text-tertiary)' }}>
+                              {isCollapsed
+                                ? `${group.items.length} tracks${totalDuration > 0 ? ` \u00b7 ${formatDuration(totalDuration)}` : ''}`
+                                : `${played}/${total} played`
+                              }
+                            </span>
                           </div>
-                          <span className="font-jb-mono text-[9px]" style={{ color: 'var(--text-tertiary)' }}>
-                            {played}/{total} played
-                          </span>
                         </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeBatch(group.batchId); }}
+                          className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full opacity-0 group-hover/album:opacity-40 hover:!opacity-100 transition-opacity"
+                          style={{ color: 'var(--text-tertiary)' }}
+                          aria-label={`Remove ${group.albumName} from queue`}
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
                       </div>
+                    </div>
 
-                      {/* Track rows with per-album numbering */}
-                      <ul>
+                    {/* Divider between album header and tracks */}
+                    {!isCollapsed && (
+                      <div className="mx-3" style={{ borderTop: `1px solid color-mix(in srgb, ${accentColor} 20%, transparent)` }} />
+                    )}
+
+                    {/* Track rows — hidden when collapsed */}
+                    {!isCollapsed && (
+                      <ul className="pb-1 relative z-[1]">
                         {group.items.map(({ item, absoluteIndex }, idx) => (
                           <SortableTrackRow
                             key={item.queueId}
@@ -1178,22 +1108,22 @@ function UpcomingSection({
                           />
                         ))}
                       </ul>
-                    </li>
-                  );
-                })}
-              </ul>
-            </SortableContext>
-            <DragOverlay dropAnimation={null}>
-              {dragState && (
-                <DragOverlayTrack
-                  item={dragState.item}
-                  displayIndex={dragState.displayIndex}
-                  preferredQuality={preferredQuality}
-                />
-              )}
-            </DragOverlay>
-          </DndContext>
-        </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </SortableContext>
+          <DragOverlay dropAnimation={null}>
+            {dragState && (
+              <DragOverlayTrack
+                item={dragState.item}
+                displayIndex={dragState.displayIndex}
+                preferredQuality={preferredQuality}
+              />
+            )}
+          </DragOverlay>
+        </DndContext>
       </div>
     </div>
   );

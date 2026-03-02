@@ -6,9 +6,9 @@
 
 import { useState, useRef } from 'react';
 import { formatDuration } from '@/lib/api';
-import { getRecTypeBadgeConfig } from '@/lib/recTypeUtils';
+import RecSourceIcon from '@/components/RecSourceIcon';
 import VersionPickerModal, { VersionsIcon } from '@/components/VersionPickerModal';
-import CassetteTape from '@/components/CassetteTape';
+import RecordingMediumIcon from '@/components/RecordingMediumIcon';
 import type { QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
 
@@ -25,6 +25,8 @@ export interface QueueChipProps {
   isPlayed?: boolean;
   /** When true, suppresses cursor-pointer so the parent's cursor-grab shows through */
   inSortable?: boolean;
+  /** Compact mode for mobile — smaller chip, reduced padding/fonts */
+  compact?: boolean;
 }
 
 export default function QueueChip({
@@ -39,6 +41,7 @@ export default function QueueChip({
   isActive,
   isPlayed,
   inSortable,
+  compact,
 }: QueueChipProps) {
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const modalClosedAtRef = useRef(0);
@@ -46,7 +49,7 @@ export default function QueueChip({
   const song = item.song;
   const rawVenue = song.showVenue || item.albumSource?.showVenue || '';
   const venueName = rawVenue
-    ? rawVenue.replace(/\b\w/g, c => c.toUpperCase())
+    ? rawVenue.replace(/(^|\s)\w/g, c => c.toUpperCase())
     : '';
   const locationStr = song.showLocation || item.albumSource?.showLocation || '';
   const stateAbbr = locationStr.match(/,\s*([A-Z]{2})$/)?.[1] || '';
@@ -54,10 +57,10 @@ export default function QueueChip({
   const dateStr = song.showDate || item.albumSource?.showDate || '';
   const dateMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
   const formattedDate = dateMatch
-    ? `${dateMatch[2]}.${dateMatch[3]}.${dateMatch[1]}`
+    ? `${dateMatch[2]}/${dateMatch[3]}/${dateMatch[1]}`
     : dateStr;
 
-  const recBadge = getRecTypeBadgeConfig(song.recordingType);
+  const recordingType = song.recordingType;
 
   const versionCount = item.availableVersions.length;
   const hasMultipleVersions = versionCount > 1;
@@ -74,7 +77,7 @@ export default function QueueChip({
           group/chip relative flex flex-shrink-0 ${inSortable ? '' : 'cursor-pointer'}
           rounded-lg overflow-hidden select-none
           transition-all duration-200 ease-out
-          w-[293px] pl-[20px] pr-2 py-2
+          ${compact ? 'w-[200px] pl-[16px] pr-1 py-1.5' : 'w-[293px] pl-[20px] pr-2 py-2'}
           ${isPlayed
             ? 'opacity-40 bg-surface-player-chip'
             : isDragging
@@ -108,49 +111,68 @@ export default function QueueChip({
           }}
         />
 
-        {/* Card content: track number + jewel case + info */}
-        <div className="flex gap-[9px] min-w-0 items-center">
-          {/* Track number */}
-          <span className="font-jb-mono text-[11px] font-medium text-tertiary w-[14px] text-center flex-shrink-0">
-            {item.albumSource ? (item.albumSource.originalTrackIndex ?? 0) + 1 : chipIndex}
-          </span>
-          {/* Jewel case album art */}
-          <div className="relative flex-shrink-0">
-            <CassetteTape coverArt={item.albumSource?.coverArt} label={item.song.artistName} size={48} />
+        {/* Track number — top-left in the drag grip space */}
+        <span className="absolute top-1 left-[4px] font-jb-mono text-[10px] font-medium text-tertiary z-10">
+          {item.albumSource ? (item.albumSource.originalTrackIndex ?? 0) + 1 : chipIndex}
+        </span>
+
+        {/* Card content: icon + info */}
+        <div className={`flex flex-1 min-w-0 items-center ${compact ? 'gap-1.5' : 'gap-[9px]'}`}>
+          {/* Medium icon */}
+          <div className={`${compact ? 'h-[40px]' : 'h-[60px]'} flex items-center justify-center flex-shrink-0`}>
+            <RecordingMediumIcon
+              medium={song.recordingMedium}
+              lineage={song.lineage}
+              source={song.source}
+              size={compact ? 0.55 : 0.85}
+            />
           </div>
 
           {/* Info stack: title / venue / date / length + type */}
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <p className="text-[12.5px] font-semibold text-white truncate" style={{ lineHeight: '1.3' }}>
+            <p className={`${compact ? 'text-[11px]' : 'text-[12.5px]'} font-semibold text-white truncate`} style={{ lineHeight: '1.3' }}>
               {item.trackTitle}
             </p>
             {venue && (
-              <p className="text-[10.5px] text-tertiary truncate" style={{ lineHeight: '1.3' }}>
+              <p className={`${compact ? 'text-[9px]' : 'text-[10.5px]'} text-tertiary truncate`} style={{ lineHeight: '1.3' }}>
                 {venue}
               </p>
             )}
-            {formattedDate && (
+            {!compact && formattedDate && (
               <p className="font-jb-mono text-[10px] text-tertiary" style={{ lineHeight: '1.3' }}>
                 {formattedDate}
               </p>
             )}
-            <div className="flex items-center gap-1.5 mt-px">
+            <div className="flex items-center gap-1 mt-px">
               {song.duration > 0 && (
-                <span className="font-jb-mono text-[10px] text-accent-secondary">
+                <span className={`font-jb-mono ${compact ? 'text-[9px]' : 'text-[10px]'} text-accent-secondary`}>
                   {formatDuration(song.duration)}
                 </span>
               )}
-              <span
-                className="font-jb-mono text-[8.5px] font-semibold px-[5px] py-px rounded-[2px] leading-[14px]"
-                style={{
-                  color: recBadge.color,
-                  background: recBadge.bg,
-                  border: `1px solid ${recBadge.border}`,
-                }}
-                title={recBadge.title}
-              >
-                {recBadge.label}
-              </span>
+              <RecSourceIcon type={recordingType} lineage={song.lineage} size={compact ? 18 : 18} />
+              {/* Versions pill — inline on compact, pushed right */}
+              {compact && !isPlayed && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (hasMultipleVersions) setShowVersionPicker(true);
+                  }}
+                  className={`inline inline-flex items-center gap-[2px] px-0.5 rounded-sm text-[6px] font-jb-mono font-semibold ml-auto transition-all overflow-hidden ${
+                    hasMultipleVersions ? 'cursor-pointer' : 'cursor-default opacity-40'
+                  }`}
+                  style={{
+                    height: '11px',
+                    background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
+                    border: '1px solid color-mix(in srgb, var(--quaternary) 30%, transparent)',
+                    color: 'var(--quaternary)',
+                  }}
+                  aria-label={`${versionCount} version${versionCount !== 1 ? 's' : ''} available`}
+                  disabled={!hasMultipleVersions}
+                >
+                  <VersionsIcon className="w-[6px] h-[6px] flex-shrink-0" />
+                  <span className="leading-none">{versionCount} ver</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -185,17 +207,17 @@ export default function QueueChip({
           </button>
         )}
 
-        {/* Versions button — bottom-right, hover-reveal lavender pill */}
-        {!isPlayed && (
+        {/* Versions button — bottom-right, hover-reveal lavender pill (desktop only) */}
+        {!isPlayed && !compact && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               if (hasMultipleVersions) setShowVersionPicker(true);
             }}
-            className={`absolute bottom-1 right-1 flex items-center gap-[3px] px-1.5 py-[2px] rounded-[4px] transition-all z-10 font-jb-mono text-[8px] font-semibold ${
+            className={`absolute ${compact ? 'bottom-0.5 right-0.5 gap-[2px] px-1 py-0 rounded-[3px] text-[7px]' : 'bottom-1 right-1 gap-[3px] px-1.5 py-[2px] rounded-[4px] text-[8px]'} flex items-center transition-all z-10 font-jb-mono font-semibold leading-none ${
               hasMultipleVersions
-                ? 'cursor-pointer opacity-0 group-hover/chip:opacity-100'
-                : 'cursor-default opacity-0 group-hover/chip:opacity-40'
+                ? 'cursor-pointer'
+                : 'cursor-default opacity-40'
             }`}
             style={{
               background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
@@ -215,7 +237,7 @@ export default function QueueChip({
             aria-label={`${versionCount} version${versionCount !== 1 ? 's' : ''} available`}
             disabled={!hasMultipleVersions}
           >
-            <VersionsIcon className="w-2.5 h-2.5" />
+            <VersionsIcon className={compact ? 'w-2 h-2' : 'w-2.5 h-2.5'} />
             <span>{versionCount} ver</span>
           </button>
         )}
@@ -230,7 +252,6 @@ export default function QueueChip({
             versions={item.availableVersions}
             coverArt={item.albumSource?.coverArt}
             onSwapVersion={(newSong) => onSelectVersion(item.queueId, newSong)}
-            preferredQuality={preferredQuality}
           />
         )}
       </div>

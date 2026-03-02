@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Song } from '@/lib/types';
-import { getRecordingBadge } from '@/lib/lineageUtils';
+import RecSourceIcon from '@/components/RecSourceIcon';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { type VersionFilters, applyFilters, hasActiveFilters } from '@/lib/filters';
@@ -65,7 +65,7 @@ function VersionCard({
   onQueue: () => void;
 }) {
   const year = song.showDate?.split('-')[0] || '--';
-  const recordingBadge = getRecordingBadge(song.lineage, song.recordingType);
+  const recordingType = song.recordingType;
 
   return (
     <div
@@ -83,18 +83,7 @@ function VersionCard({
           <span className={`text-2xl font-bold font-serif ${isPlaying ? 'text-[#1a0f08]' : 'text-secondary'}`}>
             {year}
           </span>
-          {recordingBadge && (
-            <span
-              className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                isPlaying
-                  ? 'bg-[#c88030] text-[#1a1410]'
-                  : 'bg-accent text-inverse'
-              }`}
-              title={`${recordingBadge.text} Recording`}
-            >
-              {recordingBadge.text}
-            </span>
-          )}
+          <RecSourceIcon type={recordingType} lineage={song.lineage} size={20} />
         </div>
       </div>
 

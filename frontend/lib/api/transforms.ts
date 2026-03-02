@@ -79,6 +79,13 @@ export interface MagentoProduct {
   show_subject?: string;
   track_original_file?: string;
   track_album?: string;
+  recording_medium?: string;
+  microphone_model?: string;
+  recorder_device?: string;
+  preamp_model?: string;
+  ad_converter?: string;
+  editing_software?: string;
+  final_format?: string;
   show_date?: string;
   created_at?: string;
   categories?: Array<{ uid: string; name: string; url_key: string }>;
@@ -292,6 +299,13 @@ export function productToSong(product: MagentoProduct, albumIdentifier?: string)
     showSubject: product.show_subject || undefined,
     trackOriginalFile: product.track_original_file || undefined,
     trackAlbum: product.track_album || undefined,
+    recordingMedium: product.recording_medium || undefined,
+    microphoneModel: product.microphone_model || undefined,
+    recorderDevice: product.recorder_device || undefined,
+    preampModel: product.preamp_model || undefined,
+    adConverter: product.ad_converter || undefined,
+    editingSoftware: product.editing_software || undefined,
+    finalFormat: product.final_format || undefined,
   };
 }
 

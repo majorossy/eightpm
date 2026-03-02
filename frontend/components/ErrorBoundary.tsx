@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Component, ReactNode } from 'react';
+import { trackError } from '@/lib/analytics';
 
 // Inline SVG icons (matching app style - no external icon library)
 const AlertTriangleIcon = () => (
@@ -45,6 +46,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     // Log error for debugging
     console.error('[ErrorBoundary] Caught error:', error);
     console.error('[ErrorBoundary] Error info:', errorInfo);
+
+    trackError('react_error', error.message);
 
     this.setState({
       error,

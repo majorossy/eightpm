@@ -55,23 +55,6 @@
   --border-color: var(--border-default);
   --border-subtle: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
 
-  /* Badges — light backgrounds with dark text for contrast on white */
-  --badge-sbd-bg: color-mix(in srgb, var(--tertiary) 15%, white);
-  --badge-sbd-border: color-mix(in srgb, var(--tertiary) 55%, white);
-  --badge-sbd-text: color-mix(in srgb, var(--tertiary) 80%, black);
-
-  --badge-aud-bg: color-mix(in srgb, var(--quaternary) 15%, white);
-  --badge-aud-border: color-mix(in srgb, var(--quaternary) 55%, white);
-  --badge-aud-text: color-mix(in srgb, var(--quaternary) 80%, black);
-
-  --badge-mx-bg: color-mix(in srgb, var(--quinary) 15%, white);
-  --badge-mx-border: color-mix(in srgb, var(--quinary) 55%, white);
-  --badge-mx-text: color-mix(in srgb, var(--quinary) 80%, black);
-
-  --badge-other-bg: color-mix(in srgb, var(--text-tertiary) 10%, transparent);
-  --badge-other-border: var(--text-tertiary);
-  --badge-other-text: var(--text-secondary);
-
   --badge-flac24-bg: color-mix(in srgb, var(--tertiary) 15%, transparent);
   --badge-flac24-text: color-mix(in srgb, var(--tertiary) 80%, black);
 
@@ -102,4 +85,31 @@
 
   /* Light mode cream — darker for contrast on white background */
   --cream: color-mix(in srgb, var(--quinary) 55%, black);
+}
+
+/* Shore overrides for RecSourceIcon — light tinted bg, darker accent text */
+.mode-shore.theme-camp .rec-source-sbd,
+.mode-shore.theme-camp .rec-source-aud,
+.mode-shore.theme-camp .rec-source-mx,
+.mode-shore.theme-camp .rec-source-fm,
+.mode-shore.theme-camp .rec-source-web,
+.mode-shore.theme-camp .rec-source-unknown {
+  background: linear-gradient(175deg,
+    color-mix(in srgb, var(--text-tertiary) 8%, white),
+    color-mix(in srgb, var(--text-tertiary) 12%, white));
+}
+.mode-shore.theme-camp .rec-source-sbd .rec-source-label {
+  color: color-mix(in srgb, var(--quinary) 80%, black);
+}
+.mode-shore.theme-camp .rec-source-aud .rec-source-label {
+  color: color-mix(in srgb, var(--secondary) 80%, black);
+}
+.mode-shore.theme-camp .rec-source-mx .rec-source-label {
+  color: color-mix(in srgb, var(--quaternary) 80%, black);
+}
+.mode-shore.theme-camp .rec-source-fm .rec-source-label {
+  color: color-mix(in srgb, var(--quinary) 80%, black);
+}
+.mode-shore.theme-camp .rec-source-web .rec-source-label {
+  color: color-mix(in srgb, var(--tertiary) 80%, black);
 }

@@ -25,6 +25,7 @@ import {
   generateBatchId,
 } from '@/lib/queueTypes';
 import { sanitizeStreamUrl } from '@/lib/urlUtils';
+import { trackAddToQueue, trackPlayNext, trackQueueReorder, trackVersionChange, trackRepeatChange } from '@/lib/analytics';
 
 // =============================================================================
 // Action Types (discriminated union)
@@ -674,10 +675,14 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 
   const playNext = useCallback((items: QueueItem | QueueItem[]) => {
     dispatch({ type: 'INSERT_AFTER_CURSOR', items });
+    const arr = Array.isArray(items) ? items : [items];
+    if (arr.length > 0) trackPlayNext(arr[0].song);
   }, []);
 
   const addToQueue = useCallback((items: QueueItem | QueueItem[]) => {
     dispatch({ type: 'APPEND_ITEMS', items });
+    const arr = Array.isArray(items) ? items : [items];
+    if (arr.length > 0) trackAddToQueue(arr[0].song);
   }, []);
 
   const removeItem = useCallback((queueId: string) => {
@@ -686,6 +691,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 
   const moveItem = useCallback((fromIndex: number, toIndex: number) => {
     dispatch({ type: 'MOVE_ITEM', fromIndex, toIndex });
+    trackQueueReorder('move_item');
   }, []);
 
   const detachItem = useCallback((queueId: string, targetIndex: number) => {
@@ -736,6 +742,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 
   const selectVersion = useCallback((queueId: string, song: Song) => {
     dispatch({ type: 'SELECT_VERSION', queueId, song });
+    trackVersionChange(song.trackTitle, song.id);
   }, []);
 
   const markPlayed = useCallback(() => {
@@ -744,6 +751,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 
   const setRepeat = useCallback((mode: 'off' | 'all' | 'one') => {
     dispatch({ type: 'SET_REPEAT', mode });
+    trackRepeatChange(mode);
   }, []);
 
   const clearQueue = useCallback(() => {

@@ -3,7 +3,8 @@
 import { useMemo, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { formatDuration } from '@/lib/api';
-import { formatLineage, getRecordingBadge } from '@/lib/lineageUtils';
+import { formatLineage } from '@/lib/lineageUtils';
+import RecSourceIcon from '@/components/RecSourceIcon';
 import { getQualityBadge } from '@/components/player/QualityPopup';
 import { QualityPopup } from '@/components/player/QualityPopup';
 import ShareButton from '@/components/ShareButton';
@@ -144,7 +145,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
   } = props;
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-  const recordingBadge = getRecordingBadge(currentSong.lineage, currentSong.recordingType);
+  const recordingType = currentSong.recordingType;
   const qualityInfo = getQualityBadge(preferredQuality);
 
   const playedCount = useMemo(() => queueChips.filter(c => c.isPlayed).length, [queueChips]);
@@ -215,7 +216,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
             currentSong={currentSong}
             currentItem={currentItem}
             isPlaying={isPlaying}
-            recordingBadge={recordingBadge}
+            recordingType={recordingType}
             imageLoaded={imageLoaded}
             onImageLoad={onImageLoad}
             isInWishlist={isInWishlist}
@@ -300,7 +301,7 @@ function DesktopLeftSection({
   currentSong,
   currentItem,
   isPlaying,
-  recordingBadge,
+  recordingType,
   imageLoaded,
   onImageLoad,
   isInWishlist,
@@ -311,7 +312,7 @@ function DesktopLeftSection({
   currentSong: DesktopPlayerBarProps['currentSong'];
   currentItem: QueueItem | null;
   isPlaying: boolean;
-  recordingBadge: ReturnType<typeof getRecordingBadge>;
+  recordingType: string | undefined;
   imageLoaded: boolean;
   onImageLoad: () => void;
   isInWishlist: (id: string) => boolean;
@@ -359,15 +360,10 @@ function DesktopLeftSection({
             ))}
           </div>
         )}
-        {/* Recording badge overlay */}
-        {recordingBadge && recordingBadge.show && (
-          <span
-            className="absolute top-1 right-1 px-1 py-0.5 text-[7px] font-bold rounded uppercase tracking-wider leading-none"
-            style={{ backgroundColor: recordingBadge.bgColor, color: recordingBadge.textColor }}
-          >
-            {recordingBadge.text}
-          </span>
-        )}
+        {/* Recording type icon overlay */}
+        <span className="absolute top-1 right-1">
+          <RecSourceIcon type={recordingType} lineage={currentSong.lineage} size={20} />
+        </span>
       </div>
 
       {/* Track meta */}

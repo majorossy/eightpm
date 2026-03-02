@@ -1,0 +1,103 @@
+/* ========================================
+   RecSourceIcon — 28px square recording type icon
+   Dark bg, colored text, subtle accent border
+   ======================================== */
+
+.rec-source-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+/* Noise texture overlay */
+.rec-source-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.10;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='64' height='64' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 64px 64px;
+  mix-blend-mode: overlay;
+}
+
+.rec-source-label {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+/* ── Shared dark base ───────────────────── */
+
+.rec-source-sbd,
+.rec-source-aud,
+.rec-source-mx,
+.rec-source-fm,
+.rec-source-web,
+.rec-source-unknown {
+  background: linear-gradient(175deg,
+    color-mix(in srgb, var(--primary) 30%, black),
+    color-mix(in srgb, var(--primary) 22%, black));
+}
+
+/* ── Per-type: colored text + accent border ── */
+
+/* SBD — gold/quinary */
+.rec-source-sbd {
+  border-color: color-mix(in srgb, var(--quinary) 25%, transparent);
+}
+.rec-source-sbd .rec-source-label {
+  color: var(--quinary);
+}
+
+/* AUD — coral/secondary */
+.rec-source-aud {
+  border-color: color-mix(in srgb, var(--secondary) 25%, transparent);
+}
+.rec-source-aud .rec-source-label {
+  color: var(--secondary);
+}
+
+/* MX — lavender/quaternary */
+.rec-source-mx {
+  border-color: color-mix(in srgb, var(--quaternary) 25%, transparent);
+}
+.rec-source-mx .rec-source-label {
+  color: var(--quaternary);
+}
+
+/* FM — gold/quinary, slightly warmer border */
+.rec-source-fm {
+  border-color: color-mix(in srgb, var(--quinary) 20%, transparent);
+}
+.rec-source-fm .rec-source-label {
+  color: color-mix(in srgb, var(--quinary) 85%, var(--secondary));
+}
+
+/* WEBCAST — teal/tertiary */
+.rec-source-web {
+  border-color: color-mix(in srgb, var(--tertiary) 25%, transparent);
+}
+.rec-source-web .rec-source-label {
+  color: var(--tertiary);
+}
+
+/* UNKNOWN — muted, dashed border */
+.rec-source-unknown {
+  border-color: color-mix(in srgb, var(--text-tertiary) 30%, transparent);
+  border-style: dashed;
+}
+.rec-source-unknown .rec-source-label {
+  color: var(--text-tertiary);
+  opacity: 0.6;
+}

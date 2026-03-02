@@ -4,27 +4,6 @@ import { useState } from 'react';
 
 // ============ Badge Components ============
 
-export function RecTypeBadge({ type }: { type: string | undefined }) {
-  const cfg: Record<string, { bg: string; border: string; text: string; label: string; title: string }> = {
-    SBD: { bg: 'var(--badge-sbd-bg)', border: 'var(--badge-sbd-border)', text: 'var(--badge-sbd-text)', label: 'SBD', title: 'Soundboard' },
-    AUD: { bg: 'var(--badge-aud-bg)', border: 'var(--badge-aud-border)', text: 'var(--badge-aud-text)', label: 'AUD', title: 'Audience' },
-    MX:  { bg: 'var(--badge-mx-bg)', border: 'var(--badge-mx-border)', text: 'var(--badge-mx-text)', label: 'MX',  title: 'Matrix' },
-    MTX: { bg: 'var(--badge-mx-bg)', border: 'var(--badge-mx-border)', text: 'var(--badge-mx-text)', label: 'MTX', title: 'Matrix' },
-    FM:  { bg: 'var(--badge-other-bg)', border: 'var(--badge-other-border)', text: 'var(--badge-other-text)', label: 'FM', title: 'FM Broadcast' },
-    WEBCAST: { bg: 'var(--badge-other-bg)', border: 'var(--badge-other-border)', text: 'var(--badge-other-text)', label: 'WEB', title: 'Webcast' },
-    UNKNOWN: { bg: 'var(--badge-other-bg)', border: 'var(--badge-other-border)', text: 'var(--badge-other-text)', label: 'UNK', title: 'Unknown recording type' },
-  };
-  const resolved = type || 'UNKNOWN';
-  const c = cfg[resolved] || { bg: 'var(--badge-other-bg)', border: 'var(--badge-other-border)', text: 'var(--badge-other-text)', label: 'UNK', title: 'Unknown recording type' };
-  return (
-    <span title={c.title} style={{
-      background: c.bg, color: c.text, padding: '2px 7px', borderRadius: 4,
-      fontSize: 10, fontWeight: 800, letterSpacing: '0.08em',
-      border: `1px solid ${c.border}55`, lineHeight: '18px', display: 'inline-block',
-    }}>{c.label}</span>
-  );
-}
-
 export function SourceBadge({ source }: { source: 'flac24' | 'flac16' | 'mp3' | null }) {
   if (!source) return null;
   const cfg: Record<string, { bg: string; text: string; label: string }> = {

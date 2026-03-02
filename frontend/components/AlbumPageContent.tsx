@@ -8,6 +8,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useTrackPreferences } from '@/hooks/useTrackPreferences';
 import VenueLink from '@/components/VenueLink';
 import { trackAlbumView } from '@/lib/analytics';
 import { CassetteTape } from './album/CassetteTape';
@@ -44,6 +45,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const { currentItem, addToQueue, albumToItems, playAlbum } = useQueue();
   const { followAlbum, unfollowAlbum, isAlbumFollowed } = useWishlist();
   const { vibrate, BUTTON_PRESS } = useHaptic();
+  const { getPreferred, setPreferred, clearPreferred, getOverridesMap } = useTrackPreferences(album.identifier);
 
   const [expandedTrack, setExpandedTrack] = useState<number>(-1);
   const prevSongIdRef = useRef<string | null>(null);
@@ -95,12 +97,13 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
   const handleAddToQueue = () => {
     vibrate(BUTTON_PRESS);
+    const overrides = getOverridesMap();
     if (!currentSong) {
       // Nothing playing — load album and start playback
-      playAlbum(album);
+      playAlbum(album, undefined, overrides);
     } else {
       // Already playing — append to end of queue
-      const items = albumToItems(album);
+      const items = albumToItems(album, overrides);
       addToQueue(items);
     }
   };
@@ -139,107 +142,122 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       {/* Main content - max width centered */}
       <div className="max-w-[1000px] mx-auto px-4 sm:px-8">
 
-        {/* Hero section */}
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-12 items-center lg:items-start justify-center">
-          {/* Cassette tape */}
-          <div className="flex flex-col items-center gap-6">
+        {/* Two-column layout: sticky album sidebar + scrollable tracks */}
+        <div className="lg:flex lg:gap-12 lg:items-start">
+
+          {/* Left column — sticky on desktop */}
+          <div className="lg:sticky lg:top-8 lg:self-start lg:flex-shrink-0 flex flex-col items-center lg:items-start gap-6 mb-12 lg:mb-0">
             <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image} />
+
+            {/* Album info */}
+            <div className="pt-4 max-w-[400px] text-center lg:text-left">
+              <div className="text-[var(--tertiary)] text-[10px] tracking-[3px] mb-2.5">
+                ☮ LIVE ALBUM
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl text-[var(--text)] mb-2 leading-tight">
+                {album.name}
+              </h1>
+              {album.showVenue && (
+                <div className="text-xl text-[var(--text-dim)] mb-1.5 italic">
+                  <VenueLink venueName={album.showVenue} className="text-[var(--text-dim)] hover:text-accent hover:underline transition-colors" />
+                </div>
+              )}
+              <div className="text-[var(--text-subdued)] text-sm mb-6">
+                <Link href={`/artists/${album.artistSlug}`} className="text-[var(--secondary)] hover:underline">
+                  {album.artistName}
+                </Link>
+                {album.showDate && <> • {album.showDate}</>}
+                {' • '}{album.totalTracks} tracks
+              </div>
+
+              {/* Quote box */}
+              {album.description && (
+                <div
+                  className="album-quote-box text-[var(--text-subdued)] text-sm italic mb-6 px-4 py-3 rounded-lg border-l-[3px] border-[var(--tertiary)]"
+                >
+                  "{album.description}"
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex gap-3.5 items-center justify-center lg:justify-start">
+                <button
+                  onClick={handleAddToQueue}
+                  className="album-play-button px-6 py-3.5 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 gap-2"
+                >
+                  + Add Album to Queue
+                </button>
+                <button
+                  onClick={handleFollowToggle}
+                  className="album-follow-btn w-11 h-11 rounded-full flex items-center justify-center text-xl transition-all"
+                >
+                  {isFollowed ? '♥' : '♡'}
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Album info */}
-          <div className="pt-4 max-w-[400px] text-center lg:text-left">
-            <div className="text-[var(--tertiary)] text-[10px] tracking-[3px] mb-2.5">
-              ☮ LIVE ALBUM
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl text-[var(--text)] mb-2 leading-tight">
-              {album.name}
-            </h1>
-            {album.showVenue && (
-              <div className="text-xl text-[var(--text-dim)] mb-1.5 italic">
-                <VenueLink venueName={album.showVenue} className="text-[var(--text-dim)] hover:text-accent hover:underline transition-colors" />
-              </div>
-            )}
-            <div className="text-[var(--text-subdued)] text-sm mb-6">
-              <Link href={`/artists/${album.artistSlug}`} className="text-[var(--secondary)] hover:underline">
-                {album.artistName}
-              </Link>
-              {album.showDate && <> • {album.showDate}</>}
-              {' • '}{album.totalTracks} tracks
-            </div>
+          {/* Right column — tracks scroll naturally */}
+          <div className="flex-1 min-w-0">
+            {/* Side A divider */}
+            <SideDivider side="A" />
 
-            {/* Quote box */}
-            {album.description && (
-              <div
-                className="album-quote-box text-[var(--text-subdued)] text-sm italic mb-6 px-4 py-3 rounded-lg border-l-[3px] border-[var(--tertiary)]"
-              >
-                "{album.description}"
-              </div>
-            )}
-
-            {/* Action buttons */}
-            <div className="flex gap-3.5 items-center justify-center lg:justify-start">
-              <button
-                onClick={handleAddToQueue}
-                className="album-play-button px-6 py-3.5 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 gap-2"
-              >
-                + Add Album to Queue
-              </button>
-              <button
-                onClick={handleFollowToggle}
-                className="album-follow-btn w-11 h-11 rounded-full flex items-center justify-center text-xl transition-all"
-              >
-                {isFollowed ? '♥' : '♡'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Side A divider */}
-        <SideDivider side="A" />
-
-        {/* Side A tracks */}
-        <div className="mb-8 track-list-container">
-          {sideATracks.map((track, idx) => (
-            <TrackRow
-              key={track.id}
-              track={track}
-              displayIndex={idx + 1}
-              isExpanded={expandedTrack === idx}
-              onToggle={() => setExpandedTrack(expandedTrack === idx ? -1 : idx)}
-              onPlay={handlePlaySong}
-              currentSong={currentSong}
-              isPlaying={isPlaying}
-              waveform={analyzerData.waveform}
-            />
-          ))}
-        </div>
-
-        {/* Side B divider */}
-        {sideBTracks.length > 0 && (
-          <>
-            <SideDivider side="B" />
-
-            {/* Side B tracks */}
+            {/* Side A tracks */}
             <div className="mb-8 track-list-container">
-              {sideBTracks.map((track, idx) => {
-                const actualIndex = midpoint + idx;
-                return (
-                  <TrackRow
-                    key={track.id}
-                    track={track}
-                    displayIndex={actualIndex + 1}
-                    isExpanded={expandedTrack === actualIndex}
-                    onToggle={() => setExpandedTrack(expandedTrack === actualIndex ? -1 : actualIndex)}
-                    onPlay={handlePlaySong}
-                    currentSong={currentSong}
-                    isPlaying={isPlaying}
-                    waveform={analyzerData.waveform}
-                  />
-                );
-              })}
+              {sideATracks.map((track, idx) => (
+                <TrackRow
+                  key={track.id}
+                  track={track}
+                  displayIndex={idx + 1}
+                  isExpanded={expandedTrack === idx}
+                  onToggle={() => setExpandedTrack(expandedTrack === idx ? -1 : idx)}
+                  onPlay={handlePlaySong}
+                  currentSong={currentSong}
+                  isPlaying={isPlaying}
+                  waveform={analyzerData.waveform}
+                  preferredSongId={getPreferred(track.id)}
+                  onSwapVersion={(songId) => {
+                    if (getPreferred(track.id) === songId) clearPreferred(track.id);
+                    else setPreferred(track.id, songId);
+                  }}
+                />
+              ))}
             </div>
-          </>
-        )}
+
+            {/* Side B divider */}
+            {sideBTracks.length > 0 && (
+              <>
+                <SideDivider side="B" />
+
+                {/* Side B tracks */}
+                <div className="mb-8 track-list-container">
+                  {sideBTracks.map((track, idx) => {
+                    const actualIndex = midpoint + idx;
+                    return (
+                      <TrackRow
+                        key={track.id}
+                        track={track}
+                        displayIndex={actualIndex + 1}
+                        isExpanded={expandedTrack === actualIndex}
+                        onToggle={() => setExpandedTrack(expandedTrack === actualIndex ? -1 : actualIndex)}
+                        onPlay={handlePlaySong}
+                        currentSong={currentSong}
+                        isPlaying={isPlaying}
+                        waveform={analyzerData.waveform}
+                        preferredSongId={getPreferred(track.id)}
+                        onSwapVersion={(songId) => {
+                          if (getPreferred(track.id) === songId) clearPreferred(track.id);
+                          else setPreferred(track.id, songId);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+        </div>
 
 
 

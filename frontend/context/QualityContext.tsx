@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { AudioQuality, Song } from '@/lib/types';
 import { sanitizeStreamUrl } from '@/lib/urlUtils';
+import { trackQualityChange } from '@/lib/analytics';
 
 interface NetworkInformation {
   effectiveType?: string;
@@ -54,11 +55,16 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const preferredQualityRef = useRef(preferredQuality);
+  useEffect(() => { preferredQualityRef.current = preferredQuality; }, [preferredQuality]);
+
   const setPreferredQuality = useCallback((quality: AudioQuality) => {
+    const previousQuality = preferredQualityRef.current;
     setPreferredQualityState(quality);
     if (typeof window !== 'undefined') {
       localStorage.setItem('audioQuality', quality);
     }
+    trackQualityChange(quality, previousQuality);
   }, []);
 
   const getStreamUrl = useCallback((song: Song): string => {
