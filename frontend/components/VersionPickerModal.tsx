@@ -444,8 +444,8 @@ function VersionRow({
         </div>
 
         {/* Info column */}
-        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-          {/* Row 1: Date · Venue */}
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+          {/* Row 1: Date + Venue */}
           <div className="flex items-baseline gap-2">
             <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
               {song.showDate ? song.showDate.replace(/-/g, '/') : 'Unknown date'}
@@ -455,38 +455,38 @@ function VersionRow({
             </span>
           </div>
 
-          {/* Row 2: Taper · Location · Badge · Stars · Downloads */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {song.taper && (
-              <>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                  <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
-                  <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
-                  <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
-                  <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
-                  <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                <a
-                  href={`https://archive.org/search?query=taper:${encodeURIComponent('"' + song.taper + '"')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-jb-mono text-[11px] font-medium hover:underline transition-colors truncate"
-                  style={{ color: 'var(--text-tertiary)' }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {song.taper}
-                </a>
-              </>
-            )}
-            {location && (
-              <>
-                {song.taper && <span className="text-[11px]" style={{ color: 'var(--text-tertiary)', opacity: 0.5 }}>&middot;</span>}
-                <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                  {location}
-                </span>
-              </>
-            )}
-            {(song.taper || location) && <span className="text-[11px]" style={{ color: 'var(--text-tertiary)', opacity: 0.5 }}>&middot;</span>}
+          {/* Row 2: Location */}
+          {location && (
+            <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+              {location}
+            </span>
+          )}
+
+          {/* Row 3: Taper */}
+          {song.taper && (
+            <div className="flex items-center gap-1.5">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
+                <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
+                <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
+                <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
+                <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              <a
+                href={`https://archive.org/search?query=taper:${encodeURIComponent('"' + song.taper + '"')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-jb-mono text-[11px] font-medium hover:underline transition-colors truncate"
+                style={{ color: 'var(--text-tertiary)' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {song.taper}
+              </a>
+            </div>
+          )}
+
+          {/* Row 4: Source badge + Stars + Downloads */}
+          <div className="flex items-center gap-2.5 flex-wrap">
             <RecTypeBadge type={recordingType} />
             <StarRating rating={song.avgRating} count={song.numReviews} />
             {song.downloads != null && song.downloads > 0 && (
@@ -506,7 +506,6 @@ function VersionRow({
               </span>
             )}
           </div>
-
         </div>
 
         {/* Duration (top-right) */}

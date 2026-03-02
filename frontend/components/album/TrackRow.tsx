@@ -7,6 +7,7 @@ import { Waveform } from '@/components/AudioVisualizations';
 import { getBestVersion } from '@/lib/queueTypes';
 import { StarRating, RecTypeBadge } from '@/components/VersionPickerModal';
 import VersionPickerModal from '@/components/VersionPickerModal';
+import RecordingMediumIcon from '@/components/RecordingMediumIcon';
 
 interface TrackRowProps {
   track: Track;
@@ -136,7 +137,17 @@ export const TrackRow = React.memo(function TrackRow({
 
         {/* Metadata rows for the chipSong */}
         {chipSong && (
-          <div className="flex flex-col gap-1 mt-2" style={{ paddingLeft: 34 }}>
+          <div className="flex gap-3 mt-2" style={{ paddingLeft: 34 }}>
+            {/* Source medium icon */}
+            <div className="flex-shrink-0 pt-0.5">
+              <RecordingMediumIcon
+                medium={chipSong.recordingMedium}
+                lineage={chipSong.lineage}
+                source={chipSong.source}
+                size={0.7}
+              />
+            </div>
+            <div className="flex flex-col gap-1 min-w-0">
             {/* Date + Venue */}
             <div className="flex items-baseline gap-2">
               {chipSong.showDate && (
@@ -191,6 +202,7 @@ export const TrackRow = React.memo(function TrackRow({
                   {chipSong.downloads.toLocaleString()}
                 </span>
               )}
+            </div>
             </div>
           </div>
         )}

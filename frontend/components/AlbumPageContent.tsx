@@ -124,8 +124,16 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
           <div className="sticky top-14 md:top-16 lg:top-20 self-start z-10 bg-[var(--bg)] flex-shrink-0 flex flex-col items-center lg:items-start gap-6 pb-4 mb-8 lg:mb-0">
             <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image} />
 
+            {/* Add to queue — centered under cassette */}
+            <button
+              onClick={handleAddToQueue}
+              className="album-play-button px-6 py-3 rounded-full flex items-center justify-center text-sm font-semibold transition-all hover:scale-105 gap-2"
+            >
+              + Add Album to Queue
+            </button>
+
             {/* Album info */}
-            <div className="pt-4 max-w-[400px] text-center lg:text-left">
+            <div className="max-w-[400px] text-center lg:text-left">
               {/* Quote box */}
               {album.description && (
                 <div
@@ -135,21 +143,12 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                 </div>
               )}
 
-              {/* Action buttons */}
-              <div className="flex flex-col gap-3 items-center">
-                <button
-                  onClick={handleAddToQueue}
-                  className="album-play-button px-6 py-3.5 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 gap-2"
-                >
-                  + Add Album to Queue
-                </button>
-                <button
-                  onClick={handleFollowToggle}
-                  className="album-follow-btn w-11 h-11 rounded-full flex items-center justify-center text-xl transition-all"
-                >
-                  {isFollowed ? '♥' : '♡'}
-                </button>
-              </div>
+              <button
+                onClick={handleFollowToggle}
+                className="album-follow-btn w-11 h-11 rounded-full flex items-center justify-center text-xl transition-all"
+              >
+                {isFollowed ? '♥' : '♡'}
+              </button>
             </div>
           </div>
 
