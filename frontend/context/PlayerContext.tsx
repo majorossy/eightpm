@@ -684,9 +684,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = getAudio();
     if (!audio) return;
 
-    // Insert after cursor and advance to play it
+    // Insert after cursor and advance to play it (coral glow, not orange play-next)
     const item = queueContext.trackToItem(song);
-    queueContext.playNext(item);
+    queueContext.playNext(item, { glow: 'play-now' });
     queueContext.setCursor(queueContext.queue.cursorIndex + 1);
 
     setState(prev => ({

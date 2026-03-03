@@ -61,6 +61,8 @@ export interface RecordingRowProps {
   onPlay?: (song: Song) => void;
   onAddToQueue?: (song: Song) => void;
   isCurrentlyPlaying?: boolean;
+  onActionHover?: (hovered: boolean) => void;
+  availableVersions?: Song[];
 }
 
 export default function RecordingRow({
@@ -89,6 +91,8 @@ export default function RecordingRow({
   swapHighlighted,
   onAddToQueue,
   isCurrentlyPlaying,
+  onActionHover,
+  availableVersions,
 }: RecordingRowProps) {
   const cfg = SIZE_CONFIG[size];
   const metaSize: RecordingMetaBlockSize = size;
@@ -165,6 +169,8 @@ export default function RecordingRow({
           onSwap={onSwap}
           onPlay={onPlay}
           onAddToQueue={onAddToQueue}
+          onActionHover={onActionHover}
+          availableVersions={availableVersions}
         />
       </div>
     </div>

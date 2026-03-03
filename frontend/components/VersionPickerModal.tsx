@@ -318,6 +318,7 @@ export default function VersionPickerModal({
                         stickyDisabled={isCurrentVersion && grabToSeek.stickyDisabled}
                         cardTranslateY={isCurrentVersion ? grabToSeek.cardTranslateY : 0}
                         seekLanded={isCurrentVersion && grabToSeek.seekLanded}
+                        availableVersions={versions}
                       />
                     </Fragment>
                   );
@@ -343,6 +344,7 @@ function VersionRow({
   stickyDisabled,
   cardTranslateY = 0,
   seekLanded,
+  availableVersions,
 }: {
   song: Song;
   isCurrent: boolean;
@@ -353,6 +355,7 @@ function VersionRow({
   stickyDisabled?: boolean;
   cardTranslateY?: number;
   seekLanded?: boolean;
+  availableVersions?: Song[];
 }) {
   return (
     <div
@@ -408,6 +411,7 @@ function VersionRow({
           swapLabel="swap in"
           actions={isCurrent ? ['play', 'play-next', 'queue', 'playlist', 'favorite'] : ['swap', 'play', 'play-next', 'queue', 'playlist', 'favorite']}
           onSwap={!isCurrent ? (e) => { e.stopPropagation(); onSwap(song); } : undefined}
+          availableVersions={availableVersions}
         />
       </div>
     </div>

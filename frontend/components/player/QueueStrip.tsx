@@ -3,6 +3,7 @@
 import type React from 'react';
 import QueueChip from '@/components/player/QueueChip';
 import type { QueueItem } from '@/lib/queueTypes';
+import type { ChipGlowType } from '@/lib/chipGlow';
 import type { Song, AudioQuality } from '@/lib/types';
 import {
   useSortable,
@@ -20,7 +21,7 @@ export function SortableQueueChip({
   isPlayed,
   forceEnableDrag,
   compact,
-  isJustSwapped,
+  glowType,
 }: {
   item: QueueItem;
   chipIndex: number;
@@ -33,7 +34,7 @@ export function SortableQueueChip({
   isPlayed?: boolean;
   forceEnableDrag?: boolean;
   compact?: boolean;
-  isJustSwapped?: boolean;
+  glowType?: ChipGlowType | null;
 }) {
   const {
     attributes,
@@ -70,7 +71,7 @@ export function SortableQueueChip({
           isPlayed={isPlayed}
           inSortable
           compact={compact}
-          isJustSwapped={isJustSwapped}
+          glowType={glowType}
         />
       </div>
     </div>

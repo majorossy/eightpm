@@ -62,7 +62,7 @@ export default function BottomPlayer() {
     removeItem,
     removeBatch,
     selectVersion,
-    lastSwappedQueueId,
+    chipGlow,
   } = useQueue();
 
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlist } = useWishlist();
@@ -308,7 +308,7 @@ export default function BottomPlayer() {
         onRemoveItem={removeItem}
         onRemoveBatch={removeBatch}
         onSelectVersion={selectVersion}
-        lastSwappedQueueId={lastSwappedQueueId}
+        chipGlow={chipGlow}
         onMoveItem={moveItem}
         onDetachItem={detachItem}
         onRestoreFromHistory={restoreFromHistory}
@@ -369,7 +369,7 @@ export default function BottomPlayer() {
         onRemoveItem={removeItem}
         onRemoveBatch={removeBatch}
         onSelectVersion={selectVersion}
-        lastSwappedQueueId={lastSwappedQueueId}
+        chipGlow={chipGlow}
         onMoveItem={moveItem}
         onDetachItem={detachItem}
         onRestoreFromHistory={restoreFromHistory}

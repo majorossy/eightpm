@@ -34,6 +34,7 @@ export const TrackRow = React.memo(function TrackRow({
   coverArt,
 }: TrackRowProps) {
   const [hovered, setHovered] = useState(false);
+  const [buttonHovered, setButtonHovered] = useState(false);
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [justSwapped, setJustSwapped] = useState(false);
   const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,12 +91,12 @@ export const TrackRow = React.memo(function TrackRow({
           cursor: 'pointer',
           borderLeft: isCurrentTrack
             ? '3px solid var(--secondary)'
-            : hovered
+            : hovered && !buttonHovered
               ? hasMultipleVersions
                 ? '3px solid var(--quaternary-muted)'
                 : '3px solid var(--secondary-muted)'
               : '3px solid transparent',
-          background: hovered && !isCurrentTrack
+          background: hovered && !buttonHovered && !isCurrentTrack
             ? hasMultipleVersions
               ? 'color-mix(in srgb, var(--quaternary) 6%, transparent)'
               : 'color-mix(in srgb, var(--text) 2%, transparent)'
@@ -150,6 +151,8 @@ export const TrackRow = React.memo(function TrackRow({
               onSwap={hasMultipleVersions ? () => setShowVersionModal(true) : undefined}
               onPlay={onPlay}
               isCurrentlyPlaying={isCurrentTrack && isPlaying}
+              onActionHover={setButtonHovered}
+              availableVersions={track.songs}
             />
           </div>
         )}

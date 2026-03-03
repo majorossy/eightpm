@@ -23,6 +23,7 @@ interface VersionCardProps {
   isPlaying: boolean;
   onSelect: () => void;
   onPlay: () => void;
+  availableVersions?: Song[];
 }
 
 type SortOrder = 'newest' | 'oldest';
@@ -33,6 +34,7 @@ function VersionCard({
   isPlaying,
   onSelect,
   onPlay,
+  availableVersions,
 }: VersionCardProps) {
   const year = song.showDate?.split('-')[0] ?? null;
 
@@ -69,6 +71,7 @@ function VersionCard({
         actions={['play', 'play-next', 'queue', 'playlist', 'favorite']}
         onPlay={() => onPlay()}
         isCurrentlyPlaying={isPlaying}
+        availableVersions={availableVersions}
       />
     </div>
   );
@@ -206,6 +209,7 @@ export default function VersionCarousel({
                 isPlaying={currentSongId === song.id && isPlaying}
                 onSelect={() => handleSelect(idx)}
                 onPlay={() => onPlay(song)}
+                availableVersions={songs}
               />
             );
           })}

@@ -169,6 +169,7 @@ export function trackToQueueItem(
   song: Song,
   track?: Track,
   albumSource?: QueueItemAlbumSource,
+  availableVersions?: Song[],
 ): QueueItem {
   const trackTitle = song.trackTitle || song.title;
   const trackSlug = track?.slug || slugify(trackTitle);
@@ -179,7 +180,7 @@ export function trackToQueueItem(
     song,
     trackTitle,
     trackSlug,
-    availableVersions: track ? track.songs : [song],
+    availableVersions: availableVersions ?? (track ? track.songs : [song]),
     albumSource: albumSource ?? null,
     played: false,
     source: { type: 'add-to-queue', addedAt: Date.now() },

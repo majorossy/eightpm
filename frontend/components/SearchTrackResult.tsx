@@ -39,10 +39,12 @@ function VersionCard({
   song,
   isPlaying,
   onPlay,
+  availableVersions,
 }: {
   song: Song;
   isPlaying: boolean;
   onPlay: () => void;
+  availableVersions?: Song[];
 }) {
   const year = song.showDate?.split('-')[0] || '--';
   const recordingType = song.recordingType;
@@ -78,6 +80,7 @@ function VersionCard({
           actions={['play', 'play-next', 'queue', 'playlist', 'favorite']}
           onPlay={() => onPlay()}
           isCurrentlyPlaying={isPlaying}
+          availableVersions={availableVersions}
         />
       </div>
     </div>
@@ -314,6 +317,7 @@ export function SearchTrackResult({
                     song={song}
                     isPlaying={currentSong?.id === song.id && isPlaying}
                     onPlay={() => handlePlay(song)}
+                    availableVersions={displayVersions}
                   />
                 ))}
               </div>

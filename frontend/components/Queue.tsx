@@ -11,6 +11,7 @@ import { useMobileUI } from '@/context/MobileUIContext';
 import { formatDuration } from '@/lib/api';
 import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
+import { glowClassName } from '@/lib/chipGlow';
 
 import { VALIDATION_LIMITS } from '@/lib/validation';
 import VersionPickerModal from '@/components/VersionPickerModal';
@@ -422,8 +423,8 @@ function SortableTrackRow({
 }: SortableTrackRowProps) {
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const modalClosedAtRef = useRef(0);
-  const { lastSwappedQueueId } = useQueue();
-  const isJustSwapped = item.queueId === lastSwappedQueueId;
+  const { chipGlow } = useQueue();
+  const glowType = chipGlow?.queueIds.includes(item.queueId) ? chipGlow.type : null;
 
   const {
     attributes,
@@ -458,7 +459,7 @@ function SortableTrackRow({
           if (Date.now() - modalClosedAtRef.current < 300) return;
           playFromQueue(absoluteIndex);
         }}
-        className={`group/row flex gap-0 py-2 px-2 mx-1.5 mb-0.5 rounded-[10px] cursor-pointer transition-all relative ${isJustSwapped ? 'swap-glow' : ''}`}
+        className={`group/row flex gap-0 py-2 px-2 mx-1.5 mb-0.5 rounded-[10px] cursor-pointer transition-all relative ${glowType ? glowClassName(glowType) : ''}`}
         style={{
           border: isDragging
             ? '2px dashed color-mix(in srgb, var(--quinary) 70%, transparent)'
@@ -623,6 +624,8 @@ interface SidebarGroupEntry {
   coverArt?: string;
   items: Array<{ item: QueueItem; absoluteIndex: number }>;
   batchId: string;
+  /** True when this is a single song added individually (not an album group) */
+  isSingle?: boolean;
 }
 
 // All groups use unified dark player-surface styling
@@ -697,6 +700,7 @@ function UpcomingSection({
           coverArt: item.albumSource?.coverArt,
           items: [{ item, absoluteIndex: i }],
           batchId: item.batchId,
+          isSingle: true,
         });
         i++;
       }
@@ -830,6 +834,23 @@ function UpcomingSection({
                 const pct = total > 0 ? (played / total) * 100 : 0;
                 const isCollapsed = collapsedGroups.has(group.id);
                 const totalDuration = group.items.reduce((sum, { item }) => sum + (item.song.duration || 0), 0);
+
+                // Single song — render as a bare track row, no album card
+                if (group.isSingle) {
+                  const { item, absoluteIndex } = group.items[0];
+                  return (
+                    <SortableTrackRow
+                      key={group.id}
+                      item={item}
+                      absoluteIndex={absoluteIndex}
+                      displayIndex={1}
+                      removeItem={removeItem}
+                      playFromQueue={playFromQueue}
+                      selectVersion={selectVersion}
+                      preferredQuality={preferredQuality}
+                    />
+                  );
+                }
 
                 return (
                   <li

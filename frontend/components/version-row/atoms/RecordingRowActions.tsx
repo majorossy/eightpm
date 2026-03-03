@@ -28,6 +28,8 @@ interface RecordingRowActionsProps {
   onAddToQueue?: (song: Song) => void;
   swapLabel?: string;
   swapHighlighted?: boolean;
+  onActionHover?: (hovered: boolean) => void;
+  availableVersions?: Song[];
 }
 
 // ─── Size Config (for icon-only buttons: favorite, playlist) ─────────
@@ -98,6 +100,8 @@ export default function RecordingRowActions({
   onAddToQueue,
   swapLabel = 'swap',
   swapHighlighted = false,
+  onActionHover,
+  availableVersions,
 }: RecordingRowActionsProps) {
   const { playSong, togglePlay } = usePlayer();
   const { addToQueue, playNext, trackToItem } = useQueue();
@@ -131,17 +135,17 @@ export default function RecordingRowActions({
     if (onAddToQueue) {
       onAddToQueue(song);
     } else {
-      playNext(trackToItem(song));
+      playNext(trackToItem(song, undefined, undefined, availableVersions));
     }
     toast.showSuccess('Playing next');
-  }, [song, onAddToQueue, playNext, trackToItem, haptic, toast]);
+  }, [song, onAddToQueue, playNext, trackToItem, haptic, toast, availableVersions]);
 
   const handleQueue = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     haptic.vibrate(haptic.BUTTON_PRESS);
-    addToQueue(trackToItem(song));
+    addToQueue(trackToItem(song, undefined, undefined, availableVersions));
     toast.showSuccess('Added to queue');
-  }, [song, addToQueue, trackToItem, haptic, toast]);
+  }, [song, addToQueue, trackToItem, haptic, toast, availableVersions]);
 
   const handleFavorite = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -271,7 +275,11 @@ export default function RecordingRowActions({
 
   return (
     <>
-      <div className={`flex items-center ${cfg.gap} flex-shrink-0`}>
+      <div
+        className={`flex items-center ${cfg.gap} flex-shrink-0`}
+        onMouseEnter={() => onActionHover?.(true)}
+        onMouseLeave={() => onActionHover?.(false)}
+      >
         {mergedActions.map((action) => {
           switch (action) {
             case 'play-split':
@@ -303,12 +311,20 @@ export default function RecordingRowActions({
 
             case 'swap':
               if (!onSwap) return null;
-              return renderActionBtn(
-                'swap',
-                swapLabel,
-                (e) => { e.stopPropagation(); onSwap(e); },
-                'Swap version',
-                swapHighlighted,
+              return (
+                <span
+                  key="swap"
+                  onMouseEnter={() => onActionHover?.(false)}
+                  onMouseLeave={() => onActionHover?.(true)}
+                >
+                  {renderActionBtn(
+                    'swap',
+                    swapLabel,
+                    (e) => { e.stopPropagation(); onSwap(e); },
+                    'Swap version',
+                    swapHighlighted,
+                  )}
+                </span>
               );
 
             case 'favorite':

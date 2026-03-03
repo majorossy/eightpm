@@ -25,6 +25,7 @@ import {
   computeAlbumGroups,
   generateBatchId,
 } from '@/lib/queueTypes';
+import type { ChipGlow, ChipGlowType } from '@/lib/chipGlow';
 import { sanitizeStreamUrl } from '@/lib/urlUtils';
 import { trackAddToQueue, trackPlayNext, trackQueueReorder, trackVersionChange, trackRepeatChange } from '@/lib/analytics';
 
@@ -464,7 +465,7 @@ interface QueueContextType {
     startIndex?: number,
     versionOverrides?: Map<string, string>,
   ) => void;
-  playNext: (items: QueueItem | QueueItem[]) => void;
+  playNext: (items: QueueItem | QueueItem[], opts?: { glow?: ChipGlowType }) => void;
   addToQueue: (items: QueueItem | QueueItem[]) => void;
   removeItem: (queueId: string) => void;
   moveItem: (fromIndex: number, toIndex: number) => void;
@@ -487,8 +488,8 @@ interface QueueContextType {
   clearUpcoming: () => void;
   removeBatch: (batchId: string) => void;
 
-  // Swap glow
-  lastSwappedQueueId: string | null;
+  // Chip glow (swap / play-next / queued)
+  chipGlow: ChipGlow;
 
   // Helpers
   albumToItems: (
@@ -499,6 +500,7 @@ interface QueueContextType {
     song: Song,
     track?: Track,
     albumSource?: QueueItemAlbumSource,
+    availableVersions?: Song[],
   ) => QueueItem;
 }
 
@@ -658,6 +660,19 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
   }
 
   // ---------------------------------------------------------------------------
+  // Chip glow tracking (ephemeral, not persisted)
+  // ---------------------------------------------------------------------------
+
+  const [chipGlow, setChipGlow] = useState<ChipGlow>(null);
+  const glowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerChipGlow = useCallback((queueIds: string[], type: ChipGlowType) => {
+    setChipGlow({ queueIds, type });
+    if (glowTimerRef.current) clearTimeout(glowTimerRef.current);
+    glowTimerRef.current = setTimeout(() => setChipGlow(null), 1800);
+  }, []);
+
+  // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
 
@@ -677,17 +692,23 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const playNext = useCallback((items: QueueItem | QueueItem[]) => {
+  const playNext = useCallback((items: QueueItem | QueueItem[], opts?: { glow?: ChipGlowType }) => {
     dispatch({ type: 'INSERT_AFTER_CURSOR', items });
     const arr = Array.isArray(items) ? items : [items];
-    if (arr.length > 0) trackPlayNext(arr[0].song);
-  }, []);
+    if (arr.length > 0) {
+      trackPlayNext(arr[0].song);
+      triggerChipGlow(arr.map(i => i.queueId), opts?.glow ?? 'play-next');
+    }
+  }, [triggerChipGlow]);
 
   const addToQueue = useCallback((items: QueueItem | QueueItem[]) => {
     dispatch({ type: 'APPEND_ITEMS', items });
     const arr = Array.isArray(items) ? items : [items];
-    if (arr.length > 0) trackAddToQueue(arr[0].song);
-  }, []);
+    if (arr.length > 0) {
+      trackAddToQueue(arr[0].song);
+      triggerChipGlow(arr.map(i => i.queueId), 'queued');
+    }
+  }, [triggerChipGlow]);
 
   const removeItem = useCallback((queueId: string) => {
     dispatch({ type: 'REMOVE_ITEM', queueId });
@@ -744,22 +765,11 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     return peekNextFromState(queueRef.current);
   }, []); // Empty deps -- uses ref
 
-  // ---------------------------------------------------------------------------
-  // Swap glow tracking (ephemeral, not persisted)
-  // ---------------------------------------------------------------------------
-
-  const [lastSwappedQueueId, setLastSwappedQueueId] = useState<string | null>(null);
-  const swapGlowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const selectVersion = useCallback((queueId: string, song: Song) => {
     dispatch({ type: 'SELECT_VERSION', queueId, song });
     trackVersionChange(song.trackTitle, song.id);
-
-    // Trigger swap glow
-    setLastSwappedQueueId(queueId);
-    if (swapGlowTimerRef.current) clearTimeout(swapGlowTimerRef.current);
-    swapGlowTimerRef.current = setTimeout(() => setLastSwappedQueueId(null), 1800);
-  }, []);
+    triggerChipGlow([queueId], 'swap');
+  }, [triggerChipGlow]);
 
   const markPlayed = useCallback(() => {
     dispatch({ type: 'MARK_PLAYED' });
@@ -798,8 +808,9 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       song: Song,
       track?: Track,
       albumSource?: QueueItemAlbumSource,
+      availableVersions?: Song[],
     ): QueueItem => {
-      return trackToQueueItem(song, track, albumSource);
+      return trackToQueueItem(song, track, albumSource, availableVersions);
     },
     [],
   );
@@ -842,8 +853,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       clearUpcoming,
       removeBatch,
 
-      // Swap glow
-      lastSwappedQueueId,
+      // Chip glow
+      chipGlow,
 
       // Helpers
       albumToItems,
@@ -876,7 +887,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       clearQueue,
       clearUpcoming,
       removeBatch,
-      lastSwappedQueueId,
+      chipGlow,
       albumToItems,
       trackToItem,
     ],

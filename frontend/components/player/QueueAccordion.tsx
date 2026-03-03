@@ -7,6 +7,8 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect, Fragment } from 'react';
 import type { QueueItem, QueueItemAlbumSource } from '@/lib/queueTypes';
+import type { ChipGlow } from '@/lib/chipGlow';
+import { glowClassName } from '@/lib/chipGlow';
 import TicketStub from '@/components/TicketStub';
 import type { Song, AudioQuality } from '@/lib/types';
 import { SortableQueueChip } from '@/components/player/QueueStrip';
@@ -71,8 +73,8 @@ interface QueueAccordionProps {
   preferredQuality: AudioQuality;
   /** Compact mode for mobile — smaller chips and headers */
   compact?: boolean;
-  /** Queue ID of item just swapped (for glow animation) */
-  lastSwappedQueueId?: string | null;
+  /** Active chip glow state (swap / play-next / queued) */
+  chipGlow?: ChipGlow;
 }
 
 // ─── Component ───────────────────────────────────────────────────────
@@ -90,7 +92,7 @@ export default function QueueAccordion({
   onRestoreFromHistory,
   preferredQuality,
   compact,
-  lastSwappedQueueId,
+  chipGlow,
 }: QueueAccordionProps) {
 
   // ─── History / Upcoming Split ──────────────────────────────────────
@@ -235,7 +237,9 @@ export default function QueueAccordion({
       historyChips.forEach(c => ids.push(c.item.queueId));
     }
     for (const g of groups) {
-      if (g.type === 'album' && !collapsedKeys.has(g.key)) {
+      if (g.type === 'standalone') {
+        g.chips.filter(c => !c.isPlayed).forEach(c => ids.push(c.item.queueId));
+      } else if (g.type === 'album' && !collapsedKeys.has(g.key)) {
         g.chips.filter(c => !c.isPlayed).forEach(c => ids.push(c.item.queueId));
       }
     }
@@ -513,7 +517,7 @@ export default function QueueAccordion({
                     onSelectVersion={onSelectVersion}
                     preferredQuality={preferredQuality}
                     compact={compact}
-                    lastSwappedQueueId={lastSwappedQueueId}
+                    chipGlow={chipGlow}
                   />
                 ) : (
                   <AlbumGroupSection
@@ -532,7 +536,7 @@ export default function QueueAccordion({
                     onSelectVersion={onSelectVersion}
                     preferredQuality={preferredQuality}
                     compact={compact}
-                    lastSwappedQueueId={lastSwappedQueueId}
+                    chipGlow={chipGlow}
                   />
                 )}
               </Fragment>
@@ -664,7 +668,7 @@ function StandaloneChip({
   onSelectVersion,
   preferredQuality,
   compact,
-  lastSwappedQueueId,
+  chipGlow,
 }: {
   chipEntry: ChipEntry;
   playedCount: number;
@@ -674,14 +678,15 @@ function StandaloneChip({
   onSelectVersion: (queueId: string, song: Song) => void;
   preferredQuality: AudioQuality;
   compact?: boolean;
-  lastSwappedQueueId?: string | null;
+  chipGlow?: ChipGlow;
 }) {
   const { item, absoluteIndex, isPlayed } = chipEntry;
   const globalIdx = chipGlobalIndexMap.get(item.queueId) ?? -1;
   const isActive = !isPlayed && globalIdx === playedCount;
+  const glowType = chipGlow?.queueIds.includes(item.queueId) ? chipGlow.type : null;
 
   return (
-    <QueueChip
+    <SortableQueueChip
       item={item}
       chipIndex={absoluteIndex + 1}
       absoluteIndex={absoluteIndex}
@@ -692,7 +697,7 @@ function StandaloneChip({
       isActive={isActive}
       isPlayed={isPlayed}
       compact={compact}
-      isJustSwapped={item.queueId === lastSwappedQueueId}
+      glowType={glowType}
     />
   );
 }
@@ -713,7 +718,7 @@ function AlbumGroupSection({
   onSelectVersion,
   preferredQuality,
   compact,
-  lastSwappedQueueId,
+  chipGlow,
 }: {
   group: StripGroup;
   isExpanded: boolean;
@@ -730,7 +735,7 @@ function AlbumGroupSection({
   onSelectVersion: (queueId: string, song: Song) => void;
   preferredQuality: AudioQuality;
   compact?: boolean;
-  lastSwappedQueueId?: string | null;
+  chipGlow?: ChipGlow;
 }) {
   return (
     <div
@@ -771,6 +776,7 @@ function AlbumGroupSection({
           {group.chips.map((chipEntry) => {
             const globalIdx = chipGlobalIndexMap.get(chipEntry.item.queueId) ?? -1;
             const isActive = !chipEntry.isPlayed && globalIdx === playedCount;
+            const glowType = chipGlow?.queueIds.includes(chipEntry.item.queueId) ? chipGlow.type : null;
             return (
               <SortableQueueChip
                 key={chipEntry.item.queueId}
@@ -784,7 +790,7 @@ function AlbumGroupSection({
                 isActive={isActive}
                 isPlayed={chipEntry.isPlayed}
                 compact={compact}
-                isJustSwapped={chipEntry.item.queueId === lastSwappedQueueId}
+                glowType={glowType}
               />
             );
           })}
