@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Track, Song, Album, formatDuration } from '@/lib/api';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
-import { AddToPlaylistModal } from '@/components/Playlists/AddToPlaylistModal';
+import { AddToMiniDiscModal } from '@/components/MiniDiscs/AddToMiniDiscModal';
 import VersionCarousel from './VersionCarousel';
 import { useShare } from '@/hooks/useShare';
 import ShareModal from '@/components/ShareModal';
@@ -22,7 +22,7 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
   const { currentSong, isPlaying, playSong, togglePlay, playAlbum } = usePlayer();
   const { addToQueue, trackToItem } = useQueue();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [showMiniDiscModal, setShowMiniDiscModal] = useState(false);
   const {
     showShareModal,
     shareUrl,
@@ -220,7 +220,7 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowPlaylistModal(true);
+                  setShowMiniDiscModal(true);
                 }}
                 className="text-secondary hover:text-white opacity-0 group-hover:opacity-100 transition-all focus:outline-none focus:opacity-100"
                 aria-label={`Add ${track.title} to playlist`}
@@ -312,9 +312,9 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
         )}
 
         {/* Add to Playlist Modal */}
-        <AddToPlaylistModal
-          isOpen={showPlaylistModal}
-          onClose={() => setShowPlaylistModal(false)}
+        <AddToMiniDiscModal
+          isOpen={showMiniDiscModal}
+          onClose={() => setShowMiniDiscModal(false)}
           song={selectedSong}
         />
 

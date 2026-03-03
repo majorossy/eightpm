@@ -3,7 +3,10 @@
 
 import { supabase, isSupabaseConfigured } from './supabase';
 import { Song } from './types';
-import { Playlist } from '@/context/PlaylistContext';
+import { MiniDisc } from './minidiscTypes';
+
+// MiniDiscs map to playlists on the server side
+type Playlist = MiniDisc;
 
 // Debounce helper
 function debounce<T extends (...args: Parameters<T>) => void>(

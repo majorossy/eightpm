@@ -11,7 +11,7 @@ import { useQueue } from '@/context/QueueContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useToast } from '@/hooks/useToast';
 import { useHaptic } from '@/hooks/useHaptic';
-import { AddToPlaylistModal } from '@/components/Playlists/AddToPlaylistModal';
+import { AddToMiniDiscModal } from '@/components/MiniDiscs/AddToMiniDiscModal';
 import type { RecordingRowSize } from '../molecules/RecordingRow';
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -26,6 +26,8 @@ interface RecordingRowActionsProps {
   onSwap?: (e: React.MouseEvent) => void;
   onPlay?: (song: Song) => void;
   onAddToQueue?: (song: Song) => void;
+  swapLabel?: string;
+  swapHighlighted?: boolean;
 }
 
 // ─── Size Config (for icon-only buttons: favorite, playlist) ─────────
@@ -94,6 +96,8 @@ export default function RecordingRowActions({
   onSwap,
   onPlay,
   onAddToQueue,
+  swapLabel = 'swap',
+  swapHighlighted = false,
 }: RecordingRowActionsProps) {
   const { playSong, togglePlay } = usePlayer();
   const { addToQueue, playNext, trackToItem } = useQueue();
@@ -101,7 +105,7 @@ export default function RecordingRowActions({
   const toast = useToast();
   const haptic = useHaptic();
 
-  const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
+  const [miniDiscModalOpen, setMiniDiscModalOpen] = useState(false);
 
   const cfg = ACTION_SIZE_CONFIG[size];
   const iconBtnClass = `${cfg.padding} transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-accent rounded`;
@@ -155,7 +159,7 @@ export default function RecordingRowActions({
   const handlePlaylist = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     haptic.vibrate(haptic.BUTTON_PRESS);
-    setPlaylistModalOpen(true);
+    setMiniDiscModalOpen(true);
   }, [haptic]);
 
   // ─── Action button helper ───────────────────────────────────────
@@ -165,15 +169,17 @@ export default function RecordingRowActions({
     label: string,
     onClick: (e: React.MouseEvent) => void,
     ariaLabel: string,
+    forceHover = false,
   ) => {
     const s = BTN_STYLES[key];
+    const bg = forceHover ? s.hoverBg : s.background;
     return (
       <button
         key={key}
         onClick={onClick}
-        style={{ ...btnBase, color: s.color, background: s.background, border: s.border }}
+        style={{ ...btnBase, color: s.color, background: bg, border: s.border }}
         onMouseEnter={(e) => { e.currentTarget.style.background = s.hoverBg; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = s.background; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = bg; }}
         aria-label={ariaLabel}
       >
         {label}
@@ -181,15 +187,96 @@ export default function RecordingRowActions({
     );
   };
 
+  // ─── Split button renderer ────────────────────────────────────────
+
+  const renderSplitPlayBtn = () => {
+    const nextStyle = BTN_STYLES['play-next'];
+    const playStyle = BTN_STYLES.play;
+
+    const halfBase: React.CSSProperties = {
+      fontFamily: 'var(--font-jb-mono), monospace',
+      fontSize: '9px',
+      fontWeight: 600,
+      letterSpacing: '0.04em',
+      transition: 'all 0.15s',
+      whiteSpace: 'nowrap',
+      cursor: 'pointer',
+      lineHeight: 1,
+      border: 'none',
+      background: 'transparent',
+    };
+
+    return (
+      <div
+        key="play-split"
+        style={{
+          display: 'inline-flex',
+          borderRadius: '5px',
+          border: '1px solid rgba(196,112,110,0.25)',
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}
+      >
+        {/* Left: "next" */}
+        <button
+          onClick={handlePlayNext}
+          style={{ ...halfBase, color: nextStyle.color, padding: '4px 2px 4px 10px' }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(200,168,72,0.18)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+          aria-label={`Play ${song.title} next`}
+        >
+          next
+        </button>
+
+        {/* Center: "play" — shared word at the seam */}
+        <span style={{
+          ...halfBase,
+          padding: '4px 1px',
+          color: 'color-mix(in srgb, var(--secondary) 60%, var(--quinary))',
+          cursor: 'default',
+          pointerEvents: 'none',
+        }}>
+          play
+        </span>
+
+        {/* Right: "now" / "pause" */}
+        <button
+          onClick={handlePlay}
+          style={{ ...halfBase, color: playStyle.color, padding: '4px 10px 4px 2px' }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(196,112,110,0.18)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+          aria-label={isCurrentlyPlaying ? 'Pause' : `Play ${song.title} now`}
+        >
+          {isCurrentlyPlaying ? 'pause' : 'now'}
+        </button>
+      </div>
+    );
+  };
+
   // ─── Render ───────────────────────────────────────────────────────
 
   const isFavorited = isInWishlist(song.id);
 
+  // Auto-merge play + play-next into a single split button
+  const hasPlay = actions.includes('play');
+  const hasPlayNext = actions.includes('play-next');
+  const mergedActions: (RecordingAction | 'play-split')[] = hasPlay && hasPlayNext
+    ? actions.reduce<(RecordingAction | 'play-split')[]>((acc, a) => {
+        if (a === 'play') { acc.push('play-split'); return acc; }
+        if (a === 'play-next') return acc; // absorbed into split
+        acc.push(a);
+        return acc;
+      }, [])
+    : actions;
+
   return (
     <>
       <div className={`flex items-center ${cfg.gap} flex-shrink-0`}>
-        {actions.map((action) => {
+        {mergedActions.map((action) => {
           switch (action) {
+            case 'play-split':
+              return renderSplitPlayBtn();
+
             case 'play':
               return renderActionBtn(
                 'play',
@@ -218,9 +305,10 @@ export default function RecordingRowActions({
               if (!onSwap) return null;
               return renderActionBtn(
                 'swap',
-                'swap',
+                swapLabel,
                 (e) => { e.stopPropagation(); onSwap(e); },
                 'Swap version',
+                swapHighlighted,
               );
 
             case 'favorite':
@@ -294,9 +382,9 @@ export default function RecordingRowActions({
 
       {/* Playlist modal — rendered outside button strip */}
       {actions.includes('playlist') && (
-        <AddToPlaylistModal
-          isOpen={playlistModalOpen}
-          onClose={() => setPlaylistModalOpen(false)}
+        <AddToMiniDiscModal
+          isOpen={miniDiscModalOpen}
+          onClose={() => setMiniDiscModalOpen(false)}
           song={song}
         />
       )}

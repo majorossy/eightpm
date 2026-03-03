@@ -75,7 +75,7 @@ function VersionCard({
           showTitle={false}
           showTaper={false}
           showDownloads={false}
-          actions={['play', 'play-next', 'queue', 'favorite']}
+          actions={['play', 'play-next', 'queue', 'playlist', 'favorite']}
           onPlay={() => onPlay()}
           isCurrentlyPlaying={isPlaying}
         />

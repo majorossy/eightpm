@@ -166,16 +166,24 @@ const mockQueueContext = {
   trackToItem: vi.fn(),
 };
 
-const mockPlaylistContext = {
-  playlists: [],
-  isLoaded: true,
-  createPlaylist: vi.fn(),
-  deletePlaylist: vi.fn(),
-  updatePlaylist: vi.fn(),
-  addToPlaylist: vi.fn(),
-  removeFromPlaylist: vi.fn(),
-  reorderPlaylist: vi.fn(),
-  getPlaylist: vi.fn(),
+const mockCollectionContext = {
+  minidiscs: [],
+  cassettes: [],
+  isLoading: false,
+  syncStatus: 'idle' as const,
+  createMiniDisc: vi.fn(),
+  deleteMiniDisc: vi.fn(),
+  addToMiniDisc: vi.fn(),
+  removeFromMiniDisc: vi.fn(),
+  updateMiniDisc: vi.fn(),
+  reorderMiniDisc: vi.fn(),
+  getMiniDisc: vi.fn(),
+  saveCassette: vi.fn(),
+  deleteCassette: vi.fn(),
+  updateCassette: vi.fn(),
+  getCassette: vi.fn(),
+  getCassettesForAlbum: vi.fn().mockReturnValue([]),
+  forceSync: vi.fn(),
 };
 
 const mockMobileUIContext = {
@@ -205,9 +213,11 @@ vi.mock('@/context/QueueContext', () => ({
   queueReducer: vi.fn(),
 }));
 
-vi.mock('@/context/PlaylistContext', () => ({
-  usePlaylists: () => mockPlaylistContext,
-  PlaylistProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+vi.mock('@/context/CollectionContext', () => ({
+  useMiniDiscs: () => mockCollectionContext,
+  useCassettes: () => mockCollectionContext,
+  useCollections: () => mockCollectionContext,
+  CollectionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock('@/context/MobileUIContext', () => ({

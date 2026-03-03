@@ -49,8 +49,14 @@ export interface RecordingRowProps {
   onVersionsClick?: (e: React.MouseEvent) => void;
   isPlaying?: boolean;
   className?: string;
+  // Override icon scale (defaults to SIZE_CONFIG value for the chosen size)
+  iconScale?: number;
+  // Align action buttons to the start instead of the end
+  actionsAlign?: 'start' | 'end';
   // Action buttons (optional — when omitted, layout unchanged)
   actions?: RecordingAction[];
+  swapLabel?: string;
+  swapHighlighted?: boolean;
   onSwap?: (e: React.MouseEvent) => void;
   onPlay?: (song: Song) => void;
   onAddToQueue?: (song: Song) => void;
@@ -77,6 +83,10 @@ export default function RecordingRow({
   actions,
   onSwap,
   onPlay,
+  iconScale: iconScaleOverride,
+  actionsAlign = 'end',
+  swapLabel,
+  swapHighlighted,
   onAddToQueue,
   isCurrentlyPlaying,
 }: RecordingRowProps) {
@@ -113,7 +123,7 @@ export default function RecordingRow({
               medium={song.recordingMedium}
               lineage={song.lineage}
               source={song.source}
-              size={cfg.iconScale}
+              size={iconScaleOverride ?? cfg.iconScale}
               isPlaying={isPlaying}
             />
           </div>
@@ -144,12 +154,14 @@ export default function RecordingRow({
   return (
     <div className={`flex flex-col ${cfg.containerGap} ${className}`}>
       {content}
-      <div className="flex justify-end">
+      <div className={`flex ${actionsAlign === 'start' ? 'justify-start' : 'justify-end'}`}>
         <RecordingRowActions
           song={song}
           actions={actions}
           size={size}
           isCurrentlyPlaying={isCurrentlyPlaying}
+          swapLabel={swapLabel}
+          swapHighlighted={swapHighlighted}
           onSwap={onSwap}
           onPlay={onPlay}
           onAddToQueue={onAddToQueue}

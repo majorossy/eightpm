@@ -23,7 +23,9 @@ export interface QueueItemAlbumSource {
 export type QueueItemSource =
   | { type: 'album-load' }
   | { type: 'play-next'; addedAt: number }
-  | { type: 'add-to-queue'; addedAt: number };
+  | { type: 'add-to-queue'; addedAt: number }
+  | { type: 'cassette'; cassetteId: string }
+  | { type: 'minidisc'; minidiscId: string };
 
 // A single item in the unified queue
 export interface QueueItem {

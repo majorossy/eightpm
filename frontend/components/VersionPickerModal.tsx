@@ -403,7 +403,10 @@ function VersionRow({
           song={song}
           trackNumber={trackNumber}
           taperLinkToArchive
-          actions={isCurrent ? ['play', 'play-next', 'queue', 'favorite'] : ['play', 'play-next', 'queue', 'swap', 'favorite']}
+          iconScale={1.2}
+          actionsAlign="start"
+          swapLabel="swap in"
+          actions={isCurrent ? ['play', 'play-next', 'queue', 'playlist', 'favorite'] : ['swap', 'play', 'play-next', 'queue', 'playlist', 'favorite']}
           onSwap={!isCurrent ? (e) => { e.stopPropagation(); onSwap(song); } : undefined}
         />
       </div>

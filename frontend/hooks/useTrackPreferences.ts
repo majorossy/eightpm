@@ -55,9 +55,17 @@ export function useTrackPreferences(albumIdentifier: string) {
     [albumIdentifier],
   );
 
+  const setAll = useCallback(
+    (overrides: Record<string, string>) => {
+      writeStorage(albumIdentifier, overrides);
+      setPrefs(overrides);
+    },
+    [albumIdentifier],
+  );
+
   const getOverridesMap = useCallback((): Map<string, string> => {
     return new Map(Object.entries(prefs));
   }, [prefs]);
 
-  return { getPreferred, setPreferred, clearPreferred, getOverridesMap };
+  return { getPreferred, setPreferred, clearPreferred, setAll, getOverridesMap };
 }

@@ -91,10 +91,14 @@ export const TrackRow = React.memo(function TrackRow({
           borderLeft: isCurrentTrack
             ? '3px solid var(--secondary)'
             : hovered
-              ? '3px solid var(--secondary-muted)'
+              ? hasMultipleVersions
+                ? '3px solid var(--quaternary-muted)'
+                : '3px solid var(--secondary-muted)'
               : '3px solid transparent',
           background: hovered && !isCurrentTrack
-            ? 'color-mix(in srgb, var(--text) 2%, transparent)'
+            ? hasMultipleVersions
+              ? 'color-mix(in srgb, var(--quaternary) 6%, transparent)'
+              : 'color-mix(in srgb, var(--text) 2%, transparent)'
             : 'transparent',
           transition: 'all 0.2s',
           padding: '14px 20px',
@@ -134,11 +138,15 @@ export const TrackRow = React.memo(function TrackRow({
 
         {/* Metadata rows for the chipSong */}
         {chipSong && (
-          <div className="mt-2" style={{ paddingLeft: 34 }}>
+          <div className="mt-2">
             <RecordingRow
               song={chipSong}
               showTitle={false}
-              actions={hasMultipleVersions ? ['swap', 'play', 'play-next', 'queue', 'favorite'] : ['play', 'play-next', 'queue', 'favorite']}
+              iconScale={1.2}
+              actionsAlign="start"
+              swapLabel="swap out"
+              swapHighlighted={hovered && hasMultipleVersions}
+              actions={hasMultipleVersions ? ['swap', 'play', 'play-next', 'queue', 'playlist', 'favorite'] : ['play', 'play-next', 'queue', 'playlist', 'favorite']}
               onSwap={hasMultipleVersions ? () => setShowVersionModal(true) : undefined}
               onPlay={onPlay}
               isCurrentlyPlaying={isCurrentTrack && isPlaying}

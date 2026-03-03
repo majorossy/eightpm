@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Album, Track, Song, Artist } from '@/lib/api';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
@@ -9,7 +9,8 @@ import { useQueue } from '@/context/QueueContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useTrackPreferences } from '@/hooks/useTrackPreferences';
-import { trackAlbumView } from '@/lib/analytics';
+import { trackAlbumView, trackCassetteSave } from '@/lib/analytics';
+import { useCassettes } from '@/context/CollectionContext';
 import { CassetteTape } from './album/CassetteTape';
 import { TrackRow } from './album/TrackRow';
 import DiscographyCard from '@/components/DiscographyCard';
@@ -45,7 +46,14 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const { currentItem, addToQueue, albumToItems, playAlbum } = useQueue();
   const { followAlbum, unfollowAlbum, isAlbumFollowed } = useWishlist();
   const { vibrate, BUTTON_PRESS } = useHaptic();
-  const { getPreferred, setPreferred, clearPreferred, getOverridesMap } = useTrackPreferences(album.identifier);
+  const { getPreferred, setPreferred, clearPreferred, setAll, getOverridesMap } = useTrackPreferences(album.identifier);
+  const { saveCassette, updateCassette, deleteCassette, getCassettesForAlbum } = useCassettes();
+  const savedCassettes = getCassettesForAlbum(album.identifier);
+  const [selectedCassetteId, setSelectedCassetteId] = useState<string | null>(null);
+  const [cassetteSaved, setCassetteSaved] = useState(false);
+  const [isNaming, setIsNaming] = useState(false);
+  const [cassetteName, setCassetteName] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const hasTrackedView = useRef(false);
 
@@ -85,6 +93,76 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       const items = albumToItems(album, overrides);
       addToQueue(items);
     }
+  };
+
+  const handleSaveCassette = () => {
+    vibrate(BUTTON_PRESS);
+    if (selectedCassetteId) {
+      // Cassette loaded — update it in place
+      const overrides = getOverridesMap();
+      const overridesObj: Record<string, string> = {};
+      overrides.forEach((songId, trackId) => { overridesObj[trackId] = songId; });
+      updateCassette(selectedCassetteId, { versionOverrides: overridesObj });
+      setCassetteSaved(true);
+      setTimeout(() => setCassetteSaved(false), 2000);
+    } else {
+      // No cassette selected — create new
+      const sd = album.showDate?.split('-');
+      const datePart = sd?.length === 3 ? `${sd[1]}/${sd[2]}/${sd[0].slice(2)} ` : '';
+      setCassetteName(`${datePart}${album.name}`.slice(0, 33));
+      setIsNaming(true);
+      setTimeout(() => nameInputRef.current?.select(), 0);
+    }
+  };
+
+  const confirmSaveCassette = () => {
+    const sd2 = album.showDate?.split('-');
+    const dateFallback = sd2?.length === 3 ? `${sd2[1]}/${sd2[2]}/${sd2[0].slice(2)} ` : '';
+    const name = cassetteName.trim() || `${dateFallback}${album.name}`.slice(0, 33);
+    const overrides = getOverridesMap();
+    const overridesObj: Record<string, string> = {};
+    overrides.forEach((songId, trackId) => { overridesObj[trackId] = songId; });
+    saveCassette({
+      name,
+      albumIdentifier: album.identifier,
+      artistSlug: album.artistSlug,
+      artistName: album.artistName,
+      albumName: album.name,
+      coverArt: album.coverArt,
+      showDate: album.showDate,
+      showVenue: album.showVenue,
+      showLocation: album.showLocation,
+      versionOverrides: overridesObj,
+    });
+    trackCassetteSave(name, album.artistName);
+    setIsNaming(false);
+    setCassetteSaved(true);
+    setTimeout(() => setCassetteSaved(false), 2000);
+  };
+
+  const handleLoadCassette = (cassetteId: string) => {
+    vibrate(BUTTON_PRESS);
+    if (selectedCassetteId === cassetteId) {
+      // Deselect — clear overrides back to defaults
+      setSelectedCassetteId(null);
+      setAll({});
+    } else {
+      const cassette = savedCassettes.find(c => c.id === cassetteId);
+      if (cassette) {
+        setSelectedCassetteId(cassetteId);
+        setAll(cassette.versionOverrides);
+      }
+    }
+  };
+
+  const handleDeleteCassette = (e: React.MouseEvent, cassetteId: string) => {
+    e.stopPropagation(); // Don't trigger the row's load action
+    vibrate(BUTTON_PRESS);
+    if (selectedCassetteId === cassetteId) {
+      setSelectedCassetteId(null);
+      setAll({});
+    }
+    deleteCassette(cassetteId);
   };
 
   const handleFollowToggle = () => {
@@ -132,8 +210,105 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
               onClick={handleAddToQueue}
               className="album-play-button px-6 py-3 rounded-full flex items-center justify-center text-sm font-semibold transition-all hover:scale-105 gap-2"
             >
-              + Add Album to Queue
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h12M4 18h8" />
+              </svg>
+              Queue Cassette
             </button>
+
+            {/* Save Cassette */}
+            {isNaming ? (
+              <div className="flex items-center gap-2 w-full max-w-[320px]">
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={cassetteName}
+                  onChange={(e) => setCassetteName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') confirmSaveCassette();
+                    if (e.key === 'Escape') setIsNaming(false);
+                  }}
+                  className="flex-1 min-w-0 px-3 py-2 rounded-full bg-[var(--surface-card)] text-[var(--text)] text-sm border border-[var(--border-subtle-token)] focus:border-[var(--secondary)] focus:outline-none"
+                  placeholder="Name your cassette..."
+                />
+                <button
+                  onClick={confirmSaveCassette}
+                  className="album-play-button px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105 shrink-0"
+                >
+                  Save
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleSaveCassette}
+                className="album-play-button px-6 py-3 rounded-full flex items-center justify-center text-sm font-semibold transition-all hover:scale-105 gap-2"
+                aria-label="Save Cassette"
+              >
+                {cassetteSaved ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Cassette {selectedCassetteId ? 'Updated' : 'Saved'}
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <rect x="2" y="5" width="20" height="14" rx="2" />
+                      <circle cx="8" cy="12" r="2" />
+                      <circle cx="16" cy="12" r="2" />
+                      <path d="M8 14h8" />
+                    </svg>
+                    {selectedCassetteId ? 'Update Cassette' : 'Save Cassette'}
+                  </>
+                )}
+              </button>
+            )}
+
+            {/* Saved cassettes for this album */}
+            {savedCassettes.length > 0 && (
+              <div className="w-full max-w-[320px]">
+                <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-2 text-center lg:text-left">
+                  Your Takes
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {savedCassettes.map(c => (
+                    <div key={c.id} className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleLoadCassette(c.id)}
+                      className={`flex-1 min-w-0 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-left ${
+                        selectedCassetteId === c.id
+                          ? 'bg-[var(--secondary)] text-[var(--primary)] font-semibold'
+                          : 'bg-[var(--surface-card)] text-[var(--text-dim)] hover:text-[var(--text)] hover:bg-[var(--surface-card-hover)]'
+                      }`}
+                    >
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <rect x="2" y="5" width="20" height="14" rx="2" />
+                        <circle cx="8" cy="12" r="2" />
+                        <circle cx="16" cy="12" r="2" />
+                        <path d="M8 14h8" />
+                      </svg>
+                      <span className="truncate">{c.name}</span>
+                      {Object.keys(c.versionOverrides).length > 0 && (
+                        <span className="ml-auto text-[10px] opacity-60 shrink-0">
+                          {Object.keys(c.versionOverrides).length} pick{Object.keys(c.versionOverrides).length !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteCassette(e, c.id)}
+                      className="shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-subdued)] hover:text-[var(--secondary)] hover:bg-[var(--surface-card-hover)] transition-all"
+                      aria-label={`Delete ${c.name}`}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Album info */}
             <div className="max-w-[400px] text-center lg:text-left">

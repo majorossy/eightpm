@@ -6,6 +6,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useWishlist } from '@/context/WishlistContext';
 import { useQueue } from '@/context/QueueContext';
 import { useRecentlyPlayed } from '@/context/RecentlyPlayedContext';
+import { useCassettes, useMiniDiscs } from '@/context/CollectionContext';
 import { useHaptic } from '@/hooks/useHaptic';
 import { formatDuration } from '@/lib/api';
 import RecSourceIcon from '@/components/RecSourceIcon';
@@ -26,6 +27,8 @@ function LibraryPageInner() {
   const { wishlist, removeFromWishlist, followedArtists, followedAlbums } = useWishlist();
   const { addToQueue, trackToItem } = useQueue();
   const { recentlyPlayed } = useRecentlyPlayed();
+  const { cassettes } = useCassettes();
+  const { minidiscs } = useMiniDiscs();
   const { vibrate, BUTTON_PRESS, DELETE_ACTION } = useHaptic();
 
   // Update URL when tab changes
@@ -446,6 +449,37 @@ function LibraryPageInner() {
         <div className="p-6 md:p-8">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Your Library</h1>
           <p className="text-secondary">{wishlist.itemCount} liked songs</p>
+        </div>
+
+        {/* Collection quick links */}
+        <div className="flex gap-3 px-4 md:px-6 mb-6">
+          <Link
+            href="/cassettes"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-elevated hover:bg-white/10 transition-colors flex-1"
+          >
+            <svg className="w-6 h-6 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <circle cx="8" cy="12" r="2" />
+              <circle cx="16" cy="12" r="2" />
+              <path d="M8 14h8" />
+            </svg>
+            <div>
+              <p className="text-white font-medium text-sm">Cassettes</p>
+              <p className="text-secondary text-xs">{cassettes.length}</p>
+            </div>
+          </Link>
+          <Link
+            href="/minidiscs"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-elevated hover:bg-white/10 transition-colors flex-1"
+          >
+            <svg className="w-6 h-6 text-accent flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
+            </svg>
+            <div>
+              <p className="text-white font-medium text-sm">MiniDiscs</p>
+              <p className="text-secondary text-xs">{minidiscs.length}</p>
+            </div>
+          </Link>
         </div>
 
         {/* Tabs */}

@@ -66,7 +66,7 @@ function VersionCard({
       <RecordingRow
         song={song}
         size="sm"
-        actions={['play', 'play-next', 'queue', 'favorite']}
+        actions={['play', 'play-next', 'queue', 'playlist', 'favorite']}
         onPlay={() => onPlay()}
         isCurrentlyPlaying={isPlaying}
       />

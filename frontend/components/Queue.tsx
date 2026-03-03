@@ -6,7 +6,7 @@ import { useState, useMemo, useCallback, useRef } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { useQuality } from '@/context/QualityContext';
-import { usePlaylists } from '@/context/PlaylistContext';
+import { useMiniDiscs } from '@/context/CollectionContext';
 import { useMobileUI } from '@/context/MobileUIContext';
 import { formatDuration } from '@/lib/api';
 import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
@@ -61,38 +61,38 @@ export default function Queue() {
   } = useQueue();
 
   const { preferredQuality } = useQuality();
-  const { createPlaylist, addToPlaylist } = usePlaylists();
+  const { createMiniDisc, addToMiniDisc } = useMiniDiscs();
 
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const [playlistName, setPlaylistName] = useState('');
+  const [discName, setDiscName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   if (!isQueueOpen) return null;
 
   const handleSaveQueue = async () => {
-    if (!playlistName.trim()) return;
+    if (!discName.trim()) return;
 
     setIsSaving(true);
 
     try {
-      const newPlaylist = createPlaylist(playlistName.trim(), 'Saved from queue');
+      const newDisc = createMiniDisc(discName.trim(), 'Saved from queue');
 
       const allSongs = queue.items.map(item => item.song);
       allSongs.forEach(song => {
-        addToPlaylist(newPlaylist.id, song);
+        addToMiniDisc(newDisc.id, song);
       });
 
       setSaveSuccess(true);
       setTimeout(() => {
         setShowSaveModal(false);
-        setPlaylistName('');
+        setDiscName('');
         setSaveSuccess(false);
         setIsSaving(false);
         toggleQueue();
       }, 1500);
     } catch (error) {
-      console.error('Failed to save playlist:', error);
+      console.error('Failed to save MiniDisc:', error);
       setIsSaving(false);
     }
   };
@@ -201,7 +201,7 @@ export default function Queue() {
           )}
         </div>
 
-        {/* Save Playlist Modal */}
+        {/* Save as MiniDisc Modal */}
         {showSaveModal && (
           <>
             <div
@@ -217,28 +217,28 @@ export default function Queue() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Playlist Created!</h3>
+                    <h3 className="text-xl font-bold text-white mb-2">MiniDisc Created!</h3>
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {totalItems} {totalItems === 1 ? 'song' : 'songs'} saved to &quot;{playlistName}&quot;
+                      {totalItems} {totalItems === 1 ? 'song' : 'songs'} saved to &quot;{discName}&quot;
                     </p>
                   </div>
                 ) : (
                   <>
-                    <h3 className="text-xl font-bold text-white mb-4">Save Queue as Playlist</h3>
+                    <h3 className="text-xl font-bold text-white mb-4">Save Queue as MiniDisc</h3>
                     <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
                       {totalItems} {totalItems === 1 ? 'song' : 'songs'} will be saved
                     </p>
                     <input
                       type="text"
-                      value={playlistName}
-                      onChange={(e) => setPlaylistName(e.target.value.slice(0, VALIDATION_LIMITS.PLAYLIST_NAME_MAX))}
-                      maxLength={VALIDATION_LIMITS.PLAYLIST_NAME_MAX}
+                      value={discName}
+                      onChange={(e) => setDiscName(e.target.value.slice(0, VALIDATION_LIMITS.MINIDISC_NAME_MAX))}
+                      maxLength={VALIDATION_LIMITS.MINIDISC_NAME_MAX}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && playlistName.trim()) {
+                        if (e.key === 'Enter' && discName.trim()) {
                           handleSaveQueue();
                         }
                       }}
-                      placeholder="Playlist name"
+                      placeholder="MiniDisc name"
                       className="w-full px-4 py-3 text-white rounded border focus:outline-none mb-6"
                       style={{
                         background: 'var(--border-default)',
@@ -251,7 +251,7 @@ export default function Queue() {
                       <button
                         onClick={() => {
                           setShowSaveModal(false);
-                          setPlaylistName('');
+                          setDiscName('');
                         }}
                         disabled={isSaving}
                         className="flex-1 py-3 px-4 bg-transparent text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-50"
@@ -261,7 +261,7 @@ export default function Queue() {
                       </button>
                       <button
                         onClick={handleSaveQueue}
-                        disabled={!playlistName.trim() || isSaving}
+                        disabled={!discName.trim() || isSaving}
                         className="flex-1 py-3 px-4 text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ background: 'var(--accent-primary)' }}
                       >

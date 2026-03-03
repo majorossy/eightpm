@@ -7,7 +7,7 @@ import { Song, formatDuration } from '@/lib/api';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { AddToPlaylistModal } from '@/components/Playlists/AddToPlaylistModal';
+import { AddToMiniDiscModal } from '@/components/MiniDiscs/AddToMiniDiscModal';
 import { useShare } from '@/hooks/useShare';
 import ShareModal from '@/components/ShareModal';
 
@@ -20,7 +20,7 @@ export default function SongCard({ song, index }: SongCardProps) {
   const { currentSong, isPlaying, playSong, togglePlay } = usePlayer();
   const { addToQueue, trackToItem } = useQueue();
   const { addToWishlist, isInWishlist } = useWishlist();
-  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [showMiniDiscModal, setShowMiniDiscModal] = useState(false);
   const {
     showShareModal,
     shareUrl,
@@ -134,7 +134,7 @@ export default function SongCard({ song, index }: SongCardProps) {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setShowPlaylistModal(true);
+            setShowMiniDiscModal(true);
           }}
           className="transition-colors opacity-0 group-hover:opacity-100 text-[var(--text-dim)] hover:text-[var(--text)]"
           aria-label={`Add ${song.title} to playlist`}
@@ -170,9 +170,9 @@ export default function SongCard({ song, index }: SongCardProps) {
         </button>
 
         {/* Add to Playlist Modal */}
-        <AddToPlaylistModal
-          isOpen={showPlaylistModal}
-          onClose={() => setShowPlaylistModal(false)}
+        <AddToMiniDiscModal
+          isOpen={showMiniDiscModal}
+          onClose={() => setShowMiniDiscModal(false)}
           song={song}
         />
 

@@ -281,30 +281,40 @@ export const withToastContext: Decorator = (Story) => (
 );
 
 // =============================================================================
-// Mock Playlist Context
+// Mock Collection Context (MiniDiscs + Cassettes)
 // =============================================================================
 
-const MockPlaylistContext = createContext({
-  playlists: [] as Array<{ id: string; name: string; description?: string; songs: Song[]; coverArt?: string; createdAt: string; updatedAt: string }>,
+const MockCollectionContext = createContext({
+  minidiscs: [] as Array<{ id: string; name: string; description?: string; songs: Song[]; coverArt?: string; createdAt: string; updatedAt: string }>,
+  cassettes: [] as Array<{ id: string; name: string; albumIdentifier: string; artistSlug: string; artistName: string; albumName: string; versionOverrides: Record<string, string>; createdAt: string; updatedAt: string }>,
   isLoading: false,
   syncStatus: 'idle' as const,
-  createPlaylist: ((name: string) => ({ id: 'new-pl', name, songs: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() })) as (name: string, description?: string) => { id: string; name: string; songs: Song[]; coverArt?: string; createdAt: string; updatedAt: string },
-  deletePlaylist: noop as (playlistId: string) => void,
-  addToPlaylist: noop as (playlistId: string, song: Song) => void,
-  removeFromPlaylist: noop as (playlistId: string, songId: string) => void,
-  updatePlaylist: noop as (playlistId: string, updates: Partial<{ name: string; description: string }>) => void,
-  getPlaylist: (() => undefined) as (playlistId: string) => undefined,
+  createMiniDisc: ((name: string) => ({ id: 'new-md', name, songs: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() })) as (name: string, description?: string) => { id: string; name: string; songs: Song[]; coverArt?: string; createdAt: string; updatedAt: string },
+  deleteMiniDisc: noop as (id: string) => void,
+  addToMiniDisc: noop as (id: string, song: Song) => void,
+  removeFromMiniDisc: noop as (id: string, songId: string) => void,
+  updateMiniDisc: noop as (id: string, updates: Partial<{ name: string; description: string }>) => void,
+  reorderMiniDisc: noop as (id: string, fromIndex: number, toIndex: number) => void,
+  getMiniDisc: (() => undefined) as (id: string) => undefined,
+  saveCassette: ((data: Record<string, unknown>) => ({ id: 'new-c', ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() })) as (data: Record<string, unknown>) => Record<string, unknown>,
+  deleteCassette: noop as (id: string) => void,
+  updateCassette: noop as (id: string, updates: Record<string, unknown>) => void,
+  getCassette: (() => undefined) as (id: string) => undefined,
+  getCassettesForAlbum: (() => []) as (albumIdentifier: string) => Array<unknown>,
   forceSync: noopAsync,
 });
 
-/** Wraps with Playlist + Auth contexts (for AddToPlaylistModal) */
-export const withPlaylistContext: Decorator = (Story) => (
+/** Wraps with Collection + Auth contexts (for AddToMiniDiscModal) */
+export const withCollectionContext: Decorator = (Story) => (
   <MockAuthContext.Provider value={useContext(MockAuthContext)}>
-    <MockPlaylistContext.Provider value={useContext(MockPlaylistContext)}>
+    <MockCollectionContext.Provider value={useContext(MockCollectionContext)}>
       <Story />
-    </MockPlaylistContext.Provider>
+    </MockCollectionContext.Provider>
   </MockAuthContext.Provider>
 );
+
+/** @deprecated Use withCollectionContext */
+export const withPlaylistContext = withCollectionContext;
 
 /** Wraps with Quality context (for QualitySelector) */
 export const withQualityContext: Decorator = (Story) => (

@@ -42,6 +42,27 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    label: 'Cassettes',
+    href: '/cassettes',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <circle cx="8" cy="12" r="2" />
+        <circle cx="16" cy="12" r="2" />
+        <path d="M8 14h8" />
+      </svg>
+    ),
+  },
+  {
+    label: 'MiniDiscs',
+    href: '/minidiscs',
+    icon: (
+      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
+      </svg>
+    ),
+  },
+  {
     label: 'Podcasts',
     href: '/podcasts',
     icon: (

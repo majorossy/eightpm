@@ -106,18 +106,11 @@ export function trackSeek(song: Song, seekToPercent: number): void {
 // ============================================
 
 /**
- * Track adding a song to a playlist
+ * @deprecated Use trackAddToMiniDisc
+ * Track adding a song to a playlist (legacy alias)
  */
 export function trackAddToPlaylist(song: Song, playlistName?: string): void {
-  trackEvent('add_to_playlist', 'Engagement', song.trackTitle);
-
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'add_to_playlist', {
-      artist_name: song.artistName,
-      track_title: song.trackTitle,
-      playlist_name: playlistName || 'default',
-    });
-  }
+  trackAddToMiniDisc(song, playlistName);
 }
 
 /**
@@ -401,46 +394,101 @@ export function trackLogin(method: 'email' | 'google' | 'apple' | 'anonymous'): 
 }
 
 // ============================================
-// Playlist Events (Extended)
+// MiniDisc Events (replaced Playlist events)
 // ============================================
 
 /**
- * Track playlist creation
+ * Track MiniDisc creation
  */
-export function trackPlaylistCreate(playlistName: string): void {
+export function trackMiniDiscCreate(name: string): void {
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'playlist_create', {
+    window.gtag('event', 'minidisc_create', {
       event_category: 'Engagement',
-      playlist_name: playlistName,
+      minidisc_name: name,
     });
   }
 }
 
 /**
- * Track playlist deletion
+ * Track MiniDisc deletion
  */
-export function trackPlaylistDelete(playlistName: string): void {
+export function trackMiniDiscDelete(name: string): void {
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'playlist_delete', {
+    window.gtag('event', 'minidisc_delete', {
       event_category: 'Engagement',
-      playlist_name: playlistName,
+      minidisc_name: name,
     });
   }
 }
 
 /**
- * Track removing a song from playlist
+ * Track adding a song to a MiniDisc
  */
-export function trackRemoveFromPlaylist(song: Song, playlistName?: string): void {
+export function trackAddToMiniDisc(song: Song, minidiscName?: string): void {
+  trackEvent('add_to_minidisc', 'Engagement', song.trackTitle);
+
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'remove_from_playlist', {
+    window.gtag('event', 'add_to_minidisc', {
+      artist_name: song.artistName,
+      track_title: song.trackTitle,
+      minidisc_name: minidiscName || 'default',
+    });
+  }
+}
+
+/**
+ * Track removing a song from a MiniDisc
+ */
+export function trackRemoveFromMiniDisc(song: Song, minidiscName?: string): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'remove_from_minidisc', {
       event_category: 'Engagement',
       artist_name: song.artistName,
       track_title: song.trackTitle,
-      playlist_name: playlistName || 'default',
+      minidisc_name: minidiscName || 'default',
     });
   }
 }
+
+// ============================================
+// Cassette Events
+// ============================================
+
+/**
+ * Track saving a Cassette (version selection snapshot)
+ */
+export function trackCassetteSave(name: string, artistName: string): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'cassette_save', {
+      event_category: 'Engagement',
+      cassette_name: name,
+      artist_name: artistName,
+    });
+  }
+}
+
+/**
+ * Track Cassette deletion
+ */
+export function trackCassetteDelete(name: string): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'cassette_delete', {
+      event_category: 'Engagement',
+      cassette_name: name,
+    });
+  }
+}
+
+// ============================================
+// Legacy aliases (kept for backward compat)
+// ============================================
+
+/** @deprecated Use trackMiniDiscCreate */
+export const trackPlaylistCreate = trackMiniDiscCreate;
+/** @deprecated Use trackMiniDiscDelete */
+export const trackPlaylistDelete = trackMiniDiscDelete;
+/** @deprecated Use trackRemoveFromMiniDisc */
+export const trackRemoveFromPlaylist = trackRemoveFromMiniDisc;
 
 // ============================================
 // Follow Events

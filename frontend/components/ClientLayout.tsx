@@ -4,7 +4,7 @@ import { ReactNode, useState, useCallback, useEffect, useRef, lazy, Suspense } f
 import dynamic from 'next/dynamic';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider, useWishlist } from '@/context/WishlistContext';
-import { PlaylistProvider } from '@/context/PlaylistContext';
+import { CollectionProvider } from '@/context/CollectionContext';
 import { QueueProvider, useQueue } from '@/context/QueueContext';
 import { PlayerProvider, usePlayer } from '@/context/PlayerContext';
 import { RecentlyPlayedProvider } from '@/context/RecentlyPlayedContext';
@@ -215,7 +215,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
           <ToastProvider>
             <CartProvider>
               <WishlistProvider>
-                <PlaylistProvider>
+                <CollectionProvider>
                   <QueueProvider>
                     <RecentlyPlayedProvider>
                       <QualityProvider>
@@ -229,7 +229,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
                       </QualityProvider>
                     </RecentlyPlayedProvider>
                   </QueueProvider>
-                </PlaylistProvider>
+                </CollectionProvider>
               </WishlistProvider>
             </CartProvider>
           </ToastProvider>

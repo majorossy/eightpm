@@ -3,35 +3,35 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import * as Dialog from '@radix-ui/react-dialog';
-import { usePlaylists } from '@/context/PlaylistContext';
+import { useMiniDiscs } from '@/context/CollectionContext';
 import { Song } from '@/lib/types';
 import { VALIDATION_LIMITS } from '@/lib/validation';
 
-interface AddToPlaylistModalProps {
+interface AddToMiniDiscModalProps {
   isOpen: boolean;
   onClose: () => void;
   song: Song | null;
 }
 
-export function AddToPlaylistModal({ isOpen, onClose, song }: AddToPlaylistModalProps) {
-  const { playlists, createPlaylist, addToPlaylist } = usePlaylists();
+export function AddToMiniDiscModal({ isOpen, onClose, song }: AddToMiniDiscModalProps) {
+  const { minidiscs, createMiniDisc, addToMiniDisc } = useMiniDiscs();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newPlaylistName, setNewPlaylistName] = useState('');
+  const [newName, setNewName] = useState('');
 
   if (!song) return null;
 
-  const handleAddToPlaylist = (playlistId: string) => {
-    addToPlaylist(playlistId, song);
+  const handleAdd = (id: string) => {
+    addToMiniDisc(id, song);
     onClose();
   };
 
   const handleCreateAndAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPlaylistName.trim()) return;
+    if (!newName.trim()) return;
 
-    const playlist = createPlaylist(newPlaylistName.trim());
-    addToPlaylist(playlist.id, song);
-    setNewPlaylistName('');
+    const disc = createMiniDisc(newName.trim());
+    addToMiniDisc(disc.id, song);
+    setNewName('');
     setShowCreateForm(false);
     onClose();
   };
@@ -46,7 +46,7 @@ export function AddToPlaylistModal({ isOpen, onClose, song }: AddToPlaylistModal
             {/* Header */}
             <div className="p-4 border-b border-white/10">
               <div className="flex items-center justify-between mb-2">
-                <Dialog.Title className="text-white font-bold text-lg">Add to Playlist</Dialog.Title>
+                <Dialog.Title className="text-white font-bold text-lg">Add to MiniDisc</Dialog.Title>
                 <Dialog.Close asChild>
                   <button
                     className="p-2 -mr-2 text-secondary hover:text-white transition-colors rounded-full hover:bg-white/10"
@@ -67,10 +67,10 @@ export function AddToPlaylistModal({ isOpen, onClose, song }: AddToPlaylistModal
                 <form onSubmit={handleCreateAndAdd} className="p-4">
                   <input
                     type="text"
-                    value={newPlaylistName}
-                    onChange={(e) => setNewPlaylistName(e.target.value.slice(0, VALIDATION_LIMITS.PLAYLIST_NAME_MAX))}
-                    placeholder="Playlist name"
-                    maxLength={VALIDATION_LIMITS.PLAYLIST_NAME_MAX}
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value.slice(0, VALIDATION_LIMITS.MINIDISC_NAME_MAX))}
+                    placeholder="MiniDisc name"
+                    maxLength={VALIDATION_LIMITS.MINIDISC_NAME_MAX}
                     autoFocus
                     className="w-full bg-surface-base text-white placeholder-secondary rounded px-4 py-3 mb-3 focus:outline-none focus:ring-2 focus:ring-accent"
                   />
@@ -79,7 +79,7 @@ export function AddToPlaylistModal({ isOpen, onClose, song }: AddToPlaylistModal
                       type="button"
                       onClick={() => {
                         setShowCreateForm(false);
-                        setNewPlaylistName('');
+                        setNewName('');
                       }}
                       className="flex-1 px-4 py-2 rounded-full border border-white/20 text-white hover:bg-white/10 transition-colors"
                     >
@@ -87,7 +87,7 @@ export function AddToPlaylistModal({ isOpen, onClose, song }: AddToPlaylistModal
                     </button>
                     <button
                       type="submit"
-                      disabled={!newPlaylistName.trim()}
+                      disabled={!newName.trim()}
                       className="flex-1 px-4 py-2 rounded-full bg-accent text-black font-medium hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       Create
@@ -96,7 +96,7 @@ export function AddToPlaylistModal({ isOpen, onClose, song }: AddToPlaylistModal
                 </form>
               ) : (
                 <>
-                  {/* Create new playlist button */}
+                  {/* Create new */}
                   <button
                     onClick={() => setShowCreateForm(true)}
                     className="w-full flex items-center gap-3 p-4 hover:bg-white/10 transition-colors text-left"
@@ -106,42 +106,41 @@ export function AddToPlaylistModal({ isOpen, onClose, song }: AddToPlaylistModal
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
                     </div>
-                    <span className="text-white font-medium">Create new playlist</span>
+                    <span className="text-white font-medium">Create new MiniDisc</span>
                   </button>
 
                   {/* Divider */}
-                  {playlists.length > 0 && (
+                  {minidiscs.length > 0 && (
                     <div className="h-px bg-white/10 mx-4" />
                   )}
 
-                  {/* Playlist list */}
+                  {/* List */}
                   <div>
-                    {playlists.length === 0 ? (
+                    {minidiscs.length === 0 ? (
                       <div className="p-8 text-center">
-                        <p className="text-secondary text-sm">No playlists yet</p>
+                        <p className="text-secondary text-sm">No MiniDiscs yet</p>
                       </div>
                     ) : (
-                      playlists.map((playlist) => (
+                      minidiscs.map((disc) => (
                         <button
-                          key={playlist.id}
-                          onClick={() => handleAddToPlaylist(playlist.id)}
+                          key={disc.id}
+                          onClick={() => handleAdd(disc.id)}
                           className="w-full flex items-center gap-3 p-4 hover:bg-white/10 transition-colors text-left"
                         >
-                          {/* Cover art */}
                           <div className="w-10 h-10 rounded bg-surface-elevated flex-shrink-0 overflow-hidden relative">
-                            {playlist.coverArt ? (
-                              <Image src={playlist.coverArt} alt={playlist.name || 'Playlist'} fill sizes="40px" quality={75} className="object-cover" />
+                            {disc.coverArt ? (
+                              <Image src={disc.coverArt} alt={disc.name || 'MiniDisc'} fill sizes="40px" quality={75} className="object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <svg className="w-5 h-5 text-border" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
                                 </svg>
                               </div>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-white font-medium truncate">{playlist.name}</p>
-                            <p className="text-secondary text-sm">{playlist.songs.length} songs</p>
+                            <p className="text-white font-medium truncate">{disc.name}</p>
+                            <p className="text-secondary text-sm">{disc.songs.length} songs</p>
                           </div>
                         </button>
                       ))
