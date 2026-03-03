@@ -29,6 +29,7 @@ interface RecordingRowActionsProps {
   swapLabel?: string;
   swapHighlighted?: boolean;
   onActionHover?: (hovered: boolean) => void;
+  onAfterAction?: () => void;
   availableVersions?: Song[];
 }
 
@@ -101,6 +102,7 @@ export default function RecordingRowActions({
   swapLabel = 'swap',
   swapHighlighted = false,
   onActionHover,
+  onAfterAction,
   availableVersions,
 }: RecordingRowActionsProps) {
   const { playSong, togglePlay } = usePlayer();
@@ -124,10 +126,12 @@ export default function RecordingRowActions({
       togglePlay();
     } else if (onPlay) {
       onPlay(song);
+      onAfterAction?.();
     } else {
       playSong(song);
+      onAfterAction?.();
     }
-  }, [song, isCurrentlyPlaying, onPlay, playSong, togglePlay, haptic]);
+  }, [song, isCurrentlyPlaying, onPlay, playSong, togglePlay, haptic, onAfterAction]);
 
   const handlePlayNext = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -138,14 +142,16 @@ export default function RecordingRowActions({
       playNext(trackToItem(song, undefined, undefined, availableVersions));
     }
     toast.showSuccess('Playing next');
-  }, [song, onAddToQueue, playNext, trackToItem, haptic, toast, availableVersions]);
+    onAfterAction?.();
+  }, [song, onAddToQueue, playNext, trackToItem, haptic, toast, availableVersions, onAfterAction]);
 
   const handleQueue = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     haptic.vibrate(haptic.BUTTON_PRESS);
     addToQueue(trackToItem(song, undefined, undefined, availableVersions));
     toast.showSuccess('Added to queue');
-  }, [song, addToQueue, trackToItem, haptic, toast, availableVersions]);
+    onAfterAction?.();
+  }, [song, addToQueue, trackToItem, haptic, toast, availableVersions, onAfterAction]);
 
   const handleFavorite = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -215,6 +221,7 @@ export default function RecordingRowActions({
         key="play-split"
         style={{
           display: 'inline-flex',
+          alignItems: 'center',
           borderRadius: '5px',
           border: '1px solid rgba(196,112,110,0.25)',
           overflow: 'hidden',
@@ -276,7 +283,7 @@ export default function RecordingRowActions({
   return (
     <>
       <div
-        className={`flex items-center ${cfg.gap} flex-shrink-0`}
+        className={`recording-actions flex items-center ${cfg.gap} flex-shrink-0`}
         onMouseEnter={() => onActionHover?.(true)}
         onMouseLeave={() => onActionHover?.(false)}
       >
@@ -310,7 +317,27 @@ export default function RecordingRowActions({
               );
 
             case 'swap':
-              if (!onSwap) return null;
+              if (!onSwap) {
+                // Static "selected" badge — non-interactive, low-opacity purple
+                const s = BTN_STYLES.swap;
+                return (
+                  <span
+                    key="swap"
+                    style={{
+                      ...btnBase,
+                      color: s.color,
+                      background: s.background,
+                      border: s.border,
+                      opacity: 0.45,
+                      cursor: 'default',
+                      pointerEvents: 'none',
+                    }}
+                    aria-label="Currently selected version"
+                  >
+                    {swapLabel}
+                  </span>
+                );
+              }
               return (
                 <span
                   key="swap"

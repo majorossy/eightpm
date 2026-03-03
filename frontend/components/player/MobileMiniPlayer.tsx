@@ -46,7 +46,6 @@ interface MobileMiniPlayerProps {
   onCloseQualityPopup: () => void;
   qualityPopupRef: React.RefObject<HTMLDivElement>;
   // Actions
-  onExpandPlayer: () => void;
   onTogglePlay: () => void;
   onMinimize: () => void;
   // Swipe
@@ -92,7 +91,6 @@ export default function MobileMiniPlayer({
   onSelectQuality,
   onCloseQualityPopup,
   qualityPopupRef,
-  onExpandPlayer,
   onTogglePlay,
   onMinimize,
   streamingStats,
@@ -162,12 +160,7 @@ export default function MobileMiniPlayer({
             </div>
 
             <div className="flex items-center p-2 gap-3">
-              {/* Tappable area to expand */}
-              <button
-                onClick={onExpandPlayer}
-                className="flex items-center gap-3 flex-1 min-w-0 text-left btn-touch"
-                aria-label="Expand player"
-              >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 {/* Album art */}
                 <div className="w-10 h-10 bg-surface-elevated flex-shrink-0 rounded relative">
                   {currentItem?.albumSource?.coverArt ? (
@@ -213,7 +206,7 @@ export default function MobileMiniPlayer({
                     </>
                   )}
                 </div>
-              </button>
+              </div>
 
               {/* Quality badge - clickable, positioned after song info */}
               <div className="relative flex-shrink-0" ref={qualityPopupRef}>

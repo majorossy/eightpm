@@ -62,6 +62,7 @@ export interface RecordingRowProps {
   onAddToQueue?: (song: Song) => void;
   isCurrentlyPlaying?: boolean;
   onActionHover?: (hovered: boolean) => void;
+  onAfterAction?: () => void;
   availableVersions?: Song[];
 }
 
@@ -92,6 +93,7 @@ export default function RecordingRow({
   onAddToQueue,
   isCurrentlyPlaying,
   onActionHover,
+  onAfterAction,
   availableVersions,
 }: RecordingRowProps) {
   const cfg = SIZE_CONFIG[size];
@@ -170,6 +172,7 @@ export default function RecordingRow({
           onPlay={onPlay}
           onAddToQueue={onAddToQueue}
           onActionHover={onActionHover}
+          onAfterAction={onAfterAction}
           availableVersions={availableVersions}
         />
       </div>

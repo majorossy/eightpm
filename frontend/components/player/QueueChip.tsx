@@ -56,6 +56,7 @@ export default function QueueChip({
 
   return (
       <div
+        data-queue-id={item.queueId}
         data-queue-active={isActive || undefined}
         onClick={() => {
           // Guard against click pass-through from Radix Dialog overlay close

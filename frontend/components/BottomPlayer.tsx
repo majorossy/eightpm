@@ -197,11 +197,6 @@ export default function BottomPlayer() {
     togglePlay();
   }, [vibrate, BUTTON_PRESS, togglePlay]);
 
-  const handleExpandPlayer = useCallback(() => {
-    vibrate(BUTTON_PRESS);
-    expandPlayer();
-  }, [vibrate, BUTTON_PRESS, expandPlayer]);
-
   const handleToggleQualityPopup = useCallback(() => {
     vibrate(BUTTON_PRESS);
     setShowQualityPopup(prev => !prev);
@@ -296,7 +291,6 @@ export default function BottomPlayer() {
         onSelectQuality={handleSelectQuality}
         onCloseQualityPopup={handleCloseQualityPopup}
         qualityPopupRef={qualityPopupRef}
-        onExpandPlayer={handleExpandPlayer}
         onTogglePlay={handleTogglePlay}
         onMinimize={minimizePlayer}
         streamingStats={streamingStats}

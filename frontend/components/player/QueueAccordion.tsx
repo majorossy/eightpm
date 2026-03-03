@@ -423,6 +423,49 @@ export default function QueueAccordion({
     return () => { cancelAnimationFrame(raf); clearTimeout(timer); };
   }, [playedCount, groups, chipGlobalIndexMap, historyOpen]);
 
+  // ─── Scroll to glowing chip (play-next / queue from version picker) ──
+
+  // Delay glow until after scroll — scroll first, then animate the highlight
+  const [delayedGlow, setDelayedGlow] = useState<ChipGlow>(null);
+  const glowScrollRef = useRef<{ raf: number; timer: ReturnType<typeof setTimeout> } | null>(null);
+
+  useEffect(() => {
+    // Clean up previous
+    if (glowScrollRef.current) {
+      cancelAnimationFrame(glowScrollRef.current.raf);
+      clearTimeout(glowScrollRef.current.timer);
+      glowScrollRef.current = null;
+    }
+
+    if (!chipGlow || !scrollContainerRef.current) {
+      setDelayedGlow(chipGlow);
+      return;
+    }
+
+    // Suppress glow immediately so chips render without glow class
+    setDelayedGlow(null);
+
+    const container = scrollContainerRef.current;
+    const targetId = chipGlow.queueIds[0];
+
+    const raf = requestAnimationFrame(() => {
+      // Find target chip by queueId data attribute
+      const el = container.querySelector(`[data-queue-id="${targetId}"]`) as HTMLElement | null;
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    });
+
+    // Apply glow after scroll completes
+    const timer = setTimeout(() => setDelayedGlow(chipGlow), 450);
+    glowScrollRef.current = { raf, timer };
+
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+    };
+  }, [chipGlow]);
+
   // ─── Left fade mask ────────────────────────────────────────────────
 
   const [showLeftFade, setShowLeftFade] = useState(false);
@@ -517,7 +560,7 @@ export default function QueueAccordion({
                     onSelectVersion={onSelectVersion}
                     preferredQuality={preferredQuality}
                     compact={compact}
-                    chipGlow={chipGlow}
+                    chipGlow={delayedGlow}
                   />
                 ) : (
                   <AlbumGroupSection
@@ -536,7 +579,7 @@ export default function QueueAccordion({
                     onSelectVersion={onSelectVersion}
                     preferredQuality={preferredQuality}
                     compact={compact}
-                    chipGlow={chipGlow}
+                    chipGlow={delayedGlow}
                   />
                 )}
               </Fragment>

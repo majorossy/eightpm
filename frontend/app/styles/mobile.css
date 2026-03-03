@@ -114,14 +114,19 @@ html, body {
     min-width: 44px;
   }
 
-  /* Allow smaller inline buttons/links */
+  /* Allow smaller inline buttons/links and recording row action buttons */
   .inline,
   .inline-flex,
   .text-xs,
   .text-sm,
   p a,
   span a,
-  nav[aria-label="Breadcrumb"] a {
+  nav[aria-label="Breadcrumb"] a,
+  .recording-actions button,
+  .recording-actions span,
+  .version-picker button,
+  .version-picker a,
+  .version-picker span {
     min-height: auto;
     min-width: auto;
   }

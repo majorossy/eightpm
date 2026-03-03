@@ -134,7 +134,7 @@ export default function VersionPickerModal({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full md:max-w-[580px] h-[85vh] md:h-[80vh] flex flex-col rounded-t-2xl md:rounded-2xl overflow-hidden animate-slide-up md:animate-none"
+            className="w-full md:max-w-[580px] h-[100vh] md:h-[80vh] flex flex-col rounded-t-2xl md:rounded-2xl overflow-hidden animate-slide-up md:animate-none"
             style={{
               background: 'linear-gradient(180deg, var(--player-surface-deep) 0%, var(--surface-card) 100%)',
               border: '1px solid color-mix(in srgb, var(--quaternary) 40%, transparent)',
@@ -147,8 +147,16 @@ export default function VersionPickerModal({
               style={{ background: 'linear-gradient(90deg, transparent, var(--quaternary), var(--tertiary), transparent)' }}
             />
 
+            {/* Descriptive text */}
+            <p
+              className="font-jb-mono text-[10px] uppercase tracking-widest px-5 pt-3 pb-1 flex-shrink-0 text-center"
+              style={{ color: 'var(--quaternary)' }}
+            >
+              Choose a version to swap in
+            </p>
+
             {/* Header */}
-            <div className="flex items-start gap-3.5 px-5 pt-4 pb-3 flex-shrink-0">
+            <div className="flex items-start gap-3.5 px-5 pt-1 pb-3 flex-shrink-0">
               <div
                 className="w-14 h-14 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center"
                 style={{
@@ -176,7 +184,7 @@ export default function VersionPickerModal({
                 <p className="font-jb-mono text-[11px] mt-1" style={{ color: filter ? 'var(--tertiary)' : 'var(--text-tertiary)' }}>
                   {filter
                     ? `${sortedVersions.length} of ${versions.length} versions`
-                    : `${versions.length} version${versions.length !== 1 ? 's' : ''} on archive.org`}
+                    : `${versions.length} version${versions.length !== 1 ? 's' : ''} from archive.org`}
                 </p>
               </div>
 
@@ -298,7 +306,7 @@ export default function VersionPickerModal({
             />
 
             {/* Version list */}
-            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 px-3 py-2 queue-sidebar-scroll">
+            <div ref={scrollContainerRef} className="version-picker flex-1 overflow-y-auto min-h-0 px-3 py-2 queue-sidebar-scroll">
               {sortedVersions.length === 0 ? (
                 <div className="flex items-center justify-center py-8">
                   <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
@@ -315,6 +323,7 @@ export default function VersionPickerModal({
                         song={song}
                         isCurrent={isCurrentVersion}
                         onSwap={handleSwap}
+                        onClose={onClose}
                         trackNumber={trackNumber}
                         grabHandlers={isCurrentVersion ? grabToSeek.pointerHandlers : undefined}
                         isDragging={isCurrentVersion && grabToSeek.isDragging}
@@ -341,6 +350,7 @@ function VersionRow({
   song,
   isCurrent,
   onSwap,
+  onClose,
   trackNumber,
   grabHandlers,
   isDragging,
@@ -352,6 +362,7 @@ function VersionRow({
   song: Song;
   isCurrent: boolean;
   onSwap: (song: Song) => void;
+  onClose: () => void;
   trackNumber?: number | null;
   grabHandlers?: Record<string, (e: React.PointerEvent) => void>;
   isDragging?: boolean;
@@ -411,9 +422,10 @@ function VersionRow({
           taperLinkToArchive
           iconScale={1.2}
           actionsAlign="start"
-          swapLabel="swap in"
-          actions={isCurrent ? ['play', 'play-next', 'queue', 'playlist', 'favorite'] : ['swap', 'play', 'play-next', 'queue', 'playlist', 'favorite']}
+          swapLabel={isCurrent ? 'selected' : 'swap in'}
+          actions={['swap', 'play', 'play-next', 'queue', 'playlist', 'favorite']}
           onSwap={!isCurrent ? (e) => { e.stopPropagation(); onSwap(song); } : undefined}
+          onAfterAction={onClose}
           availableVersions={availableVersions}
         />
       </div>
