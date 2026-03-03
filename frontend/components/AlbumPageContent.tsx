@@ -123,8 +123,8 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       {/* Main content - max width centered, also the sticky parent + flex container */}
       <div className="max-w-[1000px] mx-auto px-4 sm:px-8 lg:flex lg:gap-12 lg:items-start">
 
-          {/* Left column — sticky on all sizes, top offset clears fixed header (h-14 mobile / h-16 desktop) */}
-          <div className="sticky top-14 md:top-16 lg:top-20 self-start z-10 bg-[var(--bg)] flex-shrink-0 flex flex-col items-center lg:items-start gap-6 pb-4 mb-8 lg:mb-0">
+          {/* Left column — sticky only on desktop where side-by-side layout is active */}
+          <div className="lg:sticky lg:top-20 self-start z-10 bg-[var(--bg)] flex-shrink-0 flex flex-col items-center lg:items-start gap-6 pb-4 mb-8 lg:mb-0">
             <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image} />
 
             {/* Add to queue — centered under cassette */}

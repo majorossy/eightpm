@@ -56,6 +56,16 @@ const config: Config = {
           tertiary: 'var(--tertiary)',
           quaternary: 'var(--quaternary)',
           quinary: 'var(--quinary)',
+          senary: 'var(--senary)',
+        },
+
+        // Action semantics: text-action-queue, border-action-swap, bg-action-done etc.
+        action: {
+          play: 'var(--action-play)',
+          queue: 'var(--action-queue)',
+          frame: 'var(--action-frame)',
+          swap: 'var(--action-swap)',
+          done: 'var(--action-done)',
         },
       },
       // Semantic text colors: text-primary, text-secondary, text-tertiary, text-inverse

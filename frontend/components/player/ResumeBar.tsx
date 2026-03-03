@@ -21,7 +21,7 @@ export default function ResumeBar({ savedProgress, isMobile, onResume, onDismiss
       className={`fixed left-0 right-0 z-[40] ${isMobile ? '' : 'bottom-0'}`}
       style={isMobile ? { bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' } : undefined}
     >
-      <div className={`${isMobile ? 'border-t border-accent/20 bg-gradient-to-b from-surface-elevated to-surface-card backdrop-blur-lg px-3 pt-3' : 'bg-surface-card border-t border-default px-4'}`}>
+      <div className={`${isMobile ? 'border-t border-accent/20 bg-surface-card px-3 pt-3' : 'bg-surface-card border-t border-default px-4'}`}>
         <div className={`flex items-center gap-4 ${isMobile ? '' : 'max-w-xl mx-auto h-[90px]'}`}>
           {/* Resume info */}
           <div className="flex-1 min-w-0">

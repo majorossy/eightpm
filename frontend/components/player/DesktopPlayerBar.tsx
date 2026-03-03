@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { formatDuration } from '@/lib/api';
 import { formatLineage } from '@/lib/lineageUtils';
 import RecSourceIcon from '@/components/RecSourceIcon';
+import { RecordingRow } from '@/components/version-row';
 import { getQualityBadge } from '@/components/player/QualityPopup';
 import { QualityPopup } from '@/components/player/QualityPopup';
 import ShareButton from '@/components/ShareButton';
@@ -146,6 +147,9 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
     announcement,
   } = props;
 
+  const [queueStripOpen, setQueueStripOpen] = useState(true);
+  const [summaryDismissed, setSummaryDismissed] = useState(false);
+
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const recordingType = currentSong.recordingType;
   const qualityInfo = getQualityBadge(preferredQuality);
@@ -165,35 +169,77 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
         overflow: 'visible',
       }}
     >
-      {/* Pull-tab — toggles player minimize/restore */}
-      <button
-        onClick={onMinimize}
-        className="absolute -top-8 left-4 px-4 py-1.5 rounded-t-lg
-                   flex items-center gap-2 z-50 pointer-events-auto
-                   font-jb-mono text-[10px] font-semibold uppercase tracking-widest
-                   transition-colors"
-        style={{
-          backgroundColor: 'var(--secondary)',
-          color: 'white',
-          borderBottom: 'none',
-        }}
-        aria-label={isPlayerMinimized ? 'Restore player' : 'Minimize player'}
-        title={isPlayerMinimized ? 'Restore player (M)' : 'Minimize player (M)'}
-      >
-        <svg className={`w-3 h-3 transition-transform ${isPlayerMinimized ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-        </svg>
-        {isPlayerMinimized ? (
-          <span className="flex items-center gap-2">
-            <span>Now Playing</span>
-            <span className="text-[9px] font-normal normal-case tracking-normal opacity-80 truncate max-w-[200px]">
-              {currentSong.title} — {currentSong.artistName}
-            </span>
+      {/* Pull-tab — 3 states: open (▼), minimized+summary (▲ + song + X), minimized+dismissed (▲) */}
+      {isPlayerMinimized && !summaryDismissed ? (
+        <button
+          onClick={onMinimize}
+          className="absolute -top-7 left-4 h-7 rounded-t-lg
+                     flex items-center gap-2 px-2.5 z-50 pointer-events-auto
+                     transition-all"
+          style={{
+            backgroundColor: 'var(--secondary)',
+            color: 'white',
+            borderBottom: 'none',
+          }}
+          aria-label="Restore player"
+          title="Restore player (M)"
+        >
+          <svg className="w-3 h-3 rotate-180 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+          </svg>
+          <span className="text-[11px] font-medium truncate max-w-[200px] leading-none">
+            {currentSong.title} — {currentSong.artistName}
           </span>
-        ) : (
-          <span>Now Playing</span>
-        )}
-      </button>
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => { e.stopPropagation(); setSummaryDismissed(true); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); setSummaryDismissed(true); } }}
+            className="flex-shrink-0 ml-0.5 rounded-full hover:bg-white/20 p-0.5 transition-colors"
+            aria-label="Dismiss song summary"
+          >
+            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </span>
+        </button>
+      ) : (
+        <div className="absolute -top-7 left-4 flex items-stretch z-50 pointer-events-auto">
+          <button
+            onClick={onMinimize}
+            className="w-8 h-7 rounded-t-lg flex items-center justify-center transition-colors"
+            style={{
+              backgroundColor: 'var(--secondary)',
+              color: 'white',
+              borderBottom: 'none',
+              borderTopRightRadius: isPlayerMinimized && summaryDismissed ? 0 : undefined,
+            }}
+            aria-label={isPlayerMinimized ? 'Restore player' : 'Minimize player'}
+            title={isPlayerMinimized ? 'Restore player (M)' : 'Minimize player (M)'}
+          >
+            <svg className={`w-3 h-3 transition-transform ${isPlayerMinimized ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {isPlayerMinimized && summaryDismissed && (
+            <button
+              onClick={() => setSummaryDismissed(false)}
+              className="h-7 px-1.5 flex items-center justify-center rounded-tr-lg transition-colors hover:brightness-110"
+              style={{
+                backgroundColor: 'var(--secondary)',
+                color: 'white',
+                borderBottom: 'none',
+              }}
+              aria-label="Show song summary"
+              title="Show song info"
+            >
+              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Now-playing bar — 3-layer structure */}
       <div className="relative" style={{ background: 'var(--player-surface-deep)', borderBottom: '1px solid color-mix(in srgb, var(--border-default) 19%, transparent)' }}>
@@ -222,10 +268,6 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
             recordingType={recordingType}
             imageLoaded={imageLoaded}
             onImageLoad={onImageLoad}
-            isInWishlist={isInWishlist}
-            wishlistItems={wishlistItems}
-            onAddToWishlist={onAddToWishlist}
-            onRemoveFromWishlist={onRemoveFromWishlist}
           />
 
           {/* Center section — Transport controls + progress bar */}
@@ -267,23 +309,59 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
         </div>
       </div>
 
-      {/* Queue strip — accordion album groups */}
+      {/* Queue strip — toggle handle + accordion album groups */}
       {queueChips.length > 0 && (
-        <div className="px-6 pt-2.5 pb-3.5" style={{ background: 'var(--player-surface-queue)', borderTop: '1px solid color-mix(in srgb, var(--player-surface-bar) 20%, transparent)' }}>
-          <QueueAccordion
-            queueChips={queueChips}
-            totalUpcoming={totalUpcoming}
-            playedCount={playedCount}
-            onChipPlay={onChipPlay}
-            onRemoveItem={onRemoveItem}
-            onRemoveBatch={onRemoveBatch}
-            onSelectVersion={onSelectVersion}
-            onMoveItem={onMoveItem}
-            onDetachItem={onDetachItem}
-            onRestoreFromHistory={onRestoreFromHistory}
-            preferredQuality={preferredQuality}
-            lastSwappedQueueId={lastSwappedQueueId}
-          />
+        <div style={{ background: 'var(--player-surface-queue)' }}>
+          {/* Toggle handle — slim pill overlapping the border */}
+          <div className="flex justify-center -mt-[7px] relative z-[3]">
+            <button
+              onClick={() => setQueueStripOpen(prev => !prev)}
+              className="flex items-center gap-1 px-3 h-[14px] rounded-full transition-all"
+              style={{
+                background: 'var(--player-surface-bar)',
+                border: '1px solid color-mix(in srgb, var(--tertiary) 30%, transparent)',
+                color: 'var(--text-tertiary)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--tertiary)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+                e.currentTarget.style.background = 'color-mix(in srgb, var(--tertiary) 15%, var(--player-surface-bar))';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--tertiary) 30%, transparent)';
+                e.currentTarget.style.color = 'var(--text-tertiary)';
+                e.currentTarget.style.background = 'var(--player-surface-bar)';
+              }}
+              aria-label={queueStripOpen ? 'Hide queue strip' : 'Show queue strip'}
+            >
+              <span className="w-3 h-[1.5px] rounded-full" style={{ background: 'currentColor', opacity: 0.5 }} />
+              <svg
+                className={`w-2.5 h-2.5 transition-transform ${queueStripOpen ? '' : 'rotate-180'}`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+              </svg>
+              <span className="w-3 h-[1.5px] rounded-full" style={{ background: 'currentColor', opacity: 0.5 }} />
+            </button>
+          </div>
+          {queueStripOpen && (
+            <div className="px-6 pb-3.5">
+              <QueueAccordion
+                queueChips={queueChips}
+                totalUpcoming={totalUpcoming}
+                playedCount={playedCount}
+                onChipPlay={onChipPlay}
+                onRemoveItem={onRemoveItem}
+                onRemoveBatch={onRemoveBatch}
+                onSelectVersion={onSelectVersion}
+                onMoveItem={onMoveItem}
+                onDetachItem={onDetachItem}
+                onRestoreFromHistory={onRestoreFromHistory}
+                preferredQuality={preferredQuality}
+                lastSwappedQueueId={lastSwappedQueueId}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -299,10 +377,6 @@ function DesktopLeftSection({
   recordingType,
   imageLoaded,
   onImageLoad,
-  isInWishlist,
-  wishlistItems,
-  onAddToWishlist,
-  onRemoveFromWishlist,
 }: {
   currentSong: DesktopPlayerBarProps['currentSong'];
   currentItem: QueueItem | null;
@@ -310,10 +384,6 @@ function DesktopLeftSection({
   recordingType: string | undefined;
   imageLoaded: boolean;
   onImageLoad: () => void;
-  isInWishlist: (id: string) => boolean;
-  wishlistItems: { id: string; song: { id: string } }[];
-  onAddToWishlist: (song: any) => void;
-  onRemoveFromWishlist: (id: string) => void;
 }) {
   return (
     <div className="flex items-start gap-3 min-w-0 flex-1 max-w-[380px] z-20">
@@ -363,89 +433,19 @@ function DesktopLeftSection({
 
       {/* Track meta — multi-row layout matching queue track rows */}
       <div className="min-w-0 flex-1 flex flex-col">
-        {/* Row 1: # + Title */}
-        <div className="flex items-baseline gap-1.5 leading-tight">
-          {currentItem?.albumSource && (
-            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
-              {(currentItem.albumSource.originalTrackIndex ?? 0) + 1}
-            </span>
-          )}
-          <span className="text-[14px] font-semibold text-white truncate" style={{ lineHeight: '1.25' }}>
-            {currentSong.title}
-          </span>
-        </div>
+        <RecordingRow
+          song={currentItem?.song ?? currentSong as any}
+          size="sm"
+          trackNumber={currentItem?.albumSource ? (currentItem.albumSource.originalTrackIndex ?? 0) + 1 : undefined}
+          showBadges={false}
+          showMediumIcon={false}
+          showDuration={false}
+          actions={['favorite']}
+        />
 
-        {/* Row 2: Date · Venue */}
-        {(currentSong.showDate || currentSong.showVenue) && (
-          <div className="flex items-baseline gap-1.5 leading-tight mt-px">
-            {currentSong.showDate && (
-              <span className="font-jb-mono text-[11px] font-semibold text-primary tracking-wide flex-shrink-0">
-                {currentSong.showDate.replace(/-/g, '/')}
-              </span>
-            )}
-            {currentSong.showVenue && (
-              <span className="text-[11px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
-                {currentSong.showVenue}
-              </span>
-            )}
-          </div>
-        )}
-        {/* Location */}
-        {currentItem?.song?.showLocation && (
-          <span className="font-mono text-[9px] leading-tight" style={{ color: 'var(--text-tertiary)' }}>
-            {currentItem.song.showLocation}
-          </span>
-        )}
-
-        {/* Row 3: Taper */}
-        {currentItem?.song?.taper && (
-          <div className="flex items-center gap-1 leading-tight mt-px">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-              <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
-              <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
-              <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
-              <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
-              <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <span className="font-jb-mono text-[9px] truncate" style={{ color: 'var(--text-tertiary)' }}>
-              {currentItem.song.taper}
-            </span>
-          </div>
-        )}
-
-        {/* Row 4: Action buttons */}
+        {/* Row 4: Share + Download buttons */}
         <div className="flex items-center gap-2 mt-1">
-          {/* Like */}
-          <button
-            onClick={() => {
-              if (currentSong) {
-                if (isInWishlist(currentSong.id)) {
-                  const item = wishlistItems.find(i => i.song.id === currentSong.id);
-                  if (item) onRemoveFromWishlist(item.id);
-                } else {
-                  onAddToWishlist(currentSong);
-                }
-              }
-            }}
-            className={`transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-accent rounded ${
-              currentSong && isInWishlist(currentSong.id) ? 'text-accent' : 'text-tertiary hover:text-accent-secondary'
-            }`}
-            aria-label={currentSong && isInWishlist(currentSong.id) ? 'Remove from favorites' : 'Add to favorites'}
-            title={currentSong && isInWishlist(currentSong.id) ? 'Unlike (L)' : 'Like (L)'}
-          >
-            {currentSong && isInWishlist(currentSong.id) ? (
-              <svg className="w-[15px] h-[15px]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-            ) : (
-              <svg className="w-[15px] h-[15px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            )}
-          </button>
-          {/* Share */}
           <ShareButton title={currentSong.title} artistName={currentSong.artistName} />
-          {/* Download */}
           <DownloadButton archiveUrl={currentSong.archiveDetailUrl} title={currentSong.title} artistName={currentSong.artistName} />
         </div>
       </div>

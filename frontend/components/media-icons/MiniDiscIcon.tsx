@@ -5,11 +5,12 @@ import { useState } from 'react';
 interface Props {
   size?: number;
   className?: string;
+  isPlaying?: boolean;
 }
 
 const NOISE_SVG = "data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E";
 
-export default function MiniDiscIcon({ size = 1, className = '' }: Props) {
+export default function MiniDiscIcon({ size = 1, className = '', isPlaying }: Props) {
   const [hovered, setHovered] = useState(false);
   const s = size;
   const sc = (px: number) => Math.round(px * 0.529 * s);
@@ -53,7 +54,7 @@ export default function MiniDiscIcon({ size = 1, className = '' }: Props) {
             overflow: 'hidden',
           }}
         >
-          {/* md-body::before — noise texture */}
+          {/* md-body::before -- noise texture */}
           <div
             style={{
               position: 'absolute',
@@ -64,7 +65,7 @@ export default function MiniDiscIcon({ size = 1, className = '' }: Props) {
               pointerEvents: 'none',
             }}
           />
-          {/* md-body::after — top bevel highlight */}
+          {/* md-body::after -- top bevel highlight */}
           <div
             style={{
               position: 'absolute',
@@ -97,7 +98,7 @@ export default function MiniDiscIcon({ size = 1, className = '' }: Props) {
             zIndex: 2,
           }}
         >
-          {/* md-label-area::before — ruled lines */}
+          {/* md-label-area::before -- ruled lines */}
           <div
             style={{
               position: 'absolute',
@@ -138,7 +139,7 @@ export default function MiniDiscIcon({ size = 1, className = '' }: Props) {
             overflow: 'hidden',
           }}
         >
-          {/* md-shutter::before — horizontal ridges */}
+          {/* md-shutter::before -- horizontal ridges */}
           <div
             style={{
               position: 'absolute',
@@ -165,21 +166,105 @@ export default function MiniDiscIcon({ size = 1, className = '' }: Props) {
           />
         </div>
 
-        {/* md-disc-window */}
+        {/* mu-disc-area */}
         <div
           style={{
             position: 'absolute',
-            bottom: sc(14),
-            right: sc(14),
-            width: sc(28),
-            height: sc(28),
+            bottom: sc(10),
+            right: sc(10),
+            width: sc(34),
+            height: sc(34),
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(200,190,170,0.3) 20%, rgba(180,170,150,0.2) 40%, rgba(150,140,120,0.15) 60%, rgba(40,35,25,0.4) 80%, rgba(30,25,18,0.5) 100%)',
-            border: '1px solid rgba(0,0,0,0.15)',
-            boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.3)',
+            background: isPlaying
+              ? 'radial-gradient(circle, #0c0806 35%, #181410 36%)'
+              : 'radial-gradient(circle, rgba(200,190,170,0.3) 20%, rgba(180,170,150,0.2) 40%, rgba(150,140,120,0.15) 60%, rgba(40,35,25,0.4) 80%, rgba(30,25,18,0.5) 100%)',
+            border: isPlaying
+              ? '1.5px solid rgba(196,112,110,0.2)'
+              : '1px solid rgba(0,0,0,0.15)',
+            boxShadow: isPlaying
+              ? 'inset 0 2px 6px rgba(0,0,0,0.5), 0 0 10px rgba(196,112,110,0.12), 0 0 20px rgba(196,112,110,0.05)'
+              : 'inset 0 1px 4px rgba(0,0,0,0.3)',
             zIndex: 2,
+            overflow: 'hidden',
           }}
-        />
+        >
+          {/* Spinning coral disc */}
+          {isPlaying && (
+            <div style={{
+              position: 'absolute',
+              inset: sc(2),
+              borderRadius: '50%',
+              background: 'conic-gradient(from 0deg, #c4706e, #d4908e, #b8605e, #daa0a0, #c4706e, #a85856, #d89898, #c4706e, #d4908e, #b06060, #c4706e)',
+              animation: 'mi-spin 1.8s linear infinite',
+              pointerEvents: 'none' as const,
+            }}>
+              {/* Inner groove ring 1 (inset 4px) */}
+              <div style={{
+                position: 'absolute',
+                inset: sc(4),
+                borderRadius: '50%',
+                border: '0.5px solid rgba(196,112,110,0.25)',
+                pointerEvents: 'none' as const,
+              }} />
+              {/* Inner groove ring 2 (inset 8px) */}
+              <div style={{
+                position: 'absolute',
+                inset: sc(8),
+                borderRadius: '50%',
+                border: '0.5px solid rgba(196,112,110,0.18)',
+                pointerEvents: 'none' as const,
+              }} />
+            </div>
+          )}
+
+          {/* Disc hub */}
+          {isPlaying && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: sc(8),
+              height: sc(8),
+              borderRadius: '50%',
+              background: 'radial-gradient(circle at 40% 35%, #d89898, #c4706e)',
+              border: '0.5px solid rgba(140,60,58,0.4)',
+              zIndex: 1,
+              pointerEvents: 'none' as const,
+            }} />
+          )}
+        </div>
+
+        {/* Laser dot */}
+        {isPlaying && (
+          <div style={{
+            position: 'absolute',
+            bottom: sc(24),
+            right: sc(22),
+            width: sc(3),
+            height: sc(3),
+            borderRadius: '50%',
+            background: '#c4706e',
+            boxShadow: '0 0 5px rgba(196,112,110,0.6), 0 0 12px rgba(196,112,110,0.25)',
+            animation: 'mi-pulse 0.5s ease infinite',
+            zIndex: 4,
+            pointerEvents: 'none' as const,
+          }} />
+        )}
+
+        {/* Laser track line */}
+        {isPlaying && (
+          <div style={{
+            position: 'absolute',
+            bottom: sc(25),
+            right: sc(18),
+            width: sc(12),
+            height: sc(1),
+            background: 'linear-gradient(90deg, transparent, rgba(196,112,110,0.12), transparent)',
+            zIndex: 3,
+            pointerEvents: 'none' as const,
+          }} />
+        )}
 
         {/* md-brand-mark "MD" */}
         <div

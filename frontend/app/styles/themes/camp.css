@@ -14,6 +14,8 @@
   --tertiary-muted: #5a8a7a40;
   --quaternary-muted: #a85a3840;
   --quinary-muted: #c08a4040;
+  --senary: #4a4642;
+  --senary-muted: #4a464240;
 
   /* Surface overrides — near-black primary needs to lighten, not darken */
   --surface-card: color-mix(in srgb, var(--primary) 96%, white);

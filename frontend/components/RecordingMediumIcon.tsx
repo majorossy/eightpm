@@ -14,9 +14,10 @@ interface Props {
   source?: string;       // fallback: parse client-side
   size?: number;         // scale factor (default: 1)
   className?: string;
+  isPlaying?: boolean;   // animate icon when track is active
 }
 
-const ICON_MAP: Record<string, React.ComponentType<{size?: number; className?: string}>> = {
+const ICON_MAP: Record<string, React.ComponentType<{size?: number; className?: string; isPlaying?: boolean}>> = {
   cassette: CassetteIcon,
   dat: DATIcon,
   minidisc: MiniDiscIcon,
@@ -29,14 +30,14 @@ const ICON_MAP: Record<string, React.ComponentType<{size?: number; className?: s
   bandcamp: BandcampIcon,
 };
 
-export default function RecordingMediumIcon({ medium, lineage, source, size = 1, className }: Props) {
+export default function RecordingMediumIcon({ medium, lineage, source, size = 1, className, isPlaying }: Props) {
   const detected: RecordingMedium = (medium as RecordingMedium) || getMediumFromLineage(lineage, source);
   const Icon = detected ? ICON_MAP[detected] : UnknownIcon;
   const FinalIcon = Icon || UnknownIcon;
   const label = getMediumLabel(detected);
   return (
     <div title={label} className={className}>
-      <FinalIcon size={size} />
+      <FinalIcon size={size} isPlaying={isPlaying} />
     </div>
   );
 }

@@ -5,11 +5,21 @@ import { useState } from 'react';
 interface Props {
   size?: number;
   className?: string;
+  isPlaying?: boolean;
 }
 
 const NOISE_SVG = "data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E";
 
-export default function SDCardIcon({ size = 1, className = '' }: Props) {
+const BIT_POSITIONS = [
+  { left: '30%', delay: '0s' },
+  { left: '50%', delay: '0.15s' },
+  { left: '70%', delay: '0.3s' },
+  { left: '40%', delay: '0.1s' },
+  { left: '60%', delay: '0.25s' },
+  { left: '35%', delay: '0.4s' },
+];
+
+export default function SDCardIcon({ size = 1, className = '', isPlaying }: Props) {
   const [hovered, setHovered] = useState(false);
   const s = size;
   const sc = (px: number) => Math.round(px * 0.677 * s);
@@ -34,7 +44,7 @@ export default function SDCardIcon({ size = 1, className = '' }: Props) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* sd-body */}
+      {/* su-body */}
       <div
         style={{
           position: 'absolute',
@@ -75,7 +85,7 @@ export default function SDCardIcon({ size = 1, className = '' }: Props) {
           }}
         />
 
-        {/* sd-notch (triangle at top-right) */}
+        {/* su-notch (triangle at top-right) */}
         <div
           style={{
             position: 'absolute',
@@ -90,7 +100,7 @@ export default function SDCardIcon({ size = 1, className = '' }: Props) {
           }}
         />
 
-        {/* sd-label */}
+        {/* su-label */}
         <div
           style={{
             position: 'absolute',
@@ -119,7 +129,7 @@ export default function SDCardIcon({ size = 1, className = '' }: Props) {
             }}
           />
 
-          {/* sd-label-brand */}
+          {/* su-label-brand */}
           <div
             style={{
               fontFamily: font,
@@ -133,7 +143,7 @@ export default function SDCardIcon({ size = 1, className = '' }: Props) {
             SDHC
           </div>
 
-          {/* sd-label-cap */}
+          {/* su-label-cap */}
           <div
             style={{
               fontFamily: fontCourier,
@@ -147,7 +157,7 @@ export default function SDCardIcon({ size = 1, className = '' }: Props) {
           </div>
         </div>
 
-        {/* sd-switch (write-protect) */}
+        {/* su-wp (write-protect switch) */}
         <div
           style={{
             position: 'absolute',
@@ -161,6 +171,57 @@ export default function SDCardIcon({ size = 1, className = '' }: Props) {
             zIndex: 3,
           }}
         />
+
+        {/* su-led — Activity LED */}
+        <div
+          style={{
+            position: 'absolute',
+            top: sc(36),
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: sc(4),
+            height: sc(4),
+            borderRadius: '50%',
+            background: isPlaying ? '#c4706e' : 'rgba(196, 112, 110, 0.1)',
+            boxShadow: isPlaying ? '0 0 4px rgba(196, 112, 110, 0.4)' : 'none',
+            zIndex: 3,
+            ...(isPlaying ? { animation: 'mi-led-blink 0.3s ease infinite' } : {}),
+          }}
+        />
+
+        {/* su-stream — Bit stream container */}
+        {isPlaying && (
+          <div
+            style={{
+              position: 'absolute',
+              top: sc(42),
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: sc(24),
+              height: sc(22),
+              zIndex: 2,
+              overflow: 'hidden',
+              pointerEvents: 'none' as const,
+            }}
+          >
+            {BIT_POSITIONS.map((bit, i) => (
+              <div
+                key={`bit-${i}`}
+                style={{
+                  position: 'absolute',
+                  left: bit.left,
+                  transform: 'translateX(-50%)',
+                  width: sc(2),
+                  height: sc(2),
+                  borderRadius: '50%',
+                  background: '#c4706e',
+                  boxShadow: '0 0 3px rgba(196,112,110,0.35)',
+                  animation: `mi-bit-fall 0.6s linear infinite ${bit.delay}`,
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         {/* sd-mark ("SD" text) */}
         <div
@@ -209,16 +270,16 @@ export default function SDCardIcon({ size = 1, className = '' }: Props) {
           </div>
         </div>
 
-        {/* sd-contacts (9 gold pins) */}
+        {/* su-contacts (9 gold pins) */}
         <div
           style={{
             position: 'absolute',
-            bottom: sc(4),
-            left: sc(8),
-            right: sc(8),
-            height: sc(12),
+            bottom: sc(3),
+            left: sc(5),
+            right: sc(5),
+            height: sc(11),
             display: 'flex',
-            gap: sc(2),
+            gap: sc(1.5),
             justifyContent: 'center',
             zIndex: 2,
           }}
@@ -230,8 +291,8 @@ export default function SDCardIcon({ size = 1, className = '' }: Props) {
                 flex: 1,
                 height: '100%',
                 borderRadius: sc(1),
-                background: 'linear-gradient(180deg, #c8a848 0%, #b09030 40%, #988028 60%, #806820 100%)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 1px rgba(0,0,0,0.2)',
+                background: 'linear-gradient(180deg, #d4b858, #a08830, #c8a848)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
               }}
             />
           ))}

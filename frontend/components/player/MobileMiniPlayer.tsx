@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { QualityPopup, getQualityBadge } from '@/components/player/QualityPopup';
 import { formatLineage } from '@/lib/lineageUtils';
@@ -7,6 +8,7 @@ import RecSourceIcon from '@/components/RecSourceIcon';
 import type { QueueItem } from '@/lib/queueTypes';
 import type { AudioQuality } from '@/lib/types';
 import QueueAccordion from '@/components/player/QueueAccordion';
+import { RecordingRow } from '@/components/version-row';
 import { computeSignalInfo } from '@/lib/signalUtils';
 import SignalStrengthIcon from '@/components/player/SignalStrengthIcon';
 
@@ -107,6 +109,7 @@ export default function MobileMiniPlayer({
   onDetachItem,
   onRestoreFromHistory,
 }: MobileMiniPlayerProps) {
+  const [queueStripOpen, setQueueStripOpen] = useState(true);
   const qualityInfo = getQualityBadge(preferredQuality);
   const recordingType = currentItem?.song?.recordingType;
 
@@ -123,7 +126,7 @@ export default function MobileMiniPlayer({
       </div>
 
       <div id="bottom-player-bar" className="fixed left-0 right-0 z-[40]" style={{ bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}>
-        <div className={`border-t border-accent/20 bg-gradient-to-b from-surface-elevated to-surface-card backdrop-blur-lg ${reducedMotion ? 'reduce-motion' : ''}`}>
+        <div className={`border-t border-accent/20 bg-surface-card ${reducedMotion ? 'reduce-motion' : ''}`}>
           {/* Mini player card with swipe gesture */}
           <div
             onTouchStart={swipeHandlers.onTouchStart}
@@ -188,12 +191,27 @@ export default function MobileMiniPlayer({
                   )}
                 </div>
 
-                {/* Title/Artist */}
+                {/* Title/Artist + Metadata */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white font-medium truncate">{currentItem?.albumSource ? <><span className="text-tertiary">{(currentItem.albumSource.originalTrackIndex ?? 0) + 1}.</span> {currentSong.title}</> : currentSong.title}</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-white/70 truncate flex-shrink">{currentSong.artistName}</p>
-                  </div>
+                  {currentItem?.song ? (
+                    <RecordingRow
+                      song={currentItem.song}
+                      size="sm"
+                      trackNumber={currentItem?.albumSource ? (currentItem.albumSource.originalTrackIndex ?? 0) + 1 : undefined}
+                      showMediumIcon={false}
+                      showLocation={false}
+                      showTaper={false}
+                      showDownloads={false}
+                      showBadges={false}
+                    />
+                  ) : (
+                    <>
+                      <p className="text-sm text-white font-medium truncate">
+                        {currentSong.title}
+                      </p>
+                      <p className="text-xs text-white/70 truncate">{currentSong.artistName}</p>
+                    </>
+                  )}
                 </div>
               </button>
 
@@ -274,14 +292,18 @@ export default function MobileMiniPlayer({
                 )}
               </button>
 
-              {/* Minimize button */}
+              {/* Dismiss button — three-cycle: close queue → minimize player */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onMinimize();
+                  if (queueStripOpen && queueChips.length > 0) {
+                    setQueueStripOpen(false);
+                  } else {
+                    onMinimize();
+                  }
                 }}
                 className="w-8 h-8 flex items-center justify-center text-white/40 hover:text-white/70 flex-shrink-0 transition-colors"
-                aria-label="Hide player"
+                aria-label={queueStripOpen && queueChips.length > 0 ? 'Close queue' : 'Hide player'}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
@@ -291,29 +313,25 @@ export default function MobileMiniPlayer({
           </div>
 
           {/* Queue strip — compact accordion album groups */}
-          {queueChips.length > 0 && (
-            <div className="px-3 pt-1.5 pb-2" style={{ background: 'var(--player-surface-queue)', borderTop: '1px solid color-mix(in srgb, var(--player-surface-bar) 20%, transparent)' }}>
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-[9px] font-jb-mono font-bold uppercase tracking-widest" style={{ color: 'var(--quinary)' }}>Up</span>
-                <span className="text-[9px] font-jb-mono uppercase tracking-widest" style={{ color: 'var(--secondary)' }}>Next</span>
-                <span className="text-[9px] text-tertiary font-jb-mono uppercase tracking-wider">&middot; {totalUpcoming}</span>
-                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--quinary) 25%, transparent), transparent)' }} />
+          {queueStripOpen && queueChips.length > 0 && (
+            <div style={{ background: 'var(--player-surface-queue)' }}>
+              <div className="px-3 pb-2">
+                <QueueAccordion
+                  queueChips={queueChips}
+                  totalUpcoming={totalUpcoming}
+                  playedCount={queueChips.filter(c => c.isPlayed).length}
+                  onChipPlay={onChipPlay}
+                  onRemoveItem={onRemoveItem}
+                  onRemoveBatch={onRemoveBatch}
+                  onSelectVersion={onSelectVersion}
+                  onMoveItem={onMoveItem}
+                  onDetachItem={onDetachItem}
+                  onRestoreFromHistory={onRestoreFromHistory}
+                  preferredQuality={preferredQuality}
+                  compact
+                  lastSwappedQueueId={lastSwappedQueueId}
+                />
               </div>
-              <QueueAccordion
-                queueChips={queueChips}
-                totalUpcoming={totalUpcoming}
-                playedCount={queueChips.filter(c => c.isPlayed).length}
-                onChipPlay={onChipPlay}
-                onRemoveItem={onRemoveItem}
-                onRemoveBatch={onRemoveBatch}
-                onSelectVersion={onSelectVersion}
-                onMoveItem={onMoveItem}
-                onDetachItem={onDetachItem}
-                onRestoreFromHistory={onRestoreFromHistory}
-                preferredQuality={preferredQuality}
-                compact
-                lastSwappedQueueId={lastSwappedQueueId}
-              />
             </div>
           )}
         </div>

@@ -5,17 +5,15 @@
 
 /* Mini player */
 .mini-player {
-  background: linear-gradient(to bottom, var(--surface-elevated), var(--surface-card));
-  box-shadow: 0 -6px 16px color-mix(in srgb, black 35%, transparent), 0 -2px 8px color-mix(in srgb, black 25%, transparent);
   border-radius: 8px;
 }
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 -6px 16px color-mix(in srgb, black 35%, transparent);
+    box-shadow: none;
   }
   50% {
-    box-shadow: 0 -6px 32px var(--accent-glow), 0 -2px 12px color-mix(in srgb, var(--secondary) 20%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--secondary) 20%, transparent);
   }
 }
 
@@ -193,7 +191,7 @@
   }
 }
 
-/* Swap glow — gold pulse after version swap (scale + bg flash + two-phase glow) */
+/* Swap glow — purple pulse after version swap (scale + bg flash + two-phase glow) */
 .swap-glow {
   animation: swapGlow 1.8s ease-out;
 }
@@ -201,14 +199,14 @@
 @keyframes swapGlow {
   /* Flash in — fast bright burst */
   0%   {
-    box-shadow: 0 0 0 3px var(--quinary), 0 0 20px color-mix(in srgb, var(--quinary) 60%, transparent);
-    background-color: color-mix(in srgb, var(--quinary) 15%, transparent);
+    box-shadow: 0 0 0 3px var(--quaternary), 0 0 20px color-mix(in srgb, var(--quaternary) 60%, transparent);
+    background-color: color-mix(in srgb, var(--quaternary) 15%, transparent);
     transform: scale(1.04);
   }
   /* Hold the peak briefly */
   10%  {
-    box-shadow: 0 0 0 3px var(--quinary), 0 0 24px color-mix(in srgb, var(--quinary) 50%, transparent);
-    background-color: color-mix(in srgb, var(--quinary) 12%, transparent);
+    box-shadow: 0 0 0 3px var(--quaternary), 0 0 24px color-mix(in srgb, var(--quaternary) 50%, transparent);
+    background-color: color-mix(in srgb, var(--quaternary) 12%, transparent);
     transform: scale(1.04);
   }
   /* Settle back */
@@ -226,6 +224,27 @@
 @media (prefers-reduced-motion: reduce) {
   .swap-glow {
     animation: none;
-    box-shadow: 0 0 0 2px var(--quinary);
+    box-shadow: 0 0 0 2px var(--quaternary);
+  }
+}
+
+/* Seek-landed — purple pulse after grab-to-seek completion */
+.seek-landed {
+  animation: seekLanded 1.2s ease-out;
+}
+
+@keyframes seekLanded {
+  0% {
+    box-shadow: 0 0 0 2px var(--quaternary), 0 0 16px color-mix(in srgb, var(--quaternary) 40%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seek-landed {
+    animation: none;
+    box-shadow: 0 0 0 2px var(--quaternary);
   }
 }

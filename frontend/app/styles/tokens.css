@@ -15,6 +15,8 @@
   --tertiary-muted: #5ab8a040;
   --quaternary-muted: #9088c840;
   --quinary-muted: #c8b46840;
+  --senary: #6a8090;
+  --senary-muted: #6a809040;
 
   /* ========================================
      DERIVED DESIGN TOKENS
@@ -40,6 +42,13 @@
   --accent-primary-hover: color-mix(in srgb, var(--secondary) 80%, white);
   --accent-primary-muted: color-mix(in srgb, var(--secondary) 25%, transparent);
   --accent-secondary: var(--tertiary);
+
+  /* Action semantics — maps intent to palette color */
+  --action-play: var(--secondary);     /* coral: playing, immediate result */
+  --action-queue: var(--quinary);      /* gold: add-to-queue, drag reorder */
+  --action-frame: var(--tertiary);     /* teal: framing, grouping, neutral */
+  --action-swap: var(--quaternary);    /* purple: version swap */
+  --action-done: var(--senary);        /* gray: already played, disabled */
 
   /* Borders */
   --border-default: var(--surface-elevated);

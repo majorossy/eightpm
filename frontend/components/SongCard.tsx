@@ -147,7 +147,7 @@ export default function SongCard({ song, index }: SongCardProps) {
         {/* Add to queue */}
         <button
           onClick={handleAddToQueue}
-          className="transition-colors opacity-0 group-hover:opacity-100 text-[var(--text-dim)] hover:text-[var(--text)]"
+          className="transition-colors opacity-0 group-hover:opacity-100 text-[var(--quinary)] hover:text-[var(--text)]"
           aria-label={`Add ${song.title} to queue`}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

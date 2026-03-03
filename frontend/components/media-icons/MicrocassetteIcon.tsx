@@ -5,11 +5,12 @@ import { useState } from 'react';
 interface Props {
   size?: number;
   className?: string;
+  isPlaying?: boolean;
 }
 
 const NOISE_SVG = "data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E";
 
-export default function MicrocassetteIcon({ size = 1, className = '' }: Props) {
+export default function MicrocassetteIcon({ size = 1, className = '', isPlaying }: Props) {
   const [hovered, setHovered] = useState(false);
   const s = size;
   const sc = (px: number) => Math.round(px * 0.57 * s);
@@ -125,8 +126,25 @@ export default function MicrocassetteIcon({ size = 1, className = '' }: Props) {
             background: 'radial-gradient(circle at 42% 36%, #ece4d6 0%, #ddd4c2 30%, #ccc4b2 60%, #bcb4a2 100%)',
             border: '1px solid rgba(0,0,0,0.12)',
             boxShadow: `inset 0 1px ${sc(2)}px rgba(255,255,255,0.5), 0 1px ${sc(3)}px rgba(0,0,0,0.25)`,
+            ...(isPlaying ? { animation: 'mi-spin-center 2s linear infinite' } : {}),
           }}
         />
+        {isPlaying && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%,-50%)',
+            width: sc(20),
+            height: sc(20),
+            borderRadius: '50%',
+            background: 'conic-gradient(from 0deg, #c4706e, #d89898, #b86060, #c4706e, #d89898, #b86060, #c4706e)',
+            animation: 'mi-spin-center 2s linear infinite',
+            opacity: 0.75,
+            zIndex: 2,
+            pointerEvents: 'none' as const,
+          }} />
+        )}
         {/* Center drive hole */}
         <div
           style={{
@@ -172,8 +190,25 @@ export default function MicrocassetteIcon({ size = 1, className = '' }: Props) {
             background: 'radial-gradient(circle at 42% 36%, #ece4d6 0%, #ddd4c2 30%, #ccc4b2 60%, #bcb4a2 100%)',
             border: '1px solid rgba(0,0,0,0.12)',
             boxShadow: `inset 0 1px ${sc(2)}px rgba(255,255,255,0.5), 0 1px ${sc(3)}px rgba(0,0,0,0.25)`,
+            ...(isPlaying ? { animation: 'mi-spin-center 1.2s linear infinite' } : {}),
           }}
         />
+        {isPlaying && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%,-50%)',
+            width: sc(20),
+            height: sc(20),
+            borderRadius: '50%',
+            background: 'conic-gradient(from 0deg, #c4706e, #d89898, #b86060, #c4706e, #d89898, #b86060, #c4706e)',
+            animation: 'mi-spin-center 1.2s linear infinite',
+            opacity: 0.75,
+            zIndex: 2,
+            pointerEvents: 'none' as const,
+          }} />
+        )}
         {/* Center drive hole */}
         <div
           style={{

@@ -5,9 +5,8 @@ import { Track, Song, formatDuration } from '@/lib/api';
 import { useQueue } from '@/context/QueueContext';
 import { Waveform } from '@/components/AudioVisualizations';
 import { getBestVersion } from '@/lib/queueTypes';
-import { StarRating, RecTypeBadge } from '@/components/VersionPickerModal';
 import VersionPickerModal from '@/components/VersionPickerModal';
-import RecordingMediumIcon from '@/components/RecordingMediumIcon';
+import { RecordingRow } from '@/components/version-row';
 
 interface TrackRowProps {
   track: Track;
@@ -72,7 +71,7 @@ export const TrackRow = React.memo(function TrackRow({
 
   return (
     <div
-      className={`rounded-lg mb-2 ${justSwapped ? 'overflow-visible' : 'overflow-hidden'} transition-all ${justSwapped ? 'swap-glow' : ''}`}
+      className={`group rounded-lg mb-2 ${justSwapped ? 'overflow-visible' : 'overflow-hidden'} transition-all ${justSwapped ? 'swap-glow' : ''}`}
       style={{
         background: isCurrentTrack
           ? 'color-mix(in srgb, var(--secondary) 8%, transparent)'
@@ -102,108 +101,47 @@ export const TrackRow = React.memo(function TrackRow({
         }}
       >
         {/* Row 1: track number/play + title + versions pill + time */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            {isCurrentTrack && isPlaying ? (
-              <div style={{ width: 20, display: 'flex', justifyContent: 'center' }}>
-                <Waveform waveform={waveform} size="small" />
-              </div>
-            ) : (
-              <span className="font-jb-mono text-[14px] w-5 text-right" style={{ color: 'var(--text-subdued)' }}>
-                {displayIndex}.
-              </span>
-            )}
-            <span className="text-primary" style={{ fontWeight: 500, fontSize: 16 }}>
-              {track.title}
+        <div className="flex items-baseline gap-1.5 mb-1">
+          {isCurrentTrack && isPlaying ? (
+            <div className="flex-shrink-0 self-center" style={{ width: 20, display: 'flex', justifyContent: 'center' }}>
+              <Waveform waveform={waveform} size="small" />
+            </div>
+          ) : (
+            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+              {displayIndex}
             </span>
-            {/* Version count pill */}
-            {hasMultipleVersions && (
-              <span
-                className="font-jb-mono text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                style={{
-                  background: 'color-mix(in srgb, var(--tertiary) 15%, transparent)',
-                  color: 'var(--tertiary)',
-                  border: '1px solid color-mix(in srgb, var(--tertiary) 20%, transparent)',
-                }}
-              >
-                {track.songs.length} versions
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2.5 text-[14px] flex-shrink-0" style={{ color: 'var(--text-subdued)' }}>
-            <span>{formatDuration(track.totalDuration)}</span>
+          )}
+          <span className="text-[13.5px] font-serif font-semibold text-primary truncate" style={{ lineHeight: '1.3' }}>
+            {track.title}
+          </span>
+          {/* Version count pill */}
+          {hasMultipleVersions && (
+            <span
+              className="font-jb-mono text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+              style={{
+                background: 'color-mix(in srgb, var(--tertiary) 15%, transparent)',
+                color: 'var(--tertiary)',
+                border: '1px solid color-mix(in srgb, var(--tertiary) 20%, transparent)',
+              }}
+            >
+              {track.songs.length} versions
+            </span>
+          )}
+          <div className="flex items-center gap-2.5 flex-shrink-0 ml-auto">
+            <span className="font-jb-mono text-[11px] font-medium" style={{ color: 'var(--text-tertiary)' }}>{formatDuration(track.totalDuration)}</span>
           </div>
         </div>
 
         {/* Metadata rows for the chipSong */}
         {chipSong && (
-          <div className="flex gap-3 mt-2" style={{ paddingLeft: 34 }}>
-            {/* Source medium icon */}
-            <div className="flex-shrink-0 pt-0.5">
-              <RecordingMediumIcon
-                medium={chipSong.recordingMedium}
-                lineage={chipSong.lineage}
-                source={chipSong.source}
-                size={0.7}
-              />
-            </div>
-            <div className="flex flex-col gap-1 min-w-0">
-            {/* Date + Venue */}
-            <div className="flex items-baseline gap-2">
-              {chipSong.showDate && (
-                <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
-                  {chipSong.showDate.replace(/-/g, '/')}
-                </span>
-              )}
-              <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
-                {chipSong.showVenue || chipSong.albumName || 'Unknown venue'}
-              </span>
-            </div>
-            {/* Location */}
-            {chipSong.showLocation && (
-              <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                {chipSong.showLocation}
-              </span>
-            )}
-
-            {/* Taper */}
-            {chipSong.taper && (
-              <div className="flex items-center gap-1.5">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                  <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
-                  <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
-                  <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
-                  <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
-                  <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                <span className="font-jb-mono text-[11px] font-medium truncate" style={{ color: 'var(--text-tertiary)' }}>
-                  {chipSong.taper}
-                </span>
-              </div>
-            )}
-
-            {/* Source badge + Stars + Downloads */}
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <RecTypeBadge type={chipSong.recordingType} />
-              <StarRating rating={chipSong.avgRating} count={chipSong.numReviews} />
-              {chipSong.downloads != null && chipSong.downloads > 0 && (
-                <span className="font-jb-mono text-[11px] flex items-center gap-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                    <path d="M12 2L2 7v1h20V7L12 2z" fill="rgba(200,180,140,0.55)"/>
-                    <rect x="4.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                    <rect x="9" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                    <rect x="13" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                    <rect x="17.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                    <rect x="2" y="17" width="20" height="2" rx="0.5" fill="rgba(200,180,140,0.45)"/>
-                  </svg>
-                  <svg width="7" height="12" viewBox="0 0 10 16" fill="none" className="flex-shrink-0">
-                    <path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" stroke="#8fa8b3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  {chipSong.downloads.toLocaleString()}
-                </span>
-              )}
-            </div>
-            </div>
+          <div className="mt-2" style={{ paddingLeft: 34 }}>
+            <RecordingRow
+              song={chipSong}
+              showTitle={false}
+              actions={['play', 'play-next', 'queue', 'favorite']}
+              onPlay={onPlay}
+              isCurrentlyPlaying={isCurrentTrack && isPlaying}
+            />
           </div>
         )}
       </div>
@@ -214,6 +152,7 @@ export const TrackRow = React.memo(function TrackRow({
           isOpen={showVersionModal}
           onClose={() => setShowVersionModal(false)}
           trackTitle={track.title}
+          trackNumber={displayIndex}
           artistName={artistName}
           currentSongId={chipSong?.id ?? ''}
           versions={track.songs}

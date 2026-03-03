@@ -12,7 +12,7 @@ export default function EightPmTopBar({ transparent = false }: EightPmTopBarProp
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-colors ${
-        transparent ? 'bg-transparent' : 'bg-[var(--bg)]/95 backdrop-blur-sm'
+        transparent ? 'bg-transparent' : 'bg-[var(--bg)]'
       }`}
     >
       {/* Breadcrumb navigation - constrained to same width as page content */}
@@ -23,7 +23,7 @@ export default function EightPmTopBar({ transparent = false }: EightPmTopBarProp
       {/* Soft gradient fade at bottom - uses CSS variable */}
       {!transparent && (
         <div
-          className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none -mb-8"
+          className="absolute bottom-0 left-0 right-0 h-4 pointer-events-none -mb-4"
           style={{
             background: 'linear-gradient(to bottom, var(--bg, #1c1a17) 0%, transparent 100%)',
             opacity: 0.8,

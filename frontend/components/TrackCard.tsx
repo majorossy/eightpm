@@ -233,7 +233,7 @@ export default function TrackCard({ track, index, album }: TrackCardProps) {
               {/* Add to queue */}
               <button
                 onClick={handleAddToQueue}
-                className="text-secondary hover:text-white opacity-0 group-hover:opacity-100 transition-all focus:outline-none focus:opacity-100"
+                className="text-[var(--quinary)] hover:text-white opacity-0 group-hover:opacity-100 transition-all focus:outline-none focus:opacity-100"
                 aria-label={`Add ${track.title} to queue`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -13,9 +13,9 @@ import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
 
 import { VALIDATION_LIMITS } from '@/lib/validation';
-import VersionPickerModal, { VersionsIcon, StarRating, RecTypeBadge } from '@/components/VersionPickerModal';
+import VersionPickerModal from '@/components/VersionPickerModal';
+import { VersionsIcon, RecordingRow } from '@/components/version-row';
 import TicketStub from '@/components/TicketStub';
-import RecordingMediumIcon from '@/components/RecordingMediumIcon';
 import {
   DndContext,
   closestCenter,
@@ -301,8 +301,8 @@ function DragDots({ className = '' }: { className?: string }) {
     <div className={`flex flex-col gap-[2px] ${className}`}>
       {[0, 1, 2].map(row => (
         <span key={row} className="flex gap-[3px]">
-          <span className="w-[3.5px] h-[3.5px] rounded-full" style={{ background: 'var(--text-tertiary)' }} />
-          <span className="w-[3.5px] h-[3.5px] rounded-full" style={{ background: 'var(--text-tertiary)' }} />
+          <span className="w-[3.5px] h-[3.5px] rounded-full" style={{ background: 'var(--quinary)' }} />
+          <span className="w-[3.5px] h-[3.5px] rounded-full" style={{ background: 'var(--quinary)' }} />
         </span>
       ))}
     </div>
@@ -352,94 +352,11 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
       </div>
 
       {/* Multi-row content — matches SortableTrackRow layout */}
-      <div className="flex-1 min-w-0 flex flex-col gap-1 relative z-[1] mb-3.5">
-        {/* Row 1: # + Title ........... Duration */}
-        <div className="flex items-baseline gap-1.5">
-          {trackNumber != null && (
-            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
-              {trackNumber}
-            </span>
-          )}
-          <span className="text-[13.5px] font-semibold text-primary truncate" style={{ lineHeight: '1.3' }}>
-            {song.title}
-          </span>
-          {song.duration > 0 && (
-            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0 ml-auto" style={{ color: 'var(--text-tertiary)' }}>
-              {formatDuration(song.duration)}
-            </span>
-          )}
-        </div>
-
-        {/* Row 2: Date · Venue */}
-        {(song.showDate || song.showVenue) && (
-          <div className="flex items-baseline gap-2">
-            {song.showDate && (
-              <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
-                {song.showDate.replace(/-/g, '/')}
-              </span>
-            )}
-            <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
-              {song.showVenue || song.albumName || 'Unknown venue'}
-            </span>
-          </div>
-        )}
-        {/* Location */}
-        {song.showLocation && (
-          <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-            {song.showLocation}
-          </span>
-        )}
-
-        {/* Row 3: Taper */}
-        {song.taper && (
-          <div className="flex items-center gap-1.5">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-              <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
-              <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
-              <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
-              <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
-              <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <span className="font-jb-mono text-[11px] font-medium truncate" style={{ color: 'var(--text-tertiary)' }}>
-              {song.taper}
-            </span>
-          </div>
-        )}
-
-        {/* Row 4: Source badge · Stars · Downloads · Versions */}
-        <div className="flex items-center gap-2.5">
-          <RecTypeBadge type={song.recordingType} />
-          <StarRating rating={song.avgRating} count={song.numReviews} />
-          {song.downloads != null && song.downloads > 0 && (
-            <span className="font-jb-mono text-[11px] flex items-center gap-0.5" style={{ color: 'var(--text-tertiary)' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                <path d="M12 2L2 7v1h20V7L12 2z" fill="rgba(200,180,140,0.55)"/>
-                <rect x="4.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                <rect x="9" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                <rect x="13" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                <rect x="17.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                <rect x="2" y="17" width="20" height="2" rx="0.5" fill="rgba(200,180,140,0.45)"/>
-              </svg>
-              <svg width="7" height="12" viewBox="0 0 10 16" fill="none" className="flex-shrink-0">
-                <path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" stroke="#8fa8b3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {song.downloads.toLocaleString()}
-            </span>
-          )}
-          {hasMultipleVersions && (
-            <span
-              className="flex items-center gap-[3px] px-1.5 py-[2px] rounded-[3px] font-jb-mono text-[8.5px] font-semibold ml-auto"
-              style={{
-                background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
-                border: '1px solid color-mix(in srgb, var(--quaternary) 30%, transparent)',
-                color: 'var(--quaternary)',
-              }}
-            >
-              <VersionsIcon className="w-2.5 h-2.5" />
-              <span>{versionCount} ver</span>
-            </span>
-          )}
-        </div>
+      <div className="flex-1 min-w-0 relative z-[1] mb-3.5">
+        <RecordingRow
+          song={song}
+          trackNumber={trackNumber}
+        />
       </div>
 
       {/* Mini progress bar */}
@@ -544,11 +461,11 @@ function SortableTrackRow({
         className={`group/row flex gap-0 py-2 px-2 mx-1.5 mb-0.5 rounded-[10px] cursor-pointer transition-all relative ${isJustSwapped ? 'swap-glow' : ''}`}
         style={{
           border: isDragging
-            ? '2px dashed color-mix(in srgb, var(--quinary) 25%, transparent)'
+            ? '2px dashed color-mix(in srgb, var(--quinary) 70%, transparent)'
             : '1px solid color-mix(in srgb, var(--border-subtle-player) 50%, transparent)',
           background: isDragging
-            ? 'color-mix(in srgb, var(--quinary) 4%, transparent)'
-            : 'transparent',
+            ? 'color-mix(in srgb, var(--quinary) 15%, var(--player-surface-queue))'
+            : 'var(--player-surface-queue)',
         }}
         onMouseEnter={(e) => {
           if (isDragging) return;
@@ -556,7 +473,7 @@ function SortableTrackRow({
         }}
         onMouseLeave={(e) => {
           if (isDragging) return;
-          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.background = 'var(--player-surface-queue)';
         }}
       >
         {/* Inner content — hidden when dragging to show dashed placeholder */}
@@ -576,137 +493,38 @@ function SortableTrackRow({
           <DragDots />
         </button>
 
-        {/* Recording medium icon — tape, DAT, etc. */}
-        <div className="flex-shrink-0 self-center pr-2">
-          <RecordingMediumIcon
-            medium={song.recordingMedium}
-            lineage={song.lineage}
-            source={song.source}
-            size={0.7}
-          />
-        </div>
-
         {/* Multi-row content block */}
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
-          {/* Row 1: # + Title ........... Duration × */}
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
-              {displayIndex}
-            </span>
-            <span className="text-[13.5px] font-semibold text-primary truncate" style={{ lineHeight: '1.3' }}>
-              {item.trackTitle}
-            </span>
-            <span className="flex items-center gap-1 flex-shrink-0 ml-auto">
-              {song.duration > 0 && (
-                <span className="font-jb-mono text-[11px] font-medium" style={{ color: 'var(--text-tertiary)' }}>
-                  {formatDuration(song.duration)}
-                </span>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeItem(item.queueId);
-                }}
-                className="w-5 h-5 rounded-md border-0 bg-transparent flex items-center justify-center flex-shrink-0 opacity-40 hover:!opacity-100 transition-all"
-                style={{ color: 'var(--text-tertiary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--secondary-muted)';
-                  e.currentTarget.style.color = 'var(--secondary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = 'var(--text-tertiary)';
-                }}
-                aria-label={`Remove ${item.trackTitle} from queue`}
-              >
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </span>
+        <div className="flex-1 min-w-0 flex items-start gap-1">
+          <div className="flex-1 min-w-0">
+            <RecordingRow
+              song={song}
+              trackNumber={displayIndex}
+              actions={hasMultipleVersions ? ['swap'] : undefined}
+              onSwap={hasMultipleVersions ? () => setShowVersionPicker(true) : undefined}
+            />
           </div>
-
-          {/* Row 2: Date · Venue */}
-          {(song.showDate || song.showVenue) && (
-            <div className="flex items-baseline gap-2">
-              {song.showDate && (
-                <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
-                  {song.showDate.replace(/-/g, '/')}
-                </span>
-              )}
-              <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
-                {song.showVenue || song.albumName || 'Unknown venue'}
-              </span>
-            </div>
-          )}
-          {/* Location */}
-          {song.showLocation && (
-            <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-              {song.showLocation}
-            </span>
-          )}
-
-          {/* Row 3: Taper */}
-          {song.taper && (
-            <div className="flex items-center gap-1.5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
-                <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
-                <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
-                <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
-                <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              <span className="font-jb-mono text-[11px] font-medium truncate" style={{ color: 'var(--text-tertiary)' }}>
-                {song.taper}
-              </span>
-            </div>
-          )}
-
-          {/* Row 4: Source badge · Stars · Downloads ........... Versions (right) */}
-          <div className="flex items-center gap-2.5">
-            <RecTypeBadge type={song.recordingType} />
-            <StarRating rating={song.avgRating} count={song.numReviews} />
-            {song.downloads != null && song.downloads > 0 && (
-              <span className="font-jb-mono text-[11px] flex items-center gap-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                  <path d="M12 2L2 7v1h20V7L12 2z" fill="rgba(200,180,140,0.55)"/>
-                  <rect x="4.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                  <rect x="9" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                  <rect x="13" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                  <rect x="17.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                  <rect x="2" y="17" width="20" height="2" rx="0.5" fill="rgba(200,180,140,0.45)"/>
-                </svg>
-                <svg width="7" height="12" viewBox="0 0 10 16" fill="none" className="flex-shrink-0">
-                  <path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" stroke="#8fa8b3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                {song.downloads.toLocaleString()}
-              </span>
-            )}
-            {hasMultipleVersions && (
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowVersionPicker(true); }}
-                className="flex items-center gap-[3px] px-1.5 py-[2px] rounded-[3px] transition-all font-jb-mono text-[8.5px] font-semibold cursor-pointer ml-auto"
-                style={{
-                  background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
-                  border: '1px solid color-mix(in srgb, var(--quaternary) 30%, transparent)',
-                  color: 'var(--quaternary)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--quaternary)';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'color-mix(in srgb, var(--quaternary) 15%, transparent)';
-                  e.currentTarget.style.color = 'var(--quaternary)';
-                }}
-                aria-label={`${versionCount} version${versionCount !== 1 ? 's' : ''} available`}
-              >
-                <VersionsIcon className="w-2.5 h-2.5" />
-                <span>{versionCount} ver</span>
-              </button>
-            )}
-          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              removeItem(item.queueId);
+            }}
+            className="w-5 h-5 rounded-md border-0 bg-transparent flex items-center justify-center flex-shrink-0 mt-0.5 opacity-40 hover:!opacity-100 transition-all"
+            style={{ color: 'var(--text-tertiary)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--secondary-muted)';
+              e.currentTarget.style.color = 'var(--secondary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'var(--text-tertiary)';
+            }}
+            aria-label={`Remove ${item.trackTitle} from queue`}
+          >
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
 
         </div>{/* end inner content wrapper */}
@@ -718,6 +536,7 @@ function SortableTrackRow({
           isOpen={showVersionPicker}
           onClose={() => { modalClosedAtRef.current = Date.now(); setShowVersionPicker(false); }}
           trackTitle={item.trackTitle}
+          trackNumber={displayIndex}
           artistName={song.artistName}
           currentSongId={song.id}
           versions={item.availableVersions}
@@ -748,11 +567,11 @@ function DragOverlayTrack({
 
   return (
     <div
-      className="flex gap-0 py-2 px-2 rounded-[10px]"
+      className="flex gap-0 py-2 px-2 rounded-[10px] scale-[1.03]"
       style={{
-        background: 'var(--player-surface-chip)',
+        background: 'color-mix(in srgb, var(--quinary) 12%, var(--player-surface-chip))',
         border: '1px solid var(--quinary-muted)',
-        boxShadow: '0 12px 40px color-mix(in srgb, black 55%, transparent), 0 0 0 1px color-mix(in srgb, var(--quinary) 10%, transparent)',
+        boxShadow: '0 12px 40px color-mix(in srgb, black 55%, transparent), 0 0 0 1px color-mix(in srgb, var(--quinary) 20%, transparent)',
       }}
     >
       {/* Drag handle */}
@@ -761,91 +580,11 @@ function DragOverlayTrack({
       </div>
 
       {/* Multi-row content block */}
-      <div className="flex-1 min-w-0 flex flex-col gap-1">
-        {/* Row 1: # + Title ........... Duration */}
-        <div className="flex items-baseline gap-1.5">
-          <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
-            {displayIndex}
-          </span>
-          <span className="text-[13.5px] font-semibold text-primary truncate" style={{ lineHeight: '1.3' }}>
-            {item.trackTitle}
-          </span>
-          {song.duration > 0 && (
-            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0 ml-auto" style={{ color: 'var(--text-tertiary)' }}>
-              {formatDuration(song.duration)}
-            </span>
-          )}
-        </div>
-
-        {/* Row 2: Date · Venue · Location (matching modal Row 1) */}
-        {(song.showDate || song.showVenue || song.showLocation) && (
-          <div className="flex items-baseline gap-2 flex-wrap">
-            {song.showDate && (
-              <span className="font-jb-mono text-[13px] font-semibold text-primary leading-tight tracking-wide">
-                {song.showDate.replace(/-/g, '/')}
-              </span>
-            )}
-            <span className="text-[13px] font-medium truncate" style={{ color: 'var(--tertiary)' }}>
-              {song.showVenue || song.albumName || 'Unknown venue'}
-            </span>
-            {song.showLocation && (
-              <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                {song.showLocation}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Row 3: Taper (own row, matching modal Row 2) */}
-        {song.taper && (
-          <div className="flex items-center gap-1.5">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-              <circle cx="10" cy="5" r="3" fill="#b8d0dc"/>
-              <path d="M10 8c-3.5 0-6 2-6 5v2h12v-2c0-3-2.5-5-6-5z" fill="#3a5060"/>
-              <line x1="17" y1="3" x2="17" y2="19" stroke="#90b4c4" strokeWidth="1.5" strokeLinecap="round"/>
-              <rect x="15" y="0.5" width="4" height="4.5" rx="1.5" fill="#b8d0dc"/>
-              <path d="M13 11l4-3.5" stroke="#5a7888" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <span className="font-jb-mono text-[11px] font-medium truncate" style={{ color: 'var(--text-tertiary)' }}>
-              {song.taper}
-            </span>
-          </div>
-        )}
-
-        {/* Row 4: Source badge · Stars · Downloads ........... Versions (right) */}
-        <div className="flex items-center gap-2.5">
-          <RecTypeBadge type={song.recordingType} />
-          <StarRating rating={song.avgRating} count={song.numReviews} />
-          {song.downloads != null && song.downloads > 0 && (
-            <span className="font-jb-mono text-[11px] flex items-center gap-0.5" style={{ color: 'var(--text-tertiary)' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                <path d="M12 2L2 7v1h20V7L12 2z" fill="rgba(200,180,140,0.55)"/>
-                <rect x="4.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                <rect x="9" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                <rect x="13" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                <rect x="17.5" y="9" width="2" height="6.5" rx="0.4" fill="rgba(200,180,140,0.35)"/>
-                <rect x="2" y="17" width="20" height="2" rx="0.5" fill="rgba(200,180,140,0.45)"/>
-              </svg>
-              <svg width="7" height="12" viewBox="0 0 10 16" fill="none" className="flex-shrink-0">
-                <path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" stroke="#8fa8b3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {song.downloads.toLocaleString()}
-            </span>
-          )}
-          {hasMultipleVersions && (
-            <span
-              className="flex items-center gap-[3px] font-jb-mono text-[8.5px] font-semibold px-1.5 py-[2px] rounded-[3px] ml-auto"
-              style={{
-                background: 'color-mix(in srgb, var(--quaternary) 15%, transparent)',
-                border: '1px solid color-mix(in srgb, var(--quaternary) 30%, transparent)',
-                color: 'var(--quaternary)',
-              }}
-            >
-              <VersionsIcon className="w-2.5 h-2.5" />
-              {versionCount} ver
-            </span>
-          )}
-        </div>
+      <div className="flex-1 min-w-0">
+        <RecordingRow
+          song={song}
+          trackNumber={displayIndex}
+        />
       </div>
     </div>
   );
@@ -886,8 +625,7 @@ interface SidebarGroupEntry {
   batchId: string;
 }
 
-// Same palette as QueueAccordion — cycles per album group for visual consistency
-const ACCENT_COLORS = ['var(--quinary)', 'var(--tertiary)', 'var(--quaternary)'];
+// Accent colors removed — all groups now use unified ticket-stub styling (cream + secondary)
 
 function UpcomingSection({
   queue,
@@ -1086,29 +824,50 @@ function UpcomingSection({
         >
           <SortableContext items={allSortableIds} strategy={verticalListSortingStrategy}>
             <ul>
-              {sidebarGroups.map((group, groupIdx) => {
+              {sidebarGroups.map((group) => {
                 const played = groupProgress.get(group.batchId) || 0;
                 const total = group.items.length + played;
                 const pct = total > 0 ? (played / total) * 100 : 0;
                 const isCollapsed = collapsedGroups.has(group.id);
                 const totalDuration = group.items.reduce((sum, { item }) => sum + (item.song.duration || 0), 0);
-                const accentColor = ACCENT_COLORS[groupIdx % ACCENT_COLORS.length];
 
                 return (
                   <li
                     key={group.id}
-                    className="mx-1.5 mb-2 rounded-xl"
+                    className="mx-1.5 mb-2 rounded-xl overflow-hidden relative"
                     style={{
-                      border: `1px solid color-mix(in srgb, ${accentColor} 25%, transparent)`,
-                      borderLeft: `3px solid color-mix(in srgb, ${accentColor} 50%, transparent)`,
-                      background: `color-mix(in srgb, ${accentColor} 4%, transparent)`,
+                      background: `linear-gradient(175deg, var(--cream), color-mix(in srgb, var(--cream) 82%, var(--quinary)))`,
+                      border: '1px solid color-mix(in srgb, var(--primary) 18%, transparent)',
                     }}
                   >
+                    {/* Left stripe — repeating secondary bars, full height */}
+                    <div
+                      className="absolute left-0 top-0 bottom-0 z-[4]"
+                      style={{
+                        width: 5,
+                        background: `repeating-linear-gradient(
+                          180deg,
+                          var(--secondary),
+                          var(--secondary) 2.5px,
+                          color-mix(in srgb, var(--secondary) 30%, transparent) 2.5px,
+                          color-mix(in srgb, var(--secondary) 30%, transparent) 4px
+                        )`,
+                        borderRadius: '12px 0 0 12px',
+                      }}
+                    />
+                    {/* Paper highlight — top edge */}
+                    <div
+                      className="absolute inset-x-0 top-0 pointer-events-none z-[2] rounded-t-xl"
+                      style={{
+                        height: '30%',
+                        background: 'linear-gradient(180deg, color-mix(in srgb, white 8%, transparent), transparent)',
+                      }}
+                    />
                     {/* Album card — sticky when expanded, static when collapsed */}
                     <div
                       className={`${isCollapsed ? '' : 'sticky top-0'} z-[3] p-1.5 ${isCollapsed ? 'pb-1.5' : 'pb-1'}`}
                       style={{
-                        background: `color-mix(in srgb, ${accentColor} 6%, var(--player-surface-queue))`,
+                        background: `color-mix(in srgb, var(--cream) 85%, var(--quinary))`,
                         boxShadow: isCollapsed ? 'none' : '0 4px 12px -2px color-mix(in srgb, var(--primary) 60%, black)',
                       }}
                     >
@@ -1121,7 +880,7 @@ function UpcomingSection({
                         <svg
                           className="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200"
                           style={{
-                            color: accentColor,
+                            color: 'var(--secondary)',
                             transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
                           }}
                           fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -1144,7 +903,7 @@ function UpcomingSection({
                                 className="h-full rounded-sm"
                                 style={{
                                   width: `${pct}%`,
-                                  background: accentColor,
+                                  background: 'var(--secondary)',
                                 }}
                               />
                             </div>
@@ -1171,12 +930,12 @@ function UpcomingSection({
 
                     {/* Divider between album header and tracks */}
                     {!isCollapsed && (
-                      <div className="mx-3" style={{ borderTop: `1px solid color-mix(in srgb, ${accentColor} 20%, transparent)` }} />
+                      <div className="mx-3" style={{ borderTop: '1px solid color-mix(in srgb, var(--primary) 15%, transparent)' }} />
                     )}
 
                     {/* Track rows — hidden when collapsed */}
                     {!isCollapsed && (
-                      <ul className="pb-1 relative z-[1]">
+                      <ul className="pb-1 relative z-[1]" style={{ background: 'var(--player-surface-queue)' }}>
                         {group.items.map(({ item, absoluteIndex }, idx) => (
                           <SortableTrackRow
                             key={item.queueId}

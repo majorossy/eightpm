@@ -43,12 +43,13 @@ interface StripGroup {
   batchId: string;
   albumSource: QueueItemAlbumSource | null;
   chips: ChipEntry[];
-  colorVar: string;
+  groupIndex: number;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────
 
-const ACCENT_COLORS = ['var(--quinary)', 'var(--tertiary)', 'var(--quaternary)'];
+// All album groups use teal (--tertiary) for neutral framing.
+// Even/odd index provides visual distinction via background tint.
 const COLLAPSED_W = 94;
 const COLLAPSED_W_COMPACT = 71;
 const CHIP_STRIDE = 345; // 337px chip + 8px gap
@@ -147,7 +148,7 @@ export default function QueueAccordion({
             batchId: chip.item.batchId,
             albumSource: chip.item.albumSource,
             chips: groupChips,
-            colorVar: ACCENT_COLORS[colorIdx % ACCENT_COLORS.length],
+            groupIndex: colorIdx,
           });
           colorIdx++;
           i = j;
@@ -162,7 +163,7 @@ export default function QueueAccordion({
         batchId: chip.item.batchId,
         albumSource: chip.item.albumSource,
         chips: [chip],
-        colorVar: '',
+        groupIndex: -1,
       });
       i++;
     }
@@ -741,8 +742,16 @@ function AlbumGroupSection({
       style={{
         maxWidth: isExpanded ? `${expandedWidth}px` : `${compact ? COLLAPSED_W_COMPACT : COLLAPSED_W}px`,
         transition: reducedMotion ? 'none' : 'max-width 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-        border: isExpanded ? `1px solid ${group.colorVar}` : 'none',
-        background: isExpanded ? `color-mix(in srgb, ${group.colorVar} 5%, transparent)` : 'transparent',
+        border: isExpanded
+          ? group.groupIndex % 2 === 0
+            ? '1px solid color-mix(in srgb, var(--tertiary) 30%, transparent)'
+            : '1px solid color-mix(in srgb, var(--tertiary) 15%, transparent)'
+          : 'none',
+        background: isExpanded
+          ? group.groupIndex % 2 === 0
+            ? 'color-mix(in srgb, var(--tertiary) 8%, transparent)'
+            : 'color-mix(in srgb, var(--tertiary) 3%, transparent)'
+          : 'transparent',
         overflow: 'clip',
       }}
     >
@@ -816,7 +825,7 @@ function AlbumHeader({
         background: 'var(--player-surface-chip)',
         ...(isExpanded
           ? { border: 'none', position: 'sticky' as const, left: 0, zIndex: 5 }
-          : { border: `1px solid var(--border-subtle-player)`, borderLeft: `3px solid ${group.colorVar}` }
+          : { border: '1px solid var(--border-subtle-player)', borderLeft: '3px solid var(--tertiary-muted)' }
         ),
       }}
       aria-label={`${group.albumSource?.albumName ?? 'Album'} - ${isActiveAlbum ? `track ${currentTrack} of ${totalTracks}` : `${group.chips.length} tracks`}${isExpanded ? ', click to collapse' : ', click to expand'}`}

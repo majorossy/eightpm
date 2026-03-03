@@ -6,9 +6,8 @@ import Image from 'next/image';
 import { Song } from '@/lib/types';
 import RecSourceIcon from '@/components/RecSourceIcon';
 import { usePlayer } from '@/context/PlayerContext';
-import { useQueue } from '@/context/QueueContext';
 import { type VersionFilters, applyFilters, hasActiveFilters } from '@/lib/filters';
-import VenueLink from '@/components/VenueLink';
+import { RecordingRow } from '@/components/version-row';
 
 interface CategoryBreadcrumb {
   category_uid: string;
@@ -35,34 +34,15 @@ interface SearchTrackResultProps {
   onPlay?: (song: Song) => void;
 }
 
-// Simple star rating for compact display
-function CompactStars({ rating }: { rating?: number }) {
-  if (!rating) return <span className="text-tertiary">--</span>;
-  const stars = Math.round(rating);
-  return (
-    <span className="text-accent" title={`${rating.toFixed(1)} rating`}>
-      {'★'.repeat(stars)}{'☆'.repeat(5 - stars)}
-    </span>
-  );
-}
-
-// Truncate text with ellipsis
-function truncate(text: string | undefined, max: number): string {
-  if (!text) return '--';
-  return text.length > max ? text.slice(0, max) + '...' : text;
-}
-
-// Version card component (simpler than RecordingCard)
+// Version card component — uses RecordingRow with inline action buttons
 function VersionCard({
   song,
   isPlaying,
   onPlay,
-  onQueue,
 }: {
   song: Song;
   isPlaying: boolean;
   onPlay: () => void;
-  onQueue: () => void;
 }) {
   const year = song.showDate?.split('-')[0] || '--';
   const recordingType = song.recordingType;
@@ -87,54 +67,18 @@ function VersionCard({
         </div>
       </div>
 
-      {/* Card body */}
+      {/* Card body with inline actions */}
       <div className="px-3 py-2">
-        {/* Venue */}
-        <div className={`text-sm font-medium mb-1 ${isPlaying ? 'text-[#2a1810]' : 'text-primary'}`}>
-          <VenueLink venueName={song.showVenue} className={`${isPlaying ? 'text-[#2a1810] hover:text-[#1a0808]' : 'text-primary hover:text-accent'} hover:underline transition-colors`} truncateLength={22} />
-        </div>
-        {/* Location */}
-        <div className={`text-xs mb-2 ${isPlaying ? 'text-[#5a4030]' : 'text-secondary'}`}>
-          {truncate(song.showLocation, 24)}
-        </div>
-        {/* Rating */}
-        <div className="text-xs">
-          <CompactStars rating={song.avgRating} />
-          {song.numReviews && (
-            <span className={`ml-1 ${isPlaying ? 'text-[#6a5040]' : 'text-tertiary'}`}>
-              ({song.numReviews})
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Action buttons */}
-      <div className={`flex gap-2 px-3 py-2 border-t ${isPlaying ? 'border-[#8b5a2b]/10' : 'border-[#a88060]/5'}`}>
-        <button
-          onClick={(e) => { e.stopPropagation(); onPlay(); }}
-          className={`
-            flex-1 py-2 rounded text-[11px] font-semibold transition-all flex items-center justify-center gap-1
-            ${isPlaying
-              ? 'bg-gradient-to-r from-accent to-[#c88030] text-[#1a1410]'
-              : 'bg-gradient-to-r from-[#3a3028] to-surface-card text-secondary hover:from-[#4a4038] hover:to-[#3a3028]'
-            }
-          `}
-        >
-          <span>▶</span> Play
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); onQueue(); }}
-          className={`
-            px-2 py-2 rounded text-[11px] transition-all border
-            ${isPlaying
-              ? 'border-[#c8a070] text-[#6a5040] hover:bg-[#e8d8c8]'
-              : 'border-[#4a3a28] text-secondary hover:border-tertiary'
-            }
-          `}
-          title="Add to queue"
-        >
-          +
-        </button>
+        <RecordingRow
+          song={song}
+          size="sm"
+          showTitle={false}
+          showTaper={false}
+          showDownloads={false}
+          actions={['play', 'play-next', 'queue', 'favorite']}
+          onPlay={() => onPlay()}
+          isCurrentlyPlaying={isPlaying}
+        />
       </div>
     </div>
   );
@@ -156,7 +100,7 @@ export function SearchTrackResult({
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const { currentSong, isPlaying, playSong } = usePlayer();
-  const { addToQueue, trackToItem } = useQueue();
+
 
   // Use pre-filtered versions if provided, otherwise use lazy-loaded versions
   const displayVersions = filteredVersions || versions;
@@ -211,10 +155,6 @@ export function SearchTrackResult({
     } else {
       playSong(song);
     }
-  };
-
-  const handleQueue = (song: Song) => {
-    addToQueue(trackToItem(song));
   };
 
   // Check if any version of this track is currently playing
@@ -374,7 +314,6 @@ export function SearchTrackResult({
                     song={song}
                     isPlaying={currentSong?.id === song.id && isPlaying}
                     onPlay={() => handlePlay(song)}
-                    onQueue={() => handleQueue(song)}
                   />
                 ))}
               </div>

@@ -1,0 +1,254 @@
+/* ========================================
+   Media Icon Animations (Playing State)
+   ========================================
+   Applied conditionally via overlay elements and
+   inline animation styles when isPlaying=true.
+   Only one icon animates at a time (the active QueueChip).
+   Reduced motion is handled by reduced-motion.css:
+   * { animation-duration: 0.01ms !important; }
+   ======================================== */
+
+/* ─── Core Motion ─── */
+
+@keyframes mi-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes mi-spin-center {
+  to { transform: translate(-50%,-50%) rotate(360deg); }
+}
+
+@keyframes mi-spin-centerX {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
+}
+
+@keyframes mi-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes mi-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+@keyframes mi-wobble {
+  0%, 100% { transform: rotate(-0.5deg); }
+  50% { transform: rotate(0.5deg); }
+}
+
+@keyframes mi-tape-flutter {
+  0%, 100% { opacity: 0.3; }
+  30% { opacity: 0.5; }
+  60% { opacity: 0.25; }
+}
+
+/* ─── Tape Animations ─── */
+
+@keyframes mi-tape-advance {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+
+@keyframes mi-reel-tape-wind {
+  0% { width: 72px; }
+  50% { width: 60px; }
+  100% { width: 72px; }
+}
+
+/* ─── Analog EQ Bars — 4-stop cassette window ─── */
+
+@keyframes mi-eq-bounce1 {
+  0%, 100% { height: 20%; }
+  25% { height: 80%; }
+  50% { height: 45%; }
+  75% { height: 95%; }
+}
+
+@keyframes mi-eq-bounce2 {
+  0%, 100% { height: 50%; }
+  25% { height: 30%; }
+  50% { height: 90%; }
+  75% { height: 55%; }
+}
+
+@keyframes mi-eq-bounce3 {
+  0%, 100% { height: 70%; }
+  25% { height: 40%; }
+  50% { height: 65%; }
+  75% { height: 100%; }
+}
+
+@keyframes mi-eq-bounce4 {
+  0%, 100% { height: 35%; }
+  25% { height: 95%; }
+  50% { height: 50%; }
+  75% { height: 70%; }
+}
+
+@keyframes mi-eq-bounce5 {
+  0%, 100% { height: 60%; }
+  25% { height: 25%; }
+  50% { height: 85%; }
+  75% { height: 40%; }
+}
+
+/* ─── Digital EQ — 6-stop varied patterns ─── */
+
+@keyframes mi-eq1 {
+  0%, 100% { height: 18%; }
+  15% { height: 82%; }
+  35% { height: 38%; }
+  55% { height: 95%; }
+  75% { height: 52%; }
+  90% { height: 70%; }
+}
+
+@keyframes mi-eq2 {
+  0%, 100% { height: 45%; }
+  12% { height: 28%; }
+  30% { height: 88%; }
+  50% { height: 42%; }
+  68% { height: 75%; }
+  85% { height: 55%; }
+}
+
+@keyframes mi-eq3 {
+  0%, 100% { height: 65%; }
+  18% { height: 35%; }
+  38% { height: 58%; }
+  55% { height: 100%; }
+  72% { height: 40%; }
+  88% { height: 78%; }
+}
+
+@keyframes mi-eq4 {
+  0%, 100% { height: 32%; }
+  20% { height: 92%; }
+  40% { height: 48%; }
+  58% { height: 68%; }
+  78% { height: 85%; }
+  92% { height: 38%; }
+}
+
+@keyframes mi-eq5 {
+  0%, 100% { height: 55%; }
+  14% { height: 22%; }
+  32% { height: 80%; }
+  52% { height: 35%; }
+  70% { height: 90%; }
+  88% { height: 48%; }
+}
+
+/* ─── DAT Meter Keyframes ─── */
+
+@keyframes mi-meter-l {
+  0% { width: 55%; }
+  8% { width: 78%; }
+  16% { width: 62%; }
+  24% { width: 90%; }
+  32% { width: 68%; }
+  40% { width: 82%; }
+  48% { width: 58%; }
+  56% { width: 95%; }
+  64% { width: 72%; }
+  72% { width: 60%; }
+  80% { width: 88%; }
+  88% { width: 65%; }
+  100% { width: 55%; }
+}
+
+@keyframes mi-meter-r {
+  0% { width: 65%; }
+  10% { width: 85%; }
+  20% { width: 55%; }
+  30% { width: 92%; }
+  40% { width: 70%; }
+  50% { width: 60%; }
+  60% { width: 88%; }
+  70% { width: 75%; }
+  80% { width: 58%; }
+  90% { width: 82%; }
+  100% { width: 65%; }
+}
+
+@keyframes mi-meter-peak-l {
+  0% { left: 55%; }
+  8% { left: 78%; }
+  16% { left: 72%; }
+  24% { left: 90%; }
+  32% { left: 85%; }
+  40% { left: 82%; }
+  48% { left: 78%; }
+  56% { left: 95%; }
+  64% { left: 90%; }
+  72% { left: 80%; }
+  80% { left: 88%; }
+  88% { left: 82%; }
+  100% { left: 55%; }
+}
+
+@keyframes mi-meter-peak-r {
+  0% { left: 65%; }
+  10% { left: 85%; }
+  20% { left: 80%; }
+  30% { left: 92%; }
+  40% { left: 88%; }
+  50% { left: 78%; }
+  60% { left: 88%; }
+  70% { left: 84%; }
+  80% { left: 78%; }
+  90% { left: 82%; }
+  100% { left: 65%; }
+}
+
+@keyframes mi-seg-flash {
+  0%, 20% { opacity: 1; filter: brightness(1.2); }
+  21%, 100% { opacity: 0.7; filter: brightness(1); }
+}
+
+/* ─── Disc / Optical ─── */
+
+@keyframes mi-led-blink {
+  0%, 45% { opacity: 1; box-shadow: 0 0 6px rgba(196,112,110,0.6), 0 0 12px rgba(196,112,110,0.25); }
+  50%, 95% { opacity: 0.15; box-shadow: none; }
+  100% { opacity: 1; }
+}
+
+@keyframes mi-bit-fall {
+  0% { transform: translateY(0); opacity: 0.8; }
+  80% { opacity: 0.3; }
+  100% { transform: translateY(22px); opacity: 0; }
+}
+
+@keyframes mi-scan-line {
+  0% { left: 0; }
+  100% { left: calc(100% - 2px); }
+}
+
+@keyframes mi-wave-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* ─── Unknown / Sonar ─── */
+
+@keyframes mi-sonar-ping {
+  0% { transform: translate(-50%,-50%) scale(0.5); opacity: 0.7; border-color: rgba(196,112,110,0.35); }
+  50% { opacity: 0.25; }
+  100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0; }
+}
+
+@keyframes mi-q-pulse {
+  0%, 100% {
+    opacity: 0.12;
+    transform: scale(1);
+    text-shadow: 0 0 8px rgba(196,112,110,0.05);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.08);
+    text-shadow: 0 0 20px rgba(196,112,110,0.12);
+  }
+}

@@ -3,8 +3,8 @@
 // VersionCarousel - horizontal scrolling carousel of song version cards
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Song, formatDuration } from '@/lib/api';
-import VenueLink from '@/components/VenueLink';
+import { Song } from '@/lib/api';
+import { RecordingRow } from '@/components/version-row';
 
 interface VersionCarouselProps {
   songs: Song[];
@@ -21,87 +21,20 @@ interface VersionCardProps {
   song: Song;
   isSelected: boolean;
   isPlaying: boolean;
-  isInQueue: boolean;
   onSelect: () => void;
   onPlay: () => void;
-  onAddToQueue: () => void;
 }
 
 type SortOrder = 'newest' | 'oldest';
-
-// Star rating display component
-function StarRating({ rating, count }: { rating?: number; count?: number }) {
-  if (!rating || !count) return null;
-
-  const roundedRating = Math.round(rating * 2) / 2;
-  const fullStars = Math.floor(roundedRating);
-  const hasHalfStar = roundedRating % 1 !== 0;
-  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
-  return (
-    <div className="flex items-center gap-1" title={`${rating.toFixed(1)} out of 5 stars (${count} reviews)`}>
-      <div className="flex text-accent">
-        {Array.from({ length: fullStars }).map((_, i) => (
-          <svg key={`full-${i}`} className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-          </svg>
-        ))}
-        {hasHalfStar && (
-          <svg className="w-3 h-3" viewBox="0 0 24 24">
-            <defs>
-              <linearGradient id="halfStar">
-                <stop offset="50%" stopColor="currentColor" />
-                <stop offset="50%" stopColor="#374151" />
-              </linearGradient>
-            </defs>
-            <path fill="url(#halfStar)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-          </svg>
-        )}
-        {Array.from({ length: emptyStars }).map((_, i) => (
-          <svg key={`empty-${i}`} className="w-3 h-3 text-border" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-          </svg>
-        ))}
-      </div>
-      <span className="text-secondary text-[10px]">({count})</span>
-    </div>
-  );
-}
 
 function VersionCard({
   song,
   isSelected,
   isPlaying,
-  isInQueue,
   onSelect,
   onPlay,
-  onAddToQueue,
 }: VersionCardProps) {
-  const venue = song.showVenue || song.albumName || 'Unknown Venue';
-  const date = song.showDate;
-  const year = date ? date.split('-')[0] : null;
-
-  // Format date for display (YYYY-MM-DD -> MM/DD/YY)
-  let formattedDate = date;
-  if (date && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    const [y, month, day] = date.split('-');
-    formattedDate = `${month}/${day}/${y.slice(-2)}`;
-  }
-
-  const truncate = (text: string | undefined, maxLen: number) => {
-    if (!text) return null;
-    return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
-  };
-
-  const handlePlayClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onPlay();
-  };
-
-  const handleQueueClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onAddToQueue();
-  };
+  const year = song.showDate?.split('-')[0] ?? null;
 
   return (
     <div
@@ -129,70 +62,14 @@ function VersionCard({
         )}
       </div>
 
-      {/* Meta info */}
-      <div className="text-xs text-secondary space-y-2">
-        {/* Venue */}
-        <div className="flex justify-between">
-          <span className="text-accent">Venue</span>
-          <span className="text-white" title={song.showVenue || undefined}>
-            {song.showVenue ? <VenueLink venueName={song.showVenue} className="text-white hover:text-accent hover:underline transition-colors" truncateLength={20} /> : (truncate(venue, 20) || '—')}
-          </span>
-        </div>
-        {/* Location */}
-        <div className="flex justify-between">
-          <span className="text-accent">Location</span>
-          <span title={song.showLocation || undefined}>{truncate(song.showLocation, 20) || '—'}</span>
-        </div>
-        {/* Date */}
-        <div className="flex justify-between">
-          <span className="text-accent">Date</span>
-          <span>{formattedDate || '—'}</span>
-        </div>
-        {/* Rating */}
-        <div className="flex justify-between items-center">
-          <span className="text-accent">Rating</span>
-          {song.avgRating ? <StarRating rating={song.avgRating} count={song.numReviews} /> : <span>—</span>}
-        </div>
-        {/* Length */}
-        <div className="flex justify-between">
-          <span className="text-accent">Length</span>
-          <span>{formatDuration(song.duration)}</span>
-        </div>
-        {/* Taper */}
-        <div className="flex justify-between">
-          <span className="text-accent">Taper</span>
-          <span title={song.taper || undefined}>{truncate(song.taper, 18) || '—'}</span>
-        </div>
-      </div>
-
-      {/* Action buttons */}
-      <div className="grid grid-cols-2 gap-2 mt-5">
-        <button
-          onClick={handlePlayClick}
-          className={`
-            py-2.5 text-xs font-bold rounded-full transition-all
-            ${isPlaying
-              ? 'bg-accent text-black'
-              : 'bg-accent text-black hover:bg-accent-hover hover:scale-105'
-            }
-          `}
-        >
-          {isPlaying ? 'Playing' : 'Play'}
-        </button>
-        <button
-          onClick={handleQueueClick}
-          disabled={isInQueue}
-          className={`
-            py-2.5 text-xs font-bold rounded-full transition-all border
-            ${isInQueue
-              ? 'border-accent/50 text-accent/50 cursor-default'
-              : 'border-default text-white hover:border-white'
-            }
-          `}
-        >
-          {isInQueue ? 'Queued' : '+ Queue'}
-        </button>
-      </div>
+      {/* Meta info + inline action buttons */}
+      <RecordingRow
+        song={song}
+        size="sm"
+        actions={['play', 'play-next', 'queue', 'favorite']}
+        onPlay={() => onPlay()}
+        isCurrentlyPlaying={isPlaying}
+      />
     </div>
   );
 }
@@ -275,12 +152,6 @@ export default function VersionCarousel({
     onSelect(originalIndex);
   };
 
-  const handleAddToQueue = (song: Song) => {
-    if (onAddToQueue) {
-      onAddToQueue(song);
-    }
-  };
-
   return (
     <div className="mt-4">
       {/* Controls bar */}
@@ -333,10 +204,8 @@ export default function VersionCarousel({
                 song={song}
                 isSelected={originalIndex === selectedIndex}
                 isPlaying={currentSongId === song.id && isPlaying}
-                isInQueue={isInQueue ? isInQueue(song.id) : false}
                 onSelect={() => handleSelect(idx)}
                 onPlay={() => onPlay(song)}
-                onAddToQueue={() => handleAddToQueue(song)}
               />
             );
           })}
