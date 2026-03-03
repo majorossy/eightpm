@@ -625,7 +625,7 @@ interface SidebarGroupEntry {
   batchId: string;
 }
 
-// Accent colors removed — all groups now use unified ticket-stub styling (cream + secondary)
+// All groups use unified dark player-surface styling
 
 function UpcomingSection({
   queue,
@@ -836,39 +836,16 @@ function UpcomingSection({
                     key={group.id}
                     className="mx-1.5 mb-2 rounded-xl overflow-hidden relative"
                     style={{
-                      background: `linear-gradient(175deg, var(--cream), color-mix(in srgb, var(--cream) 82%, var(--quinary)))`,
-                      border: '1px solid color-mix(in srgb, var(--primary) 18%, transparent)',
+                      background: 'var(--player-surface-queue)',
+                      border: '1px solid color-mix(in srgb, var(--border-subtle-player) 50%, transparent)',
                     }}
                   >
-                    {/* Left stripe — repeating secondary bars, full height */}
-                    <div
-                      className="absolute left-0 top-0 bottom-0 z-[4]"
-                      style={{
-                        width: 5,
-                        background: `repeating-linear-gradient(
-                          180deg,
-                          var(--secondary),
-                          var(--secondary) 2.5px,
-                          color-mix(in srgb, var(--secondary) 30%, transparent) 2.5px,
-                          color-mix(in srgb, var(--secondary) 30%, transparent) 4px
-                        )`,
-                        borderRadius: '12px 0 0 12px',
-                      }}
-                    />
-                    {/* Paper highlight — top edge */}
-                    <div
-                      className="absolute inset-x-0 top-0 pointer-events-none z-[2] rounded-t-xl"
-                      style={{
-                        height: '30%',
-                        background: 'linear-gradient(180deg, color-mix(in srgb, white 8%, transparent), transparent)',
-                      }}
-                    />
                     {/* Album card — sticky when expanded, static when collapsed */}
                     <div
                       className={`${isCollapsed ? '' : 'sticky top-0'} z-[3] p-1.5 ${isCollapsed ? 'pb-1.5' : 'pb-1'}`}
                       style={{
-                        background: `color-mix(in srgb, var(--cream) 85%, var(--quinary))`,
-                        boxShadow: isCollapsed ? 'none' : '0 4px 12px -2px color-mix(in srgb, var(--primary) 60%, black)',
+                        background: 'var(--player-surface-chip)',
+                        boxShadow: isCollapsed ? 'none' : '0 4px 12px -2px color-mix(in srgb, black 40%, transparent)',
                       }}
                     >
                       <div
@@ -930,7 +907,7 @@ function UpcomingSection({
 
                     {/* Divider between album header and tracks */}
                     {!isCollapsed && (
-                      <div className="mx-3" style={{ borderTop: '1px solid color-mix(in srgb, var(--primary) 15%, transparent)' }} />
+                      <div className="mx-3" style={{ borderTop: '1px solid var(--border-subtle-player)' }} />
                     )}
 
                     {/* Track rows — hidden when collapsed */}

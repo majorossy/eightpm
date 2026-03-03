@@ -138,7 +138,8 @@ export const TrackRow = React.memo(function TrackRow({
             <RecordingRow
               song={chipSong}
               showTitle={false}
-              actions={['play', 'play-next', 'queue', 'favorite']}
+              actions={hasMultipleVersions ? ['swap', 'play', 'play-next', 'queue', 'favorite'] : ['play', 'play-next', 'queue', 'favorite']}
+              onSwap={hasMultipleVersions ? () => setShowVersionModal(true) : undefined}
               onPlay={onPlay}
               isCurrentlyPlaying={isCurrentTrack && isPlaying}
             />
