@@ -202,7 +202,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       <div className="max-w-[1000px] mx-auto px-4 sm:px-8 lg:flex lg:gap-12 lg:items-start">
 
           {/* Left column — sticky only on desktop where side-by-side layout is active */}
-          <div className="lg:sticky lg:top-20 self-start z-10 bg-[var(--bg)] flex-shrink-0 flex flex-col items-center lg:items-start gap-6 pb-4 mb-8 lg:mb-0">
+          <div className="lg:sticky lg:top-20 self-start z-10 flex-shrink-0 flex flex-col items-center lg:items-start gap-6 pb-4 mb-8 lg:mb-0">
             <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image} />
 
             {/* Add to queue — centered under cassette */}
@@ -423,11 +423,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
         </section>
       )}
 
-      {/* Footer */}
-      <div className="mt-12 pb-36 text-center text-[var(--text-subdued)] opacity-50 text-[11px] flex flex-col items-center gap-2">
-        <div className="text-[var(--text-subdued)]">☮ Please copy freely — never sell ☮</div>
-        <div>POWERED BY ARCHIVE.ORG</div>
-      </div>
     </div>
   );
 }

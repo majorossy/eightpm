@@ -19,6 +19,7 @@ import Link from 'next/link';
 import ShareModal from '@/components/ShareModal';
 import { formatLineage } from '@/lib/lineageUtils';
 import { useStreamingStats } from '@/hooks/useStreamingStats';
+import { useBackToClose } from '@/hooks/useBackToClose';
 import { computeSignalInfo } from '@/lib/signalUtils';
 import SignalStrengthIcon from '@/components/player/SignalStrengthIcon';
 import type { QueueItem } from '@/lib/queueTypes';
@@ -36,6 +37,7 @@ import { MiniQueue } from '@/components/player/MiniQueue';
 
 export default function EightPmFullPlayer() {
   const { isPlayerExpanded, collapsePlayer, isTransitioning } = useMobileUI();
+  useBackToClose(isPlayerExpanded, collapsePlayer);
   const { reducedMotion } = useBatteryOptimization();
   const { vibrate, BUTTON_PRESS, SWIPE_COMPLETE } = useHaptic();
   const { preferredQuality, setPreferredQuality, getStreamUrl } = useQuality();
@@ -89,6 +91,7 @@ export default function EightPmFullPlayer() {
 
   // Settings panel state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const handleCloseSettings = useCallback(() => setIsSettingsOpen(false), []);
   const [showTimerNotification, setShowTimerNotification] = useState(false);
 
   // Mini queue expanded state
@@ -572,7 +575,7 @@ export default function EightPmFullPlayer() {
       {/* Settings Panel */}
       <SettingsPanel
         isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+        onClose={handleCloseSettings}
         sleepTimer={sleepTimer}
         crossfadeDuration={crossfadeDuration}
         setCrossfadeDuration={setCrossfadeDuration}

@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 export default function InstallPrompt() {
   const { isInstallable, isIOS, install, dismiss } = usePWAInstall();
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
+  const handleCloseIOSInstructions = useCallback(() => setShowIOSInstructions(false), []);
+  useBackToClose(showIOSInstructions, handleCloseIOSInstructions);
 
   if (!isInstallable) {
     return null;

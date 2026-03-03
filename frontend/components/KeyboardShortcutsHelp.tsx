@@ -1,6 +1,7 @@
 'use client';
 
 import * as Dialog from '@radix-ui/react-dialog';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 interface KeyboardShortcutsHelpProps {
   isOpen: boolean;
@@ -47,6 +48,7 @@ const shortcuts = [
 ];
 
 export default function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelpProps) {
+  useBackToClose(isOpen, onClose);
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <Dialog.Portal>

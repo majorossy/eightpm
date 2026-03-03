@@ -54,15 +54,15 @@ function VersionCard({
       className={`
         min-w-[180px] max-w-[200px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200
         ${isPlaying
-          ? 'bg-gradient-to-b from-[#faf4e8] to-[#f0e4d0] border-2 border-accent'
-          : 'bg-gradient-to-b from-surface-card to-[#1e1a15] border border-[#3a3028] hover:border-[#4a4038]'
+          ? 'bg-gradient-to-b from-[var(--cream)] to-[color-mix(in_srgb,var(--cream)_85%,var(--secondary))] border-2 border-accent'
+          : 'bg-gradient-to-b from-surface-card to-surface-base border border-subtle-token hover:border-default'
         }
       `}
     >
       {/* Card header with year and badge */}
-      <div className={`px-3 pt-3 pb-2 border-b ${isPlaying ? 'border-[#8b5a2b]/15' : 'border-[#a88060]/8'}`}>
+      <div className={`px-3 pt-3 pb-2 border-b ${isPlaying ? 'border-accent/15' : 'border-accent/8'}`}>
         <div className="flex justify-between items-center">
-          <span className={`text-2xl font-bold font-serif ${isPlaying ? 'text-[#1a0f08]' : 'text-secondary'}`}>
+          <span className={`text-2xl font-bold font-serif ${isPlaying ? 'text-inverse' : 'text-secondary'}`}>
             {year}
           </span>
           <RecSourceIcon type={recordingType} lineage={song.lineage} size={20} />
@@ -224,8 +224,8 @@ export function SearchTrackResult({
           <p className={`font-medium truncate ${hasNoVersions ? 'text-tertiary' : 'text-primary'}`}>
             {track.name}
           </p>
-          <p className={`text-sm flex items-center gap-1 ${hasNoVersions ? 'text-[#5a4a38]' : 'text-[#4a9a8a]'}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${hasNoVersions ? 'bg-[#5a4a38]' : 'bg-[#4a9a8a]'}`} />
+          <p className={`text-sm flex items-center gap-1 ${hasNoVersions ? 'text-tertiary' : 'text-accent'}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${hasNoVersions ? 'bg-tertiary' : 'bg-accent'}`} />
             {/* Show "No recordings" for tracks with no versions */}
             {hasNoVersions ? (
               <span className="italic">No Track found for this Song</span>
@@ -309,7 +309,7 @@ export function SearchTrackResult({
               </div>
               <div
                 ref={carouselRef}
-                className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-[#4a3a28] scrollbar-track-transparent"
+                className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
               >
                 {displayVersions.map((song) => (
                   <VersionCard
@@ -327,7 +327,9 @@ export function SearchTrackResult({
           {/* No versions found */}
           {!isLoading && (hasLoaded || hasPreloadedVersions) && displayVersions.length === 0 && (
             <div className="py-6 text-center text-tertiary text-sm">
-              No recordings found for this track.
+              {allVersions.length > 0
+                ? 'No recordings match your filters.'
+                : 'No recordings found for this track.'}
             </div>
           )}
         </div>

@@ -18,6 +18,7 @@ import { VinylSpinner } from './VinylSpinner';
 import { SearchSilence } from './NoResultsIcons';
 import { trackSearch, trackSearchResultClick } from '@/lib/analytics';
 import { VALIDATION_LIMITS } from '@/lib/validation';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 interface EightPmSearchOverlayProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ interface SearchResults {
 }
 
 export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayProps) {
+  useBackToClose(isOpen, onClose);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [results, setResults] = useState<SearchResults>({ artists: [], albums: [] });
@@ -298,20 +300,21 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {recentSearches.map((search, index) => (
-                          <button
+                          <div
                             key={index}
-                            onClick={() => handleRecentSearchClick(search)}
                             className="group flex items-center gap-2 bg-surface-elevated hover:bg-border text-white px-4 py-2 rounded-full text-sm transition-colors btn-touch"
                           >
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>{search}</span>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeSearch(search);
-                              }}
+                              onClick={() => handleRecentSearchClick(search)}
+                              className="flex items-center gap-2"
+                            >
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span>{search}</span>
+                            </button>
+                            <button
+                              onClick={() => removeSearch(search)}
                               className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-white transition-opacity"
                               aria-label={`Remove ${search}`}
                             >
@@ -319,7 +322,7 @@ export function EightPmSearchOverlay({ isOpen, onClose }: EightPmSearchOverlayPr
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                               </svg>
                             </button>
-                          </button>
+                          </div>
                         ))}
                       </div>
                     </div>

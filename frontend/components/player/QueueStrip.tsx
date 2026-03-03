@@ -57,7 +57,7 @@ export function SortableQueueChip({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={(isPlayed || isActive) && !forceEnableDrag ? '' : 'cursor-grab active:cursor-grabbing'} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} className={`flex-shrink-0 ${(isPlayed || isActive) && !forceEnableDrag ? '' : 'cursor-grab active:cursor-grabbing'}`} {...attributes} {...listeners}>
       <div style={{ visibility: isDragging ? 'hidden' : 'visible' }}>
         <QueueChip
           item={item}

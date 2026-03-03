@@ -970,7 +970,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
     const album = parts.length > 0 ? parts.join(' · ') : currentSong.albumName;
 
-    return { ...currentSong, albumArt: coverArt || currentSong.albumArt, albumName: album };
+    return { ...currentSong, albumArt: coverArt || '/icons/icon-512x512.png', albumName: album };
   }, [currentSong, queueContext.currentItem]);
 
   // Media Session API integration for lock screen controls

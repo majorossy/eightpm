@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Song, Track, Album } from '@/lib/api';
 import { trackShare } from '@/lib/analytics';
 
@@ -106,10 +106,10 @@ export function useShare() {
   };
 
   // Close share modal
-  const closeShareModal = () => {
+  const closeShareModal = useCallback(() => {
     setShowShareModal(false);
     setCopiedToClipboard(false);
-  };
+  }, []);
 
   // Helper to create shareable item from song
   const shareableSong = (song: Song): ShareableItem => ({

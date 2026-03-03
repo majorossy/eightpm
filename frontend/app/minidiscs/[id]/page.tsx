@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useMiniDiscs } from '@/context/CollectionContext';
 import { useQueue } from '@/context/QueueContext';
+import { useBackToClose } from '@/hooks/useBackToClose';
 import { formatDuration } from '@/lib/api';
 import { VALIDATION_LIMITS } from '@/lib/validation';
 
@@ -19,6 +20,8 @@ export default function MiniDiscDetailPage() {
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const handleCloseDeleteConfirm = useCallback(() => setShowDeleteConfirm(false), []);
+  useBackToClose(showDeleteConfirm, handleCloseDeleteConfirm);
 
   const disc = getMiniDisc(id);
 

@@ -51,17 +51,11 @@ export { getSongs, getSong, getAlbum, getTrack } from './songs';
 // Search exports
 export {
   search,
-  searchTracksLazy,
-  searchTrackCategories,
-  searchAlbumCategories,
   searchTrackCategoriesServer,
   searchAlbumCategoriesServer,
   getVersionsForTrack,
-  searchTracksWithVersions,
-  reapplyFilters,
-  getAllAvailableYears,
 } from './search';
-export type { TrackCategory, AlbumCategory, TrackWithVersions } from './search';
+export type { TrackCategory, AlbumCategory } from './search';
 
 // Venue exports
 export { getVenue, getVenueShows, getVenueArtists, getNearbyVenues, getVenues, getArtistVenues } from './venues';

@@ -47,6 +47,8 @@ function InnerLayout({ children }: { children: ReactNode }) {
   const wishlist = useWishlist();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const handleCloseSearch = useCallback(() => setIsSearchOpen(false), []);
+  const handleCloseHelp = useCallback(() => setIsHelpOpen(false), []);
 
   useAnalytics();
 
@@ -182,13 +184,13 @@ function InnerLayout({ children }: { children: ReactNode }) {
       {/* Search overlay */}
       <EightPmSearchOverlay
         isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
+        onClose={handleCloseSearch}
       />
 
       {/* Keyboard shortcuts help modal */}
       <KeyboardShortcutsHelp
         isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
+        onClose={handleCloseHelp}
       />
 
       {/* PWA Install Prompt */}

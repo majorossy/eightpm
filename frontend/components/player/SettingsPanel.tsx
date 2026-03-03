@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { SleepTimerPreset } from '@/hooks/useSleepTimer';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export function SettingsPanel({
   vibrate,
   BUTTON_PRESS,
 }: SettingsPanelProps) {
+  useBackToClose(isOpen, onClose);
   if (!isOpen) return null;
 
   return (

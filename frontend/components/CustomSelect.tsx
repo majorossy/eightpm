@@ -17,6 +17,8 @@ interface CustomSelectProps {
   disabled?: boolean;
 }
 
+const CLEAR_VALUE = '__clear__';
+
 export function CustomSelect({
   options,
   value,
@@ -25,10 +27,17 @@ export function CustomSelect({
   className = '',
   disabled = false,
 }: CustomSelectProps) {
-  const selectedOption = options.find(opt => opt.value === value);
+  // Map empty values to sentinel for Radix compatibility (Radix reserves '' for "no selection")
+  const mappedOptions = options.map(opt =>
+    opt.value === '' ? { ...opt, value: CLEAR_VALUE } : opt
+  );
+  const mappedValue = value === '' ? CLEAR_VALUE : value;
+  const handleChange = (val: string) => onChange(val === CLEAR_VALUE ? '' : val);
+
+  const selectedOption = mappedOptions.find(opt => opt.value === mappedValue);
 
   return (
-    <Select.Root value={value} onValueChange={onChange} disabled={disabled}>
+    <Select.Root value={mappedValue} onValueChange={handleChange} disabled={disabled}>
       <Select.Trigger
         className={`
           flex items-center justify-between gap-2 w-full
@@ -77,7 +86,7 @@ export function CustomSelect({
           sideOffset={4}
         >
           <Select.Viewport className="py-1 max-h-60">
-            {options.map((option) => (
+            {mappedOptions.map((option) => (
               <Select.Item
                 key={option.value}
                 value={option.value}

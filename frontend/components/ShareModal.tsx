@@ -4,6 +4,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export default function ShareModal({
   onNativeShare,
   copiedToClipboard,
 }: ShareModalProps) {
+  useBackToClose(isOpen, onClose);
   const { vibrate, BUTTON_PRESS } = useHaptic();
 
   const hasNativeShare = typeof navigator !== 'undefined' && navigator.share;

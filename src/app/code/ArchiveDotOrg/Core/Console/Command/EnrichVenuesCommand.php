@@ -20,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class EnrichVenuesCommand extends BaseLoggedCommand
 {
-    private const OPTION_APPLY = 'apply';
+    private const OPTION_DRY_RUN = 'dry-run';
     private const OPTION_THRESHOLD = 'threshold';
 
     public function __construct(
@@ -38,10 +38,10 @@ class EnrichVenuesCommand extends BaseLoggedCommand
         $this->setName('archive:venue:enrich')
             ->setDescription('Enrich venues missing city/state from product show_location data')
             ->addOption(
-                self::OPTION_APPLY,
+                self::OPTION_DRY_RUN,
                 null,
                 InputOption::VALUE_NONE,
-                'Actually write changes (default is dry run)'
+                'Preview changes without writing to database'
             )
             ->addOption(
                 self::OPTION_THRESHOLD,
@@ -54,7 +54,7 @@ class EnrichVenuesCommand extends BaseLoggedCommand
 
     protected function doExecute(InputInterface $input, OutputInterface $output, string $correlationId): int
     {
-        $apply = (bool) $input->getOption(self::OPTION_APPLY);
+        $dryRun = (bool) $input->getOption(self::OPTION_DRY_RUN);
         $threshold = (int) $input->getOption(self::OPTION_THRESHOLD);
 
         if ($threshold < 50 || $threshold > 100) {
@@ -62,8 +62,8 @@ class EnrichVenuesCommand extends BaseLoggedCommand
             return Command::FAILURE;
         }
 
-        if (!$apply) {
-            $output->writeln('<comment>DRY RUN — use --apply to write changes</comment>');
+        if ($dryRun) {
+            $output->writeln('<comment>DRY RUN — no changes will be written</comment>');
         }
         $output->writeln(sprintf('<info>Confidence threshold: %d%%</info>', $threshold));
 
@@ -201,7 +201,7 @@ class EnrichVenuesCommand extends BaseLoggedCommand
                     continue;
                 }
 
-                if ($apply) {
+                if (!$dryRun) {
                     $connection->update(
                         $venueTable,
                         ['city' => $city, 'state' => $state],
@@ -244,9 +244,9 @@ class EnrichVenuesCommand extends BaseLoggedCommand
         $output->writeln(sprintf('  Skipped (ambiguous):         %d', $skipped));
         $output->writeln(sprintf('  No location data:            %d', $noData));
 
-        if (!$apply && $enriched > 0) {
+        if ($dryRun && $enriched > 0) {
             $output->writeln('');
-            $output->writeln(sprintf('<comment>Run with --apply to write %d changes</comment>', $enriched));
+            $output->writeln(sprintf('<comment>Run without --dry-run to write %d changes</comment>', $enriched));
         }
 
         $this->updateProgress($correlationId, count($missingVenues), $enriched);

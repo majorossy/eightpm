@@ -5,6 +5,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useAuth } from '@/context/AuthContext';
 import { useMagentoAuth } from '@/context/MagentoAuthContext';
 import { VALIDATION_LIMITS } from '@/lib/validation';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 // Auth-specific limits
 const AUTH_LIMITS = {
@@ -21,6 +22,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) {
+  useBackToClose(isOpen, onClose);
   // Tab state: 'magic' for Supabase magic link, 'password' for Magento email/password
   const [activeTab, setActiveTab] = useState<'magic' | 'password'>('magic');
 

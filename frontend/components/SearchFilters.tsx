@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import type { VersionFilters } from '@/lib/filters';
+import { hasActiveFilters, type VersionFilters } from '@/lib/filters';
 import { CustomSelect, type SelectOption } from './CustomSelect';
 import { VenueAutocomplete } from './VenueAutocomplete';
 import { VALIDATION_LIMITS } from '@/lib/validation';
@@ -128,7 +128,6 @@ export function SearchFilters({
     onFiltersChange({});
   }, [onFiltersChange]);
 
-  const hasActiveFilters = filters.year || filters.venue || filters.isSoundboard || filters.artist || filters.minRating;
   const activeFilterCount = [
     filters.year,
     filters.venue,
@@ -158,7 +157,7 @@ export function SearchFilters({
             </span>
           )}
         </button>
-        {hasActiveFilters && (
+        {hasActiveFilters(filters) && (
           <button
             onClick={handleClearAll}
             className="text-xs text-secondary hover:text-accent transition-colors"
@@ -224,7 +223,7 @@ export function SearchFilters({
         </button>
 
         {/* Clear Filters (Desktop) */}
-        {hasActiveFilters && (
+        {hasActiveFilters(filters) && (
           <button
             onClick={handleClearAll}
             className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full text-sm

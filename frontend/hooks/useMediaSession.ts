@@ -60,29 +60,31 @@ export function useMediaSession({
     const artwork: MediaImage[] = [];
 
     if (currentSong.albumArt) {
-      // Check if artwork has loaded successfully before
-      const artworkKey = currentSong.albumArt;
+      // Android lock screen can't resolve relative URLs — make absolute
+      const artworkUrl = currentSong.albumArt.startsWith('http')
+        ? currentSong.albumArt
+        : `${window.location.origin}${currentSong.albumArt}`;
 
-      // Try to use the album art
+      // Detect MIME type from extension
+      const type = artworkUrl.endsWith('.png') ? 'image/png'
+        : artworkUrl.endsWith('.svg') ? 'image/svg+xml'
+        : 'image/jpeg';
+
       const artworkSizes = ['96x96', '128x128', '192x192', '256x256', '384x384', '512x512'];
       artworkSizes.forEach(size => {
-        artwork.push({
-          src: currentSong.albumArt,
-          sizes: size,
-          type: 'image/jpeg',
-        });
+        artwork.push({ src: artworkUrl, sizes: size, type });
       });
 
       // Preload artwork to detect errors
-      if (!artworkLoadedRef.current.has(artworkKey)) {
+      if (!artworkLoadedRef.current.has(artworkUrl)) {
         const img = new Image();
         img.onload = () => {
-          artworkLoadedRef.current.add(artworkKey);
+          artworkLoadedRef.current.add(artworkUrl);
         };
         img.onerror = () => {
           // Don't add to loaded set - will retry next time
         };
-        img.src = artworkKey;
+        img.src = artworkUrl;
       }
     }
 

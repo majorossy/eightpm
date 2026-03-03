@@ -6,6 +6,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useMiniDiscs } from '@/context/CollectionContext';
 import { Song } from '@/lib/types';
 import { VALIDATION_LIMITS } from '@/lib/validation';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 interface AddToMiniDiscModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface AddToMiniDiscModalProps {
 }
 
 export function AddToMiniDiscModal({ isOpen, onClose, song }: AddToMiniDiscModalProps) {
+  useBackToClose(isOpen, onClose);
   const { minidiscs, createMiniDisc, addToMiniDisc } = useMiniDiscs();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState('');

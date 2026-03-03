@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useMobileUI } from '@/context/MobileUIContext';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 interface NavItem {
   label: string;
@@ -105,6 +106,7 @@ const bottomNavItems: NavItem[] = [
 
 export default function NavDrawer() {
   const { isSidebarOpen, closeSidebar, isMobile } = useMobileUI();
+  useBackToClose(isSidebarOpen, closeSidebar);
   const pathname = usePathname();
 
   const isActive = (href: string) => {
