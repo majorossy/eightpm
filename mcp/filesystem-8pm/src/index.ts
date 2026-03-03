@@ -7,11 +7,10 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { exec } from "child_process";
 import { promisify } from "util";
-import path from "path";
 
 const execAsync = promisify(exec);
 
-const COMPOSE_FILE = path.resolve(__dirname, "../../compose.yaml");
+const CONTAINER = "8pm-phpfpm-1";
 const LOG_DIR = "/var/www/html/var/log";
 const METADATA_DIR = "/var/www/html/var/archivedotorg/metadata";
 
@@ -27,7 +26,7 @@ function validateName(value: string, label: string): string | null {
 
 async function containerExec(cmd: string): Promise<{ stdout: string; stderr: string }> {
   return execAsync(
-    `docker compose -f ${COMPOSE_FILE} exec -T phpfpm ${cmd}`,
+    `docker exec ${CONTAINER} ${cmd}`,
     { maxBuffer: 10 * 1024 * 1024, timeout: 30000 }
   );
 }

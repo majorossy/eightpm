@@ -6,6 +6,12 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import https from "https";
+import os from "os";
+
+// Auto-detect: Mac dev → magento.test, EC2/Linux → magento.8pm.me
+// Override with MAGENTO_HOST env var if needed
+const MAGENTO_HOST = process.env.MAGENTO_HOST
+  || (os.platform() === "darwin" ? "magento.test" : "magento.8pm.me");
 
 const GRAPHQL_URL = "https://localhost:8443/graphql";
 
@@ -28,7 +34,7 @@ function graphqlRequest(
       headers: {
         "Content-Type": "application/json",
         "Content-Length": Buffer.byteLength(body),
-        "Host": "magento.8pm.me",
+        "Host": MAGENTO_HOST,
       },
       rejectUnauthorized: false, // Allow self-signed certs in dev
     };
@@ -437,7 +443,7 @@ process.on("SIGTERM", () => process.exit(0));
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("GraphQL 8pm MCP server started");
+  console.error(`GraphQL 8pm MCP server started (host: ${MAGENTO_HOST})`);
 }
 
 main().catch((error) => {

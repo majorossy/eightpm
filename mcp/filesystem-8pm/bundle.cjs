@@ -3223,8 +3223,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path2) {
-      let input = path2;
+    function removeDotSegments(path) {
+      let input = path;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3423,8 +3423,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path2, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path2 && path2 !== "/" ? path2 : void 0;
+        const [path, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path && path !== "/" ? path : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -7158,8 +7158,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path2, errorMaps, issueData } = params;
-  const fullPath = [...path2, ...issueData.path || []];
+  const { data, path, errorMaps, issueData } = params;
+  const fullPath = [...path, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -7274,11 +7274,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path2, key) {
+  constructor(parent, value, path, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path2;
+    this._path = path;
     this._key = key;
   }
   get path() {
@@ -10922,10 +10922,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path2) {
-  if (!path2)
+function getElementAtPath(obj, path) {
+  if (!path)
     return obj;
-  return path2.reduce((acc, key) => acc?.[key], obj);
+  return path.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -11308,11 +11308,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path2, issues) {
+function prefixIssues(path, issues) {
   return issues.map((iss) => {
     var _a2;
     (_a2 = iss).path ?? (_a2.path = []);
-    iss.path.unshift(path2);
+    iss.path.unshift(path);
     return iss;
   });
 }
@@ -20670,9 +20670,8 @@ var StdioServerTransport = class {
 // src/index.ts
 var import_child_process = require("child_process");
 var import_util6 = require("util");
-var import_path = __toESM(require("path"), 1);
 var execAsync = (0, import_util6.promisify)(import_child_process.exec);
-var COMPOSE_FILE = import_path.default.resolve(__dirname, "../../compose.yaml");
+var CONTAINER = "8pm-phpfpm-1";
 var LOG_DIR = "/var/www/html/var/log";
 var METADATA_DIR = "/var/www/html/var/archivedotorg/metadata";
 var SAFE_NAME_RE = /^[a-zA-Z0-9._-]+$/;
@@ -20684,7 +20683,7 @@ function validateName(value, label) {
 }
 async function containerExec(cmd) {
   return execAsync(
-    `docker compose -f ${COMPOSE_FILE} exec -T phpfpm ${cmd}`,
+    `docker exec ${CONTAINER} ${cmd}`,
     { maxBuffer: 10 * 1024 * 1024, timeout: 3e4 }
   );
 }

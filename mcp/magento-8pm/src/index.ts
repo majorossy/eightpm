@@ -6,10 +6,8 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { exec } from "child_process";
-import path from "path";
 
-const COMPOSE_FILE = path.resolve(__dirname, "../../compose.yaml");
-const CONTAINER = "phpfpm";
+const CONTAINER = "8pm-phpfpm-1";
 const MAGENTO_BIN = "/var/www/html/bin/magento";
 const EXEC_TIMEOUT = 120_000; // 120 seconds
 const MAX_BUFFER = 10 * 1024 * 1024; // 10MB
@@ -18,7 +16,7 @@ const MAX_BUFFER = 10 * 1024 * 1024; // 10MB
 const DANGEROUS_CHARS = /[|&;$`\\><]/;
 
 function runMagento(args: string): Promise<string> {
-  const cmd = `docker compose -f ${COMPOSE_FILE} exec -T -u app ${CONTAINER} php ${MAGENTO_BIN} ${args}`;
+  const cmd = `docker exec -u app ${CONTAINER} php ${MAGENTO_BIN} ${args}`;
   return new Promise((resolve, reject) => {
     exec(cmd, { timeout: EXEC_TIMEOUT, maxBuffer: MAX_BUFFER }, (error, stdout, stderr) => {
       if (error) {

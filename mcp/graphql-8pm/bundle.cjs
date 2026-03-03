@@ -20669,6 +20669,8 @@ var StdioServerTransport = class {
 
 // src/index.ts
 var import_https = __toESM(require("https"), 1);
+var import_os = __toESM(require("os"), 1);
+var MAGENTO_HOST = process.env.MAGENTO_HOST || (import_os.default.platform() === "darwin" ? "magento.test" : "magento.8pm.me");
 function graphqlRequest(query, variables) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({ query, variables });
@@ -20680,7 +20682,7 @@ function graphqlRequest(query, variables) {
       headers: {
         "Content-Type": "application/json",
         "Content-Length": Buffer.byteLength(body),
-        "Host": "magento.8pm.me"
+        "Host": MAGENTO_HOST
       },
       rejectUnauthorized: false
       // Allow self-signed certs in dev
@@ -21052,7 +21054,7 @@ process.on("SIGTERM", () => process.exit(0));
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("GraphQL 8pm MCP server started");
+  console.error(`GraphQL 8pm MCP server started (host: ${MAGENTO_HOST})`);
 }
 main().catch((error2) => {
   console.error("Fatal error:", error2);
