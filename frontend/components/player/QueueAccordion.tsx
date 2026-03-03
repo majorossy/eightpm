@@ -843,7 +843,7 @@ function AlbumHeader({
         tabIndex={0}
         onClick={(e) => { e.stopPropagation(); onRemoveBatch(group.batchId); }}
         onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onRemoveBatch(group.batchId); } }}
-        className={`inline absolute top-0.5 right-0.5 ${compact ? 'w-3 h-3' : 'w-4 h-4'} flex items-center justify-center rounded-full z-10 opacity-0 group-hover:opacity-100 bg-surface-player-deep text-tertiary hover:!text-white hover:!bg-border transition-all cursor-pointer`}
+        className={`inline absolute top-0.5 right-0.5 ${compact ? 'w-3 h-3' : 'w-4 h-4'} flex items-center justify-center rounded-full z-10 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto bg-surface-player-deep text-tertiary hover:!text-white hover:!bg-border transition-all cursor-pointer`}
         aria-label={`Remove ${group.albumSource?.albumName ?? 'album'} from queue`}
       >
         <svg className={compact ? 'w-1.5 h-1.5' : 'w-2.5 h-2.5'} fill="none" stroke="currentColor" viewBox="0 0 24 24">

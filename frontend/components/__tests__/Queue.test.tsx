@@ -32,6 +32,11 @@ vi.mock('@/components/SwipeableQueueItem', () => ({
   ),
 }));
 
+// Mock useBackToClose (no-op in tests)
+vi.mock('@/hooks/useBackToClose', () => ({
+  useBackToClose: vi.fn(),
+}));
+
 // Mock validation
 vi.mock('@/lib/validation', () => ({
   VALIDATION_LIMITS: { PLAYLIST_NAME_MAX: 100 },
@@ -131,6 +136,7 @@ const mockPlayerContext = {
   playNext: vi.fn(),
   playPrev: vi.fn(),
   toggleQueue: vi.fn(),
+  closeQueue: vi.fn(),
   playFromQueue: vi.fn(),
   playAlbum: vi.fn(),
   playAlbumFromTrack: vi.fn(),

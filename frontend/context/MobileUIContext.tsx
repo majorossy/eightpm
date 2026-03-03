@@ -38,6 +38,7 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const isProgrammaticBackRef = useRef(false);
+  const playerOverlayIdRef = useRef<string | null>(null);
 
   // Handle hydration and media query
   useEffect(() => {
@@ -88,7 +89,9 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
     setIsPlayerExpanded(true);
     // Push history state so Android back button collapses instead of navigating away
     if (isMobile) {
-      window.history.pushState({ playerExpanded: true }, '');
+      const id = `player-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      playerOverlayIdRef.current = id;
+      window.history.pushState({ overlay: id, playerExpanded: true }, '');
     }
     // Reset transition state after animation completes (300ms)
     setTimeout(() => setIsTransitioning(false), 300);
@@ -99,9 +102,13 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
     setIsTransitioning(true);
     setIsPlayerExpanded(false);
     // Pop the history entry we pushed when expanding
-    if (isMobile) {
-      isProgrammaticBackRef.current = true;
-      window.history.back();
+    if (isMobile && playerOverlayIdRef.current) {
+      const id = playerOverlayIdRef.current;
+      playerOverlayIdRef.current = null;
+      if (window.history.state?.overlay === id) {
+        isProgrammaticBackRef.current = true;
+        window.history.back();
+      }
     }
     // Reset transition state after animation completes (300ms)
     setTimeout(() => setIsTransitioning(false), 300);
@@ -127,13 +134,22 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
     if (!isMobile) return;
 
     const handlePopState = () => {
-      if (isPlayerExpanded && !isProgrammaticBackRef.current) {
-        // User pressed back button while player is expanded — collapse it
+      if (isProgrammaticBackRef.current) {
+        isProgrammaticBackRef.current = false;
+        return;
+      }
+
+      if (isPlayerExpanded) {
+        // If state still has our overlay ID, a higher overlay was popped — don't collapse
+        if (window.history.state?.overlay === playerOverlayIdRef.current) {
+          return;
+        }
+        // Our entry was popped — collapse
+        playerOverlayIdRef.current = null;
         setIsTransitioning(true);
         setIsPlayerExpanded(false);
         setTimeout(() => setIsTransitioning(false), 300);
       }
-      isProgrammaticBackRef.current = false;
     };
 
     window.addEventListener('popstate', handlePopState);

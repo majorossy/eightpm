@@ -79,6 +79,11 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
         : [action.items];
       if (toInsert.length === 0) return state;
 
+      // Empty queue — start playing the first inserted item
+      if (state.items.length === 0) {
+        return { ...state, items: toInsert, cursorIndex: 0 };
+      }
+
       const insertAt = state.cursorIndex + 1;
       const newItems = [...state.items];
       newItems.splice(insertAt, 0, ...toInsert);
@@ -95,6 +100,11 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
         ? action.items
         : [action.items];
       if (toAppend.length === 0) return state;
+
+      // Empty queue — start playing the first appended item
+      if (state.items.length === 0) {
+        return { ...state, items: toAppend, cursorIndex: 0 };
+      }
 
       return {
         ...state,
@@ -316,10 +326,11 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
         };
       }
 
-      // Nothing more to play -- cursor past end
+      // Nothing more to play -- clear queue entirely
       return {
         ...state,
-        cursorIndex: state.items.length,
+        items: [],
+        cursorIndex: -1,
       };
     }
 

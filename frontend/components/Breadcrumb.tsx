@@ -24,7 +24,7 @@ function HamburgerButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="p-0 text-[var(--text-dim)] hover:brightness-110 transition-all flex items-center justify-center shrink-0"
+      className="p-0 -mr-1 text-[var(--text-dim)] hover:brightness-110 transition-all flex items-center justify-center shrink-0"
       aria-label="Open queue"
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="32" height="32">

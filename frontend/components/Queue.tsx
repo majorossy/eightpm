@@ -12,6 +12,7 @@ import { formatDuration } from '@/lib/api';
 import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
 import { glowClassName } from '@/lib/chipGlow';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 import { VALIDATION_LIMITS } from '@/lib/validation';
 import VersionPickerModal from '@/components/VersionPickerModal';
@@ -42,10 +43,13 @@ export default function Queue() {
   const {
     isQueueOpen,
     toggleQueue,
+    closeQueue,
     playFromQueue,
     currentTime,
     duration,
   } = usePlayer();
+
+  useBackToClose(isQueueOpen, closeQueue);
 
   const {
     queue,
@@ -870,7 +874,7 @@ function UpcomingSection({
                       }}
                     >
                       <div
-                        className="group/album flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all"
+                        className="group/album relative flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all"
                         style={{}}
                         onClick={() => toggleGroup(group.id)}
                       >
@@ -915,7 +919,7 @@ function UpcomingSection({
                         </div>
                         <button
                           onClick={(e) => { e.stopPropagation(); removeBatch(group.batchId); }}
-                          className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full opacity-0 group-hover/album:opacity-40 hover:!opacity-100 transition-opacity"
+                          className="absolute top-1 right-0 w-5 h-5 flex items-center justify-center rounded-full opacity-40 hover:opacity-100 transition-opacity"
                           style={{ color: 'var(--text-tertiary)' }}
                           aria-label={`Remove ${group.albumName} from queue`}
                         >

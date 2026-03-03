@@ -9,6 +9,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { RecordingRow } from '@/components/version-row';
 import type { Song } from '@/lib/types';
 import { useGrabToSeek } from '@/hooks/useGrabToSeek';
+import { useBackToClose } from '@/hooks/useBackToClose';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -44,6 +45,8 @@ export default function VersionPickerModal({
   onPlayVersion: _onPlayVersion,
   onQueueVersion: _onQueueVersion,
 }: VersionPickerModalProps) {
+  useBackToClose(isOpen, onClose);
+
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [filter, setFilter] = useState('');

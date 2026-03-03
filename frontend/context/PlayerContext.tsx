@@ -42,6 +42,7 @@ interface PlayerContextType extends PlayerState {
 
   // Queue UI
   toggleQueue: () => void;
+  closeQueue: () => void;
 
   // Play from queue (by track index in album)
   playFromQueue: (index: number) => void;
@@ -487,9 +488,28 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [crossfade.state.activeElement, currentSong, handlePlaybackError, clearPlaybackProgress, clearStallTimers, queueContext]);
 
   // When currentSong changes (from QueueContext), update audio
+  const prevCurrentSongRef = useRef<Song | null>(null);
   useEffect(() => {
     const audio = getAudio();
-    if (!audio || !currentSong) return;
+    if (!audio || !currentSong) {
+      prevCurrentSongRef.current = currentSong;
+      return;
+    }
+
+    // Song inserted into empty queue (play-next / add-to-queue when nothing playing)
+    // — treat as user-initiated play so the track starts immediately.
+    const wasEmpty = prevCurrentSongRef.current === null;
+    prevCurrentSongRef.current = currentSong;
+
+    if (wasEmpty && !userInitiatedRef.current) {
+      userInitiatedRef.current = true;
+      audio.src = getStreamUrl(currentSong);
+      audio.volume = state.volume;
+      audio.play().catch(console.error);
+      setState(prev => ({ ...prev, isPlaying: true }));
+      connectAudioElement(audio);
+      return;
+    }
 
     // Don't auto-load audio for localStorage-restored queue on page load.
     // Wait for user to explicitly press play first.
@@ -802,6 +822,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setState(prev => ({ ...prev, isQueueOpen: !prev.isQueueOpen }));
   }, []);
 
+  const closeQueue = useCallback(() => {
+    setState(prev => ({ ...prev, isQueueOpen: false }));
+  }, []);
+
   const setCrossfadeDuration = useCallback((duration: number) => {
     setCrossfadeDurationState(duration);
     setState(prev => ({ ...prev, crossfadeDuration: duration }));
@@ -975,6 +999,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         playNext: playNextHandler,
         playPrev,
         toggleQueue,
+        closeQueue,
         playFromQueue,
         playAlbum,
         playAlbumFromTrack,

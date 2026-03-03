@@ -115,7 +115,7 @@ export default function AlgorithmSelector() {
               active:scale-95
               ${
                 isSelected
-                  ? 'border-[var(--secondary)] text-[var(--bg)] font-semibold'
+                  ? 'border-[var(--secondary)] text-white font-semibold'
                   : 'border-[var(--bg-elevated)] text-[var(--text)] bg-[var(--bg-card)] hover:border-[var(--secondary)] hover:bg-[var(--bg-elevated)]'
               }
             `}
@@ -146,7 +146,7 @@ export default function AlgorithmSelector() {
                   initial={prefersReducedMotion ? false : { scaleX: 0, opacity: 0 }}
                   animate={{ scaleX: 1, opacity: 1 }}
                   transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
-                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[var(--bg)] rounded-full"
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-white rounded-full"
                   aria-label="Sorted alphabetically"
                 />
               )}
