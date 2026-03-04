@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Orbitron, Space_Mono, Bebas_Neue, JetBrains_Mono, Instrument_Sans, Outfit } from 'next/font/google';
+import { Orbitron, Space_Mono, Bebas_Neue, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import ClientLayout from '@/components/ClientLayout';
 import ConditionalAnalytics from '@/components/ConditionalAnalytics';
@@ -39,21 +39,6 @@ const jetbrainsMono = JetBrains_Mono({
   fallback: ['Courier New', 'monospace'],
 });
 
-const instrumentSans = Instrument_Sans({
-  subsets: ['latin'],
-  variable: '--font-instrument-sans',
-  display: 'swap',
-  adjustFontFallback: true,
-  fallback: ['-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-});
-
-const outfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-outfit',
-  display: 'swap',
-  adjustFontFallback: true,
-  fallback: ['system-ui', 'sans-serif'],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'),
@@ -97,7 +82,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} ${instrumentSans.variable} ${outfit.variable} theme-lot`}>
+    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} theme-lot`}>
       <head>
         {/* Preconnect hints for critical resources - improves LCP */}
         <link rel="preconnect" href="https://magento.test" />

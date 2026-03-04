@@ -41,6 +41,7 @@ interface RecordingMetaBlockConfig {
   showDownloads?: boolean;
   size?: RecordingMetaBlockSize;
   showBadges?: boolean;
+  layout?: 'vertical' | 'horizontal';
 }
 
 interface RecordingMetaBlockProps {
@@ -70,11 +71,59 @@ export default function RecordingMetaBlock({
     showDownloads = true,
     size = 'md',
     showBadges = true,
+    layout = 'vertical',
   } = config;
 
   const cfg = SIZE_CONFIG[size];
   const taperIconSize = taperIconSizeOverride ?? cfg.taperIconSize;
   const downloadIconSize = downloadIconSizeOverride ?? cfg.downloadIconSize;
+  const isHorizontal = layout === 'horizontal';
+
+  if (isHorizontal) {
+    // Horizontal: all metadata in a single inline flow with · separators
+    return (
+      <div className={`flex items-center gap-1.5 min-w-0 ${className}`}>
+        {/* Date + Venue inline */}
+        {(song.showDate || song.showVenue || song.albumName) && (
+          <>
+            <DateDisplay date={song.showDate} className={`font-jb-mono ${cfg.textXs} font-semibold text-primary leading-tight tracking-wide flex-shrink-0`} />
+            <VenueDisplay
+              venue={song.showVenue}
+              albumName={song.albumName}
+              asLink={venueAsLink}
+              truncateLength={venueTruncateLength ?? 20}
+              className={`${cfg.textXs} truncate`}
+            />
+          </>
+        )}
+        {/* Taper inline (with separator) */}
+        {showTaper && song.taper && (
+          <>
+            <span className={`${cfg.textXs} flex-shrink-0`} style={{ color: 'var(--text-subdued)' }}>·</span>
+            <TaperDisplay
+              taper={song.taper}
+              iconSize={taperIconSize}
+              fontSize={cfg.textXs}
+              linkToArchive={taperLinkToArchive}
+            />
+          </>
+        )}
+        {/* Badges inline (with separator) */}
+        {showBadges && (
+          <>
+            <span className={`${cfg.textXs} flex-shrink-0`} style={{ color: 'var(--text-subdued)' }}>·</span>
+            <div className={`flex items-center ${cfg.badgeRowGap} flex-shrink-0`}>
+              <RecTypeBadge type={song.recordingType} />
+              <StarRating rating={song.avgRating} count={song.numReviews} />
+              {showDownloads && (
+                <DownloadCount downloads={song.downloads} format={downloadFormat} iconSize={downloadIconSize} />
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`flex flex-col ${cfg.containerGap} ${className}`}>

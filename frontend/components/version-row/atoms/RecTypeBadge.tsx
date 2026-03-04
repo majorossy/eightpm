@@ -6,6 +6,7 @@ const REC_TYPE_STYLES: Record<string, { bg: string; color: string }> = {
   MX:      { bg: 'color-mix(in srgb, var(--quaternary) 15%, transparent)', color: 'var(--quaternary)' },
   FM:      { bg: 'color-mix(in srgb, var(--tertiary) 15%, transparent)',  color: 'var(--tertiary)' },
   WEBCAST: { bg: 'color-mix(in srgb, var(--tertiary) 15%, transparent)',  color: 'var(--tertiary)' },
+  WEB:     { bg: 'color-mix(in srgb, var(--tertiary) 15%, transparent)',  color: 'var(--tertiary)' },
 };
 
 interface RecTypeBadgeProps {

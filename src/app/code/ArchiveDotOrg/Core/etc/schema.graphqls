@@ -105,6 +105,14 @@ type Query {
     studioAlbums(
         artistName: String @doc(description: "Filter albums by artist name")
     ): StudioAlbumsOutput @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\StudioAlbums") @doc(description: "Get studio albums with artwork from MusicBrainz/Wikipedia")
+    songs(
+        artistSlug: String @doc(description: "Filter by artist URL key (omit for all artists)")
+        search: String @doc(description: "Search song titles")
+        sortBy: SongSortField = VERSION_COUNT @doc(description: "Sort field")
+        sortDir: SortEnum = DESC @doc(description: "Sort direction")
+        pageSize: Int = 50 @doc(description: "Number of results per page (max 100)")
+        currentPage: Int = 1 @doc(description: "Current page number")
+    ): SongsOutput @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\Songs") @doc(description: "Browse songs (studio compositions) with version counts")
     venue(
         slug: String! @doc(description: "Venue URL slug")
     ): Venue @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\Venue") @doc(description: "Get a single venue by slug")
@@ -192,4 +200,30 @@ type ArtistVenueCount {
     recording_count: Int! @doc(description: "Number of recordings at this venue")
     city: String @doc(description: "Venue city")
     state: String @doc(description: "Venue state code")
+}
+
+enum SongSortField {
+    VERSION_COUNT
+    TITLE
+    ALBUM
+    ARTIST
+}
+
+type SongItem {
+    category_id: Int! @doc(description: "Song category entity ID")
+    title: String! @doc(description: "Song title")
+    url_key: String! @doc(description: "URL slug for routing")
+    track_number: Int @doc(description: "Track position on studio album")
+    version_count: Int! @doc(description: "Number of live recordings")
+    album_name: String! @doc(description: "Parent album name")
+    album_slug: String! @doc(description: "Parent album URL key")
+    album_artwork_url: String @doc(description: "Album artwork from studio albums table")
+    artist_name: String! @doc(description: "Grandparent artist name")
+    artist_slug: String! @doc(description: "Grandparent artist URL key")
+}
+
+type SongsOutput {
+    items: [SongItem]! @doc(description: "List of songs")
+    total_count: Int! @doc(description: "Total number of matching songs")
+    page_info: SearchResultPageInfo @doc(description: "Pagination info")
 }

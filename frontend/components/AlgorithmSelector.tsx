@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { useFestivalSort } from '@/hooks/useFestivalSort';
 import { useHaptic } from '@/hooks/useHaptic';
 import type { SortAlgorithm } from '@/utils/festivalSorting';
@@ -38,6 +37,8 @@ export default function AlgorithmSelector() {
   const { algorithm, setAlgorithm, isAlphaMode, toggleAlphaMode } = useFestivalSort();
   const { vibrate, BUTTON_PRESS } = useHaptic();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [bgStyle, setBgStyle] = useState<{ left: number; width: number } | null>(null);
 
   // Check for reduced motion preference
   useEffect(() => {
@@ -50,6 +51,20 @@ export default function AlgorithmSelector() {
       return () => mediaQuery.removeEventListener('change', handler);
     }
   }, []);
+
+  // Measure selected button position for sliding background
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const selectedBtn = containerRef.current.querySelector('[aria-checked="true"]') as HTMLElement | null;
+    if (selectedBtn) {
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const btnRect = selectedBtn.getBoundingClientRect();
+      setBgStyle({
+        left: btnRect.left - containerRect.left,
+        width: btnRect.width,
+      });
+    }
+  }, [algorithm]);
 
   const handleSelect = (algo: SortAlgorithm) => {
     vibrate(BUTTON_PRESS);
@@ -92,15 +107,31 @@ export default function AlgorithmSelector() {
 
   return (
     <div
+      ref={containerRef}
       role="radiogroup"
       aria-label="Sort algorithm selector"
-      className="flex flex-row gap-2 justify-center overflow-x-auto md:flex-wrap md:justify-center px-2"
+      className="relative flex flex-row gap-2 justify-center overflow-x-auto md:flex-wrap md:justify-center px-2"
     >
+      {/* Sliding background indicator */}
+      {bgStyle && (
+        <div
+          className="absolute bg-[var(--secondary)] rounded-full"
+          style={{
+            left: bgStyle.left,
+            width: bgStyle.width,
+            top: 0,
+            bottom: 0,
+            transition: prefersReducedMotion ? 'none' : 'left 0.25s ease-out, width 0.25s ease-out',
+            zIndex: 0,
+          }}
+        />
+      )}
+
       {ALGORITHMS.map((algo, index) => {
         const isSelected = algorithm === algo.id;
 
         return (
-          <motion.button
+          <button
             key={algo.id}
             role="radio"
             aria-checked={isSelected}
@@ -121,37 +152,24 @@ export default function AlgorithmSelector() {
             `}
             style={{
               minWidth: 'fit-content',
+              zIndex: 1,
             }}
-            whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
           >
-            {/* Animated background for selected state */}
-            {isSelected && (
-              <motion.div
-                layoutId="selectedBackground"
-                className="absolute inset-0 bg-[var(--secondary)] rounded-full"
-                transition={
-                  prefersReducedMotion
-                    ? { duration: 0 }
-                    : { type: 'spring', stiffness: 300, damping: 30 }
-                }
-              />
-            )}
-
             {/* Content */}
             <span className="relative z-10 flex flex-col items-center justify-center">
               <span>{algo.label}</span>
               {/* Subtle underline indicator for alpha mode */}
               {isSelected && isAlphaMode && (
-                <motion.span
-                  initial={prefersReducedMotion ? false : { scaleX: 0, opacity: 0 }}
-                  animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+                <span
                   className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-white rounded-full"
+                  style={{
+                    animation: prefersReducedMotion ? 'none' : 'algo-underline-in 0.2s ease-out both',
+                  }}
                   aria-label="Sorted alphabetically"
                 />
               )}
             </span>
-          </motion.button>
+          </button>
         );
       })}
     </div>

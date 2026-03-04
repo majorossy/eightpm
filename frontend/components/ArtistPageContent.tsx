@@ -8,6 +8,7 @@ import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useHaptic } from '@/hooks/useHaptic';
 import DiscographyCard from '@/components/DiscographyCard';
+import SongsTable from '@/components/SongsTable';
 import BandMembersTimeline from '@/components/artist/BandMembersTimeline';
 import BandStatistics from '@/components/artist/BandStatistics';
 import VenueCloud from '@/components/artist/VenueCloud';
@@ -340,6 +341,17 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
         ) : (
           <p className="text-secondary text-center">No albums available.</p>
         )}
+      </section>
+
+      {/* Songs Table */}
+      <section className="pb-8 max-w-[1400px] mx-auto px-2 sm:px-4 md:px-8">
+        <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
+          {artist.name} Songs
+        </h2>
+        <p className="text-sm text-secondary mb-4 text-center">
+          Studio compositions with live recording versions
+        </p>
+        <SongsTable artistSlug={artist.slug} />
       </section>
 
       {/* Two column: content left, images right */}

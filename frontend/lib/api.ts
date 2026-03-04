@@ -1,11 +1,11 @@
 // API layer - Magento 2 GraphQL integration
 import { unstable_cache } from 'next/cache';
-import { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount, Podcast, PodcastEpisode, PodcastDetail } from './types';
+import { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount, Podcast, PodcastEpisode, PodcastDetail, SongItem, SongsResult } from './types';
 import { fetchWikipediaSummary } from './wikipedia';
 import { applyFilters, getAvailableYears, hasActiveFilters } from './filters';
 import type { VersionFilters } from './filters';
 
-export type { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount, Podcast, PodcastEpisode, PodcastDetail } from './types';
+export type { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount, Podcast, PodcastEpisode, PodcastDetail, SongItem, SongsResult } from './types';
 export type { VersionFilters } from './filters';
 export { hasActiveFilters } from './filters';
 
@@ -1814,6 +1814,97 @@ export async function searchAlbumCategoriesServer(query: string): Promise<AlbumC
   } catch (error) {
     console.error('[searchAlbumCategoriesServer] Failed:', error);
     return [];
+  }
+}
+
+// ============================================
+// Songs (Studio Compositions) API
+// ============================================
+
+const SONGS_QUERY = `
+  query GetSongs($artistSlug: String, $search: String, $sortBy: SongSortField, $sortDir: SortEnum, $pageSize: Int, $currentPage: Int) {
+    songs(artistSlug: $artistSlug, search: $search, sortBy: $sortBy, sortDir: $sortDir, pageSize: $pageSize, currentPage: $currentPage) {
+      items {
+        category_id
+        title
+        url_key
+        track_number
+        version_count
+        album_name
+        album_slug
+        album_artwork_url
+        artist_name
+        artist_slug
+      }
+      total_count
+      page_info {
+        page_size
+        current_page
+        total_pages
+      }
+    }
+  }
+`;
+
+export async function getTrackCatalog(params: {
+  artistSlug?: string;
+  search?: string;
+  sortBy?: 'VERSION_COUNT' | 'TITLE' | 'ALBUM' | 'ARTIST';
+  sortDir?: 'ASC' | 'DESC';
+  pageSize?: number;
+  currentPage?: number;
+} = {}): Promise<SongsResult> {
+  try {
+    const data = await graphqlFetch<{
+      songs: {
+        items: Array<{
+          category_id: number;
+          title: string;
+          url_key: string;
+          track_number: number | null;
+          version_count: number;
+          album_name: string;
+          album_slug: string;
+          album_artwork_url: string | null;
+          artist_name: string;
+          artist_slug: string;
+        }>;
+        total_count: number;
+        page_info: { page_size: number; current_page: number; total_pages: number };
+      };
+    }>(SONGS_QUERY, {
+      artistSlug: params.artistSlug || null,
+      search: params.search || null,
+      sortBy: params.sortBy || 'VERSION_COUNT',
+      sortDir: params.sortDir || 'DESC',
+      pageSize: params.pageSize || 20,
+      currentPage: params.currentPage || 1,
+    });
+
+    const songs = data.songs;
+    return {
+      items: songs.items.map(item => ({
+        categoryId: item.category_id,
+        title: item.title,
+        urlKey: item.url_key,
+        trackNumber: item.track_number,
+        versionCount: item.version_count,
+        albumName: item.album_name,
+        albumSlug: item.album_slug,
+        albumArtworkUrl: item.album_artwork_url,
+        artistName: item.artist_name,
+        artistSlug: item.artist_slug,
+      })),
+      totalCount: songs.total_count,
+      pageInfo: {
+        pageSize: songs.page_info.page_size,
+        currentPage: songs.page_info.current_page,
+        totalPages: songs.page_info.total_pages,
+      },
+    };
+  } catch (error) {
+    console.error('[getSongs] Failed:', error);
+    return { items: [], totalCount: 0, pageInfo: { pageSize: 50, currentPage: 1, totalPages: 0 } };
   }
 }
 

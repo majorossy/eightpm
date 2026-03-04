@@ -92,6 +92,18 @@
   animation: dropdownSlide 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Algorithm selector underline reveal */
+@keyframes algo-underline-in {
+  from {
+    transform: translateX(-50%) scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 1;
+  }
+}
+
 /* Festival artist name gold gradient hover */
 .artist-name-hover {
   transition: all 0.2s ease;

@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Artist, Album } from '@/lib/api';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import { FestivalSortProvider, useFestivalSort } from '@/context/FestivalSortContext';
 import FestivalHero from '@/components/FestivalHero';
+import SongsTable from '@/components/SongsTable';
 
 interface ArtistWithAlbums extends Artist {
   albums: Album[];
@@ -143,22 +143,27 @@ function ArtistsContentInner() {
         onStartListening={scrollToArtists}
       />
 
+      {/* Songs Table - all artists */}
+      <div className="px-2 sm:px-4 md:px-8 pt-4 md:pt-6 mx-auto max-w-[1400px]">
+        <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
+          Songs
+        </h2>
+        <p className="text-sm text-secondary mb-4 text-center">
+          Studio compositions across all artists, sorted by most recorded
+        </p>
+        <SongsTable />
+      </div>
+
       {/* All albums in continuous flow */}
       <div id="artists-content" className="px-2 sm:px-4 md:px-8 pt-4 md:pt-6 mx-auto max-w-[1400px]">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
           {allAlbums.map((album, index) => {
             const isComingSoon = album.totalSongs === 0 && !album.coverArt;
             return (
-            <motion.div
+            <div
               key={`${album.artistSlug}-${album.id}`}
-              layout
-              transition={{
-                layout: {
-                  duration: prefersReducedMotion ? 0 : 0.4,
-                  ease: 'easeOut',
-                },
-                // Stagger only first 20 items for performance
-                delay: !prefersReducedMotion && index < 20 ? index * 0.02 : 0,
+              style={{
+                transition: prefersReducedMotion ? 'none' : 'transform 0.4s ease-out, opacity 0.4s ease-out',
               }}
             >
               <Link
@@ -285,7 +290,7 @@ function ArtistsContentInner() {
                 </div>
               </div>
             </Link>
-            </motion.div>
+            </div>
             );
           })}
         </div>

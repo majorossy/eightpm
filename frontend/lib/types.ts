@@ -346,5 +346,29 @@ export interface ArtistVenueCount {
   state?: string;
 }
 
+// Song item from songs() GraphQL query — a studio composition with live version count
+export interface SongItem {
+  categoryId: number;
+  title: string;
+  urlKey: string;
+  trackNumber: number | null;
+  versionCount: number;
+  albumName: string;
+  albumSlug: string;
+  albumArtworkUrl: string | null;
+  artistName: string;
+  artistSlug: string;
+}
+
+export interface SongsResult {
+  items: SongItem[];
+  totalCount: number;
+  pageInfo: {
+    pageSize: number;
+    currentPage: number;
+    totalPages: number;
+  };
+}
+
 // Sync status for contexts that will eventually sync to Magento backend
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error';

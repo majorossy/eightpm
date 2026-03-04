@@ -35,6 +35,7 @@ const SIZE_CONFIG: Record<RecordingRowSize, RowSizeConfig> = {
 export interface RecordingRowProps {
   song: Song;
   size?: RecordingRowSize;
+  layout?: 'vertical' | 'horizontal';
   trackNumber?: number | null;
   showTitle?: boolean;
   showDuration?: boolean;
@@ -69,6 +70,7 @@ export interface RecordingRowProps {
 export default function RecordingRow({
   song,
   size = 'md',
+  layout = 'vertical',
   trackNumber,
   showTitle = true,
   showDuration = true,
@@ -99,7 +101,82 @@ export default function RecordingRow({
   const cfg = SIZE_CONFIG[size];
   const metaSize: RecordingMetaBlockSize = size;
   const hasActions = actions && actions.length > 0;
+  const isHorizontal = layout === 'horizontal';
 
+  const actionsBlock = hasActions ? (
+    <RecordingRowActions
+      song={song}
+      actions={actions}
+      size={size}
+      isCurrentlyPlaying={isCurrentlyPlaying}
+      swapLabel={swapLabel}
+      swapHighlighted={swapHighlighted}
+      onSwap={onSwap}
+      onPlay={onPlay}
+      onAddToQueue={onAddToQueue}
+      onActionHover={onActionHover}
+      onAfterAction={onAfterAction}
+      availableVersions={availableVersions}
+    />
+  ) : null;
+
+  // ── Horizontal layout: everything in a single row ──
+  if (isHorizontal) {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        {/* Medium icon */}
+        {showMediumIcon && (
+          <div className="flex-shrink-0">
+            <RecordingMediumIcon
+              medium={song.recordingMedium}
+              lineage={song.lineage}
+              source={song.source}
+              size={iconScaleOverride ?? cfg.iconScale}
+              isPlaying={isPlaying}
+            />
+          </div>
+        )}
+        {/* Title + duration */}
+        {showTitle && (
+          <span className={`${cfg.title} font-serif font-semibold text-primary truncate flex-shrink-0 max-w-[120px]`} style={{ lineHeight: '1.3' }}>
+            {song.title}
+          </span>
+        )}
+        {showDuration && song.duration > 0 && (
+          <span className={`font-jb-mono ${cfg.duration} font-medium flex-shrink-0`} style={{ color: 'var(--text-tertiary)' }}>
+            {formatDuration(song.duration)}
+          </span>
+        )}
+        {/* Separator */}
+        {showTitle && <span className="text-[9px] flex-shrink-0" style={{ color: 'var(--text-subdued)' }}>|</span>}
+        {/* Meta block (horizontal) */}
+        <RecordingMetaBlock
+          song={song}
+          config={{
+            size: metaSize,
+            showLocation: false,
+            showTaper,
+            showBadges,
+            showDownloads,
+            taperLinkToArchive,
+            downloadFormat,
+            layout: 'horizontal',
+          }}
+          versionCount={versionCount}
+          onVersionsClick={onVersionsClick}
+          className="min-w-0 flex-1"
+        />
+        {/* Actions inline */}
+        {actionsBlock && (
+          <div className="flex-shrink-0">
+            {actionsBlock}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Vertical layout (default) ──
   const content = (
     <div className={`flex flex-col ${cfg.containerGap} ${hasActions ? '' : className}`}>
       {/* Row 1: [#] Title ........... [Duration] */}
@@ -161,20 +238,7 @@ export default function RecordingRow({
     <div className={`flex flex-col ${cfg.containerGap} ${className}`}>
       {content}
       <div className={`flex ${actionsAlign === 'start' ? 'justify-start' : 'justify-end'}`}>
-        <RecordingRowActions
-          song={song}
-          actions={actions}
-          size={size}
-          isCurrentlyPlaying={isCurrentlyPlaying}
-          swapLabel={swapLabel}
-          swapHighlighted={swapHighlighted}
-          onSwap={onSwap}
-          onPlay={onPlay}
-          onAddToQueue={onAddToQueue}
-          onActionHover={onActionHover}
-          onAfterAction={onAfterAction}
-          availableVersions={availableVersions}
-        />
+        {actionsBlock}
       </div>
     </div>
   );

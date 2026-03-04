@@ -96,7 +96,6 @@ const config: Config = {
         'bebas-neue': ['var(--font-bebas-neue)', 'Impact', 'sans-serif'],
         serif: ['Georgia', 'serif'],
         sans: ['system-ui', 'sans-serif'],
-        outfit: ['Outfit', 'sans-serif'],
       },
       animation: {
         'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',

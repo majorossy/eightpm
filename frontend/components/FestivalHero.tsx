@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { useStarOverlay } from '@/hooks/useStarOverlay';
 import { useFestivalSort } from '@/hooks/useFestivalSort';
 import DecorativeStars from '@/components/DecorativeStars';
@@ -438,16 +437,12 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
               {lineupArtists.map((artist, index) => {
                 const fontSize = getFontSize(artist);
                 return (
-                  <motion.span
+                  <span
                     key={artist.slug}
-                    layout
-                    transition={{
-                      layout: {
-                        duration: prefersReducedMotion ? 0 : 0.4,
-                        ease: 'easeOut',
-                      },
-                    }}
                     className="whitespace-nowrap"
+                    style={{
+                      transition: prefersReducedMotion ? 'none' : 'transform 0.4s ease-out, opacity 0.4s ease-out',
+                    }}
                   >
                     <span className="relative group inline-block">
                       <Link
@@ -469,7 +464,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
                         formationYear={artist.formationYear}
                       />
                     </span>
-                  </motion.span>
+                  </span>
                 );
               })}
 
