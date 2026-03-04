@@ -734,7 +734,6 @@ File: `frontend/.env.local`
 MAGENTO_GRAPHQL_URL=https://magento.test/graphql
 NEXT_PUBLIC_MAGENTO_MEDIA_URL=https://magento.test/media
 NODE_TLS_REJECT_UNAUTHORIZED=0  # Allow self-signed certs in dev
-# NEXT_PUBLIC_SUPABASE_URL=...  # Optional cross-device sync (disabled)
 ```
 
 ### Audio Features (New - Jan 2026)

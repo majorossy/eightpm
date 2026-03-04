@@ -345,3 +345,6 @@ export interface ArtistVenueCount {
   city?: string;
   state?: string;
 }
+
+// Sync status for contexts that will eventually sync to Magento backend
+export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error';

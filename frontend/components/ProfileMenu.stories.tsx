@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
 import ProfileMenu from './ProfileMenu';
-import { AuthProvider } from '@/context/AuthContext';
+import { MagentoAuthProvider } from '@/context/MagentoAuthContext';
 
 const meta = {
   title: 'Navigation/ProfileMenu',
@@ -9,9 +9,9 @@ const meta = {
   tags: ['autodocs'],
   decorators: [
     (Story) => (
-      <AuthProvider>
+      <MagentoAuthProvider>
         <Story />
-      </AuthProvider>
+      </MagentoAuthProvider>
     ),
   ],
   args: {

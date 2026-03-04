@@ -191,108 +191,158 @@
   }
 }
 
-/* Swap glow — purple pulse after version swap (scale + bg flash + two-phase glow) */
-.swap-glow {
-  animation: swapGlow 1.8s ease-out;
+/* ── Chip action glows ─────────────────────────────────────────────────
+   Each glow class gets a smooth entrance (fade-in + gentle scale pulse)
+   before the bright burst, then a slow fade-out.
+   Total: 2.1s = 0.3s entrance + 1.8s main glow cycle.
+   Wrapped in prefers-reduced-motion so motion-sensitive users get a
+   static colored border instead.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* Swap glow — purple pulse after version swap */
+@media (prefers-reduced-motion: no-preference) {
+  .swap-glow {
+    animation: swapGlow 2.1s ease-out forwards;
+  }
 }
 
 @keyframes swapGlow {
-  /* Flash in — fast bright burst */
-  0%   {
+  /* Entrance — fade in from invisible */
+  0% {
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
+    background-color: transparent;
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  /* Entrance peak — glow fades in, gentle scale up */
+  14% { /* ~300ms */
     box-shadow: 0 0 0 3px var(--quaternary), 0 0 20px color-mix(in srgb, var(--quaternary) 60%, transparent);
     background-color: color-mix(in srgb, var(--quaternary) 15%, transparent);
-    transform: scale(1.04);
+    transform: scale(1.03);
+    opacity: 1;
   }
-  /* Hold the peak briefly */
-  10%  {
+  /* Hold bright */
+  19% {
     box-shadow: 0 0 0 3px var(--quaternary), 0 0 24px color-mix(in srgb, var(--quaternary) 50%, transparent);
     background-color: color-mix(in srgb, var(--quaternary) 12%, transparent);
-    transform: scale(1.04);
+    transform: scale(1.03);
   }
-  /* Settle back */
-  30%  {
+  /* Settle scale */
+  33% {
     transform: scale(1);
   }
   /* Slow fade out */
   100% {
-    box-shadow: 0 0 0 0px transparent, 0 0 0px transparent;
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
     background-color: transparent;
     transform: scale(1);
+    opacity: 1;
   }
 }
 
 /* Play-now glow — coral pulse after "play now" action */
-.play-now-glow {
-  animation: playNowGlow 1.8s ease-out;
+@media (prefers-reduced-motion: no-preference) {
+  .play-now-glow {
+    animation: playNowGlow 2.1s ease-out forwards;
+  }
 }
 
 @keyframes playNowGlow {
-  0%   {
-    box-shadow: 0 0 0 3px var(--action-play), 0 0 20px color-mix(in srgb, var(--action-play) 60%, transparent);
-    background-color: color-mix(in srgb, var(--action-play) 15%, transparent);
-    transform: scale(1.04);
-  }
-  10%  {
-    box-shadow: 0 0 0 3px var(--action-play), 0 0 24px color-mix(in srgb, var(--action-play) 50%, transparent);
-    background-color: color-mix(in srgb, var(--action-play) 12%, transparent);
-    transform: scale(1.04);
-  }
-  30%  { transform: scale(1); }
-  100% {
-    box-shadow: 0 0 0 0px transparent, 0 0 0px transparent;
+  0% {
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
     background-color: transparent;
     transform: scale(1);
+    opacity: 0.4;
+  }
+  14% {
+    box-shadow: 0 0 0 3px var(--action-play), 0 0 20px color-mix(in srgb, var(--action-play) 60%, transparent);
+    background-color: color-mix(in srgb, var(--action-play) 15%, transparent);
+    transform: scale(1.03);
+    opacity: 1;
+  }
+  19% {
+    box-shadow: 0 0 0 3px var(--action-play), 0 0 24px color-mix(in srgb, var(--action-play) 50%, transparent);
+    background-color: color-mix(in srgb, var(--action-play) 12%, transparent);
+    transform: scale(1.03);
+  }
+  33% { transform: scale(1); }
+  100% {
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
+    background-color: transparent;
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
 /* Play-next glow — orange pulse after "play next" action (coral+gold mix) */
-.play-next-glow {
-  animation: playNextGlow 1.8s ease-out;
+@media (prefers-reduced-motion: no-preference) {
+  .play-next-glow {
+    animation: playNextGlow 2.1s ease-out forwards;
+  }
 }
 
 @keyframes playNextGlow {
-  0%   {
-    box-shadow: 0 0 0 3px var(--action-play-next), 0 0 20px color-mix(in srgb, var(--action-play-next) 60%, transparent);
-    background-color: color-mix(in srgb, var(--action-play-next) 15%, transparent);
-    transform: scale(1.04);
-  }
-  10%  {
-    box-shadow: 0 0 0 3px var(--action-play-next), 0 0 24px color-mix(in srgb, var(--action-play-next) 50%, transparent);
-    background-color: color-mix(in srgb, var(--action-play-next) 12%, transparent);
-    transform: scale(1.04);
-  }
-  30%  { transform: scale(1); }
-  100% {
-    box-shadow: 0 0 0 0px transparent, 0 0 0px transparent;
+  0% {
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
     background-color: transparent;
     transform: scale(1);
+    opacity: 0.4;
+  }
+  14% {
+    box-shadow: 0 0 0 3px var(--action-play-next), 0 0 20px color-mix(in srgb, var(--action-play-next) 60%, transparent);
+    background-color: color-mix(in srgb, var(--action-play-next) 15%, transparent);
+    transform: scale(1.03);
+    opacity: 1;
+  }
+  19% {
+    box-shadow: 0 0 0 3px var(--action-play-next), 0 0 24px color-mix(in srgb, var(--action-play-next) 50%, transparent);
+    background-color: color-mix(in srgb, var(--action-play-next) 12%, transparent);
+    transform: scale(1.03);
+  }
+  33% { transform: scale(1); }
+  100% {
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
+    background-color: transparent;
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
 /* Queue glow — gold pulse after "add to queue" action */
-.queue-glow {
-  animation: queueGlow 1.8s ease-out;
+@media (prefers-reduced-motion: no-preference) {
+  .queue-glow {
+    animation: queueGlow 2.1s ease-out forwards;
+  }
 }
 
 @keyframes queueGlow {
-  0%   {
-    box-shadow: 0 0 0 3px var(--action-queue), 0 0 20px color-mix(in srgb, var(--action-queue) 60%, transparent);
-    background-color: color-mix(in srgb, var(--action-queue) 15%, transparent);
-    transform: scale(1.04);
-  }
-  10%  {
-    box-shadow: 0 0 0 3px var(--action-queue), 0 0 24px color-mix(in srgb, var(--action-queue) 50%, transparent);
-    background-color: color-mix(in srgb, var(--action-queue) 12%, transparent);
-    transform: scale(1.04);
-  }
-  30%  { transform: scale(1); }
-  100% {
-    box-shadow: 0 0 0 0px transparent, 0 0 0px transparent;
+  0% {
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
     background-color: transparent;
     transform: scale(1);
+    opacity: 0.4;
+  }
+  14% {
+    box-shadow: 0 0 0 3px var(--action-queue), 0 0 20px color-mix(in srgb, var(--action-queue) 60%, transparent);
+    background-color: color-mix(in srgb, var(--action-queue) 15%, transparent);
+    transform: scale(1.03);
+    opacity: 1;
+  }
+  19% {
+    box-shadow: 0 0 0 3px var(--action-queue), 0 0 24px color-mix(in srgb, var(--action-queue) 50%, transparent);
+    background-color: color-mix(in srgb, var(--action-queue) 12%, transparent);
+    transform: scale(1.03);
+  }
+  33% { transform: scale(1); }
+  100% {
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
+    background-color: transparent;
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
+/* Reduced-motion fallback — static colored border, no animation */
 @media (prefers-reduced-motion: reduce) {
   .swap-glow {
     animation: none;

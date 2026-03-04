@@ -134,7 +134,8 @@
   bottom: -25px;
   left: 50%;
   transform: translateX(-50%);
-  width: 280px;
+  width: 70%;
+  max-width: 500px;
   height: 70px;
   background: radial-gradient(ellipse, color-mix(in srgb, var(--secondary) 40%, transparent) 0%, color-mix(in srgb, var(--secondary) 20%, transparent) 40%, transparent 70%);
   filter: blur(15px);

@@ -68,6 +68,9 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
   } = config;
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Some events (dead keys, IME) have no key — ignore them
+    if (!e.key) return;
+
     // Ignore shortcuts when typing in input fields
     const target = e.target as HTMLElement;
     const isTyping =

@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
 import AuthModal from './AuthModal';
-import { AuthProvider } from '@/context/AuthContext';
 import { MagentoAuthProvider } from '@/context/MagentoAuthContext';
 
 const meta = {
@@ -10,11 +9,9 @@ const meta = {
   tags: ['autodocs'],
   decorators: [
     (Story) => (
-      <AuthProvider>
-        <MagentoAuthProvider>
-          <Story />
-        </MagentoAuthProvider>
-      </AuthProvider>
+      <MagentoAuthProvider>
+        <Story />
+      </MagentoAuthProvider>
     ),
   ],
   parameters: {

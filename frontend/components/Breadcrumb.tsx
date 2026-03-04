@@ -6,6 +6,7 @@
 import Link from 'next/link';
 import { useBreadcrumbs, BreadcrumbType } from '@/context/BreadcrumbContext';
 import { usePlayer } from '@/context/PlayerContext';
+import EightPmLogo from './EightPmLogo';
 
 // Get the prefix for each breadcrumb type
 function getTypePrefix(type?: BreadcrumbType): string {
@@ -92,8 +93,8 @@ export default function Breadcrumb() {
             d="M9 5l7 7-7 7"
           />
         </svg>
-        <Link href="/" className="text-[var(--text)] font-medium hover:text-[var(--secondary)] transition-colors shrink-0">
-          8pm.me
+        <Link href="/" className="shrink-0 flex items-center hover:brightness-110 transition-all">
+          <EightPmLogo size={16} />
         </Link>
       </nav>
     );
@@ -120,9 +121,9 @@ export default function Breadcrumb() {
         <li className="flex items-center shrink-0 self-center">
           <Link
             href="/"
-            className="text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
+            className="flex items-center hover:brightness-110 transition-all opacity-70 hover:opacity-100"
           >
-            8pm.me
+            <EightPmLogo size={14} />
           </Link>
         </li>
 

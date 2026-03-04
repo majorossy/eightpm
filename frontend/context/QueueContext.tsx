@@ -57,7 +57,8 @@ export type QueueAction =
   | { type: 'DETACH_ITEM'; queueId: string; targetIndex: number }
   | { type: 'RESTORE_FROM_HISTORY'; queueId: string; targetIndex: number }
   | { type: 'CLEAR_UPCOMING' }
-  | { type: 'REMOVE_BATCH'; batchId: string };
+  | { type: 'REMOVE_BATCH'; batchId: string }
+  | { type: 'PLAY_NOW'; item: QueueItem };
 
 // =============================================================================
 // Reducer
@@ -79,9 +80,9 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
         : [action.items];
       if (toInsert.length === 0) return state;
 
-      // Empty queue — start playing the first inserted item
-      if (state.items.length === 0) {
-        return { ...state, items: toInsert, cursorIndex: 0 };
+      // Nothing playing — append and start playing the first inserted item
+      if (state.items.length === 0 || state.cursorIndex < 0) {
+        return { ...state, items: [...state.items, ...toInsert], cursorIndex: state.items.length };
       }
 
       const insertAt = state.cursorIndex + 1;
@@ -101,9 +102,9 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
         : [action.items];
       if (toAppend.length === 0) return state;
 
-      // Empty queue — start playing the first appended item
-      if (state.items.length === 0) {
-        return { ...state, items: toAppend, cursorIndex: 0 };
+      // Nothing playing — append and start playing the first appended item
+      if (state.items.length === 0 || state.cursorIndex < 0) {
+        return { ...state, items: [...state.items, ...toAppend], cursorIndex: state.items.length };
       }
 
       return {
@@ -127,9 +128,13 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
         // Removed item was before cursor -- shift cursor back
         newCursor = state.cursorIndex - 1;
       } else if (removeIdx === state.cursorIndex) {
-        // Removed current item -- cursor stays at same index (now next item)
-        // Clamp to valid range
-        newCursor = Math.min(state.cursorIndex, newItems.length - 1);
+        if (removeIdx < newItems.length) {
+          // Next item takes over at same index
+          newCursor = removeIdx;
+        } else {
+          // Nothing upcoming — stop playback
+          newCursor = -1;
+        }
       }
       // removeIdx > cursorIndex: no cursor change
 
@@ -448,6 +453,32 @@ export function queueReducer(state: UnifiedQueue, action: QueueAction): UnifiedQ
       };
     }
 
+    case 'PLAY_NOW': {
+      const newItem = action.item;
+
+      // Nothing playing — append and start playing
+      if (state.items.length === 0 || state.cursorIndex < 0) {
+        return { ...state, items: [...state.items, newItem], cursorIndex: state.items.length };
+      }
+
+      // Already playing this exact song — no-op (let PlayerContext toggle play/pause)
+      const current = state.items[state.cursorIndex];
+      if (current && current.song.id === newItem.song.id) {
+        return state;
+      }
+
+      // Insert after cursor and advance to it atomically
+      const insertAt = state.cursorIndex + 1;
+      const newItems = [...state.items];
+      newItems.splice(insertAt, 0, newItem);
+
+      return {
+        ...state,
+        items: newItems,
+        cursorIndex: insertAt,
+      };
+    }
+
     default:
       return state;
   }
@@ -477,6 +508,7 @@ interface QueueContextType {
     versionOverrides?: Map<string, string>,
   ) => void;
   playNext: (items: QueueItem | QueueItem[], opts?: { glow?: ChipGlowType }) => void;
+  playNow: (item: QueueItem, opts?: { glow?: ChipGlowType }) => void;
   addToQueue: (items: QueueItem | QueueItem[]) => void;
   removeItem: (queueId: string) => void;
   moveItem: (fromIndex: number, toIndex: number) => void;
@@ -712,6 +744,11 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     }
   }, [triggerChipGlow]);
 
+  const playNow = useCallback((item: QueueItem, opts?: { glow?: ChipGlowType }) => {
+    dispatch({ type: 'PLAY_NOW', item });
+    triggerChipGlow([item.queueId], opts?.glow ?? 'play-now');
+  }, [triggerChipGlow]);
+
   const addToQueue = useCallback((items: QueueItem | QueueItem[]) => {
     dispatch({ type: 'APPEND_ITEMS', items });
     const arr = Array.isArray(items) ? items : [items];
@@ -847,6 +884,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       // Actions
       playAlbum,
       playNext,
+      playNow,
       addToQueue,
       removeItem,
       moveItem,
@@ -882,6 +920,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       isFirstItem,
       playAlbum,
       playNext,
+      playNow,
       addToQueue,
       removeItem,
       moveItem,

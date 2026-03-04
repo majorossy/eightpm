@@ -63,3 +63,159 @@
 .neon-text-pink {
   text-shadow: 0 0 20px var(--secondary);
 }
+
+/* ========================================
+   Cassette Shell — full-width tape container
+   ======================================== */
+
+/* Outer shell — the cassette body */
+.tape-shell {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  border-radius: 1rem;
+  background: var(--cassette-body);
+  box-shadow:
+    0 8px 32px color-mix(in srgb, black 40%, transparent),
+    0 2px 8px color-mix(in srgb, black 25%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
+  padding: 16px;
+  overflow: visible;
+}
+
+/* Subtle noise texture overlay */
+.tape-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-conic-gradient(
+    color-mix(in srgb, white 3%, transparent) 0% 25%,
+    transparent 0% 50%
+  ) 0 0 / 4px 4px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Corner screws */
+.tape-screw {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--cassette-screw);
+  z-index: 2;
+}
+.tape-screw::before,
+.tape-screw::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 7px;
+  height: 1.5px;
+  background: color-mix(in srgb, black 70%, transparent);
+}
+.tape-screw::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* Label band at top of cassette */
+.tape-label {
+  position: relative;
+  border-radius: 0.5rem 0.5rem 0.25rem 0.25rem;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Noise on label */
+.tape-label::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(
+    color-mix(in srgb, white 4%, transparent) 0% 25%,
+    transparent 0% 50%
+  ) 0 0 / 3px 3px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Track list window inside tape body */
+.tape-body {
+  position: relative;
+  margin: 12px 0;
+  border-radius: 0.5rem;
+  background: var(--cassette-window);
+  border: 2px solid var(--cassette-border);
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Glass shine on tape body */
+.tape-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: linear-gradient(180deg, color-mix(in srgb, white 4%, transparent), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Track area — full height, no scroll */
+.tape-track-scroll {
+  padding: 8px;
+  position: relative;
+}
+
+/* Track row inside cassette */
+.tape-trk {
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  transition: background 0.15s ease;
+}
+.tape-trk:last-child {
+  border-bottom: none;
+}
+.tape-trk:hover {
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+
+/* Playing state: left accent bar + tinted bg */
+.tape-trk.playing {
+  background: color-mix(in srgb, var(--action-play) 8%, transparent);
+  box-shadow: inset 3px 0 0 var(--action-play);
+}
+
+/* Reel row at bottom of shell */
+.tape-reels {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  height: 80px;
+  z-index: 1;
+}
+
+/* Tape band connecting reels */
+.tape-reels::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 25%;
+  right: 25%;
+  height: 3px;
+  transform: translateY(-50%);
+  background: var(--cassette-tape);
+}
+
+/* Update cassette-glow width for full-width shell */
+.tape-shell + .cassette-glow {
+  width: 100%;
+  max-width: 500px;
+}

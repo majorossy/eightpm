@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { EightPmSearchOverlay } from './EightPmSearchOverlay';
 import { useHaptic } from '@/hooks/useHaptic';
-import { useAuth } from '@/context/AuthContext';
+import { useMagentoAuth } from '@/context/MagentoAuthContext';
 import AuthModal from '@/components/AuthModal';
 
 export default function EightPmMobileNav() {
@@ -15,9 +15,11 @@ export default function EightPmMobileNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { vibrate, BUTTON_PRESS } = useHaptic();
-  const { isAuthenticated, profile, user } = useAuth();
+  const { isAuthenticated, customer } = useMagentoAuth();
 
-  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
+  const displayName = customer
+    ? `${customer.firstname} ${customer.lastname}`.trim()
+    : 'User';
   const initials = displayName.slice(0, 2).toUpperCase();
 
   const isActive = (path: string) => {

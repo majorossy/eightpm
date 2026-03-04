@@ -85,10 +85,10 @@ export function useCassetteResolution(cassette: Cassette | null | undefined): Ca
           isOverridden = true;
         } else {
           // Override references a stale ID — fall back gracefully
-          selectedSong = getBestVersion(track.songs);
+          selectedSong = getBestVersion(track.songs)!;
         }
       } else {
-        selectedSong = getBestVersion(track.songs);
+        selectedSong = getBestVersion(track.songs)!;
       }
 
       resolvedTracks.push({ track, selectedSong, isOverridden });

@@ -7,6 +7,7 @@ import { useStarOverlay } from '@/hooks/useStarOverlay';
 import { useFestivalSort } from '@/hooks/useFestivalSort';
 import DecorativeStars from '@/components/DecorativeStars';
 import AlgorithmSelector from '@/components/AlgorithmSelector';
+import EightPmLogo from '@/components/EightPmLogo';
 
 interface LineupArtist {
   name: string;
@@ -385,21 +386,9 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
           </svg>
         </div>
 
-        {/* Subheading: 8PM.ME with gold period */}
-        <div className="mb-2">
-          <span
-            className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tight text-[var(--text)]"
-            style={{ fontFamily: 'system-ui' }}
-          >
-            8PM
-          </span>
-          <span className="text-4xl md:text-6xl font-black text-[var(--secondary)]">.</span>
-          <span
-            className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tight text-[var(--text)]"
-            style={{ fontFamily: 'system-ui' }}
-          >
-            ME
-          </span>
+        {/* Wordmark logo with aurora bars */}
+        <div className="mb-2 flex justify-center">
+          <EightPmLogo size={90} />
         </div>
 
         {/* Archive.org attribution under 8PM.ME with gradient lines */}

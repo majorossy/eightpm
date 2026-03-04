@@ -12,9 +12,7 @@ import { QualityProvider } from '@/context/QualityContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { BreadcrumbProvider } from '@/context/BreadcrumbContext';
 import { MobileUIProvider, useMobileUI } from '@/context/MobileUIContext';
-import { AuthProvider } from '@/context/AuthContext';
 import { MagentoAuthProvider } from '@/context/MagentoAuthContext';
-import { UnifiedAuthProvider } from '@/context/UnifiedAuthContext';
 import BottomPlayer from '@/components/BottomPlayer';
 import EightPmTopBar from '@/components/EightPmTopBar';
 import EightPmMobileNav from '@/components/EightPmMobileNav';
@@ -211,33 +209,29 @@ function InnerLayout({ children }: { children: ReactNode }) {
 
 function LayoutContent({ children }: { children: ReactNode }) {
   return (
-    <AuthProvider>
-      <MagentoAuthProvider>
-        <UnifiedAuthProvider>
-          <ToastProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <CollectionProvider>
-                  <QueueProvider>
-                    <RecentlyPlayedProvider>
-                      <QualityProvider>
-                        <PlayerProvider>
-                          <BreadcrumbProvider>
-                            <MobileUIProvider>
-                              <InnerLayout>{children}</InnerLayout>
-                            </MobileUIProvider>
-                          </BreadcrumbProvider>
-                        </PlayerProvider>
-                      </QualityProvider>
-                    </RecentlyPlayedProvider>
-                  </QueueProvider>
-                </CollectionProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </ToastProvider>
-        </UnifiedAuthProvider>
-      </MagentoAuthProvider>
-    </AuthProvider>
+    <MagentoAuthProvider>
+      <ToastProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <CollectionProvider>
+              <QueueProvider>
+                <RecentlyPlayedProvider>
+                  <QualityProvider>
+                    <PlayerProvider>
+                      <BreadcrumbProvider>
+                        <MobileUIProvider>
+                          <InnerLayout>{children}</InnerLayout>
+                        </MobileUIProvider>
+                      </BreadcrumbProvider>
+                    </PlayerProvider>
+                  </QualityProvider>
+                </RecentlyPlayedProvider>
+              </QueueProvider>
+            </CollectionProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </ToastProvider>
+    </MagentoAuthProvider>
   );
 }
 

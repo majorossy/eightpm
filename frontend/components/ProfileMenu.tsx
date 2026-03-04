@@ -1,7 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-import { useAuth } from '@/context/AuthContext';
+import { useMagentoAuth } from '@/context/MagentoAuthContext';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
@@ -10,7 +9,7 @@ interface ProfileMenuProps {
 }
 
 export default function ProfileMenu({ onSignInClick }: ProfileMenuProps) {
-  const { user, profile, isAuthenticated, isLoading, signOut } = useAuth();
+  const { customer, isAuthenticated, isLoading, signOut } = useMagentoAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -39,8 +38,9 @@ export default function ProfileMenu({ onSignInClick }: ProfileMenuProps) {
   }
 
   // Authenticated - show profile menu
-  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
-  const avatarUrl = profile?.avatar_url;
+  const displayName = customer
+    ? `${customer.firstname} ${customer.lastname}`.trim()
+    : 'User';
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
@@ -50,20 +50,9 @@ export default function ProfileMenu({ onSignInClick }: ProfileMenuProps) {
         <button
           className="flex items-center gap-2 p-1 rounded-full hover:bg-surface-elevated transition-colors"
         >
-          {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt={displayName || 'Profile'}
-              width={32}
-              height={32}
-              quality={80}
-              className="rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-inverse text-sm font-medium">
-              {initials}
-            </div>
-          )}
+          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-inverse text-sm font-medium">
+            {initials}
+          </div>
           <svg
             className="w-4 h-4 text-secondary"
             fill="none"
@@ -85,7 +74,7 @@ export default function ProfileMenu({ onSignInClick }: ProfileMenuProps) {
           {/* User info */}
           <DropdownMenu.Label className="px-4 py-3 border-b border-default">
             <p className="text-sm font-medium text-primary truncate">{displayName}</p>
-            <p className="text-xs text-secondary truncate">{user?.email}</p>
+            <p className="text-xs text-secondary truncate">{customer?.email}</p>
           </DropdownMenu.Label>
 
           {/* Menu items */}

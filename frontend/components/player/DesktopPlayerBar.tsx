@@ -265,6 +265,7 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
             currentSong={currentSong}
             currentItem={currentItem}
             isPlaying={isPlaying}
+            isBuffering={isBuffering}
             recordingType={recordingType}
             imageLoaded={imageLoaded}
             onImageLoad={onImageLoad}
@@ -374,6 +375,7 @@ function DesktopLeftSection({
   currentSong,
   currentItem,
   isPlaying,
+  isBuffering,
   recordingType,
   imageLoaded,
   onImageLoad,
@@ -381,6 +383,7 @@ function DesktopLeftSection({
   currentSong: DesktopPlayerBarProps['currentSong'];
   currentItem: QueueItem | null;
   isPlaying: boolean;
+  isBuffering: boolean;
   recordingType: string | undefined;
   imageLoaded: boolean;
   onImageLoad: () => void;
@@ -410,8 +413,8 @@ function DesktopLeftSection({
         )}
         {/* Teal gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent-secondary/15 to-transparent pointer-events-none" />
-        {/* EQ bars overlay */}
-        {isPlaying && (
+        {/* EQ bars overlay — only when actually playing (not buffering) */}
+        {isPlaying && !isBuffering && (
           <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center gap-[3px] h-5 px-2 pb-1 bg-gradient-to-t from-black/60 to-transparent">
             {[1, 2, 3, 4, 5].map((i) => (
               <div
@@ -423,6 +426,15 @@ function DesktopLeftSection({
                 }}
               />
             ))}
+          </div>
+        )}
+        {/* Buffering spinner overlay */}
+        {isPlaying && isBuffering && (
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center h-5 px-2 pb-1 bg-gradient-to-t from-black/60 to-transparent">
+            <svg className="w-3.5 h-3.5 animate-spin text-accent" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
           </div>
         )}
         {/* Recording type icon overlay */}

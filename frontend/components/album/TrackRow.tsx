@@ -44,6 +44,31 @@ export const TrackRow = React.memo(function TrackRow({
 
   // Best version for display
   const bestSong = useMemo(() => getBestVersion(track.songs), [track.songs]);
+  const isEmpty = !bestSong;
+
+  // Empty track — grayed-out row with "no recordings found" subtext
+  if (isEmpty) {
+    return (
+      <div
+        className="rounded-lg mb-2 overflow-hidden select-none"
+        style={{
+          background: 'color-mix(in srgb, var(--text) 2%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--text) 6%, transparent)',
+        }}
+      >
+        <div style={{ padding: '14px 20px', opacity: 0.45 }}>
+          <div className="flex items-baseline gap-1.5 mb-1">
+            <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>{displayIndex}</span>
+            <span className="text-[13.5px] font-serif font-semibold truncate" style={{ color: 'var(--text-tertiary)', lineHeight: '1.3' }}>{track.title}</span>
+            {track.totalDuration > 0 && (
+              <span className="font-jb-mono text-[11px] font-medium flex-shrink-0 ml-auto" style={{ color: 'var(--text-tertiary)' }}>{formatDuration(track.totalDuration)}</span>
+            )}
+          </div>
+          <div className="text-[11px] italic pl-5" style={{ color: 'var(--text-tertiary)' }}>no recordings found</div>
+        </div>
+      </div>
+    );
+  }
 
   // Stored preference (if any)
   const preferredSong = preferredSongId

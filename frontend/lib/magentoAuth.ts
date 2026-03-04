@@ -1,6 +1,6 @@
 import { MagentoCustomer, MagentoCustomerCreateInput } from './types';
 
-const MAGENTO_URL = process.env.MAGENTO_GRAPHQL_URL || 'https://magento.test/graphql';
+const MAGENTO_URL = process.env.NEXT_PUBLIC_MAGENTO_GRAPHQL_URL || 'https://magento.test/graphql';
 const TOKEN_KEY = 'magento_customer_token';
 const TOKEN_EXPIRY_KEY = 'magento_customer_token_expiry';
 

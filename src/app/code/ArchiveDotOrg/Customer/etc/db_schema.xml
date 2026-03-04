@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+
+    <!-- Cassettes (saved shows/albums) -->
+    <table name="archivedotorg_cassette" resource="default" engine="innodb" comment="Customer Cassettes">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Customer ID"/>
+        <column xsi:type="varchar" name="client_id" nullable="false" length="64" comment="Client-generated ID"/>
+        <column xsi:type="varchar" name="name" nullable="true" length="255" comment="Cassette Name"/>
+        <column xsi:type="varchar" name="album_identifier" nullable="true" length="255" comment="Archive.org Album Identifier"/>
+        <column xsi:type="varchar" name="artist_slug" nullable="true" length="255" comment="Artist URL Slug"/>
+        <column xsi:type="varchar" name="artist_name" nullable="true" length="255" comment="Artist Display Name"/>
+        <column xsi:type="varchar" name="album_name" nullable="true" length="255" comment="Album Display Name"/>
+        <column xsi:type="varchar" name="cover_art" nullable="true" length="512" comment="Cover Art URL"/>
+        <column xsi:type="varchar" name="show_date" nullable="true" length="32" comment="Show Date"/>
+        <column xsi:type="varchar" name="show_venue" nullable="true" length="255" comment="Show Venue"/>
+        <column xsi:type="varchar" name="show_location" nullable="true" length="255" comment="Show Location"/>
+        <column xsi:type="text" name="version_overrides" nullable="true" comment="JSON of trackId to songId overrides"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="ARCHIVEDOTORG_CASSETTE_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID"
+                    table="archivedotorg_cassette" column="customer_id"
+                    referenceTable="customer_entity" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="ARCHIVEDOTORG_CASSETTE_CUSTOMER_ID_CLIENT_ID">
+            <column name="customer_id"/>
+            <column name="client_id"/>
+        </constraint>
+        <index referenceId="ARCHIVEDOTORG_CASSETTE_CUSTOMER_ID_ALBUM_IDENTIFIER" indexType="btree">
+            <column name="customer_id"/>
+            <column name="album_identifier"/>
+        </index>
+    </table>
+
+    <!-- MiniDiscs (custom playlists) -->
+    <table name="archivedotorg_minidisc" resource="default" engine="innodb" comment="Customer MiniDiscs">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Customer ID"/>
+        <column xsi:type="varchar" name="client_id" nullable="false" length="64" comment="Client-generated ID"/>
+        <column xsi:type="varchar" name="name" nullable="true" length="255" comment="MiniDisc Name"/>
+        <column xsi:type="text" name="description" nullable="true" comment="MiniDisc Description"/>
+        <column xsi:type="varchar" name="cover_art" nullable="true" length="512" comment="Cover Art URL"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="ARCHIVEDOTORG_MINIDISC_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID"
+                    table="archivedotorg_minidisc" column="customer_id"
+                    referenceTable="customer_entity" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="ARCHIVEDOTORG_MINIDISC_CUSTOMER_ID_CLIENT_ID">
+            <column name="customer_id"/>
+            <column name="client_id"/>
+        </constraint>
+    </table>
+
+    <!-- MiniDisc Songs (tracks in a playlist) -->
+    <table name="archivedotorg_minidisc_song" resource="default" engine="innodb" comment="MiniDisc Songs">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="minidisc_id" unsigned="true" nullable="false" comment="MiniDisc ID"/>
+        <column xsi:type="varchar" name="song_id" nullable="false" length="128" comment="Song ID"/>
+        <column xsi:type="varchar" name="sku" nullable="true" length="64" comment="Product SKU"/>
+        <column xsi:type="int" name="position" unsigned="true" nullable="false" default="0" comment="Sort Position"/>
+        <column xsi:type="text" name="song_data_snapshot" nullable="true" comment="JSON snapshot of song data"/>
+        <column xsi:type="timestamp" name="added_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Added At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="ARCHIVEDOTORG_MINIDISC_SONG_MINIDISC_ID_ARCHIVEDOTORG_MINIDISC_ENTITY_ID"
+                    table="archivedotorg_minidisc_song" column="minidisc_id"
+                    referenceTable="archivedotorg_minidisc" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="ARCHIVEDOTORG_MINIDISC_SONG_MINIDISC_ID_SONG_ID">
+            <column name="minidisc_id"/>
+            <column name="song_id"/>
+        </constraint>
+        <index referenceId="ARCHIVEDOTORG_MINIDISC_SONG_MINIDISC_ID_POSITION" indexType="btree">
+            <column name="minidisc_id"/>
+            <column name="position"/>
+        </index>
+    </table>
+
+    <!-- Liked Songs -->
+    <table name="archivedotorg_liked_song" resource="default" engine="innodb" comment="Customer Liked Songs">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Customer ID"/>
+        <column xsi:type="varchar" name="song_id" nullable="false" length="128" comment="Song ID"/>
+        <column xsi:type="varchar" name="sku" nullable="true" length="64" comment="Product SKU"/>
+        <column xsi:type="text" name="song_data_snapshot" nullable="true" comment="JSON snapshot of song data"/>
+        <column xsi:type="timestamp" name="added_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Added At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="ARCHIVEDOTORG_LIKED_SONG_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID"
+                    table="archivedotorg_liked_song" column="customer_id"
+                    referenceTable="customer_entity" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="ARCHIVEDOTORG_LIKED_SONG_CUSTOMER_ID_SONG_ID">
+            <column name="customer_id"/>
+            <column name="song_id"/>
+        </constraint>
+        <index referenceId="ARCHIVEDOTORG_LIKED_SONG_CUSTOMER_ID_ADDED_AT" indexType="btree">
+            <column name="customer_id"/>
+            <column name="added_at"/>
+        </index>
+    </table>
+
+    <!-- Followed Artists -->
+    <table name="archivedotorg_followed_artist" resource="default" engine="innodb" comment="Customer Followed Artists">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Customer ID"/>
+        <column xsi:type="varchar" name="artist_slug" nullable="false" length="255" comment="Artist URL Slug"/>
+        <column xsi:type="timestamp" name="followed_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Followed At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="ARCHIVEDOTORG_FOLLOWED_ARTIST_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID"
+                    table="archivedotorg_followed_artist" column="customer_id"
+                    referenceTable="customer_entity" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="ARCHIVEDOTORG_FOLLOWED_ARTIST_CUSTOMER_ID_ARTIST_SLUG">
+            <column name="customer_id"/>
+            <column name="artist_slug"/>
+        </constraint>
+    </table>
+
+    <!-- Followed Albums -->
+    <table name="archivedotorg_followed_album" resource="default" engine="innodb" comment="Customer Followed Albums">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Customer ID"/>
+        <column xsi:type="varchar" name="artist_slug" nullable="false" length="255" comment="Artist URL Slug"/>
+        <column xsi:type="varchar" name="album_title" nullable="false" length="255" comment="Album Title"/>
+        <column xsi:type="timestamp" name="followed_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Followed At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="ARCHIVEDOTORG_FOLLOWED_ALBUM_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID"
+                    table="archivedotorg_followed_album" column="customer_id"
+                    referenceTable="customer_entity" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="ARCHIVEDOTORG_FOLLOWED_ALBUM_CUSTOMER_ID_ARTIST_SLUG_ALBUM_TITLE">
+            <column name="customer_id"/>
+            <column name="artist_slug"/>
+            <column name="album_title"/>
+        </constraint>
+    </table>
+
+</schema>

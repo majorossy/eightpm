@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import EightPmMobileNav from './EightPmMobileNav';
-import { AuthProvider } from '@/context/AuthContext';
+import { MagentoAuthProvider } from '@/context/MagentoAuthContext';
 
 const meta = {
   title: 'Navigation/EightPmMobileNav',
@@ -13,11 +13,11 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <AuthProvider>
+      <MagentoAuthProvider>
         <div style={{ minHeight: 200, paddingBottom: 80, position: 'relative' }}>
           <Story />
         </div>
-      </AuthProvider>
+      </MagentoAuthProvider>
     ),
   ],
 } satisfies Meta<typeof EightPmMobileNav>;

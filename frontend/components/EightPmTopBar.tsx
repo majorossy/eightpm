@@ -16,7 +16,7 @@ export default function EightPmTopBar({ transparent = false }: EightPmTopBarProp
       }`}
     >
       {/* Breadcrumb navigation - constrained to same width as page content */}
-      <div className="max-w-[1000px] mx-auto px-1 md:px-8 py-1.5 md:py-3 flex items-center h-14 md:h-16">
+      <div className="max-w-[1400px] mx-auto px-2 sm:px-4 md:px-8 py-1.5 md:py-1.5 flex items-center h-11 md:h-11">
         <Breadcrumb />
       </div>
 

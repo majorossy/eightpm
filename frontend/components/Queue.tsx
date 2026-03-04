@@ -2,7 +2,7 @@
 
 // Queue drawer - single-column with sticky album cards + drag-and-drop reordering
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { useQuality } from '@/context/QualityContext';
@@ -11,7 +11,7 @@ import { useMobileUI } from '@/context/MobileUIContext';
 import { formatDuration } from '@/lib/api';
 import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
-import { glowClassName } from '@/lib/chipGlow';
+import { glowClassName, ChipGlowType, ChipGlow } from '@/lib/chipGlow';
 import { useBackToClose } from '@/hooks/useBackToClose';
 
 import { VALIDATION_LIMITS } from '@/lib/validation';
@@ -413,6 +413,7 @@ interface SortableTrackRowProps {
   selectVersion: (queueId: string, song: Song) => void;
   preferredQuality: AudioQuality;
   hideVenue?: boolean;
+  glowType?: ChipGlowType | null;
 }
 
 function SortableTrackRow({
@@ -424,11 +425,10 @@ function SortableTrackRow({
   selectVersion,
   preferredQuality,
   hideVenue,
+  glowType,
 }: SortableTrackRowProps) {
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const modalClosedAtRef = useRef(0);
-  const { chipGlow } = useQueue();
-  const glowType = chipGlow?.queueIds.includes(item.queueId) ? chipGlow.type : null;
 
   const {
     attributes,
@@ -456,7 +456,7 @@ function SortableTrackRow({
   const hasMultipleVersions = versionCount > 1;
 
   return (
-    <li ref={setNodeRef} style={style}>
+    <li ref={setNodeRef} style={style} data-queue-id={item.queueId}>
       <div
         onClick={() => {
           if (isDragging) return;
@@ -652,6 +652,31 @@ function UpcomingSection({
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const upcomingCount = queue.items.length - (queue.cursorIndex + 1);
+
+  // ─── Jump to glowing row, then glow ──────────────────────────────
+  const { chipGlow } = useQueue();
+  const [delayedGlow, setDelayedGlow] = useState<ChipGlow>(null);
+
+  useEffect(() => {
+    if (!chipGlow || !scrollContainerRef.current) {
+      setDelayedGlow(chipGlow ?? null);
+      return;
+    }
+
+    setDelayedGlow(null);
+
+    const container = scrollContainerRef.current;
+    const targetId = chipGlow.queueIds[0];
+    const captured = chipGlow;
+
+    const raf = requestAnimationFrame(() => {
+      const el = container.querySelector(`[data-queue-id="${targetId}"]`) as HTMLElement | null;
+      if (el) el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      setTimeout(() => setDelayedGlow(captured), 80);
+    });
+
+    return () => cancelAnimationFrame(raf);
+  }, [chipGlow]);
 
   const toggleGroup = useCallback((groupId: string) => {
     setCollapsedGroups(prev => {
@@ -852,6 +877,7 @@ function UpcomingSection({
                       playFromQueue={playFromQueue}
                       selectVersion={selectVersion}
                       preferredQuality={preferredQuality}
+                      glowType={delayedGlow?.queueIds.includes(item.queueId) ? delayedGlow.type : null}
                     />
                   );
                 }
@@ -949,6 +975,7 @@ function UpcomingSection({
                             selectVersion={selectVersion}
                             preferredQuality={preferredQuality}
                             hideVenue
+                            glowType={delayedGlow?.queueIds.includes(item.queueId) ? delayedGlow.type : null}
                           />
                         ))}
                       </ul>

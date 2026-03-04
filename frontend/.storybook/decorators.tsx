@@ -136,19 +136,22 @@ export function useMobileUI() {
 }
 
 // =============================================================================
-// Mock Auth Context
+// Mock Auth Context (matches MagentoAuthContext shape)
 // =============================================================================
 
 const MockAuthContext = createContext({
-  user: null as null | { id: string; email: string },
+  customer: null as null | { id: number; email: string; firstname: string; lastname: string },
   isAuthenticated: false,
   isLoading: false,
-  login: noopAsync as (email: string, password: string) => Promise<void>,
-  logout: noopAsync,
-  register: noopAsync as (email: string, password: string, firstname: string, lastname: string) => Promise<void>,
+  error: null as string | null,
+  signIn: noopAsync as (email: string, password: string) => Promise<boolean>,
+  signUp: noopAsync as (input: { email: string; password: string; firstname: string; lastname: string }) => Promise<boolean>,
+  signOut: noopAsync,
+  resetPassword: noopAsync as (email: string) => Promise<boolean>,
+  refreshCustomer: noopAsync,
 });
 
-export function useAuth() {
+export function useMagentoAuth() {
   return useContext(MockAuthContext);
 }
 

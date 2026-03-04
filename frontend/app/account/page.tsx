@@ -3,13 +3,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useUnifiedAuth } from '@/context/UnifiedAuthContext';
 import { useMagentoAuth } from '@/context/MagentoAuthContext';
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, signOutAll } = useUnifiedAuth();
-  const { customer } = useMagentoAuth();
+  const { customer, isAuthenticated, isLoading, signOut } = useMagentoAuth();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -25,7 +23,9 @@ export default function AccountPage() {
     );
   }
 
-  if (!user) return null;
+  if (!customer) return null;
+
+  const displayName = `${customer.firstname} ${customer.lastname}`.trim();
 
   return (
     <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px]">
@@ -36,62 +36,43 @@ export default function AccountPage() {
         <div className="bg-surface-elevated rounded-lg p-6 mb-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center text-black text-2xl font-bold">
-              {user.displayName.charAt(0).toUpperCase()}
+              {displayName.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">{user.displayName}</h2>
-              <p className="text-secondary">{user.email}</p>
+              <h2 className="text-xl font-bold text-white">{displayName}</h2>
+              <p className="text-secondary">{customer.email}</p>
             </div>
-          </div>
-          <div className="flex gap-2 text-sm">
-            {user.hasSupabaseAuth && (
-              <span className="px-3 py-1 rounded-full bg-surface-base text-accent">Supabase</span>
-            )}
-            {user.hasMagentoAuth && (
-              <span className="px-3 py-1 rounded-full bg-surface-base text-accent">Magento</span>
-            )}
           </div>
         </div>
 
         {/* Quick links */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          {customer && (
-            <>
-              <Link
-                href="/account/profile"
-                className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
-              >
-                <h3 className="text-lg font-bold text-white mb-2">Profile</h3>
-                <p className="text-secondary text-sm">Edit your name and contact info</p>
-              </Link>
-              <Link
-                href="/account/orders"
-                className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
-              >
-                <h3 className="text-lg font-bold text-white mb-2">Orders</h3>
-                <p className="text-secondary text-sm">View your order history</p>
-              </Link>
-            </>
-          )}
           <Link
-            href="/playlists"
+            href="/account/profile"
             className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
           >
-            <h3 className="text-lg font-bold text-white mb-2">Playlists</h3>
-            <p className="text-secondary text-sm">Manage your playlists</p>
+            <h3 className="text-lg font-bold text-white mb-2">Profile</h3>
+            <p className="text-secondary text-sm">Edit your name and contact info</p>
           </Link>
           <Link
-            href="/wishlist"
+            href="/library"
             className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
           >
-            <h3 className="text-lg font-bold text-white mb-2">Wishlist</h3>
-            <p className="text-secondary text-sm">Your liked songs</p>
+            <h3 className="text-lg font-bold text-white mb-2">Cassettes</h3>
+            <p className="text-secondary text-sm">Your saved album versions</p>
+          </Link>
+          <Link
+            href="/library"
+            className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
+          >
+            <h3 className="text-lg font-bold text-white mb-2">MiniDiscs</h3>
+            <p className="text-secondary text-sm">Your custom playlists</p>
           </Link>
         </div>
 
         {/* Sign out */}
         <button
-          onClick={signOutAll}
+          onClick={signOut}
           className="w-full py-3 px-6 rounded-full border border-white/20 text-white hover:bg-white/10 transition-colors"
         >
           Sign out

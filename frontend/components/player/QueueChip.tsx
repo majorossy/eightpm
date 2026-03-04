@@ -87,20 +87,14 @@ export default function QueueChip({
           ...(isActive && !isPlayed ? { zIndex: 2 } : {}),
         }}
       >
-        {/* NOW PLAYING indicator — dark tag with coral border + EQ bars (matches Queue drawer style) */}
+        {/* NOW PLAYING indicator — coral pill tag */}
         {isActive && !isPlayed && (
           <div
-            className="absolute -top-[13px] left-2 z-20 flex items-center gap-1.5 px-2 h-[20px] rounded-full select-none pointer-events-none"
+            className="absolute -top-[13px] left-2 z-20 flex items-center px-2.5 h-[20px] rounded-full select-none pointer-events-none"
             style={{
               background: 'var(--secondary)',
             }}
           >
-            {/* Animated EQ bars */}
-            <div className="flex items-end gap-[2px] h-[9px]">
-              <div className="w-[2.5px] bg-white rounded-full animate-equalizer-1" />
-              <div className="w-[2.5px] bg-white rounded-full animate-equalizer-2" />
-              <div className="w-[2.5px] bg-white rounded-full animate-equalizer-3" />
-            </div>
             <span className="text-[9px] font-jb-mono font-semibold uppercase tracking-[0.12em] leading-none text-white whitespace-nowrap">Now Playing</span>
           </div>
         )}

@@ -86,10 +86,8 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
     vibrate(BUTTON_PRESS);
     const overrides = getOverridesMap();
     if (!currentSong) {
-      // Nothing playing — load album and start playback
       playAlbum(album, undefined, overrides);
     } else {
-      // Already playing — append to end of queue
       const items = albumToItems(album, overrides);
       addToQueue(items);
     }
@@ -98,7 +96,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const handleSaveCassette = () => {
     vibrate(BUTTON_PRESS);
     if (selectedCassetteId) {
-      // Cassette loaded — update it in place
       const overrides = getOverridesMap();
       const overridesObj: Record<string, string> = {};
       overrides.forEach((songId, trackId) => { overridesObj[trackId] = songId; });
@@ -106,7 +103,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       setCassetteSaved(true);
       setTimeout(() => setCassetteSaved(false), 2000);
     } else {
-      // No cassette selected — create new
       const sd = album.showDate?.split('-');
       const datePart = sd?.length === 3 ? `${sd[1]}/${sd[2]}/${sd[0].slice(2)} ` : '';
       setCassetteName(`${datePart}${album.name}`.slice(0, 33));
@@ -143,7 +139,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const handleLoadCassette = (cassetteId: string) => {
     vibrate(BUTTON_PRESS);
     if (selectedCassetteId === cassetteId) {
-      // Deselect — clear overrides back to defaults
       setSelectedCassetteId(null);
       setAll({});
     } else {
@@ -156,7 +151,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   };
 
   const handleDeleteCassette = (e: React.MouseEvent, cassetteId: string) => {
-    e.stopPropagation(); // Don't trigger the row's load action
+    e.stopPropagation();
     vibrate(BUTTON_PRESS);
     if (selectedCassetteId === cassetteId) {
       setSelectedCassetteId(null);
@@ -191,157 +186,20 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       <div className="firefly-2 fixed top-[60%] left-[85%] w-1 h-1" />
       <div className="firefly-3 fixed top-[40%] left-[75%] w-1.5 h-1.5" />
 
-      {/* Vault header badge */}
-      <div className="text-center pt-8 pb-4">
-        <div className="text-[var(--text-subdued)] text-[11px] tracking-[4px]">
-          ✦ LIVE FROM THE VAULT ✦
-        </div>
-      </div>
+      {/* Single-column centered layout */}
+      <div className="max-w-[740px] mx-auto px-4 sm:px-8 pt-8 flex flex-col items-center">
 
-      {/* Main content - max width centered, also the sticky parent + flex container */}
-      <div className="max-w-[1000px] mx-auto px-4 sm:px-8 lg:flex lg:gap-12 lg:items-start">
-
-          {/* Left column — sticky only on desktop where side-by-side layout is active */}
-          <div className="lg:sticky lg:top-20 self-start z-10 flex-shrink-0 flex flex-col items-center lg:items-start gap-6 pb-4 mb-8 lg:mb-0">
-            <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image} />
-
-            {/* Add to queue — centered under cassette */}
-            <button
-              onClick={handleAddToQueue}
-              className="album-play-button px-6 py-3 rounded-full flex items-center justify-center text-sm font-semibold transition-all hover:scale-105 gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h12M4 18h8" />
-              </svg>
-              Queue Cassette
-            </button>
-
-            {/* Save Cassette */}
-            {isNaming ? (
-              <div className="flex items-center gap-2 w-full max-w-[320px]">
-                <input
-                  ref={nameInputRef}
-                  type="text"
-                  value={cassetteName}
-                  onChange={(e) => setCassetteName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') confirmSaveCassette();
-                    if (e.key === 'Escape') setIsNaming(false);
-                  }}
-                  className="flex-1 min-w-0 px-3 py-2 rounded-full bg-[var(--surface-card)] text-[var(--text)] text-sm border border-[var(--border-subtle-token)] focus:border-[var(--secondary)] focus:outline-none"
-                  placeholder="Name your cassette..."
-                />
-                <button
-                  onClick={confirmSaveCassette}
-                  className="album-play-button px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105 shrink-0"
-                >
-                  Save
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleSaveCassette}
-                className="album-play-button px-6 py-3 rounded-full flex items-center justify-center text-sm font-semibold transition-all hover:scale-105 gap-2"
-                aria-label="Save Cassette"
-              >
-                {cassetteSaved ? (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Cassette {selectedCassetteId ? 'Updated' : 'Saved'}
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                      <rect x="2" y="5" width="20" height="14" rx="2" />
-                      <circle cx="8" cy="12" r="2" />
-                      <circle cx="16" cy="12" r="2" />
-                      <path d="M8 14h8" />
-                    </svg>
-                    {selectedCassetteId ? 'Update Cassette' : 'Save Cassette'}
-                  </>
-                )}
-              </button>
-            )}
-
-            {/* Saved cassettes for this album */}
-            {savedCassettes.length > 0 && (
-              <div className="w-full max-w-[320px]">
-                <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-2 text-center lg:text-left">
-                  Your Takes
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  {savedCassettes.map(c => (
-                    <div key={c.id} className="flex items-center gap-1">
-                    <button
-                      onClick={() => handleLoadCassette(c.id)}
-                      className={`flex-1 min-w-0 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-left ${
-                        selectedCassetteId === c.id
-                          ? 'bg-[var(--secondary)] text-[var(--primary)] font-semibold'
-                          : 'bg-[var(--surface-card)] text-[var(--text-dim)] hover:text-[var(--text)] hover:bg-[var(--surface-card-hover)]'
-                      }`}
-                    >
-                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                        <rect x="2" y="5" width="20" height="14" rx="2" />
-                        <circle cx="8" cy="12" r="2" />
-                        <circle cx="16" cy="12" r="2" />
-                        <path d="M8 14h8" />
-                      </svg>
-                      <span className="truncate">{c.name}</span>
-                      {Object.keys(c.versionOverrides).length > 0 && (
-                        <span className="ml-auto text-[10px] opacity-60 shrink-0">
-                          {Object.keys(c.versionOverrides).length} pick{Object.keys(c.versionOverrides).length !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteCassette(e, c.id)}
-                      className="shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-subdued)] hover:text-[var(--secondary)] hover:bg-[var(--surface-card-hover)] transition-all"
-                      aria-label={`Delete ${c.name}`}
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Album info */}
-            <div className="max-w-[400px] text-center lg:text-left">
-              {/* Quote box */}
-              {album.description && (
-                <div
-                  className="album-quote-box text-[var(--text-subdued)] text-sm italic mb-6 px-4 py-3 rounded-lg border-l-[3px] border-[var(--tertiary)]"
-                >
-                  "{album.description}"
-                </div>
-              )}
-
-              <button
-                onClick={handleFollowToggle}
-                className="album-follow-btn w-11 h-11 rounded-full flex items-center justify-center text-xl transition-all"
-              >
-                {isFollowed ? '♥' : '♡'}
-              </button>
-            </div>
-          </div>
-
-          {/* Right column — tracks scroll naturally */}
-          <div className="flex-1 min-w-0">
-            {/* Track list */}
-            <div className="mb-8 track-list-container">
-              {allTracks.map((track, idx) => (
+        {/* Cassette shell with tracks inside */}
+        <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image}>
+          {allTracks.map((track, idx) => {
+            return (
+              <div key={track.id} className="tape-trk">
                 <TrackRow
-                  key={track.id}
                   track={track}
                   displayIndex={idx + 1}
                   onPlay={handlePlaySong}
-                  currentSong={currentSong}
-                  isPlaying={isPlaying}
+                  currentSong={null}
+                  isPlaying={false}
                   waveform={analyzerData.waveform}
                   preferredSongId={getPreferred(track.id)}
                   onSwapVersion={(songId) => {
@@ -351,52 +209,192 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                   artistName={album.artistName}
                   coverArt={album.coverArt}
                 />
+              </div>
+            );
+          })}
+        </CassetteTape>
+
+        {/* Action buttons row — below cassette */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+          {/* Queue Cassette */}
+          <button
+            onClick={handleAddToQueue}
+            className="album-play-button px-6 py-3 rounded-full flex items-center justify-center text-sm font-semibold transition-all hover:scale-105 gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h12M4 18h8" />
+            </svg>
+            Queue Cassette
+          </button>
+
+          {/* Save Cassette */}
+          {isNaming ? (
+            <div className="flex items-center gap-2 w-full max-w-[320px]">
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={cassetteName}
+                onChange={(e) => setCassetteName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') confirmSaveCassette();
+                  if (e.key === 'Escape') setIsNaming(false);
+                }}
+                className="flex-1 min-w-0 px-3 py-2 rounded-full bg-[var(--surface-card)] text-[var(--text)] text-sm border border-[var(--border-subtle-token)] focus:border-[var(--secondary)] focus:outline-none"
+                placeholder="Name your cassette..."
+              />
+              <button
+                onClick={confirmSaveCassette}
+                className="album-play-button px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105 shrink-0"
+              >
+                Save
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleSaveCassette}
+              className="album-play-button px-6 py-3 rounded-full flex items-center justify-center text-sm font-semibold transition-all hover:scale-105 gap-2"
+              aria-label="Save Cassette"
+            >
+              {cassetteSaved ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Cassette {selectedCassetteId ? 'Updated' : 'Saved'}
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <circle cx="8" cy="12" r="2" />
+                    <circle cx="16" cy="12" r="2" />
+                    <path d="M8 14h8" />
+                  </svg>
+                  {selectedCassetteId ? 'Update Cassette' : 'Save Cassette'}
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Favorite Album */}
+          <button
+            onClick={handleFollowToggle}
+            className="flex items-center gap-2 px-4 py-2 border border-default hover:border-accent rounded-full transition-all hover:scale-105"
+            aria-label={isFollowed ? 'Unfavorite album' : 'Favorite album'}
+          >
+            <svg
+              className="w-5 h-5"
+              fill={isFollowed ? 'var(--secondary)' : 'none'}
+              stroke={isFollowed ? 'var(--secondary)' : 'var(--text)'}
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <span className="text-sm" style={{ color: isFollowed ? 'var(--secondary)' : 'var(--text)' }}>
+              {isFollowed ? 'Favorited Album' : 'Favorite Album'}
+            </span>
+          </button>
+        </div>
+
+        {/* Saved cassettes — Your Takes */}
+        {savedCassettes.length > 0 && (
+          <div className="w-full max-w-[400px] mt-6">
+            <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-2 text-center">
+              Your Takes
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {savedCassettes.map(c => (
+                <div key={c.id} className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleLoadCassette(c.id)}
+                    className={`flex-1 min-w-0 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-left ${
+                      selectedCassetteId === c.id
+                        ? 'bg-[var(--secondary)] text-[var(--primary)] font-semibold'
+                        : 'bg-[var(--surface-card)] text-[var(--text-dim)] hover:text-[var(--text)] hover:bg-[var(--surface-card-hover)]'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <rect x="2" y="5" width="20" height="14" rx="2" />
+                      <circle cx="8" cy="12" r="2" />
+                      <circle cx="16" cy="12" r="2" />
+                      <path d="M8 14h8" />
+                    </svg>
+                    <span className="truncate">{c.name}</span>
+                    {Object.keys(c.versionOverrides).length > 0 && (
+                      <span className="ml-auto text-[10px] opacity-60 shrink-0">
+                        {Object.keys(c.versionOverrides).length} pick{Object.keys(c.versionOverrides).length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteCassette(e, c.id)}
+                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-subdued)] hover:text-[var(--secondary)] hover:bg-[var(--surface-card-hover)] transition-all"
+                    aria-label={`Delete ${c.name}`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               ))}
             </div>
-            {/* More from this Venue - Internal Linking for SEO */}
-            {moreFromVenue.length > 0 && album.showVenue && (
-              <div className="mt-12">
-                <div className="flex items-center gap-4 mb-6">
-                  <div
-                    className="flex-1 h-px"
-                    style={{ background: 'linear-gradient(90deg, transparent, var(--overlay-light))' }}
-                  />
-                  <div className="text-[var(--text-subdued)] text-[11px] tracking-[4px] flex items-center gap-2.5">
-                    <span className="text-[var(--secondary)]">🏛</span>
-                    MORE FROM {album.showVenue.toUpperCase()}
-                    <span className="text-[var(--secondary)]">🏛</span>
-                  </div>
-                  <div
-                    className="flex-1 h-px"
-                    style={{ background: 'linear-gradient(90deg, var(--overlay-light), transparent)' }}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {moreFromVenue.map((show) => (
-                    <Link
-                      key={show.slug}
-                      href={`/artists/${show.artistSlug}/album/${show.slug}`}
-                      className="group block"
-                    >
-                      <div className="relative aspect-square rounded-lg mb-2 bg-surface-card p-2">
-                        <JewelCase coverArt={show.coverArt} fill trackCount={show.totalTracks} />
-                      </div>
-                      <div className="text-sm text-[var(--text-dim)] group-hover:text-[var(--text)] transition-colors truncate">
-                        {show.showDate || show.name}
-                      </div>
-                      <div className="text-xs text-[var(--text-subdued)] truncate">
-                        {show.totalTracks} tracks
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
+        )}
+
+        {/* Album description quote */}
+        {album.description && (
+          <div className="mt-8 max-w-[500px] w-full">
+            <div
+              className="album-quote-box text-[var(--text-subdued)] text-sm italic px-4 py-3 rounded-lg border-l-[3px] border-[var(--tertiary)]"
+            >
+              &ldquo;{album.description}&rdquo;
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Artist discography grid — full width, matches artist page layout */}
+      {/* More from this Venue - Internal Linking for SEO */}
+      {moreFromVenue.length > 0 && album.showVenue && (
+        <div className="max-w-[1000px] mx-auto px-4 sm:px-8 mt-12">
+          <div className="flex items-center gap-4 mb-6">
+            <div
+              className="flex-1 h-px"
+              style={{ background: 'linear-gradient(90deg, transparent, var(--overlay-light))' }}
+            />
+            <div className="text-[var(--text-subdued)] text-[11px] tracking-[4px] flex items-center gap-2.5">
+              <span className="text-[var(--secondary)]">🏛</span>
+              MORE FROM {album.showVenue.toUpperCase()}
+              <span className="text-[var(--secondary)]">🏛</span>
+            </div>
+            <div
+              className="flex-1 h-px"
+              style={{ background: 'linear-gradient(90deg, var(--overlay-light), transparent)' }}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {moreFromVenue.map((show) => (
+              <Link
+                key={show.slug}
+                href={`/artists/${show.artistSlug}/album/${show.slug}`}
+                className="group block"
+              >
+                <div className="relative aspect-square rounded-lg mb-2 bg-surface-card p-2">
+                  <JewelCase coverArt={show.coverArt} fill trackCount={show.totalTracks} />
+                </div>
+                <div className="text-sm text-[var(--text-dim)] group-hover:text-[var(--text)] transition-colors truncate">
+                  {show.showDate || show.name}
+                </div>
+                <div className="text-xs text-[var(--text-subdued)] truncate">
+                  {show.totalTracks} tracks
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Artist discography grid — full width */}
       {artistAlbums && artistAlbums.length > 1 && (
         <section className="pb-8 max-w-[1400px] mx-auto px-2 sm:px-4 md:px-8 mt-12">
           <div className="flex items-center justify-between mb-4">
@@ -422,7 +420,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
           </div>
         </section>
       )}
-
     </div>
   );
 }

@@ -182,6 +182,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   // which would cascade through error-skip logic when backend is unreachable.
   const userInitiatedRef = useRef(false);
 
+  // When true, the currentSong effect will auto-play even if the item is already played.
+  // Used by playPrev to distinguish "user pressed prev" from "cursor fell back due to removal".
+  const forcePlayRef = useRef(false);
+
   // Retry state for playback error handling
   const retryCountRef = useRef(0);
   const retryingSongIdRef = useRef<string | null>(null);
@@ -523,7 +527,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (!currentSrc.endsWith(new URL(newSrc, window.location.origin).pathname)) {
       audio.src = newSrc;
       if (state.isPlaying) {
-        audio.play().catch(console.error);
+        // If cursor fell back to an already-played item (e.g., current song removed),
+        // pause instead of auto-playing — unless user explicitly navigated (prev button)
+        if (queueContext.currentItem?.played && !forcePlayRef.current) {
+          audio.pause();
+          setState(prev => ({ ...prev, isPlaying: false }));
+        } else {
+          audio.play().catch(console.error);
+        }
+        forcePlayRef.current = false;
       }
     }
   }, [currentSong, crossfade.state.activeElement, getStreamUrl]);
@@ -669,9 +681,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     };
   }, [currentSong, state.isPlaying, savePlaybackProgress]);
 
-  // Fix ghost playback: pause audio when queue is cleared
+  // Fix ghost playback: pause audio when queue is cleared or nothing is current
   useEffect(() => {
-    if (!queueContext.hasItems && state.isPlaying) {
+    if ((!queueContext.hasItems || !currentSong) && state.isPlaying) {
       const audio = getAudio();
       if (audio) {
         audio.pause();
@@ -679,7 +691,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }
       setState(prev => ({ ...prev, isPlaying: false }));
     }
-  }, [queueContext.hasItems]);
+  }, [queueContext.hasItems, currentSong]);
 
   const playSong = useCallback((song: Song) => {
     userInitiatedRef.current = true;
@@ -704,10 +716,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = getAudio();
     if (!audio) return;
 
-    // Insert after cursor and advance to play it (coral glow, not orange play-next)
+    // Atomic insert-and-advance (dedupes if same song is already at cursor)
     const item = queueContext.trackToItem(song);
-    queueContext.playNext(item, { glow: 'play-now' });
-    queueContext.setCursor(queueContext.queue.cursorIndex + 1);
+    queueContext.playNow(item, { glow: 'play-now' });
 
     setState(prev => ({
       ...prev,
@@ -814,6 +825,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Tell the currentSong effect to auto-play even though the prev item is already played
+    forcePlayRef.current = true;
     queueContext.retreatCursor();
     // After retreat, the currentSong from context will update and trigger the currentSong effect
   }, [queueContext, crossfade]);

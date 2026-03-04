@@ -1,22 +1,13 @@
 'use client';
 
 // CollectionContext — Unified context for Cassettes and MiniDiscs
-// Replaces PlaylistContext with two purpose-built collection types.
-// Uses localStorage for persistence with optional Supabase sync.
+// Uses localStorage for persistence with Magento sync for logged-in users.
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { Song } from '@/lib/types';
+import { Song, SyncStatus } from '@/lib/types';
 import { Cassette } from '@/lib/cassetteTypes';
 import { MiniDisc } from '@/lib/minidiscTypes';
-import { useAuth } from '@/context/AuthContext';
-import {
-  syncPlaylistToServer,
-  deletePlaylistFromServer,
-  fetchUserPlaylists,
-  subscribeToPlaylistChanges,
-  SyncStatus,
-} from '@/lib/syncService';
-import { isSupabaseConfigured } from '@/lib/supabase';
+import { useMagentoAuth } from '@/context/MagentoAuthContext';
 import {
   trackMiniDiscCreate,
   trackMiniDiscDelete,
@@ -26,6 +17,19 @@ import {
   trackCassetteDelete,
 } from '@/lib/analytics';
 import { VALIDATION_LIMITS } from '@/lib/validation';
+import { useToast } from '@/hooks/useToast';
+import {
+  fetchCustomerCollections,
+  saveCassette as saveCassetteSync,
+  deleteCassette as deleteCassetteSync,
+  saveMiniDisc as saveMiniDiscSync,
+  deleteMiniDisc as deleteMiniDiscSync,
+  syncCassettes,
+  syncMiniDiscs,
+  mergeCassettes,
+  mergeMiniDiscs,
+  AuthExpiredError,
+} from '@/lib/magentoSync';
 
 // ============================================================================
 // Context Types
@@ -66,9 +70,8 @@ const MINIDISCS_STORAGE_KEY = '8pm_minidiscs';
 const CASSETTES_STORAGE_KEY = '8pm_cassettes';
 const OLD_PLAYLISTS_KEY = 'jamify_playlists';
 
-let idCounter = Date.now();
-const generateMiniDiscId = () => `minidisc-${++idCounter}`;
-const generateCassetteId = () => `cassette-${++idCounter}`;
+const generateMiniDiscId = () => `minidisc-${crypto.randomUUID()}`;
+const generateCassetteId = () => `cassette-${crypto.randomUUID()}`;
 
 // ============================================================================
 // Migration: jamify_playlists → 8pm_minidiscs
@@ -115,13 +118,15 @@ function migratePlaylistsToMiniDiscs(): MiniDisc[] | null {
 // ============================================================================
 
 export function CollectionProvider({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated, signOut } = useMagentoAuth();
+  const { showWarning } = useToast();
   const [minidiscs, setMiniDiscs] = useState<MiniDisc[]>([]);
   const [cassettes, setCassettes] = useState<Cassette[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasFetchedFromServerRef = useRef(false);
+  const prevAuthRef = useRef(false);
 
   // ---------- Load from localStorage on mount ----------
   useEffect(() => {
@@ -159,92 +164,77 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
     }
   }, [cassettes, isLoading]);
 
-  // ---------- Supabase: Fetch on auth ----------
-  useEffect(() => {
-    if (!isAuthenticated || !user || !isSupabaseConfigured() || hasFetchedFromServerRef.current) return;
+  // ---------- Sync error handler ----------
+  const handleSyncError = useCallback((error: unknown, action: string) => {
+    if (error instanceof AuthExpiredError) {
+      showWarning('Session expired. Sign in to sync.');
+      signOut();
+    } else {
+      console.error(`Failed to ${action}:`, error);
+      setSyncStatus('error');
+    }
+  }, [showWarning, signOut]);
 
-    const fetchFromServer = async () => {
+  // ---------- Fetch from Magento on login ----------
+  useEffect(() => {
+    const justLoggedIn = isAuthenticated && !prevAuthRef.current;
+    prevAuthRef.current = isAuthenticated;
+
+    if (!justLoggedIn || hasFetchedFromServerRef.current) return;
+
+    const fetchAndMerge = async () => {
       setSyncStatus('syncing');
       try {
-        // Reuse existing playlist sync — server playlists become minidiscs
-        const serverPlaylists = await fetchUserPlaylists(user.id);
-        if (serverPlaylists.length > 0) {
-          setMiniDiscs((prev) => {
-            const serverIds = new Set(serverPlaylists.map((p) => p.id));
-            const localOnly = prev.filter((m) => !serverIds.has(m.id));
-            const converted: MiniDisc[] = serverPlaylists.map((p) => ({
-              id: p.id,
-              name: p.name,
-              description: p.description,
-              songs: p.songs,
-              coverArt: p.coverArt,
-              createdAt: p.createdAt,
-              updatedAt: p.updatedAt,
-            }));
-            return [...converted, ...localOnly];
-          });
+        const collections = await fetchCustomerCollections();
+
+        // Merge cassettes
+        const cassetteMerge = mergeCassettes(cassettes, collections.cassettes);
+        setCassettes(cassetteMerge.merged);
+
+        // Merge minidiscs
+        const miniDiscMerge = mergeMiniDiscs(minidiscs, collections.minidiscs);
+        setMiniDiscs(miniDiscMerge.merged);
+
+        // Push local-only items to server
+        if (cassetteMerge.toSync.length > 0) {
+          await syncCassettes(cassetteMerge.toSync).catch(() => {});
         }
+        if (miniDiscMerge.toSync.length > 0) {
+          await syncMiniDiscs(miniDiscMerge.toSync).catch(() => {});
+        }
+
         setSyncStatus('synced');
         hasFetchedFromServerRef.current = true;
-      } catch {
-        setSyncStatus('error');
+      } catch (error) {
+        handleSyncError(error, 'fetch collections from server');
       }
     };
 
-    fetchFromServer();
-  }, [isAuthenticated, user]);
-
-  // ---------- Supabase: Realtime subscription ----------
-  useEffect(() => {
-    if (!isAuthenticated || !user || !isSupabaseConfigured()) return;
-
-    const unsubscribe = subscribeToPlaylistChanges(user.id, (serverPlaylists) => {
-      const converted: MiniDisc[] = serverPlaylists.map((p) => ({
-        id: p.id,
-        name: p.name,
-        description: p.description,
-        songs: p.songs,
-        coverArt: p.coverArt,
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
-      }));
-      setMiniDiscs(converted);
-      setSyncStatus('synced');
-    });
-
-    return unsubscribe;
-  }, [isAuthenticated, user]);
+    fetchAndMerge();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   // ---------- Debounced sync helper ----------
   const syncMiniDiscDebounced = useCallback(
     (disc: MiniDisc) => {
-      if (!isAuthenticated || !user || !isSupabaseConfigured()) return;
+      if (!isAuthenticated) return;
 
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
 
       setSyncStatus('syncing');
       syncTimeoutRef.current = setTimeout(async () => {
         try {
-          // Reuse existing playlist sync — MiniDisc maps to Playlist on server
-          await syncPlaylistToServer(user.id, {
-            id: disc.id,
-            name: disc.name,
-            description: disc.description,
-            songs: disc.songs,
-            coverArt: disc.coverArt,
-            createdAt: disc.createdAt,
-            updatedAt: disc.updatedAt,
-          });
+          await saveMiniDiscSync(disc);
           setSyncStatus('synced');
-        } catch {
-          setSyncStatus('error');
+        } catch (error) {
+          handleSyncError(error, 'sync minidisc');
         }
       }, 500);
     },
-    [isAuthenticated, user],
+    [isAuthenticated, handleSyncError],
   );
 
-  // Cleanup on unmount
+  // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
@@ -253,26 +243,21 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
 
   // ---------- Force sync ----------
   const forceSync = useCallback(async () => {
-    if (!isAuthenticated || !user || !isSupabaseConfigured()) return;
+    if (!isAuthenticated) return;
 
     setSyncStatus('syncing');
     try {
-      for (const disc of minidiscs) {
-        await syncPlaylistToServer(user.id, {
-          id: disc.id,
-          name: disc.name,
-          description: disc.description,
-          songs: disc.songs,
-          coverArt: disc.coverArt,
-          createdAt: disc.createdAt,
-          updatedAt: disc.updatedAt,
-        });
+      if (cassettes.length > 0) {
+        await syncCassettes(cassettes);
+      }
+      if (minidiscs.length > 0) {
+        await syncMiniDiscs(minidiscs);
       }
       setSyncStatus('synced');
-    } catch {
-      setSyncStatus('error');
+    } catch (error) {
+      handleSyncError(error, 'force sync collections');
     }
-  }, [isAuthenticated, user, minidiscs]);
+  }, [isAuthenticated, cassettes, minidiscs, handleSyncError]);
 
   // ======================================================================
   // MiniDisc CRUD
@@ -306,11 +291,13 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
       const disc = minidiscs.find((m) => m.id === id);
       if (disc) trackMiniDiscDelete(disc.name);
       setMiniDiscs((prev) => prev.filter((m) => m.id !== id));
-      if (isAuthenticated && user && isSupabaseConfigured()) {
-        deletePlaylistFromServer(id).catch(() => {});
+
+      // Sync deletion to Magento
+      if (isAuthenticated) {
+        deleteMiniDiscSync(id).catch(error => handleSyncError(error, 'delete minidisc'));
       }
     },
-    [isAuthenticated, user, minidiscs],
+    [minidiscs, isAuthenticated, handleSyncError],
   );
 
   const addToMiniDisc = useCallback(
@@ -429,9 +416,14 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
 
       setCassettes((prev) => [...prev, cassette]);
       trackCassetteSave(sanitizedName, data.artistName);
+
+      // Sync to Magento
+      if (isAuthenticated) {
+        saveCassetteSync(cassette).catch(error => handleSyncError(error, 'sync cassette'));
+      }
       return cassette;
     },
-    [],
+    [isAuthenticated, handleSyncError],
   );
 
   const deleteCassette = useCallback(
@@ -439,12 +431,18 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
       const cassette = cassettes.find((c) => c.id === id);
       if (cassette) trackCassetteDelete(cassette.name);
       setCassettes((prev) => prev.filter((c) => c.id !== id));
+
+      // Sync deletion to Magento
+      if (isAuthenticated) {
+        deleteCassetteSync(id).catch(error => handleSyncError(error, 'delete cassette'));
+      }
     },
-    [cassettes],
+    [cassettes, isAuthenticated, handleSyncError],
   );
 
   const updateCassette = useCallback(
     (id: string, updates: Partial<Pick<Cassette, 'name' | 'versionOverrides'>>) => {
+      let updated: Cassette | null = null;
       setCassettes((prev) =>
         prev.map((c) => {
           if (c.id !== id) return c;
@@ -456,11 +454,17 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
           if (updates.versionOverrides !== undefined) {
             patched.versionOverrides = updates.versionOverrides;
           }
+          updated = patched;
           return patched;
         }),
       );
+
+      // Sync updated cassette to Magento
+      if (updated && isAuthenticated) {
+        saveCassetteSync(updated).catch(error => handleSyncError(error, 'sync cassette update'));
+      }
     },
-    [],
+    [isAuthenticated, handleSyncError],
   );
 
   const getCassette = useCallback((id: string) => cassettes.find((c) => c.id === id), [cassettes]);

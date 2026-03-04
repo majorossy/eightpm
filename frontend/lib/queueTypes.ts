@@ -86,9 +86,9 @@ export function generateBatchId(): string {
  * Get the best version of a track (highest rated by avgRating)
  * Falls back to first version if all ratings are null
  */
-export function getBestVersion(songs: Song[]): Song {
+export function getBestVersion(songs: Song[]): Song | undefined {
   if (songs.length === 0) {
-    throw new Error('Cannot get best version from empty songs array');
+    return undefined;
   }
 
   if (songs.length === 1) {
@@ -137,9 +137,9 @@ export function albumToQueueItems(
 
     if (overrideId) {
       const found = track.songs.find((s) => s.id === overrideId);
-      selectedSong = found ?? getBestVersion(track.songs);
+      selectedSong = found ?? getBestVersion(track.songs)!;
     } else {
-      selectedSong = getBestVersion(track.songs);
+      selectedSong = getBestVersion(track.songs)!;
     }
 
     items.push({

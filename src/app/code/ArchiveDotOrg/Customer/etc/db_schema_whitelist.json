@@ -1,0 +1,110 @@
+{
+    "archivedotorg_cassette": {
+        "column": {
+            "entity_id": true,
+            "customer_id": true,
+            "client_id": true,
+            "name": true,
+            "album_identifier": true,
+            "artist_slug": true,
+            "artist_name": true,
+            "album_name": true,
+            "cover_art": true,
+            "show_date": true,
+            "show_venue": true,
+            "show_location": true,
+            "version_overrides": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "ARCHIVEDOTORG_CASSETTE_CUSTOMER_ID_ALBUM_IDENTIFIER": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "ARCHIVEDOTORG_CASSETTE_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID": true,
+            "ARCHIVEDOTORG_CASSETTE_CUSTOMER_ID_CLIENT_ID": true
+        }
+    },
+    "archivedotorg_minidisc": {
+        "column": {
+            "entity_id": true,
+            "customer_id": true,
+            "client_id": true,
+            "name": true,
+            "description": true,
+            "cover_art": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "ARCHIVEDOTORG_MINIDISC_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID": true,
+            "ARCHIVEDOTORG_MINIDISC_CUSTOMER_ID_CLIENT_ID": true
+        }
+    },
+    "archivedotorg_minidisc_song": {
+        "column": {
+            "entity_id": true,
+            "minidisc_id": true,
+            "song_id": true,
+            "sku": true,
+            "position": true,
+            "song_data_snapshot": true,
+            "added_at": true
+        },
+        "index": {
+            "ARCHIVEDOTORG_MINIDISC_SONG_MINIDISC_ID_POSITION": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_C8C5AC868CC58895E92F59B1991DB17A": true,
+            "ARCHIVEDOTORG_MINIDISC_SONG_MINIDISC_ID_SONG_ID": true
+        }
+    },
+    "archivedotorg_liked_song": {
+        "column": {
+            "entity_id": true,
+            "customer_id": true,
+            "song_id": true,
+            "sku": true,
+            "song_data_snapshot": true,
+            "added_at": true
+        },
+        "index": {
+            "ARCHIVEDOTORG_LIKED_SONG_CUSTOMER_ID_ADDED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "ARCHIVEDOTORG_LIKED_SONG_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID": true,
+            "ARCHIVEDOTORG_LIKED_SONG_CUSTOMER_ID_SONG_ID": true
+        }
+    },
+    "archivedotorg_followed_artist": {
+        "column": {
+            "entity_id": true,
+            "customer_id": true,
+            "artist_slug": true,
+            "followed_at": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "ARCHIVEDOTORG_FOLLOWED_ARTIST_CSTR_ID_CSTR_ENTT_ENTT_ID": true,
+            "ARCHIVEDOTORG_FOLLOWED_ARTIST_CUSTOMER_ID_ARTIST_SLUG": true
+        }
+    },
+    "archivedotorg_followed_album": {
+        "column": {
+            "entity_id": true,
+            "customer_id": true,
+            "artist_slug": true,
+            "album_title": true,
+            "followed_at": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "ARCHIVEDOTORG_FOLLOWED_ALBUM_CSTR_ID_CSTR_ENTT_ENTT_ID": true,
+            "ARCHIVEDOTORG_FOLLOWED_ALBUM_CUSTOMER_ID_ARTIST_SLUG_ALBUM_TITLE": true
+        }
+    }
+}

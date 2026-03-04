@@ -328,6 +328,7 @@ return [
         'ArchiveDotOrg_Core' => 1,
         'ArchiveDotOrg_CategoryWork' => 1,
         'ArchiveDotOrg_Admin' => 1,
+        'ArchiveDotOrg_Customer' => 1,
         'ArchiveDotOrg_Player' => 1,
         'ArchiveDotOrg_ProductAttributes' => 1,
         'ArchiveDotOrg_Shell' => 1,

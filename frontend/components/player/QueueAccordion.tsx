@@ -369,6 +369,7 @@ export default function QueueAccordion({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const historyContainerRef = useRef<HTMLDivElement>(null);
   const prevHistoryOpenRef = useRef(historyOpen);
+  const skipNextActiveScrollRef = useRef(false);
 
   useEffect(() => {
     const wasHistoryOpen = prevHistoryOpenRef.current;
@@ -418,53 +419,55 @@ export default function QueueAccordion({
     }
 
     // Normal case (track advance, expand toggle) — scroll immediately + after transition
+    // When glow effect fires in the same render (play-now), it claims scroll ownership.
+    if (skipNextActiveScrollRef.current) {
+      skipNextActiveScrollRef.current = false;
+      return;
+    }
     const raf = requestAnimationFrame(scrollToTarget);
     const timer = setTimeout(scrollToTarget, 320);
     return () => { cancelAnimationFrame(raf); clearTimeout(timer); };
   }, [playedCount, groups, chipGlobalIndexMap, historyOpen]);
 
-  // ─── Scroll to glowing chip (play-next / queue from version picker) ──
+  // ─── Jump to glowing chip, then glow ──────────────────────────────
+  // Instant scroll to target chip, then apply glow after a brief delay.
+  // If the chip is inside a collapsed album group, auto-expands it first.
 
-  // Delay glow until after scroll — scroll first, then animate the highlight
   const [delayedGlow, setDelayedGlow] = useState<ChipGlow>(null);
-  const glowScrollRef = useRef<{ raf: number; timer: ReturnType<typeof setTimeout> } | null>(null);
 
   useEffect(() => {
-    // Clean up previous
-    if (glowScrollRef.current) {
-      cancelAnimationFrame(glowScrollRef.current.raf);
-      clearTimeout(glowScrollRef.current.timer);
-      glowScrollRef.current = null;
-    }
-
     if (!chipGlow || !scrollContainerRef.current) {
-      setDelayedGlow(chipGlow);
+      setDelayedGlow(chipGlow ?? null);
       return;
     }
 
-    // Suppress glow immediately so chips render without glow class
+    // Suppress glow so chips render without glow class while we jump
     setDelayedGlow(null);
 
     const container = scrollContainerRef.current;
     const targetId = chipGlow.queueIds[0];
+    const captured = chipGlow;
 
+    // Auto-expand collapsed group containing the target
+    const collapsedGroup = groups.find(
+      (g) => g.type === 'album' && collapsedKeys.has(g.key) &&
+        g.chips.some((c) => c.item.queueId === targetId),
+    );
+    if (collapsedGroup) toggleExpand(collapsedGroup.key);
+
+    // Claim scroll ownership so the scroll-to-active effect (same render) doesn't override us
+    skipNextActiveScrollRef.current = true;
+
+    // Jump + glow on next frame (after possible expand DOM update)
     const raf = requestAnimationFrame(() => {
-      // Find target chip by queueId data attribute
       const el = container.querySelector(`[data-queue-id="${targetId}"]`) as HTMLElement | null;
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
+      if (el) el.scrollIntoView({ behavior: 'instant', inline: 'center', block: 'nearest' });
+      // Brief pause so the eye registers position before glow fires
+      setTimeout(() => setDelayedGlow(captured), 80);
     });
 
-    // Apply glow after scroll completes
-    const timer = setTimeout(() => setDelayedGlow(chipGlow), 450);
-    glowScrollRef.current = { raf, timer };
-
-    return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(timer);
-    };
-  }, [chipGlow]);
+    return () => cancelAnimationFrame(raf);
+  }, [chipGlow, groups, collapsedKeys, toggleExpand]);
 
   // ─── Left fade mask ────────────────────────────────────────────────
 

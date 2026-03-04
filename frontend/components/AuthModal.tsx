@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { useAuth } from '@/context/AuthContext';
 import { useMagentoAuth } from '@/context/MagentoAuthContext';
 import { VALIDATION_LIMITS } from '@/lib/validation';
 import { useBackToClose } from '@/hooks/useBackToClose';
@@ -23,72 +22,35 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) {
   useBackToClose(isOpen, onClose);
-  // Tab state: 'magic' for Supabase magic link, 'password' for Magento email/password
-  const [activeTab, setActiveTab] = useState<'magic' | 'password'>('magic');
 
-  // Magic link state (Supabase)
   const [email, setEmail] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Password tab state (Magento)
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [isRegistering, setIsRegistering] = useState(initialMode === 'signup');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { signInWithMagicLink, isConfigured } = useAuth();
   const magentoAuth = useMagentoAuth();
 
   // Reset form when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setActiveTab('magic');
       setEmail('');
       setPassword('');
       setConfirmPassword('');
       setFirstname('');
       setLastname('');
       setError(null);
-      setSuccess(null);
       setIsRegistering(initialMode === 'signup');
     }
   }, [isOpen, initialMode]);
 
-  // Handle magic link submission (Supabase)
-  const handleMagicLinkSubmit = useCallback(async (e: React.FormEvent) => {
+  // Handle password submission (Magento)
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
-
-    if (!isConfigured) {
-      setError('Authentication is not configured. Please set up Supabase credentials.');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await signInWithMagicLink(email);
-      if (error) {
-        setError(error.message);
-      } else {
-        setSuccess('Check your email for the magic link!');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [email, signInWithMagicLink, isConfigured]);
-
-  // Handle Magento password submission
-  const handlePasswordSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
 
     if (isRegistering) {
       // Validation for registration
@@ -159,164 +121,100 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
 
             {/* Header */}
             <div className="text-center mb-4">
-              <span className="text-3xl">⚡</span>
               <Dialog.Title className="text-xl font-serif text-primary mt-2">
-                {activeTab === 'magic' ? 'Quick Sign In' : (isRegistering ? 'Create Account' : 'Sign In')}
+                {isRegistering ? 'Create Account' : 'Sign In'}
               </Dialog.Title>
               <Dialog.Description className="text-secondary text-sm mt-1">
-                {activeTab === 'magic'
-                  ? 'Sign in without a password'
-                  : (isRegistering
-                      ? 'Join to save your playlists and favorites'
-                      : 'Sign in to sync your library across devices')}
+                {isRegistering
+                  ? 'Join to save your playlists and favorites'
+                  : 'Sign in to sync your library across devices'}
               </Dialog.Description>
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-2 mb-6">
-              <button
-                onClick={() => setActiveTab('magic')}
-                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
-                  activeTab === 'magic'
-                    ? 'bg-accent text-black'
-                    : 'bg-surface-elevated text-white hover:bg-border'
-                }`}
-              >
-                Quick Sign In
-              </button>
-              <button
-                onClick={() => setActiveTab('password')}
-                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
-                  activeTab === 'password'
-                    ? 'bg-accent text-black'
-                    : 'bg-surface-elevated text-white hover:bg-border'
-                }`}
-              >
-                Email & Password
-              </button>
-            </div>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email */}
+              <div>
+                <label htmlFor="auth-email" className="block text-sm text-secondary mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="auth-email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value.slice(0, VALIDATION_LIMITS.EMAIL_MAX))}
+                  maxLength={VALIDATION_LIMITS.EMAIL_MAX}
+                  required
+                  className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                  placeholder="you@example.com"
+                />
+              </div>
 
-            {/* Magic Link Form (Supabase) */}
-            {activeTab === 'magic' && (
-              <form onSubmit={handleMagicLinkSubmit} className="space-y-4">
-                {/* Email */}
-                <div>
-                  <label htmlFor="magic-email" className="block text-sm text-secondary mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="magic-email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value.slice(0, VALIDATION_LIMITS.EMAIL_MAX))}
-                    maxLength={VALIDATION_LIMITS.EMAIL_MAX}
-                    required
-                    className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                    placeholder="you@example.com"
-                  />
+              {/* First Name and Last Name (registration only) */}
+              {isRegistering && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="firstname" className="block text-sm text-secondary mb-1">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      id="firstname"
+                      value={firstname}
+                      onChange={(e) => setFirstname(e.target.value.slice(0, AUTH_LIMITS.FIRSTNAME_MAX))}
+                      maxLength={AUTH_LIMITS.FIRSTNAME_MAX}
+                      required
+                      className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                      placeholder="John"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastname" className="block text-sm text-secondary mb-1">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      id="lastname"
+                      value={lastname}
+                      onChange={(e) => setLastname(e.target.value.slice(0, AUTH_LIMITS.LASTNAME_MAX))}
+                      maxLength={AUTH_LIMITS.LASTNAME_MAX}
+                      required
+                      className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                      placeholder="Doe"
+                    />
+                  </div>
                 </div>
+              )}
 
-                {/* Error message */}
-                {error && (
-                  <div className="p-3 bg-red-900/30 border border-red-700/50 rounded-md text-red-300 text-sm">
-                    {error}
-                  </div>
-                )}
+              {/* Password */}
+              <div>
+                <label htmlFor="password" className="block text-sm text-secondary mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value.slice(0, AUTH_LIMITS.PASSWORD_MAX))}
+                  maxLength={AUTH_LIMITS.PASSWORD_MAX}
+                  required
+                  minLength={AUTH_LIMITS.PASSWORD_MIN}
+                  className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                  placeholder="••••••••"
+                />
+              </div>
 
-                {/* Success message */}
-                {success && (
-                  <div className="p-3 bg-green-900/30 border border-green-700/50 rounded-md text-green-300 text-sm">
-                    {success}
-                  </div>
-                )}
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3 bg-accent hover:bg-accent-hover text-inverse font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Sending...
-                    </span>
-                  ) : (
-                    'Send Magic Link'
-                  )}
-                </button>
-              </form>
-            )}
-
-            {/* Password Form (Magento) */}
-            {activeTab === 'password' && (
-              <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                {/* Email */}
+              {/* Confirm Password (registration only) */}
+              {isRegistering && (
                 <div>
-                  <label htmlFor="password-email" className="block text-sm text-secondary mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="password-email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value.slice(0, VALIDATION_LIMITS.EMAIL_MAX))}
-                    maxLength={VALIDATION_LIMITS.EMAIL_MAX}
-                    required
-                    className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                    placeholder="you@example.com"
-                  />
-                </div>
-
-                {/* First Name and Last Name (registration only) */}
-                {isRegistering && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label htmlFor="firstname" className="block text-sm text-secondary mb-1">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        id="firstname"
-                        value={firstname}
-                        onChange={(e) => setFirstname(e.target.value.slice(0, AUTH_LIMITS.FIRSTNAME_MAX))}
-                        maxLength={AUTH_LIMITS.FIRSTNAME_MAX}
-                        required
-                        className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                        placeholder="John"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="lastname" className="block text-sm text-secondary mb-1">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        id="lastname"
-                        value={lastname}
-                        onChange={(e) => setLastname(e.target.value.slice(0, AUTH_LIMITS.LASTNAME_MAX))}
-                        maxLength={AUTH_LIMITS.LASTNAME_MAX}
-                        required
-                        className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                        placeholder="Doe"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Password */}
-                <div>
-                  <label htmlFor="password" className="block text-sm text-secondary mb-1">
-                    Password
+                  <label htmlFor="confirmPassword" className="block text-sm text-secondary mb-1">
+                    Confirm Password
                   </label>
                   <input
                     type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value.slice(0, AUTH_LIMITS.PASSWORD_MAX))}
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value.slice(0, AUTH_LIMITS.PASSWORD_MAX))}
                     maxLength={AUTH_LIMITS.PASSWORD_MAX}
                     required
                     minLength={AUTH_LIMITS.PASSWORD_MIN}
@@ -324,94 +222,67 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                     placeholder="••••••••"
                   />
                 </div>
+              )}
 
-                {/* Confirm Password (registration only) */}
-                {isRegistering && (
-                  <div>
-                    <label htmlFor="confirmPassword" className="block text-sm text-secondary mb-1">
-                      Confirm Password
-                    </label>
-                    <input
-                      type="password"
-                      id="confirmPassword"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value.slice(0, AUTH_LIMITS.PASSWORD_MAX))}
-                      maxLength={AUTH_LIMITS.PASSWORD_MAX}
-                      required
-                      minLength={AUTH_LIMITS.PASSWORD_MIN}
-                      className="w-full px-4 py-3 bg-surface-elevated border border-default rounded-md text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                      placeholder="••••••••"
-                    />
-                  </div>
+              {/* Error message */}
+              {error && (
+                <div className="p-3 bg-red-900/30 border border-red-700/50 rounded-md text-red-300 text-sm">
+                  {error}
+                </div>
+              )}
+
+              {/* Submit button */}
+              <button
+                type="submit"
+                disabled={isSubmitting || magentoAuth.isLoading}
+                className="w-full py-3 bg-accent hover:bg-accent-hover text-inverse font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting || magentoAuth.isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Loading...
+                  </span>
+                ) : (
+                  isRegistering ? 'Create Account' : 'Sign In'
                 )}
+              </button>
 
-                {/* Error message */}
-                {error && (
-                  <div className="p-3 bg-red-900/30 border border-red-700/50 rounded-md text-red-300 text-sm">
-                    {error}
-                  </div>
+              {/* Toggle login/register */}
+              <p className="text-center text-sm text-secondary">
+                {isRegistering ? (
+                  <>
+                    Already have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRegistering(false);
+                        setError(null);
+                      }}
+                      className="text-accent hover:text-accent-hover transition-colors"
+                    >
+                      Sign in
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Don&apos;t have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRegistering(true);
+                        setError(null);
+                      }}
+                      className="text-accent hover:text-accent-hover transition-colors"
+                    >
+                      Sign up
+                    </button>
+                  </>
                 )}
-
-                {/* Success message */}
-                {success && (
-                  <div className="p-3 bg-green-900/30 border border-green-700/50 rounded-md text-green-300 text-sm">
-                    {success}
-                  </div>
-                )}
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting || magentoAuth.isLoading}
-                  className="w-full py-3 bg-accent hover:bg-accent-hover text-inverse font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting || magentoAuth.isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Loading...
-                    </span>
-                  ) : (
-                    isRegistering ? 'Create Account' : 'Sign In'
-                  )}
-                </button>
-
-                {/* Toggle login/register */}
-                <p className="text-center text-sm text-secondary">
-                  {isRegistering ? (
-                    <>
-                      Already have an account?{' '}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsRegistering(false);
-                          setError(null);
-                        }}
-                        className="text-accent hover:text-accent-hover transition-colors"
-                      >
-                        Sign in
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      Don&apos;t have an account?{' '}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsRegistering(true);
-                          setError(null);
-                        }}
-                        className="text-accent hover:text-accent-hover transition-colors"
-                      >
-                        Sign up
-                      </button>
-                    </>
-                  )}
-                </p>
-              </form>
-            )}
+              </p>
+            </form>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

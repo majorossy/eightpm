@@ -1,0 +1,155 @@
+type CustomerCassette {
+    entity_id: Int! @doc(description: "Cassette entity ID")
+    client_id: String! @doc(description: "Client-generated ID")
+    name: String @doc(description: "Cassette name")
+    album_identifier: String @doc(description: "Archive.org album identifier")
+    artist_slug: String @doc(description: "Artist URL slug")
+    artist_name: String @doc(description: "Artist display name")
+    album_name: String @doc(description: "Album display name")
+    cover_art: String @doc(description: "Cover art URL")
+    show_date: String @doc(description: "Show date")
+    show_venue: String @doc(description: "Show venue")
+    show_location: String @doc(description: "Show location")
+    version_overrides: String @doc(description: "JSON of track version overrides")
+    created_at: String @doc(description: "Created timestamp")
+    updated_at: String @doc(description: "Updated timestamp")
+}
+
+type CustomerMiniDisc {
+    entity_id: Int! @doc(description: "MiniDisc entity ID")
+    client_id: String! @doc(description: "Client-generated ID")
+    name: String @doc(description: "MiniDisc name")
+    description: String @doc(description: "MiniDisc description")
+    cover_art: String @doc(description: "Cover art URL")
+    songs: [CustomerMiniDiscSong!]! @doc(description: "Songs in this MiniDisc")
+    created_at: String @doc(description: "Created timestamp")
+    updated_at: String @doc(description: "Updated timestamp")
+}
+
+type CustomerMiniDiscSong {
+    song_id: String! @doc(description: "Song ID")
+    sku: String @doc(description: "Product SKU")
+    position: Int! @doc(description: "Sort position")
+    song_data_snapshot: String @doc(description: "JSON snapshot of song data")
+    added_at: String @doc(description: "Added timestamp")
+}
+
+type CustomerLikedSong {
+    song_id: String! @doc(description: "Song ID")
+    sku: String @doc(description: "Product SKU")
+    song_data_snapshot: String @doc(description: "JSON snapshot of song data")
+    added_at: String! @doc(description: "When the song was liked")
+}
+
+type CustomerLikedSongsOutput {
+    items: [CustomerLikedSong!]! @doc(description: "List of liked songs")
+    total_count: Int! @doc(description: "Total number of liked songs")
+}
+
+type UserError {
+    message: String! @doc(description: "Error message")
+    path: [String!] @doc(description: "Path to the field that caused the error")
+}
+
+type SaveCassetteOutput {
+    cassette: CustomerCassette @doc(description: "The saved cassette")
+    user_errors: [UserError!]! @doc(description: "Errors that occurred")
+}
+
+type DeleteOutput {
+    success: Boolean! @doc(description: "Whether the deletion was successful")
+    user_errors: [UserError!]! @doc(description: "Errors that occurred")
+}
+
+type SaveMiniDiscOutput {
+    minidisc: CustomerMiniDisc @doc(description: "The saved minidisc")
+    user_errors: [UserError!]! @doc(description: "Errors that occurred")
+}
+
+type LikedSongOutput {
+    song: CustomerLikedSong @doc(description: "The liked song")
+    user_errors: [UserError!]! @doc(description: "Errors that occurred")
+}
+
+type FollowOutput {
+    success: Boolean! @doc(description: "Whether the follow was successful")
+    user_errors: [UserError!]! @doc(description: "Errors that occurred")
+}
+
+type SyncOutput {
+    success: Boolean! @doc(description: "Whether the sync was successful")
+    synced_count: Int! @doc(description: "Number of items synced")
+    user_errors: [UserError!]! @doc(description: "Errors that occurred")
+}
+
+input CassetteInput {
+    client_id: String! @doc(description: "Client-generated ID")
+    name: String @doc(description: "Cassette name")
+    album_identifier: String @doc(description: "Archive.org album identifier")
+    artist_slug: String @doc(description: "Artist URL slug")
+    artist_name: String @doc(description: "Artist display name")
+    album_name: String @doc(description: "Album display name")
+    cover_art: String @doc(description: "Cover art URL")
+    show_date: String @doc(description: "Show date")
+    show_venue: String @doc(description: "Show venue")
+    show_location: String @doc(description: "Show location")
+    version_overrides: String @doc(description: "JSON of track version overrides")
+}
+
+input MiniDiscInput {
+    client_id: String! @doc(description: "Client-generated ID")
+    name: String @doc(description: "MiniDisc name")
+    description: String @doc(description: "MiniDisc description")
+    cover_art: String @doc(description: "Cover art URL")
+    songs: [MiniDiscSongInput!] @doc(description: "Songs to include")
+}
+
+input MiniDiscSongInput {
+    song_id: String! @doc(description: "Song ID")
+    sku: String @doc(description: "Product SKU")
+    position: Int @doc(description: "Sort position")
+    song_data_snapshot: String @doc(description: "JSON snapshot of song data")
+}
+
+input LikedSongInput {
+    song_id: String! @doc(description: "Song ID")
+    sku: String @doc(description: "Product SKU")
+    song_data_snapshot: String @doc(description: "JSON snapshot of song data")
+}
+
+input FollowedAlbumInput {
+    artist_slug: String! @doc(description: "Artist URL slug")
+    album_title: String! @doc(description: "Album title")
+}
+
+type Customer {
+    cassettes: [CustomerCassette!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerCassettes") @cache(cacheable: false) @doc(description: "Customer's saved cassettes")
+    minidiscs: [CustomerMiniDisc!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerMiniDiscs") @cache(cacheable: false) @doc(description: "Customer's minidiscs")
+    liked_songs: CustomerLikedSongsOutput! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerLikedSongs") @cache(cacheable: false) @doc(description: "Customer's liked songs")
+    followed_artists: [String!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerFollowedArtists") @cache(cacheable: false) @doc(description: "Slugs of followed artists")
+    followed_albums: [FollowedAlbumOutput!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerFollowedAlbums") @cache(cacheable: false) @doc(description: "Followed albums")
+}
+
+type FollowedAlbumOutput {
+    artist_slug: String! @doc(description: "Artist URL slug")
+    album_title: String! @doc(description: "Album title")
+    followed_at: String! @doc(description: "When the album was followed")
+}
+
+type Mutation {
+    saveCassette(input: CassetteInput!): SaveCassetteOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SaveCassette") @doc(description: "Save or update a cassette")
+    deleteCassette(client_id: String!): DeleteOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\DeleteCassette") @doc(description: "Delete a cassette")
+    saveMiniDisc(input: MiniDiscInput!): SaveMiniDiscOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SaveMiniDisc") @doc(description: "Save or update a minidisc")
+    deleteMiniDisc(client_id: String!): DeleteOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\DeleteMiniDisc") @doc(description: "Delete a minidisc")
+    likeSong(input: LikedSongInput!): LikedSongOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\LikeSong") @doc(description: "Like a song")
+    unlikeSong(song_id: String!): DeleteOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\UnlikeSong") @doc(description: "Unlike a song")
+    followArtist(artist_slug: String!): FollowOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\FollowArtist") @doc(description: "Follow an artist")
+    unfollowArtist(artist_slug: String!): FollowOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\UnfollowArtist") @doc(description: "Unfollow an artist")
+    followAlbum(input: FollowedAlbumInput!): FollowOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\FollowAlbum") @doc(description: "Follow an album")
+    unfollowAlbum(input: FollowedAlbumInput!): FollowOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\UnfollowAlbum") @doc(description: "Unfollow an album")
+    syncCassettes(input: [CassetteInput!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncCassettes") @doc(description: "Batch sync cassettes")
+    syncMiniDiscs(input: [MiniDiscInput!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncMiniDiscs") @doc(description: "Batch sync minidiscs")
+    syncLikedSongs(input: [LikedSongInput!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncLikedSongs") @doc(description: "Batch sync liked songs")
+    syncFollowedArtists(artist_slugs: [String!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncFollowedArtists") @doc(description: "Batch sync followed artists")
+    syncFollowedAlbums(input: [FollowedAlbumInput!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncFollowedAlbums") @doc(description: "Batch sync followed albums")
+}
