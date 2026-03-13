@@ -541,7 +541,6 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
           <ColHeader field="ALBUM" className="w-[36px] shrink-0">Album</ColHeader>
           <ColHeader field="TITLE" className="flex-1 min-w-0">Title</ColHeader>
           <div className="w-10 shrink-0 text-center">Len</div>
-          <div className="w-56 shrink-0 text-center">My Version</div>
         </div>
       )}
 
@@ -690,96 +689,90 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
             );
           }
 
-          // ─── Mobile: Flex row with RecordingRow ───
+          // ─── Mobile: Two-row layout ───
+          // Row 1: track info (art, title, album, artist, duration)
+          // Row 2: selected version info (only when a version is saved)
           return (
             <div
               key={song.categoryId}
-              className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-all group ${
+              className={`w-full px-4 py-2 text-left transition-all group ${
                 song.versionCount === 0 ? 'opacity-30' : 'hover:bg-[var(--surface-card)]'
               }`}
             >
-              <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} className="w-[36px] h-[36px] rounded-md overflow-hidden shrink-0 bg-[var(--primary)] cursor-pointer">
-                {song.albumArtworkUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={song.albumArtworkUrl} alt="" width={36} height={36} loading="lazy" className="object-cover w-full h-full" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-[var(--text-subdued)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg>
+              {/* Row 1: Track info */}
+              <div className="flex items-center gap-3">
+                <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} className="w-[36px] h-[36px] rounded-md overflow-hidden shrink-0 bg-[var(--primary)] cursor-pointer">
+                  {song.albumArtworkUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={song.albumArtworkUrl} alt="" width={36} height={36} loading="lazy" className="object-cover w-full h-full" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-[var(--text-subdued)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg>
+                    </div>
+                  )}
+                </button>
+                <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} className="flex-1 min-w-0 text-left cursor-pointer">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-[var(--text)] truncate">{song.title}</span>
+                    {song.versionCount > 0 && (
+                      <span className="shrink-0 inline-flex items-center justify-center min-w-[20px] px-1 py-0.5 rounded-full text-[9px] font-semibold tabular-nums" style={{ background: 'rgba(160,130,200,0.14)', color: '#c0a8e0' }}>
+                        {song.versionCount}
+                      </span>
+                    )}
                   </div>
-                )}
-              </button>
-              <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} className="flex-1 min-w-0 text-left cursor-pointer">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-medium text-[var(--text)] truncate">{song.title}</span>
-                  {song.versionCount > 0 && (
-                    <span className="shrink-0 inline-flex items-center justify-center min-w-[20px] px-1 py-0.5 rounded-full text-[9px] font-semibold tabular-nums" style={{ background: 'rgba(160,130,200,0.14)', color: '#c0a8e0' }}>
-                      {song.versionCount}
+                  <div className="text-xs text-[var(--text-subdued)] truncate">{song.albumName}</div>
+                  <div className="text-[10px] text-[var(--text-subdued)] truncate opacity-60">{song.artistName}</div>
+                </button>
+                <div className="w-10 shrink-0 text-center">
+                  {saved ? (
+                    <button onClick={() => openPicker(song)} className="font-jb-mono text-[10px] tabular-nums cursor-pointer hover:underline" style={{ color: '#c0a8e0' }} title="Swap version">
+                      {fmtDuration(saved.duration)}
+                    </button>
+                  ) : (
+                    <span className="font-jb-mono text-[10px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                      {fmtDuration(song.avgDuration)}
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-[var(--text-subdued)] truncate">{song.albumName}</div>
-                <div className="text-[10px] text-[var(--text-subdued)] truncate opacity-60">{song.artistName}</div>
-              </button>
-              <div className="w-10 shrink-0 text-center">
-                {saved ? (
-                  <button onClick={() => openPicker(song)} className="font-jb-mono text-[10px] tabular-nums cursor-pointer hover:underline" style={{ color: '#c0a8e0' }} title="Swap version">
-                    {fmtDuration(saved.duration)}
-                  </button>
-                ) : (
-                  <span className="font-jb-mono text-[10px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
-                    {fmtDuration(song.avgDuration)}
-                  </span>
-                )}
               </div>
-              <div className="w-56 shrink-0">
-                {saved ? (
-                  <div className="rounded-lg overflow-hidden px-2 py-1.5" style={{ background: 'color-mix(in srgb, var(--surface-card) 80%, transparent)' }}>
-                    <RecordingRow
-                      song={saved}
-                      size="sm"
-                      showTitle={true}
-                      showDuration={true}
-                      showMediumIcon={true}
-                      showLocation={false}
-                      showTaper={true}
-                      showBadges={true}
-                      showDownloads={true}
-                      downloadFormat="compact"
-                      actions={['swap', 'play-next', 'queue', 'playlist', 'favorite']}
-                      onSwap={() => openPicker(song)}
-                      onPlay={(s) => playSong(s)}
-                      swapLabel="swap out"
-                    />
-                  </div>
-                ) : (
+
+              {/* Row 2: Selected version info + actions */}
+              {saved && (
+                <div className="mt-1.5 rounded-lg px-2.5 py-1.5" style={{ background: 'color-mix(in srgb, var(--surface-card) 80%, transparent)' }}>
                   <button
                     onClick={() => openPicker(song)}
-                    disabled={song.versionCount === 0}
-                    className="pick-version-btn relative w-full flex items-center justify-center gap-2.5 h-[42px] rounded-lg cursor-pointer transition-all duration-300 overflow-hidden"
-                    style={{
-                      background: 'color-mix(in srgb, var(--quaternary) 4%, transparent)',
-                      border: '1px dashed color-mix(in srgb, var(--quaternary) 18%, transparent)',
-                    }}
+                    className="flex items-center gap-2 w-full cursor-pointer"
                   >
-                    <div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--quaternary) 8%, transparent), color-mix(in srgb, var(--quaternary) 3%, transparent))' }}
-                    />
-                    <svg className="relative w-3.5 h-3.5 transition-all duration-300 group-hover:scale-110" style={{ color: 'color-mix(in srgb, var(--quaternary) 35%, transparent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <circle cx="12" cy="12" r="10" />
-                      <path strokeLinecap="round" d="M12 8v8m-4-4h8" />
-                    </svg>
-                    <span className="relative text-[11px] tracking-wide transition-all duration-300" style={{ color: 'color-mix(in srgb, var(--quaternary) 45%, transparent)' }}>
-                      pick a version
-                    </span>
-                    <style>{`
-                      .group:hover .pick-version-btn { border-color: color-mix(in srgb, var(--quaternary) 35%, transparent) !important; }
-                      .group:hover .pick-version-btn svg { color: var(--quaternary) !important; }
-                      .group:hover .pick-version-btn span { color: var(--quaternary) !important; }
-                    `}</style>
+                    <RecTypeBadge type={saved.recordingType} />
+                    <DateDisplay date={saved.showDate} className="font-jb-mono text-[10px] font-semibold text-primary shrink-0" />
+                    {saved.showVenue && (
+                      <>
+                        <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>·</span>
+                        <span className="text-[10px] truncate" style={{ color: 'var(--text-subdued)' }}>{saved.showVenue}</span>
+                      </>
+                    )}
+                    {saved.showLocation && (
+                      <>
+                        <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>·</span>
+                        <span className="text-[10px] shrink-0" style={{ color: 'var(--text-tertiary)' }}>{saved.showLocation}</span>
+                      </>
+                    )}
+                    {saved.taper && (
+                      <span className="text-[9px] truncate ml-auto" style={{ color: 'var(--text-tertiary)' }}>{saved.taper}</span>
+                    )}
                   </button>
-                )}
-              </div>
+                  <div className="mt-1">
+                    <RecordingRowActions
+                      song={saved}
+                      actions={['swap', 'play', 'play-next', 'queue', 'playlist', 'favorite']}
+                      size="sm"
+                      swapLabel="swap out"
+                      onSwap={() => openPicker(song)}
+                      onPlay={(s) => playSong(s)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

@@ -308,7 +308,7 @@ export default function MobileMiniPlayer({
           {/* Queue strip — compact accordion album groups */}
           {queueStripOpen && queueChips.length > 0 && (
             <div style={{ background: 'var(--player-surface-queue)' }}>
-              <div className="px-3 pb-2">
+              <div className="px-6 pb-3.5">
                 <QueueAccordion
                   queueChips={queueChips}
                   totalUpcoming={totalUpcoming}
@@ -321,7 +321,6 @@ export default function MobileMiniPlayer({
                   onDetachItem={onDetachItem}
                   onRestoreFromHistory={onRestoreFromHistory}
                   preferredQuality={preferredQuality}
-                  compact
                   chipGlow={chipGlow}
                 />
               </div>

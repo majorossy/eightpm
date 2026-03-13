@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Album, Track, Song, Artist } from '@/lib/api';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import { usePlayer } from '@/context/PlayerContext';
@@ -56,6 +57,22 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const hasTrackedView = useRef(false);
+  const searchParams = useSearchParams();
+
+  // Auto-load cassette from ?cassette=<id> query param
+  const hasAutoLoaded = useRef(false);
+  useEffect(() => {
+    if (hasAutoLoaded.current) return;
+    const cassetteId = searchParams.get('cassette');
+    if (cassetteId) {
+      const cassette = savedCassettes.find(c => c.id === cassetteId);
+      if (cassette) {
+        hasAutoLoaded.current = true;
+        setSelectedCassetteId(cassetteId);
+        setAll(cassette.versionOverrides);
+      }
+    }
+  }, [searchParams, savedCassettes, setAll]);
 
   // Check if this album is currently loaded in the queue
   const isCurrentAlbum = currentItem?.albumSource?.albumIdentifier === album.identifier;
