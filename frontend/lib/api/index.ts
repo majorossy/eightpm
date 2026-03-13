@@ -58,7 +58,8 @@ export {
 export type { TrackCategory, AlbumCategory } from './search';
 
 // Venue exports
-export { getVenue, getVenueShows, getVenueArtists, getNearbyVenues, getVenues, getArtistVenues } from './venues';
+export { getVenue, getVenueShows, getVenueArtists, getNearbyVenues, getVenues, getArtistVenues, getVenueTracks } from './venues';
+export type { VenueTrackSortField } from './venues';
 
 // Podcast exports
 export { getPodcasts, getPodcastBySlug, getPodcastEpisodes, PODCASTS_PARENT_CATEGORY_ID } from './podcasts';

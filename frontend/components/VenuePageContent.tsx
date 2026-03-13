@@ -6,6 +6,7 @@ import { getVenueArtists } from '@/lib/api';
 import VenueHeader from '@/components/venue/VenueHeader';
 import VenueStats from '@/components/venue/VenueStats';
 import VenueShowsGrid from '@/components/venue/VenueShowsGrid';
+import VenueTracksTable from '@/components/venue/VenueTracksTable';
 import VenueArtistsGrid from '@/components/venue/VenueArtistsGrid';
 import NearbyVenues from '@/components/venue/NearbyVenues';
 import ArtistCloud from '@/components/venue/ArtistCloud';
@@ -16,7 +17,7 @@ interface VenuePageContentProps {
 
 export default function VenuePageContent({ venue }: VenuePageContentProps) {
   const [artists, setArtists] = useState<VenueArtist[]>([]);
-  const [activeTab, setActiveTab] = useState<'shows' | 'artists'>('shows');
+  const [activeTab, setActiveTab] = useState<'shows' | 'tracks' | 'artists'>('shows');
 
   useEffect(() => {
     async function loadArtists() {
@@ -51,6 +52,16 @@ export default function VenuePageContent({ venue }: VenuePageContentProps) {
           Shows
         </button>
         <button
+          onClick={() => setActiveTab('tracks')}
+          className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            activeTab === 'tracks'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-[var(--text-subdued)] hover:text-[var(--text)]'
+          }`}
+        >
+          Tracks
+        </button>
+        <button
           onClick={() => setActiveTab('artists')}
           className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
             activeTab === 'artists'
@@ -65,6 +76,10 @@ export default function VenuePageContent({ venue }: VenuePageContentProps) {
       {/* Tab content */}
       {activeTab === 'shows' && (
         <VenueShowsGrid venueSlug={venue.slug} />
+      )}
+
+      {activeTab === 'tracks' && (
+        <VenueTracksTable venueSlug={venue.slug} />
       )}
 
       {activeTab === 'artists' && (

@@ -1,4 +1,12 @@
+type ProductVenueInfo {
+    normalized_name: String @doc(description: "Canonical venue display name")
+    slug: String @doc(description: "Venue URL slug for routing")
+    city: String @doc(description: "Venue city")
+    state: String @doc(description: "Venue state code")
+}
+
 interface ProductInterface {
+    venue_info: ProductVenueInfo @doc(description: "Normalized venue info from alias table") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\ProductVenueInfo")
     # Audio streaming URLs
     song_urls_json: String @doc(description: "JSON object with quality URLs") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongUrlsJson")
     song_url_high: String @doc(description: "High quality URL (FLAC or best available)") @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongUrlHigh")
@@ -161,6 +169,12 @@ type Venue {
         currentPage: Int = 1 @doc(description: "Current page number")
     ): VenueShowsOutput @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\VenueShows") @doc(description: "Shows at this venue")
     artists: [VenueArtist] @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\VenueArtists") @doc(description: "Artists who played this venue")
+    tracks(
+        pageSize: Int = 50 @doc(description: "Number of tracks per page")
+        currentPage: Int = 1 @doc(description: "Current page number")
+        sortBy: VenueTrackSortField = DATE @doc(description: "Sort field")
+        sortDir: SortEnum = DESC @doc(description: "Sort direction")
+    ): VenueTracksOutput @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\VenueTracks") @doc(description: "Individual playable tracks at this venue")
     nearby_venues(
         radius_miles: Float = 50 @doc(description: "Search radius in miles")
     ): [Venue] @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\NearbyVenues") @doc(description: "Nearby venues within radius")
@@ -180,6 +194,44 @@ type VenueShowsOutput {
     items: [VenueShow]! @doc(description: "List of shows")
     total_count: Int! @doc(description: "Total number of shows")
     page_info: SearchResultPageInfo @doc(description: "Pagination info")
+}
+
+enum VenueTrackSortField {
+    DATE
+    TITLE
+    ARTIST
+    RATING
+    DOWNLOADS
+}
+
+type VenueTracksOutput {
+    items: [VenueTrack]! @doc(description: "List of individual tracks")
+    total_count: Int! @doc(description: "Total number of tracks")
+    page_info: SearchResultPageInfo @doc(description: "Pagination info")
+}
+
+type VenueTrack {
+    uid: String! @doc(description: "Base64-encoded product entity ID")
+    sku: String! @doc(description: "Product SKU")
+    name: String! @doc(description: "Product name")
+    song_title: String @doc(description: "Track title")
+    song_duration: Int @doc(description: "Duration in seconds")
+    song_url_high: String @doc(description: "High quality streaming URL")
+    song_url_medium: String @doc(description: "Medium quality streaming URL")
+    song_url_low: String @doc(description: "Low quality streaming URL")
+    show_date: String @doc(description: "Show date")
+    show_name: String @doc(description: "Show/album name")
+    identifier: String @doc(description: "Archive.org show identifier")
+    artist_name: String @doc(description: "Artist/collection name")
+    artist_slug: String @doc(description: "Artist URL slug")
+    recording_type: String @doc(description: "SBD, AUD, MX, FM, etc.")
+    archive_avg_rating: String @doc(description: "Average rating 1-5")
+    archive_downloads: Int @doc(description: "Total download count")
+    is_streamable: Boolean @doc(description: "Whether track can be streamed")
+    show_venue: String @doc(description: "Venue name")
+    show_location: String @doc(description: "City/state")
+    show_taper: String @doc(description: "Taper name")
+    lineage: String @doc(description: "Recording lineage")
 }
 
 type VenueArtist {

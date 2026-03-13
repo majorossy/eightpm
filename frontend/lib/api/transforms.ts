@@ -59,6 +59,12 @@ export interface MagentoProduct {
   identifier?: string;
   show_venue?: string;
   show_location?: string;
+  venue_info?: {
+    normalized_name?: string;
+    slug?: string;
+    city?: string;
+    state?: string;
+  } | null;
   show_taper?: string;
   show_source?: string;
   lineage?: string;
@@ -279,6 +285,10 @@ export function productToSong(product: MagentoProduct, albumIdentifier?: string)
     showDate: showInfo.date,
     showVenue: product.show_venue || showInfo.venue,
     showLocation: product.show_location || undefined,
+    venueNormalizedName: product.venue_info?.normalized_name || undefined,
+    venueSlug: product.venue_info?.slug || undefined,
+    venueCity: product.venue_info?.city || undefined,
+    venueState: product.venue_info?.state || undefined,
     taper: product.show_taper || undefined,
     source: product.show_source || identifierInfo.source,
     lineage: product.lineage || undefined,

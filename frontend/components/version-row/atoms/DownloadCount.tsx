@@ -5,6 +5,7 @@ interface DownloadCountProps {
   format?: 'full' | 'compact';
   iconSize?: number;
   className?: string;
+  identifier?: string;
 }
 
 function ArchiveIcon({ size = 12 }: { size?: number }) {
@@ -35,14 +36,24 @@ function formatCount(count: number, format: 'full' | 'compact'): string {
   return count.toLocaleString();
 }
 
-export default function DownloadCount({ downloads, format = 'full', iconSize = 12, className = '' }: DownloadCountProps) {
+export default function DownloadCount({ downloads, format = 'full', iconSize = 12, className = '', identifier }: DownloadCountProps) {
   if (downloads == null || downloads <= 0) return null;
 
-  return (
+  const content = (
     <span className={`font-jb-mono text-[11px] flex items-center gap-0.5 ${className}`} style={{ color: 'var(--text-tertiary)' }}>
       <ArchiveIcon size={iconSize} />
       <DownloadArrow size={Math.round(iconSize * 7 / 12)} />
       {formatCount(downloads, format)}
     </span>
   );
+
+  if (identifier) {
+    return (
+      <a href={`https://archive.org/details/${identifier}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+        {content}
+      </a>
+    );
+  }
+
+  return content;
 }

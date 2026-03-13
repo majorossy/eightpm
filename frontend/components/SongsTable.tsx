@@ -63,9 +63,9 @@ const PAGE_SIZE = 20;
 const PREFS_KEY = '8pm-song-version-prefs';
 
 // Shared grid template for desktop — guarantees column alignment across header + all rows
-// Columns: Art | Title | Date | Venue | Location | Taper | Type | Rating | DLs | Src | Actions | Live
+// Columns: Art | Title | Src | Actions | Date | Venue | Location | Taper | Type | Rating | DLs | Live
 // All columns fixed-width so every row (with or without a picked version) is identical.
-const DESKTOP_GRID = '42px 1.2fr 80px 120px 100px 96px 36px 56px 44px 24px 260px 44px';
+const DESKTOP_GRID = '42px 1.2fr 24px 260px 80px 120px 100px 96px 36px 56px 44px 44px';
 const DESKTOP_GAP = '0 12px'; // column gap only
 
 function loadVersionPrefs(): Record<number, Song> {
@@ -518,6 +518,8 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
             <span className="text-[var(--text-subdued)] opacity-40">/</span>
             <SortButton field="ARTIST">Artist</SortButton>
           </div>
+          <FilterPopover label="Med" options={mediumOptions} selected={mediumFilter} onToggle={toggleMediumFilter} />
+          <div />
           <ColHeader field="DATE">Date</ColHeader>
           <ColHeader field="VENUE">Venue</ColHeader>
           <ColHeader field="LOCATION">Location</ColHeader>
@@ -525,8 +527,6 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
           <FilterPopover label="Src" options={srcOptions} selected={srcFilter} onToggle={toggleSrcFilter} />
           <RatingFilterPopover label="Rating" value={minRating} onChange={setMinRating} />
           <ColHeader field="DOWNLOADS"><svg width={10} height={10} viewBox="0 0 24 24" fill="none" className="shrink-0"><path d="M12 2L2 7v1h20V7L12 2z" style={{ fill: 'color-mix(in srgb, var(--quinary) 55%, transparent)' }} /><rect x="4.5" y="9" width="2" height="6.5" rx="0.4" style={{ fill: 'color-mix(in srgb, var(--quinary) 35%, transparent)' }} /><rect x="9" y="9" width="2" height="6.5" rx="0.4" style={{ fill: 'color-mix(in srgb, var(--quinary) 35%, transparent)' }} /><rect x="13" y="9" width="2" height="6.5" rx="0.4" style={{ fill: 'color-mix(in srgb, var(--quinary) 35%, transparent)' }} /><rect x="17.5" y="9" width="2" height="6.5" rx="0.4" style={{ fill: 'color-mix(in srgb, var(--quinary) 35%, transparent)' }} /><rect x="2" y="17" width="20" height="2" rx="0.5" style={{ fill: 'color-mix(in srgb, var(--quinary) 45%, transparent)' }} /></svg><svg width={6} height={10} viewBox="0 0 10 16" fill="none" className="shrink-0 mr-0.5"><path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" style={{ stroke: 'var(--text-tertiary)' }} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>DLs</ColHeader>
-          <FilterPopover label="Med" options={mediumOptions} selected={mediumFilter} onToggle={toggleMediumFilter} />
-          <div />
           <ColHeader field="VERSION_COUNT" className="justify-end">Live</ColHeader>
         </div>
       ) : (
@@ -590,13 +590,28 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
 
                 {saved ? (
                   <>
+                    {/* Source icon */}
+                    <div className="flex justify-center">
+                      <RecordingMediumIcon medium={saved.recordingMedium} lineage={saved.lineage} source={saved.source} size={0.5} />
+                    </div>
+                    {/* Actions */}
+                    <div className="min-w-0 overflow-hidden">
+                      <RecordingRowActions
+                        song={saved}
+                        actions={['swap', 'play-next', 'queue', 'playlist', 'favorite']}
+                        size="sm"
+                        swapLabel="swap out"
+                        onSwap={() => openPicker(song)}
+                        onPlay={(s) => playSong(s)}
+                      />
+                    </div>
                     {/* Date */}
                     <GridCell className="min-w-0 self-start pt-2">
                       <DateDisplay date={saved.showDate} className="font-jb-mono text-[10px] font-semibold text-primary leading-tight tracking-wide" />
                     </GridCell>
                     {/* Venue */}
                     <GridCell className="min-w-0 self-start pt-1.5 text-[10px] leading-snug">
-                      <VenueDisplay venue={saved.showVenue} albumName={saved.albumName} className="text-[10px]" />
+                      <VenueDisplay venue={saved.showVenue} albumName={saved.albumName} asLink normalizedName={saved.venueNormalizedName} venueSlug={saved.venueSlug} className="text-[10px]" />
                     </GridCell>
                     {/* Location */}
                     <GridCell className="min-w-0 self-start pt-1.5">
@@ -611,22 +626,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                     {/* Rating */}
                     <div><StarRating rating={saved.avgRating} count={saved.numReviews} starSize="w-2 h-2" /></div>
                     {/* Downloads */}
-                    <div>{saved.downloads != null && saved.downloads > 0 && <span className="font-jb-mono text-[9px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>{saved.downloads >= 1000 ? `${(saved.downloads / 1000).toFixed(1)}k` : saved.downloads.toLocaleString()}</span>}</div>
-                    {/* Source icon */}
-                    <div className="flex justify-center">
-                      <RecordingMediumIcon medium={saved.recordingMedium} lineage={saved.lineage} source={saved.source} size={0.5} />
-                    </div>
-                    {/* Actions */}
-                    <div>
-                      <RecordingRowActions
-                        song={saved}
-                        actions={['swap', 'play-next', 'queue', 'playlist', 'favorite']}
-                        size="sm"
-                        swapLabel="swap out"
-                        onSwap={() => openPicker(song)}
-                        onPlay={(s) => playSong(s)}
-                      />
-                    </div>
+                    <div>{saved.downloads != null && saved.downloads > 0 && <a href={`https://archive.org/details/${saved.albumIdentifier}`} target="_blank" rel="noopener noreferrer" className="font-jb-mono text-[9px] tabular-nums hover:underline" style={{ color: 'var(--text-tertiary)' }}>{saved.downloads >= 1000 ? `${(saved.downloads / 1000).toFixed(1)}k` : saved.downloads.toLocaleString()}</a>}</div>
                   </>
                 ) : (
                   /* Empty state — spans all version columns (3 through 11) */

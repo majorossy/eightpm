@@ -2391,6 +2391,141 @@ export async function getArtistVenues(categoryUid: string): Promise<ArtistVenueC
   }
 }
 
+export type VenueTrackSortField = 'DATE' | 'TITLE' | 'ARTIST' | 'RATING' | 'DOWNLOADS';
+
+interface VenueTrackRaw {
+  uid: string;
+  sku: string;
+  name: string;
+  song_title: string | null;
+  song_duration: number | null;
+  song_url_high: string | null;
+  song_url_medium: string | null;
+  song_url_low: string | null;
+  show_date: string | null;
+  show_name: string | null;
+  identifier: string | null;
+  artist_name: string | null;
+  artist_slug: string | null;
+  recording_type: string | null;
+  archive_avg_rating: string | null;
+  archive_downloads: number | null;
+  is_streamable: boolean | null;
+  show_venue: string | null;
+  show_location: string | null;
+  show_taper: string | null;
+  lineage: string | null;
+}
+
+const GET_VENUE_TRACKS_QUERY = `
+  query GetVenueTracks($slug: String!, $pageSize: Int!, $currentPage: Int!, $sortBy: VenueTrackSortField!, $sortDir: SortEnum!) {
+    venue(slug: $slug) {
+      tracks(pageSize: $pageSize, currentPage: $currentPage, sortBy: $sortBy, sortDir: $sortDir) {
+        items {
+          uid
+          sku
+          name
+          song_title
+          song_duration
+          song_url_high
+          song_url_medium
+          song_url_low
+          show_date
+          show_name
+          identifier
+          artist_name
+          artist_slug
+          recording_type
+          archive_avg_rating
+          archive_downloads
+          is_streamable
+          show_venue
+          show_location
+          show_taper
+          lineage
+        }
+        total_count
+        page_info {
+          current_page
+          page_size
+          total_pages
+        }
+      }
+    }
+  }
+`;
+
+function venueTrackToSong(item: VenueTrackRaw): Song {
+  const product: MagentoProduct = {
+    uid: item.uid,
+    sku: item.sku,
+    name: item.name,
+    song_title: item.song_title || undefined,
+    song_duration: item.song_duration || undefined,
+    song_url_high: item.song_url_high || undefined,
+    song_url_medium: item.song_url_medium || undefined,
+    song_url_low: item.song_url_low || undefined,
+    show_date: item.show_date || undefined,
+    show_name: item.show_name || undefined,
+    identifier: item.identifier || undefined,
+    show_venue: item.show_venue || undefined,
+    show_location: item.show_location || undefined,
+    show_taper: item.show_taper || undefined,
+    lineage: item.lineage || undefined,
+    archive_avg_rating: item.archive_avg_rating ? parseFloat(item.archive_avg_rating) : undefined,
+    archive_downloads: item.archive_downloads || undefined,
+    is_streamable: item.is_streamable ?? undefined,
+    recording_type: item.recording_type || undefined,
+    categories: item.artist_name ? [{
+      uid: '',
+      name: item.artist_name,
+      url_key: item.artist_slug || '',
+    }] : undefined,
+  };
+  return productToSong(product, item.identifier || undefined);
+}
+
+export interface VenueTrackItem {
+  song: Song;
+  raw: VenueTrackRaw;
+}
+
+export async function getVenueTracks(
+  slug: string,
+  options?: {
+    pageSize?: number;
+    currentPage?: number;
+    sortBy?: VenueTrackSortField;
+    sortDir?: 'ASC' | 'DESC';
+  }
+): Promise<{
+  items: VenueTrackItem[];
+  total_count: number;
+  page_info: { current_page: number; page_size: number; total_pages: number };
+}> {
+  const { pageSize = 50, currentPage = 1, sortBy = 'DATE', sortDir = 'DESC' } = options || {};
+  try {
+    const data = await graphqlFetch<{
+      venue: {
+        tracks: {
+          items: VenueTrackRaw[];
+          total_count: number;
+          page_info: { current_page: number; page_size: number; total_pages: number };
+        };
+      };
+    }>(GET_VENUE_TRACKS_QUERY, { slug, pageSize, currentPage, sortBy, sortDir });
+    const result = data.venue?.tracks || { items: [], total_count: 0, page_info: { current_page: 1, page_size: pageSize, total_pages: 0 } };
+    return {
+      items: result.items.map(item => ({ song: venueTrackToSong(item), raw: item })),
+      total_count: result.total_count,
+      page_info: result.page_info,
+    };
+  } catch (error) {
+    console.error('[getVenueTracks] Failed:', error);
+    return { items: [], total_count: 0, page_info: { current_page: 1, page_size: pageSize, total_pages: 0 } };
+  }
+}
+
 /**
  * Generate a URL-safe venue slug from a venue name
  * Used by VenueLink to create links from raw venue name strings

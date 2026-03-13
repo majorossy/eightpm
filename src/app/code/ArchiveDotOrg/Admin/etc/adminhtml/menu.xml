@@ -19,6 +19,15 @@
              resource="ArchiveDotOrg_Admin::artists"
              parent="ArchiveDotOrg_Core::archive"/>
 
+        <!-- Venues Grid -->
+        <add id="ArchiveDotOrg_Admin::venues"
+             title="Venues"
+             module="ArchiveDotOrg_Admin"
+             sortOrder="20"
+             action="archivedotorg/venue/index"
+             resource="ArchiveDotOrg_Admin::venues"
+             parent="ArchiveDotOrg_Core::archive"/>
+
         <!-- Import History Grid -->
         <add id="ArchiveDotOrg_Admin::history"
              title="Import History"

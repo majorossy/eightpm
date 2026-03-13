@@ -15,6 +15,12 @@ export const PRODUCT_FIELDS_FRAGMENT = `
   identifier
   show_venue
   show_location
+  venue_info {
+    normalized_name
+    slug
+    city
+    state
+  }
   show_taper
   show_source
   lineage
@@ -100,6 +106,12 @@ export const GET_SONG_BY_ID_QUERY = `
         identifier
         show_venue
         show_location
+        venue_info {
+          normalized_name
+          slug
+          city
+          state
+        }
         show_taper
         show_source
         lineage

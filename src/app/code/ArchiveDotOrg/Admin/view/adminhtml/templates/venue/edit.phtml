@@ -1,0 +1,61 @@
+<?php
+/** @var \ArchiveDotOrg\Admin\Block\Adminhtml\Venue\Edit $block */
+$venue = $block->getVenue();
+if (!$venue) {
+    return;
+}
+?>
+<form action="<?= $block->escapeUrl($block->getSaveUrl()) ?>" method="post" id="venue-edit-form">
+    <?= $block->getBlockHtml('formkey') ?>
+    <input type="hidden" name="venue_id" value="<?= (int) $venue->getVenueId() ?>"/>
+
+    <div class="admin__page-section">
+        <div class="admin__page-section-title"><span class="title"><?= $block->escapeHtml(__('Venue Information')) ?></span></div>
+        <div class="admin__page-section-content">
+            <div class="admin__field">
+                <label class="admin__field-label" for="normalized_name"><span><?= $block->escapeHtml(__('Name')) ?></span></label>
+                <div class="admin__field-control"><input type="text" name="normalized_name" id="normalized_name" value="<?= $block->escapeHtmlAttr($venue->getNormalizedName()) ?>" class="admin__control-text"/></div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label" for="slug"><span><?= $block->escapeHtml(__('Slug')) ?></span></label>
+                <div class="admin__field-control"><input type="text" name="slug" id="slug" value="<?= $block->escapeHtmlAttr($venue->getSlug()) ?>" class="admin__control-text"/></div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label" for="city"><span><?= $block->escapeHtml(__('City')) ?></span></label>
+                <div class="admin__field-control"><input type="text" name="city" id="city" value="<?= $block->escapeHtmlAttr($venue->getCity() ?? '') ?>" class="admin__control-text"/></div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label" for="state"><span><?= $block->escapeHtml(__('State')) ?></span></label>
+                <div class="admin__field-control"><input type="text" name="state" id="state" value="<?= $block->escapeHtmlAttr($venue->getState() ?? '') ?>" class="admin__control-text"/></div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label" for="country"><span><?= $block->escapeHtml(__('Country')) ?></span></label>
+                <div class="admin__field-control"><input type="text" name="country" id="country" value="<?= $block->escapeHtmlAttr($venue->getCountry() ?? '') ?>" class="admin__control-text"/></div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label" for="latitude"><span><?= $block->escapeHtml(__('Latitude')) ?></span></label>
+                <div class="admin__field-control"><input type="text" name="latitude" id="latitude" value="<?= $block->escapeHtmlAttr($venue->getData('latitude') ?? '') ?>" class="admin__control-text"/></div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label" for="longitude"><span><?= $block->escapeHtml(__('Longitude')) ?></span></label>
+                <div class="admin__field-control"><input type="text" name="longitude" id="longitude" value="<?= $block->escapeHtmlAttr($venue->getData('longitude') ?? '') ?>" class="admin__control-text"/></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin__page-section">
+        <div class="admin__page-section-title"><span class="title"><?= $block->escapeHtml(__('Statistics (read-only)')) ?></span></div>
+        <div class="admin__page-section-content">
+            <div class="admin__field"><label class="admin__field-label"><span>Shows</span></label><div class="admin__field-control"><span><?= (int) $venue->getTotalShows() ?></span></div></div>
+            <div class="admin__field"><label class="admin__field-label"><span>Artists</span></label><div class="admin__field-control"><span><?= (int) $venue->getTotalArtists() ?></span></div></div>
+            <div class="admin__field"><label class="admin__field-label"><span>Tracks</span></label><div class="admin__field-control"><span><?= (int) $venue->getTotalTracks() ?></span></div></div>
+            <div class="admin__field"><label class="admin__field-label"><span>First Show</span></label><div class="admin__field-control"><span><?= $block->escapeHtml($venue->getData('first_show_date') ?? 'N/A') ?></span></div></div>
+            <div class="admin__field"><label class="admin__field-label"><span>Last Show</span></label><div class="admin__field-control"><span><?= $block->escapeHtml($venue->getData('last_show_date') ?? 'N/A') ?></span></div></div>
+        </div>
+    </div>
+
+    <div class="admin__page-actions">
+        <button type="button" class="action-default" onclick="location.href='<?= $block->escapeUrl($block->getBackUrl()) ?>'"><span><?= $block->escapeHtml(__('Back')) ?></span></button>
+        <button type="submit" class="action-primary"><span><?= $block->escapeHtml(__('Save')) ?></span></button>
+    </div>
+</form>

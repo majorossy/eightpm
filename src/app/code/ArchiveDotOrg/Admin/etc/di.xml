@@ -26,6 +26,12 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="ArchiveDotOrgVenueGridCollection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">archivedotorg_venue</argument>
+        </arguments>
+    </virtualType>
+
     <!-- Register all collections in CollectionFactory -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
@@ -33,6 +39,7 @@
                 <item name="archivedotorg_artist_listing_data_source" xsi:type="string">ArchiveDotOrgArtistStatusGridCollection</item>
                 <item name="archivedotorg_history_listing_data_source" xsi:type="string">ArchiveDotOrgImportRunGridCollection</item>
                 <item name="archivedotorg_unmatched_listing_data_source" xsi:type="string">ArchiveDotOrgUnmatchedTrackGridCollection</item>
+                <item name="archivedotorg_venue_listing_data_source" xsi:type="string">ArchiveDotOrgVenueGridCollection</item>
             </argument>
         </arguments>
     </type>

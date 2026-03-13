@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">archivedotorg_venue_listing.archivedotorg_venue_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>archivedotorg_venue_columns</spinner>
+        <deps>
+            <dep>archivedotorg_venue_listing.archivedotorg_venue_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="archivedotorg_venue_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">venue_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>ArchiveDotOrg_Admin::venues</aclResource>
+        <dataProvider class="ArchiveDotOrg\Admin\Ui\Component\Listing\VenueDataProvider" name="archivedotorg_venue_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>venue_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filterSearch name="fulltext"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="archivedotorg_venue_columns">
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>venue_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="venue_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="normalized_name">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Venue Name</label>
+            </settings>
+        </column>
+        <column name="city">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">City</label>
+            </settings>
+        </column>
+        <column name="state">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">State</label>
+            </settings>
+        </column>
+        <column name="country">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Country</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <column name="total_shows">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Shows</label>
+            </settings>
+        </column>
+        <column name="total_artists">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Artists</label>
+            </settings>
+        </column>
+        <column name="total_tracks">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Tracks</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <column name="slug">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Slug</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <column name="alias_count">
+            <settings>
+                <label translate="true">Aliases</label>
+                <sortable>false</sortable>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="ArchiveDotOrg\Admin\Ui\Component\Listing\Column\VenueActions">
+            <settings>
+                <indexField>venue_id</indexField>
+                <resizeEnabled>false</resizeEnabled>
+                <resizeDefaultWidth>107</resizeDefaultWidth>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

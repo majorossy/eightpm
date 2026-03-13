@@ -171,4 +171,11 @@
         </arguments>
     </type>
 
+    <!-- Venue Map Service (singleton for O(1) venue alias lookups) -->
+    <type name="ArchiveDotOrg\Core\Model\VenueMapService" shared="true">
+        <arguments>
+            <argument name="resourceConnection" xsi:type="object">Magento\Framework\App\ResourceConnection</argument>
+        </arguments>
+    </type>
+
 </config>

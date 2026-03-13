@@ -48,29 +48,21 @@ class ArtistVenues implements ResolverInterface
             return [];
         }
 
-        // Get products in this category from the category-product index
         $catProdTable = $connection->getTableName('catalog_category_product');
-        $cpeIntTable = $connection->getTableName('catalog_product_entity_int');
-        $optionValueTable = $connection->getTableName('eav_attribute_option_value');
+        $cpeVarcharTable = $connection->getTableName('catalog_product_entity_varchar');
         $venueTable = $connection->getTableName('archivedotorg_venue');
         $aliasTable = $connection->getTableName('archivedotorg_venue_alias');
 
-        // Query: get venue option values for products in this category, count recordings
         $select = $connection->select()
             ->from(['ccp' => $catProdTable], [])
             ->join(
-                ['cpei' => $cpeIntTable],
-                "cpei.entity_id = ccp.product_id AND cpei.attribute_id = {$venueAttrId} AND cpei.store_id = 0",
-                []
-            )
-            ->join(
-                ['eaov' => $optionValueTable],
-                'cpei.value = eaov.option_id AND eaov.store_id = 0',
-                ['venue_name' => 'eaov.value']
+                ['cpev' => $cpeVarcharTable],
+                "cpev.entity_id = ccp.product_id AND cpev.attribute_id = {$venueAttrId} AND cpev.store_id = 0",
+                ['venue_name' => 'cpev.value']
             )
             ->joinLeft(
                 ['va' => $aliasTable],
-                'va.raw_name = eaov.value',
+                'LOWER(va.raw_name) = LOWER(cpev.value)',
                 []
             )
             ->joinLeft(
@@ -84,7 +76,9 @@ class ArtistVenues implements ResolverInterface
             )
             ->columns(['recording_count' => new \Zend_Db_Expr('COUNT(*)')])
             ->where('ccp.category_id = ?', $categoryId)
-            ->group('eaov.value')
+            ->where('cpev.value IS NOT NULL')
+            ->where('cpev.value != ?', '')
+            ->group('cpev.value')
             ->order('recording_count DESC')
             ->limit(50);
 

@@ -60,7 +60,7 @@ export default function RecordingMetaBlock({
   className = '',
 }: RecordingMetaBlockProps) {
   const {
-    venueAsLink = false,
+    venueAsLink = true,
     venueTruncateLength,
     taperLinkToArchive = false,
     taperIconSize: taperIconSizeOverride,
@@ -93,6 +93,8 @@ export default function RecordingMetaBlock({
               asLink={venueAsLink}
               truncateLength={venueTruncateLength ?? 20}
               className={`${cfg.textXs} truncate`}
+              normalizedName={song.venueNormalizedName}
+              venueSlug={song.venueSlug}
             />
           </>
         )}
@@ -137,6 +139,8 @@ export default function RecordingMetaBlock({
             asLink={venueAsLink}
             truncateLength={venueTruncateLength}
             className={cfg.textSm}
+            normalizedName={song.venueNormalizedName}
+            venueSlug={song.venueSlug}
           />
         </div>
       )}

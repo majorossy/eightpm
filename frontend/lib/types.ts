@@ -29,6 +29,10 @@ export interface Song {
   showDate?: string;             // Performance date (parsed from show_name)
   showVenue?: string;            // Venue name (Archive.org: venue)
   showLocation?: string;         // City/state (Archive.org: coverage)
+  venueNormalizedName?: string;  // Canonical venue name from alias resolution
+  venueSlug?: string;            // Canonical venue slug for routing
+  venueCity?: string;            // Venue city from normalization
+  venueState?: string;           // Venue state from normalization
   // Recording metadata
   taper?: string;                // Who recorded it (Archive.org: taper)
   source?: string;               // Recording equipment (Archive.org: source)
