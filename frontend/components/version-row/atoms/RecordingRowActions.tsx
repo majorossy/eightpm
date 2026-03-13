@@ -50,7 +50,7 @@ const btnBase: React.CSSProperties = {
   fontFamily: 'var(--font-jb-mono), monospace',
   fontSize: '9px',
   fontWeight: 600,
-  padding: '4px 10px',
+  padding: '5px 7px',
   borderRadius: '5px',
   letterSpacing: '0.04em',
   transition: 'all 0.15s',
@@ -58,6 +58,9 @@ const btnBase: React.CSSProperties = {
   flexShrink: 0,
   cursor: 'pointer',
   lineHeight: 1,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '3px',
 };
 
 // ─── Per-button color specs ──────────────────────────────────────────
@@ -88,6 +91,43 @@ const BTN_STYLES = {
     hoverBg: 'rgba(160,130,200,0.24)',
   },
 } as const;
+
+// ─── Inline action icons (9px-scale, inherit currentColor) ────────
+
+const iconPlay = (
+  <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" style={{ flexShrink: 0 }}>
+    <path d="M3 1.5v9l7.5-4.5z" />
+  </svg>
+);
+const iconPause = (
+  <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" style={{ flexShrink: 0 }}>
+    <rect x="2" y="1.5" width="3" height="9" rx="0.5" />
+    <rect x="7" y="1.5" width="3" height="9" rx="0.5" />
+  </svg>
+);
+const iconSkipNext = (
+  <svg width="14" height="14" viewBox="0 0 14 12" fill="currentColor" style={{ flexShrink: 0 }}>
+    <path d="M2 1.5v9l6.5-4.5z" />
+    <rect x="10" y="1.5" width="2" height="9" rx="0.5" />
+  </svg>
+);
+const iconSwap = (
+  <svg width="16" height="14" viewBox="0 0 16 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M11 1l3 3-3 3M14 4H2M5 11L2 8l3-3M2 8h12" />
+  </svg>
+);
+const iconPlus = (
+  <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" style={{ flexShrink: 0 }}>
+    <rect x="5" y="1" width="2" height="10" rx="0.5" />
+    <rect x="1" y="5" width="10" height="2" rx="0.5" />
+  </svg>
+);
+const iconDisc = (
+  <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2" style={{ flexShrink: 0 }}>
+    <rect x="1" y="1" width="10" height="10" rx="2" />
+    <circle cx="6" cy="6" r="2" />
+  </svg>
+);
 
 // ─── Component ────────────────────────────────────────────────────────
 
@@ -176,10 +216,11 @@ export default function RecordingRowActions({
 
   const renderActionBtn = (
     key: keyof typeof BTN_STYLES,
-    label: string,
+    label: React.ReactNode,
     onClick: (e: React.MouseEvent) => void,
     ariaLabel: string,
     forceHover = false,
+    tooltip?: string,
   ) => {
     const s = BTN_STYLES[key];
     const bg = forceHover ? s.hoverBg : s.background;
@@ -191,94 +232,16 @@ export default function RecordingRowActions({
         onMouseEnter={(e) => { e.currentTarget.style.background = s.hoverBg; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = bg; }}
         aria-label={ariaLabel}
+        title={tooltip ?? ariaLabel}
       >
         {label}
       </button>
     );
   };
 
-  // ─── Split button renderer ────────────────────────────────────────
-
-  const renderSplitPlayBtn = () => {
-    const nextStyle = BTN_STYLES['play-next'];
-    const playStyle = BTN_STYLES.play;
-
-    const halfBase: React.CSSProperties = {
-      fontFamily: 'var(--font-jb-mono), monospace',
-      fontSize: '9px',
-      fontWeight: 600,
-      letterSpacing: '0.04em',
-      transition: 'all 0.15s',
-      whiteSpace: 'nowrap',
-      cursor: 'pointer',
-      lineHeight: 1,
-      border: 'none',
-      background: 'transparent',
-    };
-
-    return (
-      <div
-        key="play-split"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          borderRadius: '5px',
-          border: '1px solid rgba(196,112,110,0.25)',
-          overflow: 'hidden',
-          flexShrink: 0,
-        }}
-      >
-        {/* Left: "next" */}
-        <button
-          onClick={handlePlayNext}
-          style={{ ...halfBase, color: nextStyle.color, padding: '4px 2px 4px 10px' }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(200,168,72,0.18)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-          aria-label={`Play ${song.title} next`}
-        >
-          next
-        </button>
-
-        {/* Center: "play" — shared word at the seam */}
-        <span style={{
-          ...halfBase,
-          padding: '4px 1px',
-          color: 'color-mix(in srgb, var(--secondary) 60%, var(--quinary))',
-          cursor: 'default',
-          pointerEvents: 'none',
-        }}>
-          play
-        </span>
-
-        {/* Right: "now" / "pause" */}
-        <button
-          onClick={handlePlay}
-          style={{ ...halfBase, color: playStyle.color, padding: '4px 10px 4px 2px' }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(196,112,110,0.18)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-          aria-label={isCurrentlyPlaying ? 'Pause' : `Play ${song.title} now`}
-        >
-          {isCurrentlyPlaying ? 'pause' : 'now'}
-        </button>
-      </div>
-    );
-  };
-
   // ─── Render ───────────────────────────────────────────────────────
 
   const isFavorited = isInWishlist(song.id);
-
-  // Auto-merge play + play-next into a single split button
-  const hasPlay = actions.includes('play');
-  const hasPlayNext = actions.includes('play-next');
-  const mergedActions: (RecordingAction | 'play-split')[] = hasPlay && hasPlayNext
-    ? actions.reduce<(RecordingAction | 'play-split')[]>((acc, a) => {
-        if (a === 'play') { acc.push('play-split'); return acc; }
-        if (a === 'play-next') return acc; // absorbed into split
-        acc.push(a);
-        return acc;
-      }, [])
-    : actions;
 
   return (
     <>
@@ -287,33 +250,37 @@ export default function RecordingRowActions({
         onMouseEnter={() => onActionHover?.(true)}
         onMouseLeave={() => onActionHover?.(false)}
       >
-        {mergedActions.map((action) => {
+        {actions.map((action) => {
           switch (action) {
-            case 'play-split':
-              return renderSplitPlayBtn();
 
             case 'play':
               return renderActionBtn(
                 'play',
-                isCurrentlyPlaying ? 'pause' : 'play',
+                isCurrentlyPlaying ? iconPause : iconPlay,
                 handlePlay,
                 isCurrentlyPlaying ? 'Pause' : `Play ${song.title}`,
+                false,
+                isCurrentlyPlaying ? 'Pause' : 'Play now',
               );
 
             case 'play-next':
               return renderActionBtn(
                 'play-next',
-                'play next',
+                iconSkipNext,
                 handlePlayNext,
                 `Play ${song.title} next`,
+                false,
+                'Play next',
               );
 
             case 'queue':
               return renderActionBtn(
                 'queue',
-                'queue',
+                iconPlus,
                 handleQueue,
                 `Add ${song.title} to queue`,
+                false,
+                'Add to queue',
               );
 
             case 'swap':
@@ -333,8 +300,9 @@ export default function RecordingRowActions({
                       pointerEvents: 'none',
                     }}
                     aria-label="Currently selected version"
+                    title="Currently selected version"
                   >
-                    {swapLabel}
+                    {iconSwap}
                   </span>
                 );
               }
@@ -346,7 +314,7 @@ export default function RecordingRowActions({
                 >
                   {renderActionBtn(
                     'swap',
-                    swapLabel,
+                    iconSwap,
                     (e) => { e.stopPropagation(); onSwap(e); },
                     'Swap version',
                     swapHighlighted,
@@ -377,6 +345,7 @@ export default function RecordingRowActions({
                       : 'color-mix(in srgb, var(--text-secondary) 40%, transparent)';
                   }}
                   aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+                  title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
                 >
                   {isFavorited ? (
                     <svg className={cfg.icon} fill="currentColor" viewBox="0 0 24 24">
@@ -411,9 +380,10 @@ export default function RecordingRowActions({
                     e.currentTarget.style.background = 'transparent';
                     e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--text-secondary) 25%, transparent)';
                   }}
-                  aria-label="Add to playlist"
+                  aria-label="Add to minidisc"
+                  title="Add to minidisc"
                 >
-                  playlist
+                  {iconDisc}
                 </button>
               );
 

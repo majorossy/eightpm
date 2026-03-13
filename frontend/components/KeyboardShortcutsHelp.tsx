@@ -25,7 +25,7 @@ const shortcuts = [
     ],
   },
   {
-    category: 'Playlist',
+    category: 'MiniDisc',
     items: [
       { keys: ['R'], description: 'Cycle repeat (off → all → one)' },
       { keys: ['L'], description: 'Like/unlike current song' },

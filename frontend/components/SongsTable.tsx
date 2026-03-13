@@ -62,10 +62,17 @@ const API_SORT_FIELDS: Set<string> = new Set(['VERSION_COUNT', 'TITLE', 'ALBUM',
 const PAGE_SIZE = 20;
 const PREFS_KEY = '8pm-song-version-prefs';
 
+function fmtDuration(secs: number | null | undefined): string {
+  if (!secs) return '';
+  const m = Math.floor(secs / 60);
+  const s = Math.round(secs % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 // Shared grid template for desktop — guarantees column alignment across header + all rows
-// Columns: Art | Title | Src | Actions | Date | Venue | Location | Taper | Type | Rating | DLs | Live
+// Columns: Art | Title | Len | Src | Actions | Date | Venue | Location | Taper | Type | Rating | DLs
 // All columns fixed-width so every row (with or without a picked version) is identical.
-const DESKTOP_GRID = '42px 1.2fr 24px 260px 80px 120px 100px 96px 36px 56px 44px 44px';
+const DESKTOP_GRID = '42px 1.2fr 52px 24px 320px 80px 120px 100px 96px 36px 56px 44px';
 const DESKTOP_GAP = '0 12px'; // column gap only
 
 function loadVersionPrefs(): Record<number, Song> {
@@ -490,7 +497,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
             type="text"
             value={searchInput}
             onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Filter songs..."
+            placeholder="Filter tracks..."
             className="w-full pl-9 pr-3 py-1.5 rounded-md text-sm bg-[var(--primary)] text-[var(--text)] border border-[var(--border-subtle-token)] placeholder:text-[var(--text-subdued)] focus:outline-none focus:border-[var(--secondary)] transition-colors"
           />
         </div>
@@ -518,6 +525,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
             <span className="text-[var(--text-subdued)] opacity-40">/</span>
             <SortButton field="ARTIST">Artist</SortButton>
           </div>
+          <div className="text-[11px] font-semibold text-[var(--text-subdued)] uppercase tracking-wider">Len</div>
           <FilterPopover label="Med" options={mediumOptions} selected={mediumFilter} onToggle={toggleMediumFilter} />
           <div />
           <ColHeader field="DATE">Date</ColHeader>
@@ -527,14 +535,13 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
           <FilterPopover label="Src" options={srcOptions} selected={srcFilter} onToggle={toggleSrcFilter} />
           <RatingFilterPopover label="Rating" value={minRating} onChange={setMinRating} />
           <ColHeader field="DOWNLOADS"><svg width={10} height={10} viewBox="0 0 24 24" fill="none" className="shrink-0"><path d="M12 2L2 7v1h20V7L12 2z" style={{ fill: 'color-mix(in srgb, var(--quinary) 55%, transparent)' }} /><rect x="4.5" y="9" width="2" height="6.5" rx="0.4" style={{ fill: 'color-mix(in srgb, var(--quinary) 35%, transparent)' }} /><rect x="9" y="9" width="2" height="6.5" rx="0.4" style={{ fill: 'color-mix(in srgb, var(--quinary) 35%, transparent)' }} /><rect x="13" y="9" width="2" height="6.5" rx="0.4" style={{ fill: 'color-mix(in srgb, var(--quinary) 35%, transparent)' }} /><rect x="17.5" y="9" width="2" height="6.5" rx="0.4" style={{ fill: 'color-mix(in srgb, var(--quinary) 35%, transparent)' }} /><rect x="2" y="17" width="20" height="2" rx="0.5" style={{ fill: 'color-mix(in srgb, var(--quinary) 45%, transparent)' }} /></svg><svg width={6} height={10} viewBox="0 0 10 16" fill="none" className="shrink-0 mr-0.5"><path d="M5 1v11M5 12l-3.5-3.5M5 12l3.5-3.5" style={{ stroke: 'var(--text-tertiary)' }} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>DLs</ColHeader>
-          <ColHeader field="VERSION_COUNT" className="justify-end">Live</ColHeader>
         </div>
       ) : (
         <div className="flex items-center gap-3 px-4 py-2 text-[11px] font-semibold text-[var(--text-subdued)] uppercase tracking-wider border-b border-[var(--border-subtle-token)]/50">
           <ColHeader field="ALBUM" className="w-[36px] shrink-0">Album</ColHeader>
           <ColHeader field="TITLE" className="flex-1 min-w-0">Title</ColHeader>
+          <div className="w-10 shrink-0 text-center">Len</div>
           <div className="w-56 shrink-0 text-center">My Version</div>
-          <ColHeader field="VERSION_COUNT" className="w-10 shrink-0 justify-end">Live</ColHeader>
         </div>
       )}
 
@@ -581,12 +588,32 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                   )}
                 </button>
 
-                {/* Title / Album / Artist */}
+                {/* Title / Album / Artist + version count */}
                 <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} className="min-w-0 text-left cursor-pointer">
-                  <div className="text-sm font-medium text-[var(--text)] truncate">{song.title}</div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-[var(--text)] truncate">{song.title}</span>
+                    {song.versionCount > 0 && (
+                      <span className="shrink-0 inline-flex items-center justify-center min-w-[20px] px-1 py-0.5 rounded-full text-[9px] font-semibold tabular-nums" style={{ background: 'rgba(160,130,200,0.14)', color: '#c0a8e0' }}>
+                        {song.versionCount}
+                      </span>
+                    )}
+                  </div>
                   <div className="text-xs text-[var(--text-subdued)] truncate">{song.albumName}</div>
                   <div className="text-[10px] text-[var(--text-subdued)] truncate opacity-60">{song.artistName}</div>
                 </button>
+
+                {/* Length / Duration */}
+                <div className="flex items-center">
+                  {saved ? (
+                    <button onClick={() => openPicker(song)} className="font-jb-mono text-[10px] tabular-nums cursor-pointer hover:underline" style={{ color: '#c0a8e0' }} title="Swap version">
+                      {fmtDuration(saved.duration)}
+                    </button>
+                  ) : (
+                    <span className="font-jb-mono text-[10px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                      {fmtDuration(song.avgDuration)}
+                    </span>
+                  )}
+                </div>
 
                 {saved ? (
                   <>
@@ -598,7 +625,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                     <div className="min-w-0 overflow-hidden">
                       <RecordingRowActions
                         song={saved}
-                        actions={['swap', 'play-next', 'queue', 'playlist', 'favorite']}
+                        actions={['swap', 'play', 'play-next', 'queue', 'playlist', 'favorite']}
                         size="sm"
                         swapLabel="swap out"
                         onSwap={() => openPicker(song)}
@@ -629,13 +656,13 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                     <div>{saved.downloads != null && saved.downloads > 0 && <a href={`https://archive.org/details/${saved.albumIdentifier}`} target="_blank" rel="noopener noreferrer" className="font-jb-mono text-[9px] tabular-nums hover:underline" style={{ color: 'var(--text-tertiary)' }}>{saved.downloads >= 1000 ? `${(saved.downloads / 1000).toFixed(1)}k` : saved.downloads.toLocaleString()}</a>}</div>
                   </>
                 ) : (
-                  /* Empty state — spans all version columns (3 through 11) */
+                  /* Empty state — spans all version columns */
                   <button
                     onClick={() => openPicker(song)}
                     disabled={song.versionCount === 0}
                     className="relative flex items-center justify-center gap-2.5 h-[42px] rounded-lg cursor-pointer transition-all duration-300 overflow-hidden"
                     style={{
-                      gridColumn: '3 / 12',
+                      gridColumn: '4 / 13',
                       background: 'color-mix(in srgb, var(--quaternary) 4%, transparent)',
                       border: '1px dashed color-mix(in srgb, var(--quaternary) 18%, transparent)',
                     }}
@@ -659,17 +686,6 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                     `}</style>
                   </button>
                 )}
-
-                {/* Live count */}
-                <div className="text-right">
-                  {song.versionCount > 0 ? (
-                    <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded-full text-[10px] font-semibold tabular-nums" style={{ background: 'color-mix(in srgb, var(--tertiary) 15%, transparent)', color: 'var(--tertiary)' }}>
-                      {song.versionCount}
-                    </span>
-                  ) : (
-                    <span className="text-xs text-[var(--text-subdued)]">&mdash;</span>
-                  )}
-                </div>
               </div>
             );
           }
@@ -693,10 +709,28 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                 )}
               </button>
               <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} className="flex-1 min-w-0 text-left cursor-pointer">
-                <div className="text-sm font-medium text-[var(--text)] truncate">{song.title}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium text-[var(--text)] truncate">{song.title}</span>
+                  {song.versionCount > 0 && (
+                    <span className="shrink-0 inline-flex items-center justify-center min-w-[20px] px-1 py-0.5 rounded-full text-[9px] font-semibold tabular-nums" style={{ background: 'rgba(160,130,200,0.14)', color: '#c0a8e0' }}>
+                      {song.versionCount}
+                    </span>
+                  )}
+                </div>
                 <div className="text-xs text-[var(--text-subdued)] truncate">{song.albumName}</div>
                 <div className="text-[10px] text-[var(--text-subdued)] truncate opacity-60">{song.artistName}</div>
               </button>
+              <div className="w-10 shrink-0 text-center">
+                {saved ? (
+                  <button onClick={() => openPicker(song)} className="font-jb-mono text-[10px] tabular-nums cursor-pointer hover:underline" style={{ color: '#c0a8e0' }} title="Swap version">
+                    {fmtDuration(saved.duration)}
+                  </button>
+                ) : (
+                  <span className="font-jb-mono text-[10px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                    {fmtDuration(song.avgDuration)}
+                  </span>
+                )}
+              </div>
               <div className="w-56 shrink-0">
                 {saved ? (
                   <div className="rounded-lg overflow-hidden px-2 py-1.5" style={{ background: 'color-mix(in srgb, var(--surface-card) 80%, transparent)' }}>
@@ -744,15 +778,6 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                       .group:hover .pick-version-btn span { color: var(--quaternary) !important; }
                     `}</style>
                   </button>
-                )}
-              </div>
-              <div className="w-10 shrink-0 text-right">
-                {song.versionCount > 0 ? (
-                  <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded-full text-[10px] font-semibold tabular-nums" style={{ background: 'color-mix(in srgb, var(--secondary) 15%, transparent)', color: 'var(--secondary)' }}>
-                    {song.versionCount}
-                  </span>
-                ) : (
-                  <span className="text-xs text-[var(--text-subdued)]">&mdash;</span>
                 )}
               </div>
             </div>

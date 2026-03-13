@@ -146,7 +146,7 @@ function ArtistsContentInner() {
       {/* Songs Table - all artists */}
       <div className="px-2 sm:px-4 md:px-8 pt-4 md:pt-6 mx-auto max-w-[1400px]">
         <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
-          Songs
+          Tracks
         </h2>
         <p className="text-sm text-secondary mb-4 text-center">
           Studio compositions across all artists, sorted by most recorded

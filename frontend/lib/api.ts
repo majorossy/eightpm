@@ -1835,6 +1835,7 @@ const SONGS_QUERY = `
         album_artwork_url
         artist_name
         artist_slug
+        avg_duration
       }
       total_count
       page_info {
@@ -1868,6 +1869,7 @@ export async function getTrackCatalog(params: {
           album_artwork_url: string | null;
           artist_name: string;
           artist_slug: string;
+          avg_duration: number | null;
         }>;
         total_count: number;
         page_info: { page_size: number; current_page: number; total_pages: number };
@@ -1894,6 +1896,7 @@ export async function getTrackCatalog(params: {
         albumArtworkUrl: item.album_artwork_url,
         artistName: item.artist_name,
         artistSlug: item.artist_slug,
+        avgDuration: item.avg_duration ?? null,
       })),
       totalCount: songs.total_count,
       pageInfo: {

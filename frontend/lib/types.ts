@@ -362,6 +362,7 @@ export interface SongItem {
   albumArtworkUrl: string | null;
   artistName: string;
   artistSlug: string;
+  avgDuration: number | null;
 }
 
 export interface SongsResult {

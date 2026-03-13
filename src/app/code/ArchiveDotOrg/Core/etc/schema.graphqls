@@ -272,6 +272,7 @@ type SongItem {
     album_artwork_url: String @doc(description: "Album artwork from studio albums table")
     artist_name: String! @doc(description: "Grandparent artist name")
     artist_slug: String! @doc(description: "Grandparent artist URL key")
+    avg_duration: Float @doc(description: "Average track duration in seconds across live recordings")
 }
 
 type SongsOutput {

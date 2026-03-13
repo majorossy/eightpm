@@ -33,8 +33,8 @@ const steps = [
   },
   {
     number: 3,
-    title: 'Create Playlists',
-    description: "Found a great show or track? Add it to your library or create custom playlists. Your playlists are saved locally in your browser, so they're always available when you return.",
+    title: 'Create MiniDiscs',
+    description: "Found a great show or track? Add it to your library or create custom minidiscs. Your minidiscs are saved locally in your browser, so they're always available when you return.",
   },
   {
     number: 4,
@@ -158,7 +158,7 @@ export default function HowItWorksPage() {
         </div>
         <div className="bg-surface-card border border-default rounded-lg p-4 text-center">
           <PlaylistIcon className="w-8 h-8 text-accent mx-auto mb-3" />
-          <h3 className="text-sm font-semibold text-accent mb-1">Playlists</h3>
+          <h3 className="text-sm font-semibold text-accent mb-1">MiniDiscs</h3>
           <p className="text-xs text-secondary">Organize your favorites</p>
         </div>
         <div className="bg-surface-card border border-default rounded-lg p-4 text-center">

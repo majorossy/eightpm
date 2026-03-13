@@ -126,7 +126,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
               </Dialog.Title>
               <Dialog.Description className="text-secondary text-sm mt-1">
                 {isRegistering
-                  ? 'Join to save your playlists and favorites'
+                  ? 'Join to save your minidiscs and favorites'
                   : 'Sign in to sync your library across devices'}
               </Dialog.Description>
             </div>

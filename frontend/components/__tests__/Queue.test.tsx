@@ -261,10 +261,10 @@ describe('Queue Component', () => {
       ).toBeInTheDocument();
     });
 
-    it('does not show "Save as Playlist" button when empty', () => {
+    it('does not show "Save as MiniDisc" button when empty', () => {
       render(<Queue />);
 
-      expect(screen.queryByText('Save as Playlist')).not.toBeInTheDocument();
+      expect(screen.queryByText('Save as MiniDisc')).not.toBeInTheDocument();
     });
   });
 
@@ -364,10 +364,10 @@ describe('Queue Component', () => {
       expect(mockQueueContext.removeItem).toHaveBeenCalledTimes(1);
     });
 
-    it('shows "Save as Playlist" button', () => {
+    it('shows "Save as MiniDisc" button', () => {
       render(<Queue />);
 
-      expect(screen.getByText('Save as Playlist')).toBeInTheDocument();
+      expect(screen.getByText('Save as MiniDisc')).toBeInTheDocument();
     });
 
     it('shows "Clear all" button on desktop', () => {

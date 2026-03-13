@@ -66,7 +66,7 @@ export default function AccountPage() {
             className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
           >
             <h3 className="text-lg font-bold text-white mb-2">MiniDiscs</h3>
-            <p className="text-secondary text-sm">Your custom playlists</p>
+            <p className="text-secondary text-sm">Your custom minidiscs</p>
           </Link>
         </div>
 

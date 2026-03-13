@@ -58,6 +58,7 @@ class Songs implements ResolverInterface
         $catIntTable = $connection->getTableName('catalog_category_entity_int');
         $catVarcharTable = $connection->getTableName('catalog_category_entity_varchar');
         $catProductTable = $connection->getTableName('catalog_category_product');
+        $prodVarcharTable = $connection->getTableName('catalog_product_entity_varchar');
         $studioAlbumsTable = $connection->getTableName('archivedotorg_studio_albums');
 
         // EAV join conditions
@@ -161,6 +162,17 @@ class Songs implements ResolverInterface
                 'album_artwork_url' => new \Zend_Db_Expr('MAX(sa.artwork_url)'),
                 'album_name' => new \Zend_Db_Expr('MIN(album_name.value)'),
                 'album_slug' => new \Zend_Db_Expr('MIN(album_url.value)'),
+                // Average duration in seconds across all live recordings of this song
+                'avg_duration' => new \Zend_Db_Expr(sprintf(
+                    '(SELECT AVG(CASE WHEN pv.value LIKE \'%%:%%\' THEN '
+                    . 'SUBSTRING_INDEX(pv.value, \':\', 1) * 60 + SUBSTRING_INDEX(pv.value, \':\', -1) '
+                    . 'ELSE NULL END) '
+                    . 'FROM %s AS cp2 '
+                    . 'INNER JOIN %s AS pv ON pv.entity_id = cp2.product_id AND pv.attribute_id = 238 AND pv.store_id = 0 '
+                    . 'WHERE cp2.category_id = MIN(song.entity_id))',
+                    $catProductTable,
+                    $prodVarcharTable
+                )),
             ]);
 
         $baseConditions($dataSelect);
@@ -205,6 +217,7 @@ class Songs implements ResolverInterface
                 'album_artwork_url' => $row['album_artwork_url'],
                 'artist_name' => $row['artist_name'],
                 'artist_slug' => $row['artist_slug'] ?? '',
+                'avg_duration' => $row['avg_duration'] !== null ? (float)$row['avg_duration'] : null,
             ];
         }
 
