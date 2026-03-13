@@ -138,20 +138,79 @@ export default function MiniDiscsPage() {
               href={`/minidiscs/${disc.id}`}
               className="flex flex-col gap-3 p-4 rounded-lg hover:bg-white/10 transition-colors group"
             >
-              <div className="w-full aspect-square rounded bg-surface-elevated overflow-hidden relative">
-                {disc.coverArt ? (
-                  <Image src={disc.coverArt} alt={disc.name || 'MiniDisc'} fill sizes="200px" quality={80} className="object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <svg className="w-12 h-12 text-border" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
-                    </svg>
+              <div className="w-full aspect-square rounded-lg overflow-hidden relative"
+                style={{
+                  background: 'linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 50%, #222 100%)',
+                  border: '2px solid #3a3a3a',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+                }}
+              >
+                {/* Shell texture lines */}
+                <div className="absolute inset-0 opacity-[0.03]" style={{
+                  backgroundImage: 'repeating-linear-gradient(90deg, white 0px, white 1px, transparent 1px, transparent 4px)',
+                }} />
+
+                {/* Sliding shutter groove */}
+                <div className="absolute top-0 left-[15%] right-[55%] h-[6px] rounded-b-sm"
+                  style={{ background: 'linear-gradient(180deg, #111, #252525)', borderBottom: '1px solid #3a3a3a' }}
+                />
+
+                {/* Disc window */}
+                <div className="absolute top-[12%] left-1/2 -translate-x-1/2 w-[65%] aspect-square rounded-full overflow-hidden"
+                  style={{
+                    background: 'radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 60%, #111 100%)',
+                    border: '2px solid #333',
+                    boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.6)',
+                  }}
+                >
+                  {/* Disc surface — holographic shimmer */}
+                  <div className="absolute inset-[8%] rounded-full overflow-hidden"
+                    style={{
+                      background: 'conic-gradient(from 0deg, rgba(90,184,160,0.15), rgba(200,180,104,0.12), rgba(144,136,200,0.15), rgba(199,90,90,0.1), rgba(90,184,160,0.15))',
+                    }}
+                  >
+                    {/* Track grooves */}
+                    <div className="absolute inset-0 rounded-full" style={{
+                      background: 'repeating-radial-gradient(circle at center, transparent 0px, transparent 3px, rgba(255,255,255,0.04) 3px, rgba(255,255,255,0.04) 4px)',
+                    }} />
+                    {/* Logo in center */}
+                    <div className="absolute inset-[25%] rounded-full overflow-hidden">
+                      <Image src="/favicon.svg" alt="" fill sizes="100px" className="object-cover" />
+                    </div>
                   </div>
-                )}
-              </div>
-              <div>
-                <p className="text-white font-medium truncate">{disc.name}</p>
-                <p className="text-secondary text-sm">{disc.songs.length} songs</p>
+                  {/* Center spindle hole */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[10%] aspect-square rounded-full"
+                    style={{ background: '#111', border: '1px solid #333' }}
+                  />
+                </div>
+
+                {/* Corner notch (bottom-right) */}
+                <div className="absolute bottom-2 right-2 w-3 h-3 rounded-tl-sm"
+                  style={{ background: 'linear-gradient(135deg, #333, #222)', border: '1px solid #3a3a3a' }}
+                />
+                {/* Card stock label — taped on */}
+                <div className="absolute bottom-3 left-3 right-3">
+                  {/* Tape strip */}
+                  <div
+                    className="absolute -top-2 left-1/2 -translate-x-1/2 w-12 h-3 rounded-[1px] z-10"
+                    style={{
+                      background: 'linear-gradient(180deg, rgba(255,248,220,0.88) 0%, rgba(255,240,195,0.8) 100%)',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    }}
+                  />
+                  {/* Card stock */}
+                  <div
+                    className="rounded px-3 py-2.5 text-center"
+                    style={{
+                      background: 'linear-gradient(180deg, #faf4e8 0%, #f0e6d4 100%)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.6)',
+                      border: '1px solid rgba(200,180,150,0.4)',
+                    }}
+                  >
+                    <p className="font-bold text-sm line-clamp-2 leading-tight" style={{ color: '#1a0f08', fontFamily: 'Georgia, serif' }}>{disc.name}</p>
+                    <p className="text-[10px] mt-1" style={{ color: '#6b5a48' }}>{disc.songs.length} track{disc.songs.length !== 1 ? 's' : ''}</p>
+                  </div>
+                </div>
               </div>
             </Link>
           ))}
