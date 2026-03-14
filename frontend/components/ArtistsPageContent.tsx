@@ -82,10 +82,13 @@ const getArtistColor = (slug: string): string => {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 };
 
+type HomeTab = 'albums' | 'artists' | 'tracks';
+
 // Internal component that uses the sorted artists from context
 function ArtistsContentInner() {
   const { sortedArtists } = useFestivalSort();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [activeTab, setActiveTab] = useState<HomeTab>('artists');
 
   // Check for reduced motion preference
   useEffect(() => {
@@ -141,21 +144,43 @@ function ArtistsContentInner() {
           return mapped;
         })}
         onStartListening={scrollToArtists}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
 
-      {/* Songs Table - all artists */}
-      <div className="px-2 sm:px-4 md:px-8 pt-4 md:pt-6 mx-auto max-w-[1400px]">
-        <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
-          Tracks
-        </h2>
-        <p className="text-sm text-secondary mb-4 text-center">
-          Studio compositions across all artists, sorted by most recorded
-        </p>
-        <SongsTable />
+      {/* Songs Table - tracks tab */}
+      {activeTab === 'tracks' && (
+      <div className="px-2 sm:px-4 md:px-8 mx-auto max-w-[1400px]">
+        <div
+          className="relative rounded-xl p-4 md:p-8"
+          style={{
+            border: '1px solid var(--accent-border-decorative)',
+            background: 'linear-gradient(180deg, var(--accent-gradient-warm) 0%, var(--accent-gradient-faint) 40%, transparent 100%)'
+          }}
+        >
+          <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 rounded-tl-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+          <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 rounded-tr-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 rounded-bl-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 rounded-br-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+          <SongsTable />
+        </div>
       </div>
+      )}
 
-      {/* All albums in continuous flow */}
-      <div id="artists-content" className="px-2 sm:px-4 md:px-8 pt-4 md:pt-6 mx-auto max-w-[1400px]">
+      {/* All albums in continuous flow - albums tab */}
+      {activeTab === 'albums' && (
+      <div id="artists-content" className="px-2 sm:px-4 md:px-8 mx-auto max-w-[1400px]">
+        <div
+          className="relative rounded-xl p-4 md:p-8"
+          style={{
+            border: '1px solid var(--accent-border-decorative)',
+            background: 'linear-gradient(180deg, var(--accent-gradient-warm) 0%, var(--accent-gradient-faint) 40%, transparent 100%)'
+          }}
+        >
+          <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 rounded-tl-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+          <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 rounded-tr-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 rounded-bl-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 rounded-br-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
           {allAlbums.map((album, index) => {
             const isComingSoon = album.totalSongs === 0 && !album.coverArt;
@@ -293,6 +318,30 @@ function ArtistsContentInner() {
             </div>
             );
           })}
+        </div>
+        </div>
+      </div>
+      )}
+
+      {/* Stats */}
+      <div className="flex justify-between w-full md:justify-center md:gap-10 text-center mt-4 md:mt-6">
+        <div className="flex-1 md:flex-none md:w-40">
+          <div className="text-xl md:text-3xl font-bold text-[var(--tertiary)]">10,000+</div>
+          <div className="text-[10px] md:text-xs text-[var(--text-dim)] uppercase tracking-[1px] md:tracking-[2px] mt-0.5">
+            Live Shows
+          </div>
+        </div>
+        <div className="flex-1 md:flex-none md:w-40">
+          <div className="text-xl md:text-3xl font-bold text-[var(--tertiary)]">50+</div>
+          <div className="text-[10px] md:text-xs text-[var(--text-dim)] uppercase tracking-[1px] md:tracking-[2px] mt-0.5">
+            Years of Music
+          </div>
+        </div>
+        <div className="flex-1 md:flex-none md:w-40">
+          <div className="text-xl md:text-3xl font-bold text-[var(--tertiary)]">Free</div>
+          <div className="text-[10px] md:text-xs text-[var(--text-dim)] uppercase tracking-[1px] md:tracking-[2px] mt-0.5">
+            Forever
+          </div>
         </div>
       </div>
     </div>

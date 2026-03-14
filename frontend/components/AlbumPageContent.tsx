@@ -77,7 +77,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const oldestOverrides = useMemo(() => computeVirtualOverrides(allTracks, 'oldest'), [allTracks]);
   const newestOverrides = useMemo(() => computeVirtualOverrides(allTracks, 'newest'), [allTracks]);
 
-  // Auto-load cassette from ?cassette=<id> query param (supports virtual + saved IDs)
+  // Auto-load cassette from ?cassette=<id> query param, or default to Best Versions
   const hasAutoLoaded = useRef(false);
   useEffect(() => {
     if (hasAutoLoaded.current) return;
@@ -97,8 +97,13 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
           setAll(cassette.versionOverrides);
         }
       }
+    } else if (showVirtualCassettes && getOverridesMap().size === 0) {
+      // No query param, no saved preferences — auto-select Best Versions
+      hasAutoLoaded.current = true;
+      setSelectedCassetteId(VIRTUAL_BEST_ID);
+      setAll(bestOverrides);
     }
-  }, [searchParams, savedCassettes, setAll, bestOverrides, oldestOverrides, newestOverrides]);
+  }, [searchParams, savedCassettes, setAll, bestOverrides, oldestOverrides, newestOverrides, showVirtualCassettes, getOverridesMap]);
 
   // Check if this album is currently loaded in the queue
   const isCurrentAlbum = currentItem?.albumSource?.albumIdentifier === album.identifier;

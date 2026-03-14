@@ -3,16 +3,16 @@
 // EightPmTopBar - Top navigation bar with breadcrumbs and theme toggle
 
 import Breadcrumb from './Breadcrumb';
+import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 
-interface EightPmTopBarProps {
-  transparent?: boolean;
-}
+export default function EightPmTopBar() {
+  const { breadcrumbs } = useBreadcrumbs();
+  const isHeroPage = breadcrumbs.length === 0;
 
-export default function EightPmTopBar({ transparent = false }: EightPmTopBarProps) {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-colors ${
-        transparent ? 'bg-transparent' : 'bg-[var(--bg)]'
+        isHeroPage ? 'bg-transparent' : 'bg-[var(--bg)]'
       }`}
     >
       {/* Breadcrumb navigation - constrained to same width as page content */}
@@ -20,8 +20,8 @@ export default function EightPmTopBar({ transparent = false }: EightPmTopBarProp
         <Breadcrumb />
       </div>
 
-      {/* Soft gradient fade at bottom - uses CSS variable */}
-      {!transparent && (
+      {/* Soft gradient fade at bottom - uses CSS variable (hidden on hero pages) */}
+      {!isHeroPage && (
         <div
           className="absolute bottom-0 left-0 right-0 h-4 pointer-events-none -mb-4"
           style={{

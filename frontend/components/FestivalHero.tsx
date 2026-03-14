@@ -21,9 +21,13 @@ interface LineupArtist {
   formationYear?: number;
 }
 
+type HomeTab = 'albums' | 'artists' | 'tracks';
+
 interface FestivalHeroProps {
   artists: LineupArtist[];
   onStartListening?: () => void;
+  activeTab: HomeTab;
+  onTabChange: (tab: HomeTab) => void;
 }
 
 interface ArtistStatsTooltipProps {
@@ -194,7 +198,7 @@ function ArtistStatsTooltip({
   );
 }
 
-export default function FestivalHero({ artists, onStartListening }: FestivalHeroProps) {
+export default function FestivalHero({ artists, onStartListening, activeTab, onTabChange }: FestivalHeroProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   // Check for reduced motion preference
@@ -343,7 +347,7 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
 
   return (
     <section
-      className="festival-hero-section flex flex-col items-center relative overflow-hidden pt-0.5 pb-4 px-4 md:pt-1 md:pb-6 md:px-10"
+      className="festival-hero-section flex flex-col items-center relative overflow-hidden pt-3 pb-0 px-4 md:pt-3 md:pb-0 md:px-10"
     >
       {/* Decorative stars */}
       <DecorativeStars />
@@ -354,14 +358,12 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
         <div className="mb-4 flex items-center justify-center gap-2">
           <div className="flex flex-col items-center">
             <span
-              className="text-[var(--text-dim)] text-sm"
-              style={{ letterSpacing: '0.35em' }}
+              className="text-[var(--text-dim)] text-[9px] sm:text-sm tracking-[0.15em] sm:tracking-[0.35em] whitespace-nowrap"
             >
               Take me to another place she said
             </span>
             <span
-              className="text-[var(--text-dim)] text-sm"
-              style={{ letterSpacing: '0.35em' }}
+              className="text-[var(--text-dim)] text-[9px] sm:text-sm tracking-[0.15em] sm:tracking-[0.35em] whitespace-nowrap"
             >
               Take me to another time
             </span>
@@ -394,26 +396,43 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
         <div className="mb-6 md:mb-8 flex items-center justify-center gap-3">
           <div
             className="h-px w-12"
-            style={{ background: 'linear-gradient(90deg, transparent, var(--secondary))' }}
+            style={{ background: 'linear-gradient(90deg, transparent, var(--text))' }}
           />
           <span
-            className="text-[var(--secondary)] text-sm"
-            style={{ letterSpacing: '0.2em' }}
+            className="text-[var(--text)] text-[10px] sm:text-sm tracking-[0.08em] sm:tracking-[0.2em] whitespace-nowrap"
           >
             it's Archive.org but by Album
           </span>
           <div
             className="h-px w-12"
-            style={{ background: 'linear-gradient(90deg, var(--secondary), transparent)' }}
+            style={{ background: 'linear-gradient(90deg, var(--text), transparent)' }}
           />
         </div>
 
-        {/* Algorithm Selector - appears under tagline */}
-        <div className="mb-6 md:mb-8 flex justify-center w-full">
-          <AlgorithmSelector />
+        {/* Section pills */}
+        <div className="mb-6 md:mb-8 flex justify-center">
+          <div
+            className="inline-flex rounded-full p-1"
+            style={{ background: 'color-mix(in srgb, var(--text) 8%, transparent)' }}
+          >
+            {(['albums', 'artists', 'tracks'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => onTabChange(tab)}
+                className="px-5 py-1.5 rounded-full text-sm font-medium transition-all"
+                style={{
+                  background: activeTab === tab ? 'var(--secondary)' : 'transparent',
+                  color: activeTab === tab ? 'white' : 'var(--text-dim)',
+                }}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Roster (Bordered lineup container) */}
+        {/* Roster frame — artists tab only */}
+        {activeTab === 'artists' && (
         <div className="w-full mb-6 md:mb-8 flex justify-center">
             <div
               className="relative rounded-xl p-4 md:p-8"
@@ -428,6 +447,11 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
             <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 rounded-tr-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
             <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 rounded-bl-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
             <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 rounded-br-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+
+            {/* Algorithm Selector */}
+            <div className="mb-4 md:mb-6 flex justify-center w-full">
+              <AlgorithmSelector />
+            </div>
 
             {/* Artist names */}
             <div
@@ -495,38 +519,8 @@ export default function FestivalHero({ artists, onStartListening }: FestivalHero
             </div>
             </div>
         </div>
+        )}
 
-        {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-center mt-4 md:mt-6">
-          <div>
-            <div className="text-xl md:text-3xl font-bold text-[var(--tertiary)]">10,000+</div>
-            <div className="text-[10px] md:text-xs text-[var(--text-dim)] uppercase tracking-[1px] md:tracking-[2px] mt-0.5">
-              Live Shows
-            </div>
-          </div>
-          <div>
-            <div className="text-xl md:text-3xl font-bold text-[var(--tertiary)]">50+</div>
-            <div className="text-[10px] md:text-xs text-[var(--text-dim)] uppercase tracking-[1px] md:tracking-[2px] mt-0.5">
-              Years of Music
-            </div>
-          </div>
-          <div>
-            <div className="text-xl md:text-3xl font-bold text-[var(--tertiary)]">Free</div>
-            <div className="text-[10px] md:text-xs text-[var(--text-dim)] uppercase tracking-[1px] md:tracking-[2px] mt-0.5">
-              Forever
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom decoration */}
-        <a
-          href="https://archive.org/details/etree"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[var(--text-dim)] text-[10px] md:text-xs tracking-[2px] md:tracking-[4px] uppercase opacity-50 mt-6 md:mt-8 hover:opacity-80 hover:text-[var(--tertiary)] transition-all duration-200"
-        >
-          Powered by Archive.org
-        </a>
       </div>
     </section>
   );

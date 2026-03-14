@@ -11,7 +11,7 @@ import { PlayerProvider, usePlayer } from '@/context/PlayerContext';
 import { RecentlyPlayedProvider } from '@/context/RecentlyPlayedContext';
 import { QualityProvider } from '@/context/QualityContext';
 import { ThemeProvider } from '@/context/ThemeContext';
-import { BreadcrumbProvider } from '@/context/BreadcrumbContext';
+import { BreadcrumbProvider, useBreadcrumbs } from '@/context/BreadcrumbContext';
 import { MobileUIProvider, useMobileUI } from '@/context/MobileUIContext';
 import { MagentoAuthProvider } from '@/context/MagentoAuthContext';
 import BottomPlayer from '@/components/BottomPlayer';
@@ -125,6 +125,9 @@ function InnerLayout({ children }: { children: ReactNode }) {
   // 50px nav bar (all screens) + player + 16px breathing room
   const mainPaddingBottom = effectivePlayerHeight + 50 + 16;
 
+  const { breadcrumbs } = useBreadcrumbs();
+  const isHeroPage = breadcrumbs.length === 0;
+
   // Jamify layout (only theme now)
   return (
     <>
@@ -151,10 +154,10 @@ function InnerLayout({ children }: { children: ReactNode }) {
       {/* Top bar with breadcrumbs - OUTSIDE main for sticky positioning */}
       <EightPmTopBar />
 
-      {/* Main content area */}
+      {/* Main content area — hero pages handle their own top padding */}
       <main
         id="main-content"
-        className="min-h-screen relative z-10 pt-14"
+        className={`min-h-screen relative z-10 ${isHeroPage ? 'pt-0' : 'pt-14'}`}
         style={{ paddingBottom: mainPaddingBottom }}
       >
         {children}
