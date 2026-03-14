@@ -148,6 +148,30 @@ type StudioAlbum {
     artwork_url: String @doc(description: "Album artwork URL")
     cached_image_path: String @doc(description: "Cached local image path")
     track_count: Int @doc(description: "Number of tracks on the studio album")
+    is_locked: Boolean @doc(description: "Whether artwork is locked against auto-update")
+}
+
+input ArtworkOverrideInput {
+    category_id: Int! @doc(description: "Category ID to override artwork for")
+    artwork_url: String! @doc(description: "New artwork URL")
+    type: String! @doc(description: "Override type: album_artwork or band_image")
+    notes: String @doc(description: "Optional notes about this override")
+}
+
+type ArtworkOverrideOutput {
+    success: Boolean! @doc(description: "Whether the operation succeeded")
+    artwork_url: String @doc(description: "The applied artwork URL")
+    is_locked: Boolean @doc(description: "Whether the artwork is now locked")
+    message: String @doc(description: "Status or error message")
+}
+
+type Mutation {
+    setArtworkOverride(input: ArtworkOverrideInput!): ArtworkOverrideOutput
+        @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SetArtworkOverride")
+        @doc(description: "Set a manual artwork override and lock it against auto-update")
+    removeArtworkOverride(category_id: Int!, type: String!): ArtworkOverrideOutput
+        @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\RemoveArtworkOverride")
+        @doc(description: "Remove artwork lock to allow auto-update again")
 }
 
 type Venue {
@@ -178,6 +202,9 @@ type Venue {
     nearby_venues(
         radius_miles: Float = 50 @doc(description: "Search radius in miles")
     ): [Venue] @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\NearbyVenues") @doc(description: "Nearby venues within radius")
+    top_songs(
+        limit: Int = 25 @doc(description: "Maximum number of songs to return")
+    ): [VenueSongStat] @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\VenueTopSongs") @doc(description: "Most frequently played songs at this venue")
 }
 
 type VenueShow {
@@ -238,6 +265,14 @@ type VenueArtist {
     name: String! @doc(description: "Artist name")
     slug: String! @doc(description: "Artist URL slug")
     show_count: Int! @doc(description: "Number of shows at this venue")
+}
+
+type VenueSongStat {
+    song_title: String! @doc(description: "Song title")
+    play_count: Int! @doc(description: "Number of times played at this venue")
+    artists: [String] @doc(description: "Artists who played this song here")
+    first_played: String @doc(description: "Earliest date this song was played")
+    last_played: String @doc(description: "Most recent date this song was played")
 }
 
 type VenuesOutput {

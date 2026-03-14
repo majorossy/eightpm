@@ -395,6 +395,41 @@ describe('Queue Component', () => {
         expect(mockPlayerContext.playFromQueue).toHaveBeenCalled();
       }
     });
+
+    it('renders transport controls (previous, play/pause, next)', () => {
+      render(<Queue />);
+
+      expect(screen.getByLabelText('Previous track')).toBeInTheDocument();
+      expect(screen.getByLabelText('Play')).toBeInTheDocument();
+      expect(screen.getByLabelText('Next track')).toBeInTheDocument();
+    });
+
+    it('calls togglePlay when play/pause button is clicked', () => {
+      render(<Queue />);
+
+      const playBtn = screen.getByLabelText('Play');
+      fireEvent.click(playBtn);
+
+      expect(mockPlayerContext.togglePlay).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls playPrev and playNext when prev/next buttons are clicked', () => {
+      render(<Queue />);
+
+      fireEvent.click(screen.getByLabelText('Previous track'));
+      expect(mockPlayerContext.playPrev).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(screen.getByLabelText('Next track'));
+      expect(mockPlayerContext.playNext).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows Pause label when isPlaying is true', () => {
+      mockPlayerContext.isPlaying = true;
+      render(<Queue />);
+
+      expect(screen.getByLabelText('Pause')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Play')).not.toBeInTheDocument();
+    });
   });
 
   describe('album group headers', () => {

@@ -322,7 +322,7 @@ export default function MiniDiscDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
-  const { minidiscs, getMiniDisc, deleteMiniDisc, removeFromMiniDisc, updateMiniDisc, reorderMiniDisc } = useMiniDiscs();
+  const { minidiscs, getMiniDisc, cloneMiniDisc, deleteMiniDisc, removeFromMiniDisc, updateMiniDisc, reorderMiniDisc } = useMiniDiscs();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { playAlbum } = useQueue();
   const { currentSong, isPlaying, togglePlay, playSong } = usePlayer();
@@ -371,7 +371,7 @@ export default function MiniDiscDetailPage() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: 'Library', href: '/my-library', type: 'library' },
+      { label: 'My Library', href: '/my-library', type: 'library' },
       { label: 'MiniDiscs', href: '/my-library/minidiscs', type: 'library' },
       { label: disc?.name || 'MiniDisc', type: 'library' },
     ]);
@@ -637,6 +637,20 @@ export default function MiniDiscDetailPage() {
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button onClick={() => cloneMiniDisc(disc.id)}
+                className="w-[34px] h-[34px] rounded-[7px] flex items-center justify-center transition-all"
+                style={{
+                  border: '1px solid color-mix(in srgb, white 7%, transparent)',
+                  background: 'color-mix(in srgb, white 4%, transparent)',
+                  color: 'var(--text-tertiary)',
+                }}
+                aria-label="Duplicate"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                 </svg>
               </button>
               <button onClick={() => setShowDeleteConfirm(true)}

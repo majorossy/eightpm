@@ -13,6 +13,7 @@ use ArchiveDotOrg\Customer\Exception\CollectionException;
 class CassetteRepository implements CassetteRepositoryInterface
 {
     private const MAX_CASSETTES = 500;
+    private const MAX_PAGE_SIZE = 500;
 
     private CassetteFactory $cassetteFactory;
     private CassetteResource $cassetteResource;
@@ -28,17 +29,31 @@ class CassetteRepository implements CassetteRepositoryInterface
         $this->collectionFactory = $collectionFactory;
     }
 
-    public function getByCustomerId(int $customerId): array
+    public function getByCustomerId(int $customerId, int $pageSize = 0, int $currentPage = 1): array
     {
         $collection = $this->collectionFactory->create();
         $collection->addFieldToFilter('customer_id', $customerId);
         $collection->setOrder('updated_at', 'DESC');
+
+        if ($pageSize > 0) {
+            $pageSize = min($pageSize, self::MAX_PAGE_SIZE);
+            $currentPage = max(1, $currentPage);
+            $collection->setPageSize($pageSize);
+            $collection->setCurPage($currentPage);
+        }
 
         $items = [];
         foreach ($collection as $item) {
             $items[] = $item->getData();
         }
         return $items;
+    }
+
+    public function getCountByCustomerId(int $customerId): int
+    {
+        $collection = $this->collectionFactory->create();
+        $collection->addFieldToFilter('customer_id', $customerId);
+        return $collection->getSize();
     }
 
     public function save(int $customerId, array $data): Cassette
@@ -71,7 +86,7 @@ class CassetteRepository implements CassetteRepositoryInterface
         $allowedFields = [
             'name', 'album_identifier', 'artist_slug', 'artist_name',
             'album_name', 'cover_art', 'show_date', 'show_venue',
-            'show_location', 'version_overrides'
+            'show_location', 'version_overrides', 'color_index'
         ];
         foreach ($allowedFields as $field) {
             if (array_key_exists($field, $data)) {

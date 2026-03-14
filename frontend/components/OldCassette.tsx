@@ -92,28 +92,28 @@ export default function OldCassette({ name, albumName, artistName, showVenue, sh
           <ellipse cx="80" cy="30" rx="50" ry="20" fill="rgba(255,255,240,0.25)"/>
 
           {/* Handwritten text - dynamic */}
-          <text x="8" y="22" fontFamily="var(--font-caveat), cursive" fontSize="22" fontWeight="700" fill="#1a0e04" transform="rotate(-0.5,8,22)">
+          <text x="8" y="22" fontFamily="var(--font-caveat), cursive" fontSize="26" fontWeight="700" fill="#1a0e04" transform="rotate(-0.5,8,22)">
             {truncate(name, 22)}
           </text>
-          <text x="9" y="40" fontFamily="var(--font-caveat), cursive" fontSize="13" fill="#3a2810">
+          <text x="9" y="40" fontFamily="var(--font-caveat), cursive" fontSize="16" fill="#3a2810">
             {truncate(showVenue || albumName, 28)}
           </text>
-          <text x="9" y="56" fontFamily="var(--font-caveat), cursive" fontSize="13" fill="#3a2810" fontStyle="italic">
+          <text x="9" y="56" fontFamily="var(--font-caveat), cursive" fontSize="16" fill="#3a2810" fontStyle="italic">
             {truncate(artistName, 22)}
           </text>
           {date && (
             <>
-              <text x="8" y="74" fontFamily="var(--font-caveat), cursive" fontSize="12" fill="#5a3a10" transform="rotate(0.8,8,74)">
+              <text x="8" y="74" fontFamily="var(--font-caveat), cursive" fontSize="14" fill="#5a3a10" transform="rotate(0.8,8,74)">
                 {date}
               </text>
               <line x1="8" y1="76" x2={8 + date.length * 5.5} y2="75" stroke="#5a3a10" strokeWidth="0.8" opacity="0.5"/>
             </>
           )}
-          <text x="8" y="86" fontFamily="var(--font-caveat), cursive" fontSize="10" fill="#7a5020">aud tape</text>
+          <text x="8" y="86" fontFamily="var(--font-caveat), cursive" fontSize="12" fill="#7a5020">aud tape</text>
 
           {/* Picks annotation */}
           {picks && (
-            <text x="175" y="50" fontFamily="var(--font-caveat), cursive" fontSize="10" fill="#5a3a10" transform="rotate(1.5,175,50)">
+            <text x="175" y="50" fontFamily="var(--font-caveat), cursive" fontSize="12" fill="#5a3a10" transform="rotate(1.5,175,50)">
               {picks}
             </text>
           )}

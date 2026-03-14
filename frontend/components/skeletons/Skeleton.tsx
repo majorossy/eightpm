@@ -1,5 +1,5 @@
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`bg-surface-elevated animate-pulse rounded ${className}`} />;
+  return <div className={`skeleton rounded ${className}`} />;
 }
 
 export function SkeletonCard({ className = '' }: { className?: string }) {
@@ -51,48 +51,62 @@ export function SkeletonAlbumGrid() {
 
 export function SkeletonCassette() {
   return (
-    <div className="w-[280px] h-[180px] rounded-lg bg-surface-elevated animate-pulse border-2 border-border">
+    <div className="w-[280px] h-[180px] rounded-lg skeleton border-2 border-border">
       {/* Label area */}
-      <div className="mx-6 mt-4 h-[72px] rounded bg-[#3a3530]" />
+      <div className="mx-6 mt-4 h-[72px] rounded bg-surface-sunken" />
       {/* Tape window */}
-      <div className="mx-auto mt-3 w-[200px] h-[52px] rounded bg-[#1a1816] flex items-center justify-between px-4">
-        <div className="w-10 h-10 rounded-full bg-[#2a2622] border-2 border-default" />
-        <div className="w-10 h-10 rounded-full bg-[#2a2622] border-2 border-default" />
+      <div
+        className="mx-auto mt-3 w-[200px] h-[52px] rounded flex items-center justify-between px-4"
+        style={{ background: 'color-mix(in srgb, var(--surface-sunken) 70%, black)' }}
+      >
+        <div className="w-10 h-10 rounded-full bg-surface-card border-2 border-default" />
+        <div className="w-10 h-10 rounded-full bg-surface-card border-2 border-default" />
       </div>
     </div>
   );
 }
 
-export function SkeletonAlbumHeader() {
+export function SkeletonMiniCassette() {
   return (
-    <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-start justify-center">
-      <div className="flex-shrink-0">
-        <SkeletonCassette />
-      </div>
-      <div className="pt-4 max-w-[400px] text-center lg:text-left">
-        <Skeleton className="h-3 w-24 mb-3 mx-auto lg:mx-0 rounded" />
-        <Skeleton className="h-10 md:h-12 w-64 mb-3 mx-auto lg:mx-0 rounded" />
-        <Skeleton className="h-5 w-48 mb-2 mx-auto lg:mx-0 rounded" />
-        <Skeleton className="h-4 w-40 mb-6 mx-auto lg:mx-0 rounded" />
-        <div className="flex gap-3 justify-center lg:justify-start">
-          <Skeleton className="w-14 h-14 rounded-full" />
-          <Skeleton className="w-24 h-12 rounded-md" />
-          <Skeleton className="w-11 h-11 rounded-full" />
-        </div>
+    <div
+      className="w-full rounded-lg overflow-hidden border border-default"
+      style={{
+        aspectRatio: '280 / 180',
+        background: 'linear-gradient(180deg, var(--surface-elevated), var(--surface-card))',
+      }}
+    >
+      {/* Header band */}
+      <div className="h-5 mx-3 mt-3 rounded-sm skeleton" />
+      {/* Label area */}
+      <div className="mx-3 mt-1.5 h-10 rounded-sm skeleton" />
+      {/* Tape window */}
+      <div
+        className="mx-auto mt-2 rounded flex items-center justify-between px-3"
+        style={{
+          width: '72%',
+          height: '28%',
+          background: 'color-mix(in srgb, var(--surface-sunken) 70%, black)',
+        }}
+      >
+        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-surface-card border border-default" />
+        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-surface-card border border-default" />
       </div>
     </div>
   );
 }
 
-export function SkeletonTrackRow() {
+export function SkeletonTapeTrackRow() {
   return (
-    <div className="flex items-center gap-4 px-4 py-4 border-b border-default">
-      <Skeleton className="w-8 h-6" />
-      <div className="flex-1">
-        <Skeleton className="h-5 w-48 mb-2" />
-        <Skeleton className="h-4 w-32" />
+    <div
+      className="flex items-center gap-3 px-2 py-2.5"
+      style={{ borderBottom: '1px solid color-mix(in srgb, var(--text-primary) 6%, transparent)' }}
+    >
+      <Skeleton className="w-6 h-4 rounded" />
+      <div className="flex-1 min-w-0">
+        <Skeleton className="h-4 w-36 sm:w-48 mb-1 rounded" />
+        <Skeleton className="h-3 w-24 sm:w-32 rounded" />
       </div>
-      <Skeleton className="h-4 w-16" />
+      <Skeleton className="h-3 w-10 rounded hidden sm:block" />
     </div>
   );
 }
@@ -100,26 +114,83 @@ export function SkeletonTrackRow() {
 export function SkeletonAlbumPage() {
   return (
     <div className="min-h-screen font-serif text-primary">
-      {/* Header badge */}
-      <div className="text-center pt-8 pb-4">
-        <Skeleton className="h-3 w-40 mx-auto" />
+      {/* My Cassettes grid */}
+      <div className="max-w-[850px] mx-auto px-4 sm:px-8 pt-8">
+        <div className="w-full mt-2 mb-6">
+          <Skeleton className="h-3 w-24 mx-auto mb-3 rounded" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonMiniCassette key={i} />
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Main content */}
-      <div className="max-w-[1000px] mx-auto px-4 sm:px-8 pb-36">
-        <SkeletonAlbumHeader />
-
-        {/* Side A divider */}
-        <div className="flex items-center gap-4 my-8">
-          <div className="flex-1 h-px bg-surface-card" />
-          <Skeleton className="h-3 w-16" />
-          <div className="flex-1 h-px bg-surface-card" />
+      {/* Action buttons */}
+      <div className="max-w-[740px] mx-auto px-4 sm:px-8 flex flex-col items-center">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+          <Skeleton className="h-11 w-40 rounded-full" />
+          <Skeleton className="h-11 w-40 rounded-full" />
+          <Skeleton className="h-9 w-36 rounded-full" />
         </div>
 
-        {/* Tracks */}
-        {Array.from({ length: 6 }).map((_, i) => (
-          <SkeletonTrackRow key={i} />
-        ))}
+        {/* Cassette tape shell */}
+        <div className="tape-shell">
+          {/* Label skeleton */}
+          <div className="tape-label">
+            <div className="h-6 sm:h-7 skeleton rounded-none" />
+            <div className="px-4 py-3 sm:py-4" style={{ background: 'var(--cream)' }}>
+              <div className="flex justify-between items-start gap-4">
+                <div className="min-w-0 flex-1">
+                  <Skeleton className="h-5 sm:h-6 w-48 mb-2 rounded" />
+                  <Skeleton className="h-3 w-36 rounded" />
+                </div>
+                <div
+                  className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 skeleton rounded-sm"
+                  style={{
+                    background: 'color-mix(in srgb, var(--cream) 70%, var(--surface-card))',
+                    transform: 'rotate(6deg)',
+                  }}
+                />
+              </div>
+            </div>
+            <div className="h-5 sm:h-6 skeleton rounded-none" />
+          </div>
+
+          {/* Track list inside tape body */}
+          <div className="tape-body">
+            <div className="tape-track-scroll">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <SkeletonTapeTrackRow key={i} />
+              ))}
+            </div>
+          </div>
+
+          {/* Reels */}
+          <div className="tape-reels">
+            <div className="flex-1 flex justify-center">
+              <div
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-surface-card"
+                style={{ border: '2px solid var(--surface-elevated)' }}
+              />
+            </div>
+            <div className="flex-1 flex justify-center">
+              <div
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-surface-card"
+                style={{ border: '2px solid var(--surface-elevated)' }}
+              />
+            </div>
+          </div>
+
+          {/* Side indicators */}
+          <div className="flex items-center justify-between px-3 pb-1">
+            <Skeleton className="h-2 w-12 rounded" />
+            <Skeleton className="h-2 w-12 rounded" />
+          </div>
+        </div>
+
+        {/* Fire glow */}
+        <div className="cassette-glow" />
       </div>
     </div>
   );
@@ -271,36 +342,44 @@ export function SkeletonPolaroid() {
       className="relative"
       style={{ width: 320, perspective: '1000px' }}
     >
-      {/* Push pin - copper/orange like the real one */}
+      {/* Push pin - uses secondary accent color */}
       <div
         className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full z-10"
         style={{
-          background: 'radial-gradient(circle at 30% 30%, #c86a48, #8a4a28)',
-          boxShadow: '0 3px 6px rgba(0,0,0,0.4)',
+          background: 'radial-gradient(circle at 30% 30%, var(--secondary), color-mix(in srgb, var(--secondary) 60%, black))',
+          boxShadow: '0 3px 6px color-mix(in srgb, black 40%, transparent)',
         }}
       />
 
-      {/* Polaroid frame - cream/off-white like the real one */}
+      {/* Polaroid frame - cream */}
       <div
         className="relative w-full"
         style={{
           height: 400,
-          background: '#f5f0e8',
+          background: 'var(--cream)',
           borderRadius: 4,
           padding: 16,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2)',
+          boxShadow: '0 8px 32px color-mix(in srgb, black 35%, transparent), 0 2px 8px color-mix(in srgb, black 20%, transparent)',
           transform: 'rotate(2deg)',
         }}
       >
-        {/* Photo area - dark placeholder */}
+        {/* Photo area - skeleton shimmer */}
         <div
-          className="w-full mb-4 bg-[#e0d8cc] animate-pulse"
-          style={{ height: 290 }}
+          className="w-full mb-4 skeleton"
+          style={{
+            height: 290,
+            background: 'color-mix(in srgb, var(--cream) 80%, var(--surface-card))',
+          }}
         />
 
-        {/* Caption skeleton - dark text placeholder on cream */}
+        {/* Caption skeleton */}
         <div className="flex justify-center">
-          <div className="h-4 w-24 bg-[#c8c0b4] animate-pulse rounded" />
+          <div
+            className="h-4 w-24 skeleton rounded"
+            style={{
+              background: 'color-mix(in srgb, var(--cream) 60%, var(--surface-card))',
+            }}
+          />
         </div>
       </div>
     </div>
@@ -510,7 +589,7 @@ export function SkeletonSearchPage() {
   return (
     <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px]">
       <div className="max-w-[1000px] mx-auto">
-        <div className="p-6 md:p-8 border-b border-white/10">
+        <div className="p-6 md:p-8 border-b border-default">
           <Skeleton className="h-10 w-32 mb-4" />
           <div className="relative max-w-2xl">
             <Skeleton className="h-14 w-full rounded-full" />
@@ -524,6 +603,47 @@ export function SkeletonSearchPage() {
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Info/legal page skeleton — shared by About, How It Works, FAQ, DMCA, Contact, Privacy, Cookie, Terms, Tapers
+export function SkeletonInfoPage({ cardCount = 4 }: { cardCount?: number } = {}) {
+  return (
+    <div className="max-w-[800px] mx-auto px-4 py-12 md:py-16">
+      {/* Header with icon */}
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-14 h-14 rounded-lg skeleton" />
+        <Skeleton className="h-10 md:h-12 w-56 md:w-72 rounded" />
+      </div>
+
+      {/* Intro paragraph */}
+      <div className="mb-8">
+        <Skeleton className="h-5 w-full mb-2 rounded" />
+        <Skeleton className="h-5 w-3/4 rounded" />
+      </div>
+
+      {/* Content cards */}
+      <div className="space-y-6">
+        {Array.from({ length: cardCount }).map((_, i) => (
+          <div key={i} className="bg-surface-card border border-default rounded-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Skeleton className="w-6 h-6 rounded" />
+              <Skeleton className="h-6 w-40 rounded" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full rounded" />
+              <Skeleton className="h-4 w-full rounded" />
+              <Skeleton className="h-4 w-5/6 rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Back link */}
+      <div className="pt-8 text-center">
+        <Skeleton className="h-4 w-28 mx-auto rounded" />
       </div>
     </div>
   );

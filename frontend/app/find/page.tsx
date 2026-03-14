@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import Image from 'next/image';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
-import { useRouter } from 'next/navigation';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import {
   type Artist,
@@ -16,6 +14,8 @@ import { SearchTrackResult } from '@/components/SearchTrackResult';
 import { SearchFilters } from '@/components/SearchFilters';
 import { VinylSpinner } from '@/components/VinylSpinner';
 import { SearchSilence } from '@/components/NoResultsIcons';
+import ArtistResult from '@/components/ArtistResult';
+import AlbumResult from '@/components/AlbumResult';
 import { trackSearch, trackSearchResultClick } from '@/lib/analytics';
 import { VALIDATION_LIMITS } from '@/lib/validation';
 
@@ -31,7 +31,6 @@ export default function FindPage() {
   const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { recentSearches, addSearch, removeSearch, clearSearches } = useRecentSearches();
-  const router = useRouter();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
@@ -172,16 +171,11 @@ export default function FindPage() {
   const handleArtistClick = (artist: Artist, position: number) => {
     addSearch(artist.name);
     trackSearchResultClick(debouncedQuery, 'artist', artist.name, position);
-    router.push(`/artists/${artist.slug}`);
   };
 
   const handleAlbumClick = (album: AlbumCategory, position: number) => {
     addSearch(album.name);
     trackSearchResultClick(debouncedQuery, 'album', album.name, position);
-    const artistSlug = album.breadcrumbs?.[0]?.category_url_key || '';
-    if (artistSlug) {
-      router.push(`/artists/${artistSlug}/album/${album.url_key}`);
-    }
   };
 
   const handleClearSearch = () => {
@@ -318,23 +312,13 @@ export default function FindPage() {
                       <h3 className="text-white font-bold text-xl mb-4">Artists</h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {results.artists.map((artist, index) => (
-                          <button
+                          <ArtistResult
                             key={artist.id}
+                            name={artist.name}
+                            slug={artist.slug}
+                            image={artist.image}
                             onClick={() => handleArtistClick(artist, index + 1)}
-                            className="flex flex-col items-center p-4 bg-surface-card hover:bg-surface-elevated rounded-lg transition-colors text-left"
-                          >
-                            <div className="w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center mb-3 overflow-hidden relative">
-                              {artist.image ? (
-                                <Image src={artist.image} alt={artist.name || 'Artist'} fill sizes="128px" quality={80} className="object-cover" />
-                              ) : (
-                                <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                                </svg>
-                              )}
-                            </div>
-                            <p className="text-white font-medium text-center w-full truncate">{artist.name}</p>
-                            <p className="text-gray-400 text-sm">Artist</p>
-                          </button>
+                          />
                         ))}
                       </div>
                     </div>
@@ -347,28 +331,19 @@ export default function FindPage() {
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         {results.albums.map((album, index) => {
                           const artistName = album.breadcrumbs?.[0]?.category_name || 'Unknown Artist';
+                          const artistSlug = album.breadcrumbs?.[0]?.category_url_key || '';
+                          const href = artistSlug
+                            ? `/artists/${artistSlug}/album/${album.url_key}`
+                            : '#';
                           return (
-                            <button
+                            <AlbumResult
                               key={album.uid}
+                              name={album.name}
+                              href={href}
+                              image={album.wikipedia_artwork_url}
+                              subtitle={`${artistName} \u00B7 ${album.product_count || 0} tracks`}
                               onClick={() => handleAlbumClick(album, index + 1)}
-                              className="flex flex-col p-4 bg-surface-card hover:bg-surface-elevated rounded-lg transition-colors text-left"
-                            >
-                              <div className="w-full aspect-square bg-gray-700 rounded mb-3 overflow-hidden relative">
-                                {album.wikipedia_artwork_url ? (
-                                  <Image src={album.wikipedia_artwork_url} alt={album.name || 'Album'} fill sizes="200px" quality={80} className="object-cover" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-border to-surface-card">
-                                    <svg className="w-12 h-12 text-accent" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
-                                    </svg>
-                                  </div>
-                                )}
-                              </div>
-                              <p className="text-white font-medium truncate" title={album.name}>{album.name}</p>
-                              <p className="text-gray-400 text-sm truncate">
-                                {artistName} • {album.product_count || 0} tracks
-                              </p>
-                            </button>
+                            />
                           );
                         })}
                       </div>

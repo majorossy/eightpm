@@ -133,6 +133,17 @@ class SetArtworkUrlCommand extends Command
                 return Command::FAILURE;
             }
 
+            // Check if locked by debug page override — CLI cannot overwrite locked images
+            $studioTable = $connection->getTableName('archivedotorg_studio_albums');
+            $isLocked = $connection->fetchOne(
+                $connection->select()->from($studioTable, ['is_locked'])
+                    ->where('category_id = ?', $categoryId)
+            );
+            if ($isLocked) {
+                $output->writeln('<error>This album is locked (edited from debug/images page). Unlock it there first.</error>');
+                return Command::FAILURE;
+            }
+
             // Save override
             $overrideTable = $connection->getTableName('archivedotorg_artwork_overrides');
             $connection->insertOnDuplicate(

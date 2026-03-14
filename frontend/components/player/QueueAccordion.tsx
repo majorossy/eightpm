@@ -17,6 +17,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragOverlay,
@@ -225,7 +226,10 @@ export default function QueueAccordion({
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 8 },
   });
-  const dndSensors = useSensors(pointerSensor);
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: { delay: 200, tolerance: 5 },
+  });
+  const dndSensors = useSensors(pointerSensor, touchSensor);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [isDetaching, setIsDetaching] = useState(false);
   const isDetachingRef = useRef(false);
@@ -883,19 +887,21 @@ function AlbumHeader({
       aria-label={`${group.albumSource?.albumName ?? 'Album'} - ${isActiveAlbum ? `track ${currentTrack} of ${totalTracks}` : `${group.chips.length} tracks`}${isExpanded ? ', click to collapse' : ', click to expand'}`}
       title={group.albumSource?.albumName ?? 'Album'}
     >
-      {/* Remove album button */}
-      <span
-        role="button"
-        tabIndex={0}
-        onClick={(e) => { e.stopPropagation(); onRemoveBatch(group.batchId); }}
-        onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onRemoveBatch(group.batchId); } }}
-        className={`inline absolute top-0.5 right-0.5 ${compact ? 'w-3 h-3' : 'w-4 h-4'} flex items-center justify-center rounded-full z-10 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto bg-surface-player-deep text-tertiary hover:!text-white hover:!bg-border transition-all cursor-pointer`}
-        aria-label={`Remove ${group.albumSource?.albumName ?? 'album'} from queue`}
-      >
-        <svg className={compact ? 'w-1.5 h-1.5' : 'w-2.5 h-2.5'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </span>
+      {/* Remove album button — hidden in compact mode to prevent accidental batch removal */}
+      {!compact && (
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(e) => { e.stopPropagation(); onRemoveBatch(group.batchId); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onRemoveBatch(group.batchId); } }}
+          className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center rounded-full z-10 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto bg-surface-player-deep text-tertiary hover:!text-white hover:!bg-border transition-all cursor-pointer"
+          aria-label={`Remove ${group.albumSource?.albumName ?? 'album'} from queue`}
+        >
+          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </span>
+      )}
 
       {/* Album art — jewel case with chevron on spine */}
       <TicketStub

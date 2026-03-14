@@ -150,9 +150,20 @@ export default function TapersPage() {
         {/* Table card */}
         <div className="bg-surface-card border border-default rounded-lg overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center">
-              <div className="inline-block animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mb-4" />
-              <p className="text-secondary">Loading tapers...</p>
+            <div>
+              {/* Results count bar skeleton */}
+              <div className="px-4 py-3 border-b border-default">
+                <div className="h-4 w-32 skeleton" />
+              </div>
+              {/* Table row skeletons */}
+              <div>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between px-4 py-3 border-b border-default/50">
+                    <div className="h-4 skeleton" style={{ width: `${140 + (i % 4) * 30}px` }} />
+                    <div className="h-4 w-10 skeleton" />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : error ? (
             <div className="p-8 text-center text-red-400">

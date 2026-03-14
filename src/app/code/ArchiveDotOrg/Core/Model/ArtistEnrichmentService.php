@@ -89,12 +89,22 @@ class ArtistEnrichmentService
                 $this->logger->info("Enriched bio for $artistName via Wikipedia REST API");
 
                 // Save thumbnail image URL (hotlinked from Wikimedia)
+                // Skip if an artwork override exists (manually locked)
                 if (!empty($summary['thumbnail'])) {
-                    $category->setData('band_image_url', $summary['thumbnail']);
-                    $result['fields_updated'][] = 'band_image_url';
-                    $result['confidence']['band_image_url'] = 'high';
-                    $result['data_sources']['band_image_url'] = 'Wikipedia/Wikimedia (hotlinked)';
-                    $this->logger->info("Saved image URL for $artistName: " . $summary['thumbnail']);
+                    $connection = $this->resourceConnection->getConnection();
+                    $overrideLocked = $connection->fetchOne(
+                        $connection->select()->from('archivedotorg_artwork_overrides', ['id'])
+                            ->where('category_id = ?', $categoryId)
+                    );
+                    if ($overrideLocked) {
+                        $this->logger->info("Skipping band_image_url for $artistName: locked by artwork override");
+                    } else {
+                        $category->setData('band_image_url', $summary['thumbnail']);
+                        $result['fields_updated'][] = 'band_image_url';
+                        $result['confidence']['band_image_url'] = 'high';
+                        $result['data_sources']['band_image_url'] = 'Wikipedia/Wikimedia (hotlinked)';
+                        $this->logger->info("Saved image URL for $artistName: " . $summary['thumbnail']);
+                    }
                 }
             } else {
                 $result['fields_failed'][] = 'band_extended_bio';

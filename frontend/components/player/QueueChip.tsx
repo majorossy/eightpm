@@ -156,14 +156,15 @@ export default function QueueChip({
           </div>
         )}
 
-        {/* Remove button — visible on active card or hover */}
+        {/* Remove button — visible on active card or hover; disabled in compact mode to prevent accidental taps */}
         {onRemove && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onRemove(item.queueId);
             }}
-            className={`inline absolute top-0.5 right-0.5 ${compact ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} flex items-center justify-center rounded-full bg-surface-player-deep/80 text-tertiary hover:!text-white hover:!bg-border transition-all z-10 ${
+            tabIndex={compact ? -1 : 0}
+            className={`absolute top-0.5 right-0.5 ${compact ? 'w-2.5 h-2.5 pointer-events-none' : 'w-3.5 h-3.5'} flex items-center justify-center rounded-full bg-surface-player-deep/80 text-tertiary hover:!text-white hover:!bg-border transition-all z-10 ${
               isActive ? 'opacity-70' : 'opacity-40 group-hover/chip:opacity-100'
             }`}
             aria-label={`Remove ${item.trackTitle}`}

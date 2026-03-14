@@ -52,6 +52,7 @@ export interface ServerCassette {
   show_venue: string | null;
   show_location: string | null;
   version_overrides: string | null; // JSON string
+  color_index: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -85,6 +86,39 @@ export interface ServerLikedSong {
 // GraphQL Helper
 // ============================================================================
 
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxAttempts = 3,
+): Promise<Response> {
+  const delays = [500, 1000, 2000];
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      // Don't retry auth errors or client errors (except 429)
+      if (response.ok || response.status === 401 || response.status === 403 ||
+          (response.status >= 400 && response.status < 500 && response.status !== 429)) {
+        return response;
+      }
+      // Retry on 5xx or 429
+      if (attempt < maxAttempts - 1) {
+        await new Promise(r => setTimeout(r, delays[attempt]));
+        continue;
+      }
+      return response;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      if (attempt < maxAttempts - 1) {
+        await new Promise(r => setTimeout(r, delays[attempt]));
+        continue;
+      }
+    }
+  }
+  throw lastError || new Error('Request failed after retries');
+}
+
 async function magentoAuthFetch<T>(
   query: string,
   variables?: Record<string, unknown>,
@@ -95,7 +129,7 @@ async function magentoAuthFetch<T>(
     throw new AuthExpiredError('No auth token available');
   }
 
-  const response = await fetch(MAGENTO_URL, {
+  const response = await fetchWithRetry(MAGENTO_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -137,38 +171,45 @@ export class AuthExpiredError extends Error {
 const FETCH_COLLECTIONS_QUERY = `
   query FetchCustomerCollections {
     customer {
-      cassettes {
-        entity_id
-        client_id
-        name
-        album_identifier
-        artist_slug
-        artist_name
-        album_name
-        cover_art
-        show_date
-        show_venue
-        show_location
-        version_overrides
-        created_at
-        updated_at
-      }
-      minidiscs {
-        entity_id
-        client_id
-        name
-        description
-        cover_art
-        songs {
-          song_id
-          sku
-          position
-          song_data_snapshot
+      cassettes(pageSize: 500) {
+        items {
+          entity_id
+          client_id
+          name
+          album_identifier
+          artist_slug
+          artist_name
+          album_name
+          cover_art
+          show_date
+          show_venue
+          show_location
+          version_overrides
+          color_index
+          created_at
+          updated_at
         }
-        created_at
-        updated_at
+        total_count
       }
-      liked_songs {
+      minidiscs(pageSize: 200) {
+        items {
+          entity_id
+          client_id
+          name
+          description
+          cover_art
+          songs {
+            song_id
+            sku
+            position
+            song_data_snapshot
+          }
+          created_at
+          updated_at
+        }
+        total_count
+      }
+      liked_songs(pageSize: 10000) {
         items {
           song_id
           sku
@@ -187,13 +228,34 @@ const FETCH_COLLECTIONS_QUERY = `
   }
 `;
 
+interface PaginatedResponse<T> {
+  items: T[];
+  total_count: number;
+}
+
 export async function fetchCustomerCollections(token?: string): Promise<CustomerCollections> {
-  const data = await magentoAuthFetch<{ customer: CustomerCollections }>(
+  const data = await magentoAuthFetch<{
+    customer: {
+      cassettes: PaginatedResponse<ServerCassette>;
+      minidiscs: PaginatedResponse<ServerMiniDisc>;
+      liked_songs: { items: ServerLikedSong[]; total_count: number };
+      followed_artists: string[];
+      followed_albums: ServerFollowedAlbum[];
+    };
+  }>(
     FETCH_COLLECTIONS_QUERY,
     undefined,
     token,
   );
-  return data.customer;
+
+  // Unwrap paginated items so merge functions receive flat arrays
+  return {
+    cassettes: data.customer.cassettes.items,
+    minidiscs: data.customer.minidiscs.items,
+    liked_songs: data.customer.liked_songs,
+    followed_artists: data.customer.followed_artists,
+    followed_albums: data.customer.followed_albums,
+  };
 }
 
 // ============================================================================
@@ -230,6 +292,7 @@ export async function saveCassette(
       version_overrides: Object.keys(cassette.versionOverrides).length > 0
         ? JSON.stringify(cassette.versionOverrides)
         : null,
+      color_index: cassette.colorIndex ?? null,
     },
   }, token);
 
@@ -591,6 +654,25 @@ export async function syncFollowedAlbums(
 // Merge Helpers
 // ============================================================================
 
+/** Validate parsed song snapshot, filling in safe defaults for missing/invalid fields */
+function validateSongSnapshot(
+  data: unknown,
+  fallbackId: string,
+  fallbackSku: string | null,
+): Record<string, unknown> {
+  if (!data || typeof data !== 'object') {
+    return { id: fallbackId, sku: fallbackSku || '', title: 'Unknown', duration: 0, artistName: 'Unknown', albumName: 'Unknown', streamUrl: '', albumArt: '', albumIdentifier: '', trackTitle: '', artistId: '', artistSlug: '' };
+  }
+  const obj = data as Record<string, unknown>;
+  return {
+    ...obj,
+    id: (typeof obj.id === 'string' && obj.id) ? obj.id : fallbackId,
+    title: (typeof obj.title === 'string' && obj.title) ? obj.title : 'Unknown',
+    duration: (typeof obj.duration === 'number' && obj.duration >= 0) ? obj.duration : 0,
+    sku: (typeof obj.sku === 'string') ? obj.sku : (fallbackSku || ''),
+  };
+}
+
 /** Convert server cassette to local Cassette format */
 export function serverCassetteToLocal(sc: ServerCassette): Cassette {
   return {
@@ -605,6 +687,7 @@ export function serverCassetteToLocal(sc: ServerCassette): Cassette {
     showVenue: sc.show_venue || undefined,
     showLocation: sc.show_location || undefined,
     versionOverrides: sc.version_overrides ? JSON.parse(sc.version_overrides) : {},
+    colorIndex: sc.color_index ?? undefined,
     createdAt: sc.created_at,
     updatedAt: sc.updated_at,
   };
@@ -618,13 +701,12 @@ export function serverMiniDiscToLocal(smd: ServerMiniDisc): MiniDisc {
     .map(s => {
       if (s.song_data_snapshot) {
         try {
-          return JSON.parse(s.song_data_snapshot);
+          return validateSongSnapshot(JSON.parse(s.song_data_snapshot), s.song_id, s.sku);
         } catch {
-          // Fallback: minimal Song with just the ID
-          return { id: s.song_id, sku: s.sku || '' } as Record<string, unknown>;
+          return validateSongSnapshot(null, s.song_id, s.sku);
         }
       }
-      return { id: s.song_id, sku: s.sku || '' } as Record<string, unknown>;
+      return validateSongSnapshot(null, s.song_id, s.sku);
     });
 
   return {
@@ -642,17 +724,15 @@ export function serverMiniDiscToLocal(smd: ServerMiniDisc): MiniDisc {
 export function serverLikedSongToLocal(sls: ServerLikedSong): WishlistItem | null {
   if (sls.song_data_snapshot) {
     try {
-      const song = JSON.parse(sls.song_data_snapshot);
-      return {
-        id: `wishlist-item-${sls.song_id}`,
-        song,
-        addedAt: sls.added_at,
-      };
+      const song = validateSongSnapshot(JSON.parse(sls.song_data_snapshot), sls.song_id, sls.sku);
+      return { id: `wishlist-item-${sls.song_id}`, song, addedAt: sls.added_at };
     } catch {
-      return null;
+      const song = validateSongSnapshot(null, sls.song_id, sls.sku);
+      return { id: `wishlist-item-${sls.song_id}`, song, addedAt: sls.added_at };
     }
   }
-  return null;
+  const song = validateSongSnapshot(null, sls.song_id, sls.sku);
+  return { id: `wishlist-item-${sls.song_id}`, song, addedAt: sls.added_at };
 }
 
 /**
@@ -662,14 +742,36 @@ export function serverLikedSongToLocal(sls: ServerLikedSong): WishlistItem | nul
 export function mergeCassettes(
   local: Cassette[],
   server: ServerCassette[],
-): { merged: Cassette[]; toSync: Cassette[] } {
+): { merged: Cassette[]; toSync: Cassette[]; updatedFromServer: number } {
   const serverMap = new Map(server.map(s => [s.client_id, s]));
+  const localMap = new Map(local.map(l => [l.id, l]));
   const merged: Cassette[] = [];
   const toSync: Cassette[] = [];
+  let updatedFromServer = 0;
 
-  // Server items take precedence
+  // Process server items
   for (const sc of server) {
-    merged.push(serverCassetteToLocal(sc));
+    const localMatch = localMap.get(sc.client_id);
+    if (localMatch) {
+      // Both sides have this item — compare timestamps
+      const serverTime = new Date(sc.updated_at).getTime();
+      const localTime = new Date(localMatch.updatedAt).getTime();
+      if (localTime >= serverTime) {
+        // Local is newer or same — keep local
+        merged.push(localMatch);
+        if (localTime > serverTime) {
+          toSync.push(localMatch);
+        }
+      } else {
+        // Server is strictly newer — use server
+        merged.push(serverCassetteToLocal(sc));
+        updatedFromServer++;
+      }
+    } else {
+      // Server-only item
+      merged.push(serverCassetteToLocal(sc));
+      updatedFromServer++;
+    }
   }
 
   // Local-only items need to be synced
@@ -680,19 +782,37 @@ export function mergeCassettes(
     }
   }
 
-  return { merged, toSync };
+  return { merged, toSync, updatedFromServer };
 }
 
 export function mergeMiniDiscs(
   local: MiniDisc[],
   server: ServerMiniDisc[],
-): { merged: MiniDisc[]; toSync: MiniDisc[] } {
+): { merged: MiniDisc[]; toSync: MiniDisc[]; updatedFromServer: number } {
   const serverMap = new Map(server.map(s => [s.client_id, s]));
+  const localMap = new Map(local.map(l => [l.id, l]));
   const merged: MiniDisc[] = [];
   const toSync: MiniDisc[] = [];
+  let updatedFromServer = 0;
 
   for (const smd of server) {
-    merged.push(serverMiniDiscToLocal(smd));
+    const localMatch = localMap.get(smd.client_id);
+    if (localMatch) {
+      const serverTime = new Date(smd.updated_at).getTime();
+      const localTime = new Date(localMatch.updatedAt).getTime();
+      if (localTime >= serverTime) {
+        merged.push(localMatch);
+        if (localTime > serverTime) {
+          toSync.push(localMatch);
+        }
+      } else {
+        merged.push(serverMiniDiscToLocal(smd));
+        updatedFromServer++;
+      }
+    } else {
+      merged.push(serverMiniDiscToLocal(smd));
+      updatedFromServer++;
+    }
   }
 
   for (const lmd of local) {
@@ -702,7 +822,7 @@ export function mergeMiniDiscs(
     }
   }
 
-  return { merged, toSync };
+  return { merged, toSync, updatedFromServer };
 }
 
 export function mergeLikedSongs(

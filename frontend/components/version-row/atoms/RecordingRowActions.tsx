@@ -166,12 +166,24 @@ export default function RecordingRowActions({
       togglePlay();
     } else if (onPlay) {
       onPlay(song);
+      toast.showSuccess('Now playing', {
+        bg: 'color-mix(in srgb, var(--action-play) 12%, transparent)',
+        border: 'color-mix(in srgb, var(--action-play) 25%, transparent)',
+        text: 'var(--cream)',
+        icon: 'var(--action-play)',
+      });
       onAfterAction?.();
     } else {
       playSong(song);
+      toast.showSuccess('Now playing', {
+        bg: 'color-mix(in srgb, var(--action-play) 12%, transparent)',
+        border: 'color-mix(in srgb, var(--action-play) 25%, transparent)',
+        text: 'var(--cream)',
+        icon: 'var(--action-play)',
+      });
       onAfterAction?.();
     }
-  }, [song, isCurrentlyPlaying, onPlay, playSong, togglePlay, haptic, onAfterAction]);
+  }, [song, isCurrentlyPlaying, onPlay, playSong, togglePlay, haptic, toast, onAfterAction]);
 
   const handlePlayNext = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -181,7 +193,12 @@ export default function RecordingRowActions({
     } else {
       playNext(trackToItem(song, undefined, undefined, availableVersions));
     }
-    toast.showSuccess('Playing next');
+    toast.showSuccess('Playing next', {
+      bg: 'color-mix(in srgb, var(--action-play-next) 12%, transparent)',
+      border: 'color-mix(in srgb, var(--action-play-next) 25%, transparent)',
+      text: 'var(--cream)',
+      icon: 'var(--action-play-next)',
+    });
     onAfterAction?.();
   }, [song, onAddToQueue, playNext, trackToItem, haptic, toast, availableVersions, onAfterAction]);
 
@@ -189,7 +206,12 @@ export default function RecordingRowActions({
     e.stopPropagation();
     haptic.vibrate(haptic.BUTTON_PRESS);
     addToQueue(trackToItem(song, undefined, undefined, availableVersions));
-    toast.showSuccess('Added to queue');
+    toast.showSuccess('Added to queue', {
+      bg: 'color-mix(in srgb, var(--action-queue) 12%, transparent)',
+      border: 'color-mix(in srgb, var(--action-queue) 25%, transparent)',
+      text: 'var(--cream)',
+      icon: 'var(--action-queue)',
+    });
     onAfterAction?.();
   }, [song, addToQueue, trackToItem, haptic, toast, availableVersions, onAfterAction]);
 
@@ -199,10 +221,14 @@ export default function RecordingRowActions({
     if (isInWishlist(song.id)) {
       const item = wishlist.items.find(i => i.song.id === song.id);
       if (item) removeFromWishlist(item.id);
-      toast.showInfo('Removed from favorites');
     } else {
       addToWishlist(song);
-      toast.showSuccess('Added to favorites');
+      toast.showSuccess('Added to favorites', {
+        bg: 'color-mix(in srgb, var(--action-play) 12%, transparent)',
+        border: 'color-mix(in srgb, var(--action-play) 25%, transparent)',
+        text: 'var(--cream)',
+        icon: 'var(--action-play)',
+      });
     }
   }, [song, isInWishlist, wishlist.items, addToWishlist, removeFromWishlist, haptic, toast]);
 
@@ -399,6 +425,7 @@ export default function RecordingRowActions({
           isOpen={miniDiscModalOpen}
           onClose={() => setMiniDiscModalOpen(false)}
           song={song}
+          onAdded={onAfterAction}
         />
       )}
     </>

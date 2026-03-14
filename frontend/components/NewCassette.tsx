@@ -91,25 +91,25 @@ export default function NewCassette({ name, albumName, artistName, showVenue, sh
         <rect x="20" y="26" width="280" height="6" fill={`url(#${uid}-holo)`}/>
 
         {/* Header text */}
-        <text x="28" y="24" fontFamily="var(--font-space-mono), monospace" fontSize="8.5" fontWeight="700" fill="#5ad0f8" letterSpacing="0.14em">AUTO MIX</text>
-        <text x="258" y="24" fontFamily="var(--font-space-mono), monospace" fontSize="8.5" fill="#3a8aaa" textAnchor="end">{picksLabel}</text>
+        <text x="28" y="24" fontFamily="var(--font-space-mono), monospace" fontSize="10" fontWeight="700" fill="#5ad0f8" letterSpacing="0.14em">AUTO MIX</text>
+        <text x="258" y="24" fontFamily="var(--font-space-mono), monospace" fontSize="10" fill="#3a8aaa" textAnchor="end">{picksLabel}</text>
 
         {/* Track name */}
-        <text x="28" y="56" fontFamily="var(--font-dm-serif), serif" fontSize="24" fill="#f0f8ff" letterSpacing="0.01em">
+        <text x="28" y="56" fontFamily="var(--font-dm-serif), serif" fontSize="29" fill="#f0f8ff" letterSpacing="0.01em">
           {truncate(name, 18)}
         </text>
         <line x1="28" y1="62" x2="220" y2="62" stroke="#1a4a6a" strokeWidth="0.5"/>
-        <text x="28" y="74" fontFamily="var(--font-space-mono), monospace" fontSize="9" fill="#5a9ab8" letterSpacing="0.04em">
+        <text x="28" y="74" fontFamily="var(--font-space-mono), monospace" fontSize="11" fill="#5a9ab8" letterSpacing="0.04em">
           {truncate(showVenue || albumName, 30)}
         </text>
-        <text x="28" y="87" fontFamily="var(--font-dm-serif), serif" fontStyle="italic" fontSize="11" fill="#4a8aaa">
+        <text x="28" y="87" fontFamily="var(--font-dm-serif), serif" fontStyle="italic" fontSize="13" fill="#4a8aaa">
           {truncate(artistName, 22)}
         </text>
         {/* Date pill */}
         {date && (
           <>
             <rect x="28" y="94" width={Math.max(date.length * 6.5 + 16, 70)} height="13" rx="6" fill="#0d3a52"/>
-            <text x={28 + Math.max(date.length * 6.5 + 16, 70) / 2} y="103.5" fontFamily="var(--font-space-mono), monospace" fontSize="8" fill="#5ad0f8" textAnchor="middle" letterSpacing="0.06em">{date}</text>
+            <text x={28 + Math.max(date.length * 6.5 + 16, 70) / 2} y="103.5" fontFamily="var(--font-space-mono), monospace" fontSize="10" fill="#5ad0f8" textAnchor="middle" letterSpacing="0.06em">{date}</text>
           </>
         )}
         {/* Barcode */}
@@ -123,7 +123,7 @@ export default function NewCassette({ name, albumName, artistName, showVenue, sh
           <rect x="23" y="0" width="1.5" height="32" fill="#1a5a7a"/>
           <rect x="26" y="0" width="2" height="32" fill="#1a5a7a"/>
           <rect x="30" y="0" width="1" height="32" fill="#1a5a7a"/>
-          <text x="15" y="42" fontFamily="var(--font-space-mono), monospace" fontSize="6.5" fill="#1a5a7a" textAnchor="middle">8PM.ME</text>
+          <text x="15" y="42" fontFamily="var(--font-space-mono), monospace" fontSize="8" fill="#1a5a7a" textAnchor="middle">8PM.ME</text>
         </g>
 
         {/* Reel window */}

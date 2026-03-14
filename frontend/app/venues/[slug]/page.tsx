@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getVenue } from '@/lib/api';
+import { titleCaseVenue } from '@/lib/venueUtils';
 import VenuePageContent from '@/components/VenuePageContent';
 
 interface VenuePageProps {
@@ -15,13 +16,14 @@ export async function generateMetadata({ params }: VenuePageProps) {
   }
 
   const location = [venue.city, venue.state].filter(Boolean).join(', ');
+  const displayName = titleCaseVenue(venue.normalized_name);
   const title = location
-    ? `${venue.normalized_name} - ${location} | Live Recordings | 8PM`
-    : `${venue.normalized_name} | Live Recordings | 8PM`;
+    ? `${displayName} - ${location} | Live Recordings | 8PM`
+    : `${displayName} | Live Recordings | 8PM`;
 
   return {
     title,
-    description: `Browse ${venue.total_shows} live recordings from ${venue.normalized_name}${location ? ` in ${location}` : ''}. ${venue.total_artists} artists, free streaming.`,
+    description: `Browse ${venue.total_shows} live recordings from ${displayName}${location ? ` in ${location}` : ''}. ${venue.total_artists} artists, free streaming.`,
   };
 }
 

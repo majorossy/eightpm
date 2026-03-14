@@ -11,18 +11,21 @@ interface AccordionGroupProps {
   children: React.ReactNode;
   allowMultiple?: boolean;
   defaultOpenId?: string | null;
+  defaultOpenIds?: string[];
 }
 
 export function AccordionGroup({
   children,
   allowMultiple = false,
-  defaultOpenId = null
+  defaultOpenId = null,
+  defaultOpenIds
 }: AccordionGroupProps) {
   if (allowMultiple) {
+    const defaultValue = defaultOpenIds ?? (defaultOpenId ? [defaultOpenId] : []);
     return (
       <AccordionPrimitive.Root
         type="multiple"
-        defaultValue={defaultOpenId ? [defaultOpenId] : []}
+        defaultValue={defaultValue}
         className="space-y-2"
       >
         <InGroupContext.Provider value={true}>
@@ -77,7 +80,7 @@ export function Accordion({
         >
           <div className="flex items-center gap-3">
             {icon && <span className="text-accent flex-shrink-0">{icon}</span>}
-            <h3 className="text-lg font-semibold text-accent">{title}</h3>
+            <h3 className="text-lg font-semibold text-quinary">{title}</h3>
           </div>
           <svg
             className="w-5 h-5 text-secondary transition-transform duration-200 group-data-[state=open]:rotate-180"

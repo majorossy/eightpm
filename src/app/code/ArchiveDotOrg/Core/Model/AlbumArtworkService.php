@@ -308,6 +308,16 @@ class AlbumArtworkService implements AlbumArtworkServiceInterface
         $connection = $this->resourceConnection->getConnection();
         $tableName = $connection->getTableName('archivedotorg_studio_albums');
 
+        // Skip locked albums
+        $isLocked = $connection->fetchOne(
+            $connection->select()->from($tableName, ['is_locked'])
+                ->where('artist_name = ?', $artistName)
+                ->where('album_title = ?', $albumTitle)
+        );
+        if ($isLocked) {
+            return ['found' => false, 'url' => null, 'skipped' => true];
+        }
+
         // Get artwork URL from Wikipedia
         $artworkUrl = $this->wikipediaClient->getAlbumArtwork($artistName, $albumTitle);
 
@@ -378,16 +388,29 @@ class AlbumArtworkService implements AlbumArtworkServiceInterface
             'processed' => 0,
             'found' => 0,
             'stored' => 0,
+            'skipped' => 0,
             'errors' => 0
         ];
 
         $connection = $this->resourceConnection->getConnection();
         $tableName = $connection->getTableName('archivedotorg_studio_albums');
 
+        // Pre-fetch locked category IDs to skip
+        $lockedIds = $connection->fetchCol(
+            $connection->select()->from($tableName, ['category_id'])->where('is_locked = 1')
+        );
+
         foreach ($albums as $album) {
             $artist = $album['artist_name'];
             $title = $album['album_name'];
             $stats['processed']++;
+
+            // Skip locked albums
+            if (in_array($album['entity_id'], $lockedIds)) {
+                $stats['skipped']++;
+                $this->logger->debug("Skipping locked album: $artist - $title");
+                continue;
+            }
 
             try {
                 // Get artwork URL from Wikipedia

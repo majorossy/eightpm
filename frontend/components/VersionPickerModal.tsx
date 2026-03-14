@@ -10,6 +10,7 @@ import { RecordingRow } from '@/components/version-row';
 import type { Song } from '@/lib/types';
 import { useGrabToSeek } from '@/hooks/useGrabToSeek';
 import { useBackToClose } from '@/hooks/useBackToClose';
+import { useToast } from '@/hooks/useToast';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -46,6 +47,7 @@ export default function VersionPickerModal({
   onQueueVersion: _onQueueVersion,
 }: VersionPickerModalProps) {
   useBackToClose(isOpen, onClose);
+  const toast = useToast();
 
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -106,7 +108,14 @@ export default function VersionPickerModal({
   const handleSwap = useCallback((song: Song) => {
     onSwapVersion(song);
     onClose();
-  }, [onSwapVersion, onClose]);
+    const venue = song.showVenue || song.showDate || 'version';
+    toast.showSuccess(`Swapped to ${venue}`, {
+      bg: 'color-mix(in srgb, var(--action-swap) 12%, transparent)',
+      border: 'color-mix(in srgb, var(--action-swap) 25%, transparent)',
+      text: 'var(--cream)',
+      icon: 'var(--action-swap)',
+    });
+  }, [onSwapVersion, onClose, toast]);
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>

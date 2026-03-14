@@ -7,43 +7,64 @@ import { useMiniDiscs } from '@/context/CollectionContext';
 import { Song } from '@/lib/types';
 import { VALIDATION_LIMITS } from '@/lib/validation';
 import { useBackToClose } from '@/hooks/useBackToClose';
+import { useToast } from '@/hooks/useToast';
 
 interface AddToMiniDiscModalProps {
   isOpen: boolean;
   onClose: () => void;
   song: Song | null;
+  onAdded?: () => void;
 }
 
-export function AddToMiniDiscModal({ isOpen, onClose, song }: AddToMiniDiscModalProps) {
+export function AddToMiniDiscModal({ isOpen, onClose, song, onAdded }: AddToMiniDiscModalProps) {
   useBackToClose(isOpen, onClose);
   const { minidiscs, createMiniDisc, addToMiniDisc } = useMiniDiscs();
+  const toast = useToast();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState('');
 
   if (!song) return null;
 
-  const handleAdd = (id: string) => {
+  const handleAdd = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const disc = minidiscs.find(d => d.id === id);
     addToMiniDisc(id, song);
     onClose();
+    onAdded?.();
+    toast.showSuccess(`Added to MiniDisc ${disc?.name ?? ''}`.trimEnd(), {
+      bg: 'color-mix(in srgb, var(--action-frame) 12%, transparent)',
+      border: 'color-mix(in srgb, var(--action-frame) 25%, transparent)',
+      text: 'var(--cream)',
+      icon: 'var(--action-frame)',
+    });
   };
 
   const handleCreateAndAdd = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!newName.trim()) return;
 
-    const disc = createMiniDisc(newName.trim());
+    const discName = newName.trim();
+    const disc = createMiniDisc(discName);
     addToMiniDisc(disc.id, song);
     setNewName('');
     setShowCreateForm(false);
     onClose();
+    onAdded?.();
+    toast.showSuccess(`Added to MiniDisc ${discName}`, {
+      bg: 'color-mix(in srgb, var(--action-frame) 12%, transparent)',
+      border: 'color-mix(in srgb, var(--action-frame) 25%, transparent)',
+      text: 'var(--cream)',
+      icon: 'var(--action-frame)',
+    });
   };
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/80 z-[9998] animate-fade-in" />
+        <Dialog.Overlay className="fixed inset-0 bg-black/80 z-[9998] animate-fade-in" onClick={(e) => e.stopPropagation()} />
 
-        <Dialog.Content className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+        <Dialog.Content className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none" onClick={(e) => e.stopPropagation()}>
           <div className="bg-surface-elevated rounded-lg w-full max-w-md max-h-[80vh] overflow-hidden pointer-events-auto animate-scale-in flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-white/10">
@@ -126,7 +147,7 @@ export function AddToMiniDiscModal({ isOpen, onClose, song }: AddToMiniDiscModal
                       minidiscs.map((disc) => (
                         <button
                           key={disc.id}
-                          onClick={() => handleAdd(disc.id)}
+                          onClick={(e) => handleAdd(disc.id, e)}
                           className="w-full flex items-center gap-3 p-4 hover:bg-white/10 transition-colors text-left"
                         >
                           <div className="w-10 h-10 rounded bg-surface-elevated flex-shrink-0 overflow-hidden relative">

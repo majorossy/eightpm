@@ -5,10 +5,8 @@ import Link from 'next/link';
 import { ContactForm } from '@/components/ContactForm';
 import {
   MailIcon,
-  ExternalLinkIcon,
   HeartIcon,
   CodeIcon,
-  BugIcon,
 } from '@/components/icons/FooterIcons';
 
 export default function ContactPage() {
@@ -40,29 +38,7 @@ export default function ContactPage() {
       </div>
 
       {/* Alternative Contact Methods */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        {/* Report Issues */}
-        <div className="bg-surface-card border border-default rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <BugIcon className="w-6 h-6 text-accent" />
-            <h3 className="text-lg font-semibold text-accent">
-              Report Issues
-            </h3>
-          </div>
-          <p className="text-secondary mb-4">
-            Found a bug or technical problem? Report it on GitHub for faster resolution.
-          </p>
-          <a
-            href="https://github.com/yourusername/8pm/issues"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-accent hover:text-accent transition-colors duration-200"
-          >
-            Open GitHub Issues
-            <ExternalLinkIcon className="w-4 h-4" />
-          </a>
-        </div>
-
+      <div className="mb-8">
         {/* About This Project */}
         <div className="bg-surface-card border border-default rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">

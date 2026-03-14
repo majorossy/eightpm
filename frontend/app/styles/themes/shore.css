@@ -4,18 +4,18 @@
    ======================================== */
 .mode-shore.theme-camp {
   /* Light mode palette */
-  --primary: #ffffff;
-  --secondary: #e8a050;
-  --tertiary: #7a9aaa;
-  --quaternary: #c49040;
-  --quinary: #d4a060;
-  --primary-muted: #ffffff40;
-  --secondary-muted: #e8a05040;
-  --tertiary-muted: #7a9aaa40;
-  --quaternary-muted: #c4904040;
-  --quinary-muted: #d4a06040;
-  --senary: #9a9590;
-  --senary-muted: #9a959040;
+  --primary: #f8f2e4;
+  --secondary: #c06040;
+  --tertiary: #789080;
+  --quaternary: #9a7040;
+  --quinary: #c8b060;
+  --primary-muted: #f8f2e440;
+  --secondary-muted: #c0604040;
+  --tertiary-muted: #78908040;
+  --quaternary-muted: #9a704040;
+  --quinary-muted: #c8b06040;
+  --senary: #908070;
+  --senary-muted: #90807040;
 
   /* Override derived tokens for light mode (color-mix formulas assume dark primary) */
   --surface-base: var(--primary);

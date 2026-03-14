@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useCassettes } from '@/context/CollectionContext';
@@ -10,6 +9,7 @@ import { useCassetteResolution } from '@/hooks/useCassetteResolution';
 import { useBackToClose } from '@/hooks/useBackToClose';
 import { formatDuration } from '@/lib/api';
 import { VALIDATION_LIMITS } from '@/lib/validation';
+import MiniCassette, { CASSETTE_COLOR_COUNT, CASSETTE_PALETTE_VARS } from '@/components/MiniCassette';
 
 export default function CassetteDetailPage() {
   const params = useParams();
@@ -69,19 +69,16 @@ export default function CassetteDetailPage() {
       {/* Header */}
       <div className="bg-gradient-to-b from-border to-surface-base p-6 md:p-8 pb-8">
         <div className="flex items-end gap-6">
-          <div className="w-32 h-32 md:w-56 md:h-56 rounded-lg bg-surface-elevated flex-shrink-0 overflow-hidden shadow-2xl relative">
-            {cassette.coverArt ? (
-              <Image src={cassette.coverArt} alt={cassette.name || 'Cassette'} fill sizes="(max-width: 768px) 128px, 224px" quality={85} className="object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <svg className="w-16 md:w-24 h-16 md:h-24 text-border" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                  <rect x="2" y="5" width="20" height="14" rx="2" />
-                  <circle cx="8" cy="12" r="2" />
-                  <circle cx="16" cy="12" r="2" />
-                  <path d="M8 14h8" />
-                </svg>
-              </div>
-            )}
+          <div className="w-40 md:w-56 flex-shrink-0">
+            <MiniCassette
+              name={cassette.name}
+              albumName={cassette.albumName}
+              artistName={cassette.artistName}
+              showDate={cassette.showDate}
+              coverArt={cassette.coverArt}
+              tintIndex={cassette.colorIndex}
+              pickCount={Object.keys(cassette.versionOverrides).length}
+            />
           </div>
 
           <div className="flex-1 min-w-0">
@@ -172,14 +169,44 @@ export default function CassetteDetailPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             </button>
+
+            {/* Color swatch picker */}
+            <div className="flex items-center gap-1.5 ml-2 pl-2 border-l" style={{ borderColor: 'color-mix(in srgb, white 12%, transparent)' }}>
+              <span className="text-xs mr-1" style={{ color: 'var(--text-tertiary)' }}>Color</span>
+              {Array.from({ length: CASSETTE_COLOR_COUNT }).map((_, i) => {
+                const isActive = (cassette.colorIndex ?? 0) === i;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => updateCassette(cassette.id, { colorIndex: i })}
+                    className="w-6 h-6 rounded-full transition-all hover:scale-110"
+                    style={{
+                      background: `var(${CASSETTE_PALETTE_VARS[i]})`,
+                      boxShadow: isActive ? `0 0 0 2px var(--surface-base), 0 0 0 4px var(${CASSETTE_PALETTE_VARS[i]})` : 'none',
+                      opacity: isActive ? 1 : 0.6,
+                    }}
+                    aria-label={`Color ${i + 1}${isActive ? ' (selected)' : ''}`}
+                  />
+                );
+              })}
+            </div>
           </>
         )}
       </div>
 
       {/* Track list */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <div className="space-y-1 px-4 md:px-8 py-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 p-3">
+              <div className="w-8 h-4 skeleton" />
+              <div className="flex-1 min-w-0">
+                <div className="h-4 skeleton mb-1.5" style={{ width: `${50 + (i % 3) * 15}%` }} />
+                <div className="h-3 skeleton" style={{ width: `${30 + (i % 4) * 10}%` }} />
+              </div>
+              <div className="h-4 w-12 skeleton hidden md:block" />
+            </div>
+          ))}
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-16 px-4">

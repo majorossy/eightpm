@@ -86,7 +86,7 @@ export default function BestCassette({ name, albumName, artistName, showVenue, s
           {/* Top band */}
           <rect x="0" y="0" width="332" height="20" rx="4" fill="rgba(0,0,0,0.55)"/>
           <rect x="0" y="12" width="332" height="8" fill="rgba(0,0,0,0.55)"/>
-          <text x="166" y="13.5" fontFamily="var(--font-space-mono), monospace" fontSize="8" fontWeight="700" fill="#f0c840" textAnchor="middle" letterSpacing="0.25em">
+          <text x="166" y="13.5" fontFamily="var(--font-space-mono), monospace" fontSize="10" fontWeight="700" fill="#f0c840" textAnchor="middle" letterSpacing="0.25em">
             ★  BEST VERSION  ★
           </text>
 
@@ -99,26 +99,26 @@ export default function BestCassette({ name, albumName, artistName, showVenue, s
           <text x="50" y="57" fontFamily="var(--font-space-mono), monospace" fontSize="9" fontWeight="700" fill="#c8940a" textAnchor="middle">★</text>
 
           {/* Track title */}
-          <text x="96" y="48" fontFamily="var(--font-dm-serif), serif" fontSize="30" fill="#0e0c06" letterSpacing="0.01em" opacity="0.85">
+          <text x="96" y="48" fontFamily="var(--font-dm-serif), serif" fontSize="36" fill="#0e0c06" letterSpacing="0.01em" opacity="0.85">
             {truncate(name, 16)}
           </text>
           <line x1="96" y1="55" x2="295" y2="55" stroke="rgba(100,70,0,0.3)" strokeWidth="0.6"/>
-          <text x="96" y="67" fontFamily="var(--font-space-mono), monospace" fontSize="9.5" fill="#5a3a04" letterSpacing="0.05em">
+          <text x="96" y="67" fontFamily="var(--font-space-mono), monospace" fontSize="11.5" fill="#5a3a04" letterSpacing="0.05em">
             {truncate(showVenue || albumName, 24)}
           </text>
-          <text x="96" y="81" fontFamily="var(--font-dm-serif), serif" fontStyle="italic" fontSize="13" fill="#7a5008">
+          <text x="96" y="81" fontFamily="var(--font-dm-serif), serif" fontStyle="italic" fontSize="16" fill="#7a5008">
             {truncate(artistName, 20)}
           </text>
 
           {/* Rating stars */}
-          <text x="96" y="97" fontFamily="var(--font-space-mono), monospace" fontSize="13" fill="#c8940a" letterSpacing="0.12em">★ ★ ★ ★ ★</text>
+          <text x="96" y="97" fontFamily="var(--font-space-mono), monospace" fontSize="16" fill="#c8940a" letterSpacing="0.12em">★ ★ ★ ★ ★</text>
 
           {/* Version count badge */}
           {versionCount != null && versionCount > 0 && (
             <g>
               <rect x="270" y="26" width="52" height="28" rx="3" fill="rgba(0,0,0,0.4)" stroke="rgba(200,150,10,0.4)" strokeWidth="0.7"/>
-              <text x="296" y="37" fontFamily="var(--font-space-mono), monospace" fontSize="7" fill="#c8b060" textAnchor="middle" letterSpacing="0.08em">VERSION</text>
-              <text x="296" y="50" fontFamily="var(--font-dm-serif), serif" fontSize="14" fill="#f0d040" textAnchor="middle">{versionCount}</text>
+              <text x="296" y="37" fontFamily="var(--font-space-mono), monospace" fontSize="8.5" fill="#c8b060" textAnchor="middle" letterSpacing="0.08em">VERSION</text>
+              <text x="296" y="50" fontFamily="var(--font-dm-serif), serif" fontSize="17" fill="#f0d040" textAnchor="middle">{versionCount}</text>
             </g>
           )}
         </g>

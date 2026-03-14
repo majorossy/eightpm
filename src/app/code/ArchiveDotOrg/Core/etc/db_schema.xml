@@ -47,8 +47,10 @@
         <column xsi:type="int" name="release_year" unsigned="true" nullable="true" comment="Release Year"/>
         <column xsi:type="varchar" name="release_date" nullable="true" length="32" comment="Full Release Date"/>
         <column xsi:type="varchar" name="musicbrainz_id" nullable="true" length="64" comment="MusicBrainz Release ID"/>
+        <column xsi:type="int" name="category_id" unsigned="true" nullable="true" comment="Associated Magento category ID"/>
         <column xsi:type="varchar" name="artwork_url" nullable="true" length="512" comment="Cover Art Archive URL"/>
         <column xsi:type="varchar" name="cached_image_path" nullable="true" length="512" comment="Local Cached Image Path"/>
+        <column xsi:type="boolean" name="is_locked" nullable="false" default="0" comment="Whether artwork is manually locked against auto-update"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
 
@@ -71,6 +73,31 @@
 
         <index referenceId="ARCHIVEDOTORG_STUDIO_ALBUMS_RELEASE_YEAR" indexType="btree">
             <column name="release_year"/>
+        </index>
+    </table>
+
+    <!-- Artwork Overrides Table (manual artwork URL overrides) -->
+    <table name="archivedotorg_artwork_overrides" resource="default" engine="innodb" comment="Manual Artwork URL Overrides">
+        <column xsi:type="int" name="id" unsigned="true" nullable="false" identity="true" comment="Override ID"/>
+        <column xsi:type="int" name="category_id" unsigned="true" nullable="false" comment="Category ID"/>
+        <column xsi:type="varchar" name="artist_name" nullable="false" length="255" comment="Artist Name"/>
+        <column xsi:type="varchar" name="album_name" nullable="false" length="255" comment="Album Name"/>
+        <column xsi:type="varchar" name="artwork_url" nullable="false" length="512" comment="Manual Artwork URL"/>
+        <column xsi:type="varchar" name="source" nullable="true" length="50" default="manual" comment="Source of the override"/>
+        <column xsi:type="text" name="notes" nullable="true" comment="Notes about this override"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+
+        <constraint xsi:type="unique" referenceId="ARCHIVEDOTORG_ARTWORK_OVERRIDES_CATEGORY_ID">
+            <column name="category_id"/>
+        </constraint>
+
+        <index referenceId="ARCHIVEDOTORG_ARTWORK_OVERRIDES_ARTIST_NAME" indexType="btree">
+            <column name="artist_name"/>
         </index>
     </table>
 

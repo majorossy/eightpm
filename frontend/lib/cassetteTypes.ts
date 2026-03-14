@@ -15,6 +15,7 @@ export interface Cassette {
   showVenue?: string;
   showLocation?: string;
   versionOverrides: Record<string, string>;      // trackId → songId (non-default picks only)
+  colorIndex?: number;                            // 0-4 tint from cassetteTints palette
   createdAt: string;
   updatedAt: string;
 }

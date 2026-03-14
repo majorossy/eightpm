@@ -24,17 +24,17 @@ const steps = [
   {
     number: 1,
     title: 'Browse Artists',
-    description: 'Start by exploring our collection of jam bands and live music artists. Each artist page shows their available recordings, organized by date and venue.',
+    description: 'Explore 35+ jam bands and live music artists. Each artist page shows their recordings organized by date and venue, with stats, bios, and band member timelines.',
   },
   {
     number: 2,
-    title: 'Search Shows',
-    description: "Looking for something specific? Use the search feature to find shows by artist, date, venue, or even specific songs. Our advanced search helps you narrow down exactly what you're looking for.",
+    title: 'Find Shows',
+    description: 'Search by artist, date, venue, or song title. Browse venues to see what was recorded there, or explore an artist\'s full catalog sorted by date, rating, or downloads.',
   },
   {
     number: 3,
-    title: 'Create MiniDiscs',
-    description: "Found a great show or track? Add it to your library or create custom minidiscs. Your minidiscs are saved locally in your browser, so they're always available when you return.",
+    title: 'Build Your Collection',
+    description: 'Save favorite recording versions as Cassettes, or build custom MiniDisc playlists from any tracks across artists. Sign in to sync your collection across devices.',
   },
   {
     number: 4,
@@ -43,8 +43,8 @@ const steps = [
   },
   {
     number: 5,
-    title: 'Share the Love',
-    description: 'All recordings on 8pm.me are freely shareable. Send links to friends, share on social media, or download tracks for offline listening. Remember: please copy freely — never sell.',
+    title: 'Share the Music',
+    description: 'Every show has a shareable link. Send a great recording to a friend or share it on social media. Remember: please copy freely — never sell.',
   },
 ];
 
@@ -139,11 +139,11 @@ export default function HowItWorksPage() {
             </div>
             <div className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0" />
-              <span className="text-secondary text-sm">Enable crossfade for smooth transitions</span>
+              <span className="text-secondary text-sm">Enable crossfade for smooth transitions between tracks</span>
             </div>
             <div className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0" />
-              <span className="text-secondary text-sm">Check recently played to pick up where you left off</span>
+              <span className="text-secondary text-sm">Use the sleep timer to auto-pause during late-night sessions</span>
             </div>
           </div>
         </div>

@@ -11,6 +11,7 @@ type CustomerCassette {
     show_venue: String @doc(description: "Show venue")
     show_location: String @doc(description: "Show location")
     version_overrides: String @doc(description: "JSON of track version overrides")
+    color_index: Int @doc(description: "Cassette color palette index (0-4)")
     created_at: String @doc(description: "Created timestamp")
     updated_at: String @doc(description: "Updated timestamp")
 }
@@ -41,9 +42,22 @@ type CustomerLikedSong {
     added_at: String! @doc(description: "When the song was liked")
 }
 
+type CustomerCassettesOutput {
+    items: [CustomerCassette!]! @doc(description: "List of cassettes")
+    total_count: Int! @doc(description: "Total number of cassettes")
+    page_info: SearchResultPageInfo! @doc(description: "Pagination info")
+}
+
+type CustomerMiniDiscsOutput {
+    items: [CustomerMiniDisc!]! @doc(description: "List of minidiscs")
+    total_count: Int! @doc(description: "Total number of minidiscs")
+    page_info: SearchResultPageInfo! @doc(description: "Pagination info")
+}
+
 type CustomerLikedSongsOutput {
     items: [CustomerLikedSong!]! @doc(description: "List of liked songs")
     total_count: Int! @doc(description: "Total number of liked songs")
+    page_info: SearchResultPageInfo! @doc(description: "Pagination info")
 }
 
 type UserError {
@@ -94,6 +108,7 @@ input CassetteInput {
     show_venue: String @doc(description: "Show venue")
     show_location: String @doc(description: "Show location")
     version_overrides: String @doc(description: "JSON of track version overrides")
+    color_index: Int @doc(description: "Cassette color palette index (0-4)")
 }
 
 input MiniDiscInput {
@@ -123,9 +138,9 @@ input FollowedAlbumInput {
 }
 
 type Customer {
-    cassettes: [CustomerCassette!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerCassettes") @cache(cacheable: false) @doc(description: "Customer's saved cassettes")
-    minidiscs: [CustomerMiniDisc!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerMiniDiscs") @cache(cacheable: false) @doc(description: "Customer's minidiscs")
-    liked_songs: CustomerLikedSongsOutput! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerLikedSongs") @cache(cacheable: false) @doc(description: "Customer's liked songs")
+    cassettes(pageSize: Int = 50, currentPage: Int = 1): CustomerCassettesOutput! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerCassettes") @cache(cacheable: false) @doc(description: "Customer's saved cassettes")
+    minidiscs(pageSize: Int = 50, currentPage: Int = 1): CustomerMiniDiscsOutput! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerMiniDiscs") @cache(cacheable: false) @doc(description: "Customer's minidiscs")
+    liked_songs(pageSize: Int = 100, currentPage: Int = 1): CustomerLikedSongsOutput! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerLikedSongs") @cache(cacheable: false) @doc(description: "Customer's liked songs")
     followed_artists: [String!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerFollowedArtists") @cache(cacheable: false) @doc(description: "Slugs of followed artists")
     followed_albums: [FollowedAlbumOutput!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerFollowedAlbums") @cache(cacheable: false) @doc(description: "Followed albums")
 }

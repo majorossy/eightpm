@@ -60,11 +60,12 @@ class UpdateCategoryArtworkCommand extends Command
         $connection = $this->resourceConnection->getConnection();
         $tableName = $connection->getTableName('archivedotorg_studio_albums');
 
-        // Get all albums with artwork URLs and category IDs
+        // Get all albums with artwork URLs and category IDs (skip locked)
         $select = $connection->select()
             ->from($tableName)
             ->where('artwork_url IS NOT NULL')
-            ->where('category_id IS NOT NULL');
+            ->where('category_id IS NOT NULL')
+            ->where('is_locked = 0 OR is_locked IS NULL');
 
         $albums = $connection->fetchAll($select);
 

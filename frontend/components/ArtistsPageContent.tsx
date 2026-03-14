@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Artist, Album } from '@/lib/api';
@@ -124,6 +124,31 @@ function ArtistsContentInner() {
     });
   }, [sortedArtists]);
 
+  // Album search filter
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedQuery(value), 200);
+  };
+
+  useEffect(() => {
+    return () => clearTimeout(debounceRef.current);
+  }, []);
+
+  const filteredAlbums = useMemo(() => {
+    const q = debouncedQuery.trim().toLowerCase();
+    if (!q) return allAlbums;
+    return allAlbums.filter(
+      (album) =>
+        album.artist.toLowerCase().includes(q) ||
+        album.name.toLowerCase().includes(q)
+    );
+  }, [allAlbums, debouncedQuery]);
+
   return (
     <div className="pb-8 max-w-[1800px] mx-auto">
       {/* Festival Hero */}
@@ -181,8 +206,50 @@ function ArtistsContentInner() {
           <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 rounded-tr-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
           <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 rounded-bl-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
           <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 rounded-br-xl" style={{ borderColor: 'var(--accent-border-strong)' }} />
+
+          {/* Search input */}
+          <div className="mb-4 flex items-center gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-subdued)] pointer-events-none"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Find albums or artists..."
+                className="w-full pl-9 pr-8 py-2 rounded-lg text-sm bg-[var(--surface-card)] text-[var(--text)] placeholder:text-[var(--text-subdued)] border border-[var(--border-subtle-token)] focus:border-[var(--secondary)] focus:outline-none transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => handleSearchChange('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-subdued)] hover:text-[var(--text)] transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            {debouncedQuery && (
+              <span className="text-xs text-[var(--text-dim)] whitespace-nowrap">
+                {filteredAlbums.length} {filteredAlbums.length === 1 ? 'album' : 'albums'}
+              </span>
+            )}
+          </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
-          {allAlbums.map((album, index) => {
+          {filteredAlbums.map((album, index) => {
             const isComingSoon = album.totalSongs === 0 && !album.coverArt;
             return (
             <div

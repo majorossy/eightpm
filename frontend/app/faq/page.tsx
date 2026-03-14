@@ -21,12 +21,12 @@ const faqData: FAQItem[] = [
   {
     id: 'recordings',
     question: 'Where do the recordings come from?',
-    answer: "All recordings are hosted on Archive.org, a non-profit digital library dedicated to preserving cultural artifacts. The live music collection includes thousands of shows recorded by fans (tapers) and shared with permission from the artists."
+    answer: "All recordings are hosted on Archive.org, a non-profit digital library. The live music collection contains thousands of shows recorded by fans (tapers) with permission from the artists. 8pm.me currently features 35+ artists from the jam band and live music scene."
   },
   {
     id: 'download',
     question: 'Can I download shows for offline listening?',
-    answer: "While 8pm.me is designed for streaming, you can visit Archive.org directly to download complete shows in various formats (MP3, FLAC, etc.). Each show page includes a link to the original Archive.org recording."
+    answer: "8pm.me is built for streaming. For downloads, each recording links back to its original Archive.org page where you can download the full show in various formats (MP3, FLAC, OGG, etc.)."
   },
   {
     id: 'legal',
@@ -36,17 +36,42 @@ const faqData: FAQItem[] = [
   {
     id: 'account',
     question: 'Do I need to create an account?',
-    answer: "No account is required for basic browsing and listening. However, creating an account lets you save playlists, track your listening history, and sync your library across devices."
+    answer: "No account is required — you can browse and listen immediately. Creating a free account lets you save Cassettes (favorite recording versions), build MiniDisc playlists, and sync your collection across devices."
+  },
+  {
+    id: 'cassettes-minidiscs',
+    question: 'What are Cassettes and MiniDiscs?',
+    answer: "Cassettes save your preferred version of a recording — when multiple recordings of the same show exist, pick the one you like best. MiniDiscs are custom playlists you build from any tracks across any artist. Both sync to your account if you're signed in."
+  },
+  {
+    id: 'color-coding',
+    question: 'What do the different colors mean?',
+    answer: (
+      <div className="space-y-3">
+        {[
+          { color: 'var(--action-play)', action: 'Play / Favorite', desc: 'Now playing, added to favorites' },
+          { color: 'var(--action-play-next)', action: 'Play Next', desc: 'Track queued to play next' },
+          { color: 'var(--action-queue)', action: 'Queue', desc: 'Added to queue' },
+          { color: 'var(--action-swap)', action: 'Swap', desc: 'Switching recording versions' },
+          { color: 'white', action: 'MiniDisc', desc: 'Save to a MiniDisc playlist' },
+        ].map(({ color, action, desc }) => (
+          <div key={action} className="flex items-center gap-3">
+            <span className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: color }} />
+            <span><strong>{action}</strong> — {desc}</span>
+          </div>
+        ))}
+      </div>
+    ),
   },
   {
     id: 'share',
     question: 'Can I share shows with friends?',
-    answer: "Absolutely! Every show and playlist has a shareable link. You can also share directly to social media. Remember our ethos: please copy freely — never sell."
+    answer: "Absolutely! Every show and artist page has a shareable link. You can also share directly to social media from the player. Remember our ethos: please copy freely — never sell."
   },
   {
     id: 'contribute',
-    question: 'How can I contribute or report issues?',
-    answer: "We welcome feedback! If you notice missing shows, incorrect metadata, or technical issues, please contact us. This is a student project and we're always looking to improve."
+    question: 'How can I report an issue or give feedback?',
+    answer: "Head to the contact page to send us a message. Whether it's missing shows, incorrect metadata, or a feature request — we'd love to hear from you."
   },
   {
     id: 'name',
@@ -125,10 +150,10 @@ export default function FAQPage() {
 
       {/* FAQ Accordions */}
       {filteredFaqs.length > 0 ? (
-        <AccordionGroup>
+        <AccordionGroup allowMultiple defaultOpenIds={filteredFaqs.map(f => f.id)}>
           {filteredFaqs.map((faq) => (
             <Accordion key={faq.id} id={faq.id} title={faq.question}>
-              <p>{faq.answer}</p>
+              {typeof faq.answer === 'string' ? <p>{faq.answer}</p> : faq.answer}
             </Accordion>
           ))}
         </AccordionGroup>

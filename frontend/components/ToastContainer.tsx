@@ -60,10 +60,15 @@ function ToastItem({
       case 'success':
         return {
           icon: <CheckCircleIcon />,
-          bgColor: 'bg-green-500/10',
-          borderColor: 'border-green-500/30',
-          textColor: 'text-green-400',
-          iconColor: 'text-green-400',
+          bgColor: '',
+          borderColor: '',
+          textColor: '',
+          iconColor: '',
+          containerStyle: {
+            backgroundColor: 'color-mix(in srgb, var(--quinary) 10%, transparent)',
+            borderColor: 'color-mix(in srgb, var(--quinary) 30%, transparent)',
+          },
+          colorStyle: { color: 'var(--quinary)' },
         };
       case 'warning':
         return {
@@ -86,6 +91,7 @@ function ToastItem({
   };
 
   const styles = getToastStyles();
+  const custom = toast.customStyle;
 
   return (
     <div
@@ -93,19 +99,29 @@ function ToastItem({
       aria-live="polite"
       className={`
         flex items-center gap-3 p-4 rounded-lg border backdrop-blur-sm
-        ${styles.bgColor} ${styles.borderColor}
+        ${custom ? '' : `${styles.bgColor} ${styles.borderColor}`}
         shadow-lg shadow-black/20
         animate-toast-slide-in
         min-w-[320px] max-w-[420px]
       `}
+      style={custom ? {
+        backgroundColor: custom.bg,
+        borderColor: custom.border,
+      } : styles.containerStyle}
     >
       {/* Icon */}
-      <div className={`flex-shrink-0 ${styles.iconColor}`}>
+      <div
+        className={`flex-shrink-0 ${custom ? '' : styles.iconColor}`}
+        style={custom ? { color: custom.icon ?? custom.text } : styles.colorStyle}
+      >
         {styles.icon}
       </div>
 
       {/* Message */}
-      <p className={`flex-1 text-sm ${styles.textColor}`}>
+      <p
+        className={`flex-1 text-sm ${custom ? '' : styles.textColor}`}
+        style={custom ? { color: custom.text } : styles.colorStyle}
+      >
         {toast.message}
       </p>
 

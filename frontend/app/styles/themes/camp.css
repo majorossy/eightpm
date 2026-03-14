@@ -4,18 +4,18 @@
    ======================================== */
 .theme-camp {
   /* Campfire palette */
-  --primary: #1c1a17;
-  --secondary: #d4a060;
-  --tertiary: #5a8a7a;
-  --quaternary: #a85a38;
-  --quinary: #c08a40;
-  --primary-muted: #1c1a1740;
-  --secondary-muted: #d4a06040;
-  --tertiary-muted: #5a8a7a40;
-  --quaternary-muted: #a85a3840;
-  --quinary-muted: #c08a4040;
-  --senary: #4a4642;
-  --senary-muted: #4a464240;
+  --primary: #161412;
+  --secondary: #c88848;
+  --tertiary: #608878;
+  --quaternary: #904828;
+  --quinary: #a87030;
+  --primary-muted: #16141240;
+  --secondary-muted: #c8884840;
+  --tertiary-muted: #60887840;
+  --quaternary-muted: #90482840;
+  --quinary-muted: #a8703040;
+  --senary: #383430;
+  --senary-muted: #38343040;
 
   /* Surface overrides — near-black primary needs to lighten, not darken */
   --surface-card: color-mix(in srgb, var(--primary) 96%, white);

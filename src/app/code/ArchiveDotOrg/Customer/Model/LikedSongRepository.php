@@ -13,6 +13,7 @@ use ArchiveDotOrg\Customer\Exception\CollectionException;
 class LikedSongRepository implements LikedSongRepositoryInterface
 {
     private const MAX_LIKED_SONGS = 10000;
+    private const MAX_PAGE_SIZE = 10000;
 
     private LikedSongFactory $likedSongFactory;
     private LikedSongResource $likedSongResource;
@@ -28,17 +29,31 @@ class LikedSongRepository implements LikedSongRepositoryInterface
         $this->collectionFactory = $collectionFactory;
     }
 
-    public function getByCustomerId(int $customerId): array
+    public function getByCustomerId(int $customerId, int $pageSize = 0, int $currentPage = 1): array
     {
         $collection = $this->collectionFactory->create();
         $collection->addFieldToFilter('customer_id', $customerId);
         $collection->setOrder('added_at', 'DESC');
+
+        if ($pageSize > 0) {
+            $pageSize = min($pageSize, self::MAX_PAGE_SIZE);
+            $currentPage = max(1, $currentPage);
+            $collection->setPageSize($pageSize);
+            $collection->setCurPage($currentPage);
+        }
 
         $items = [];
         foreach ($collection as $item) {
             $items[] = $item->getData();
         }
         return $items;
+    }
+
+    public function getCountByCustomerId(int $customerId): int
+    {
+        $collection = $this->collectionFactory->create();
+        $collection->addFieldToFilter('customer_id', $customerId);
+        return $collection->getSize();
     }
 
     public function save(int $customerId, array $data): LikedSong

@@ -39,13 +39,13 @@ export default function AboutPage() {
             <MusicNoteIcon className="w-8 h-8 text-accent flex-shrink-0 mt-1" />
             <div>
               <p className="text-lg mb-4">
-                8pm.me is your gateway to thousands of live concert recordings from Archive.org.
-                Explore, listen, and discover legendary performances from jam bands and beyond.
+                8pm.me is a free streaming frontend for the Archive.org live music collection.
+                Browse 35+ artists, thousands of shows, and tens of thousands of tracks — no signup, no ads, no fees.
               </p>
               <p className="text-secondary">
-                Built on the foundation of the Internet Archive's vast collection of legally
-                shareable live music, 8pm.me brings together decades of incredible performances
-                from artists like the Grateful Dead, Phish, String Cheese Incident, and many more.
+                From the Grateful Dead's 1,800+ tapes to Goose's latest tour, 8pm.me organizes
+                decades of fan-recorded and artist-approved live performances into a modern,
+                searchable, streamable experience.
               </p>
             </div>
           </div>
@@ -77,15 +77,15 @@ export default function AboutPage() {
           <ul className="space-y-3">
             <li className="flex items-start gap-3">
               <span className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0" />
-              <span>To preserve and share the joy of live music</span>
+              <span>Make the Archive.org live music collection browsable and streamable — no signup required</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0" />
-              <span>To honor the taping community and the artists who encourage it</span>
+              <span>Honor the taping tradition — tapers record shows, artists allow sharing, and fans keep the music alive</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0" />
-              <span>To keep the music freely accessible to all</span>
+              <span>Please copy freely — never sell</span>
             </li>
           </ul>
         </div>
@@ -113,28 +113,27 @@ export default function AboutPage() {
             </div>
             <div className="flex items-center gap-3 p-3 bg-surface-base rounded-lg">
               <HeartIcon className="w-5 h-5 text-accent" />
-              <span>Love for live music</span>
+              <span>OpenSearch for full-text search</span>
             </div>
           </div>
         </div>
 
-        {/* Experience Card */}
+        {/* Student Project Note */}
         <div className="bg-surface-card border border-default rounded-lg p-6">
           <p className="text-center text-lg">
-            Whether you're reliving a show you attended or discovering a performance from
-            before you were born, 8pm.me makes it easy to browse, search, and enjoy these
-            cultural treasures.
+            8pm.me is a student project exploring headless e-commerce architecture.
+            The recordings belong to Archive.org and the taping community — we just built a better way to listen.
           </p>
         </div>
 
         {/* CTA */}
         <div className="text-center pt-4">
           <Link
-            href="/artists"
+            href="/find"
             className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-inverse font-semibold rounded hover:bg-accent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
           >
             <MusicNoteIcon className="w-5 h-5" />
-            Browse Artists
+            Start Listening
           </Link>
         </div>
 

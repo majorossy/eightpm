@@ -4,11 +4,19 @@ import { useState, useCallback, createContext, useContext } from 'react';
 
 export type ToastType = 'error' | 'success' | 'info' | 'warning';
 
+export interface ToastStyle {
+  bg?: string;
+  border?: string;
+  text?: string;
+  icon?: string;
+}
+
 export interface Toast {
   id: string;
   message: string;
   type: ToastType;
   duration?: number;
+  customStyle?: ToastStyle;
 }
 
 interface ToastContextType {
@@ -16,8 +24,8 @@ interface ToastContextType {
   addToast: (message: string, type?: ToastType, duration?: number) => void;
   removeToast: (id: string) => void;
   showError: (message: string) => void;
-  showSuccess: (message: string) => void;
-  showInfo: (message: string) => void;
+  showSuccess: (message: string, customStyle?: ToastStyle) => void;
+  showInfo: (message: string, customStyle?: ToastStyle) => void;
   showWarning: (message: string) => void;
 }
 
@@ -40,10 +48,11 @@ export function useToastState() {
   const addToast = useCallback((
     message: string,
     type: ToastType = 'info',
-    duration: number = DEFAULT_DURATION
+    duration: number = DEFAULT_DURATION,
+    customStyle?: ToastStyle
   ) => {
     const id = generateToastId();
-    const newToast: Toast = { id, message, type, duration };
+    const newToast: Toast = { id, message, type, duration, customStyle };
 
     setToasts(prev => [...prev, newToast]);
 
@@ -61,12 +70,12 @@ export function useToastState() {
     return addToast(message, 'error');
   }, [addToast]);
 
-  const showSuccess = useCallback((message: string) => {
-    return addToast(message, 'success');
+  const showSuccess = useCallback((message: string, customStyle?: ToastStyle) => {
+    return addToast(message, 'success', DEFAULT_DURATION, customStyle);
   }, [addToast]);
 
-  const showInfo = useCallback((message: string) => {
-    return addToast(message, 'info');
+  const showInfo = useCallback((message: string, customStyle?: ToastStyle) => {
+    return addToast(message, 'info', DEFAULT_DURATION, customStyle);
   }, [addToast]);
 
   const showWarning = useCallback((message: string) => {

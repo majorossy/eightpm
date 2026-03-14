@@ -114,10 +114,15 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
         {sortedShows.map((show) => {
           const primaryType = show.recording_types?.[0];
 
+          const Row = show.artist_slug ? Link : 'div';
+          const rowProps = show.artist_slug
+            ? { href: `/artists/${show.artist_slug}/${show.identifier}` }
+            : {};
+
           return (
-            <Link
+            <Row
               key={show.identifier}
-              href={`/artists/${show.artist_slug}/${show.identifier}`}
+              {...rowProps as any}
               className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_1fr_auto_auto] gap-2 px-4 py-3 hover:bg-surface-elevated/50 transition-colors items-center"
             >
               <div>
@@ -137,7 +142,7 @@ export default function VenueShowsGrid({ venueSlug, initialShows = [], initialTo
               <div className="w-16 flex justify-end">
                 <RecSourceIcon type={primaryType} size={22} />
               </div>
-            </Link>
+            </Row>
           );
         })}
       </div>

@@ -40,7 +40,8 @@ export function useSwipeGesture(config: SwipeConfig): SwipeGestureReturn {
       y: touch.clientY,
       time: Date.now(),
     };
-    setIsDragging(true);
+    // Don't set isDragging here — wait for 10px of directional movement
+    // to prevent instant translateY jank on every tap
   }, []);
 
   const onTouchMove = useCallback(
@@ -51,6 +52,18 @@ export function useSwipeGesture(config: SwipeConfig): SwipeGestureReturn {
       const deltaX = touch.clientX - touchStartRef.current.x;
       const deltaY = touch.clientY - touchStartRef.current.y;
 
+      // Only start dragging after 10px of directional movement
+      if (!isDragging) {
+        const relevantDelta = direction === 'horizontal' ? Math.abs(deltaX)
+          : direction === 'vertical' ? Math.abs(deltaY)
+          : Math.max(Math.abs(deltaX), Math.abs(deltaY));
+        if (relevantDelta >= 10) {
+          setIsDragging(true);
+        } else {
+          return;
+        }
+      }
+
       // Update drag offset based on direction
       if (direction === 'vertical') {
         setDragOffset({ x: 0, y: deltaY });
@@ -60,7 +73,7 @@ export function useSwipeGesture(config: SwipeConfig): SwipeGestureReturn {
         setDragOffset({ x: deltaX, y: deltaY });
       }
     },
-    [direction]
+    [direction, isDragging]
   );
 
   const onTouchEnd = useCallback(() => {

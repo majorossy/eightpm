@@ -2,16 +2,16 @@
    LOT THEME - AURORA PALETTE
    ======================================== */
 .theme-lot {
-  --primary: #2a4a52;
-  --secondary: #a33a3a;
+  --primary: #1e2e45;
+  --secondary: #cc2828;
   --tertiary: #5ab8a0;
   --quaternary: #9088c8;
   --quinary: #c8b468;
-  --primary-muted: #2a4a5240;
-  --secondary-muted: #a33a3a40;
+  --primary-muted: #1e2e4540;
+  --secondary-muted: #cc282840;
   --tertiary-muted: #5ab8a040;
   --quaternary-muted: #9088c840;
   --quinary-muted: #c8b46840;
-  --senary: #6a8090;
-  --senary-muted: #6a809040;
+  --senary: #3e5878;
+  --senary-muted: #3e587840;
 }

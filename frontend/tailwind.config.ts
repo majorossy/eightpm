@@ -94,6 +94,7 @@ const config: Config = {
         mono: ['var(--font-space-mono)', 'monospace'],
         'jb-mono': ['var(--font-jetbrains-mono)', 'monospace'],
         'bebas-neue': ['var(--font-bebas-neue)', 'Impact', 'sans-serif'],
+        'dm-serif': ['var(--font-dm-serif)', 'Georgia', 'serif'],
         serif: ['Georgia', 'serif'],
         sans: ['system-ui', 'sans-serif'],
       },

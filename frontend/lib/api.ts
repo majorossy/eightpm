@@ -2531,6 +2531,35 @@ export async function getVenueTracks(
   }
 }
 
+const GET_VENUE_TOP_SONGS_QUERY = `
+  query GetVenueTopSongs($slug: String!, $limit: Int!) {
+    venue(slug: $slug) {
+      top_songs(limit: $limit) {
+        song_title
+        play_count
+        artists
+        first_played
+        last_played
+      }
+    }
+  }
+`;
+
+/**
+ * Fetch top songs (setlist frequency) for a venue
+ */
+export async function getVenueTopSongs(slug: string, limit: number = 25): Promise<import('./types').VenueSongStat[]> {
+  try {
+    const data = await graphqlFetch<{
+      venue: { top_songs: import('./types').VenueSongStat[] };
+    }>(GET_VENUE_TOP_SONGS_QUERY, { slug, limit });
+    return data.venue?.top_songs || [];
+  } catch (error) {
+    console.error('[getVenueTopSongs] Failed:', error);
+    return [];
+  }
+}
+
 /**
  * Generate a URL-safe venue slug from a venue name
  * Used by VenueLink to create links from raw venue name strings

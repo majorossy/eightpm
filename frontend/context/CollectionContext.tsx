@@ -40,17 +40,20 @@ interface CollectionContextType {
   minidiscs: MiniDisc[];
   createMiniDisc: (name: string, description?: string) => MiniDisc;
   deleteMiniDisc: (id: string) => void;
+  deleteMiniDiscs: (ids: string[]) => void;
   addToMiniDisc: (id: string, song: Song) => void;
   removeFromMiniDisc: (id: string, songId: string) => void;
   updateMiniDisc: (id: string, updates: Partial<Pick<MiniDisc, 'name' | 'description'>>) => void;
   reorderMiniDisc: (id: string, fromIndex: number, toIndex: number) => void;
   getMiniDisc: (id: string) => MiniDisc | undefined;
+  cloneMiniDisc: (id: string) => MiniDisc | undefined;
 
   // Cassette state & methods
   cassettes: Cassette[];
   saveCassette: (cassette: Omit<Cassette, 'id' | 'createdAt' | 'updatedAt'>) => Cassette;
   deleteCassette: (id: string) => void;
-  updateCassette: (id: string, updates: Partial<Pick<Cassette, 'name' | 'versionOverrides'>>) => void;
+  deleteCassettes: (ids: string[]) => void;
+  updateCassette: (id: string, updates: Partial<Pick<Cassette, 'name' | 'versionOverrides' | 'colorIndex'>>) => void;
   getCassette: (id: string) => Cassette | undefined;
   getCassettesForAlbum: (albumIdentifier: string) => Cassette[];
 
@@ -119,7 +122,7 @@ function migratePlaylistsToMiniDiscs(): MiniDisc[] | null {
 
 export function CollectionProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, signOut } = useMagentoAuth();
-  const { showWarning } = useToast();
+  const { showWarning, showInfo } = useToast();
   const [minidiscs, setMiniDiscs] = useState<MiniDisc[]>([]);
   const [cassettes, setCassettes] = useState<Cassette[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -134,7 +137,11 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
     const migrated = migratePlaylistsToMiniDiscs();
     if (migrated) {
       setMiniDiscs(migrated);
-      localStorage.setItem(MINIDISCS_STORAGE_KEY, JSON.stringify(migrated));
+      try {
+        localStorage.setItem(MINIDISCS_STORAGE_KEY, JSON.stringify(migrated));
+      } catch (e) {
+        console.error('[CollectionContext] Failed to save migrated minidiscs:', e);
+      }
     } else {
       const stored = localStorage.getItem(MINIDISCS_STORAGE_KEY);
       if (stored) {
@@ -154,15 +161,25 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
   // ---------- Save to localStorage on change ----------
   useEffect(() => {
     if (!isLoading) {
-      localStorage.setItem(MINIDISCS_STORAGE_KEY, JSON.stringify(minidiscs));
+      try {
+        localStorage.setItem(MINIDISCS_STORAGE_KEY, JSON.stringify(minidiscs));
+      } catch (e) {
+        console.error('[CollectionContext] Failed to save minidiscs:', e);
+        showWarning('Storage full. Some changes may not be saved locally.');
+      }
     }
-  }, [minidiscs, isLoading]);
+  }, [minidiscs, isLoading, showWarning]);
 
   useEffect(() => {
     if (!isLoading) {
-      localStorage.setItem(CASSETTES_STORAGE_KEY, JSON.stringify(cassettes));
+      try {
+        localStorage.setItem(CASSETTES_STORAGE_KEY, JSON.stringify(cassettes));
+      } catch (e) {
+        console.error('[CollectionContext] Failed to save cassettes:', e);
+        showWarning('Storage full. Some changes may not be saved locally.');
+      }
     }
-  }, [cassettes, isLoading]);
+  }, [cassettes, isLoading, showWarning]);
 
   // ---------- Sync error handler ----------
   const handleSyncError = useCallback((error: unknown, action: string) => {
@@ -194,6 +211,12 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
         // Merge minidiscs
         const miniDiscMerge = mergeMiniDiscs(minidiscs, collections.minidiscs);
         setMiniDiscs(miniDiscMerge.merged);
+
+        // Notify user of server-side updates
+        const totalUpdated = cassetteMerge.updatedFromServer + miniDiscMerge.updatedFromServer;
+        if (totalUpdated > 0) {
+          showInfo(`${totalUpdated} item${totalUpdated > 1 ? 's' : ''} updated from another device`);
+        }
 
         // Push local-only items to server
         if (cassetteMerge.toSync.length > 0) {
@@ -300,6 +323,20 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
     [minidiscs, isAuthenticated, handleSyncError],
   );
 
+  const deleteMiniDiscs = useCallback(
+    (ids: string[]) => {
+      const idSet = new Set(ids);
+      setMiniDiscs((prev) => prev.filter((m) => !idSet.has(m.id)));
+
+      if (isAuthenticated) {
+        for (const id of ids) {
+          deleteMiniDiscSync(id).catch(error => handleSyncError(error, 'delete minidisc'));
+        }
+      }
+    },
+    [isAuthenticated, handleSyncError],
+  );
+
   const addToMiniDisc = useCallback(
     (id: string, song: Song) => {
       let updated: MiniDisc | null = null;
@@ -397,6 +434,28 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
 
   const getMiniDisc = useCallback((id: string) => minidiscs.find((m) => m.id === id), [minidiscs]);
 
+  const cloneMiniDisc = useCallback(
+    (id: string): MiniDisc | undefined => {
+      const source = minidiscs.find(m => m.id === id);
+      if (!source) return undefined;
+
+      const clone: MiniDisc = {
+        id: generateMiniDiscId(),
+        name: `${source.name} copy`,
+        description: source.description,
+        songs: [...source.songs],
+        coverArt: source.coverArt,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      setMiniDiscs(prev => [...prev, clone]);
+      syncMiniDiscDebounced(clone);
+      return clone;
+    },
+    [minidiscs, syncMiniDiscDebounced],
+  );
+
   // ======================================================================
   // Cassette CRUD
   // ======================================================================
@@ -440,8 +499,22 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
     [cassettes, isAuthenticated, handleSyncError],
   );
 
+  const deleteCassettes = useCallback(
+    (ids: string[]) => {
+      const idSet = new Set(ids);
+      setCassettes((prev) => prev.filter((c) => !idSet.has(c.id)));
+
+      if (isAuthenticated) {
+        for (const id of ids) {
+          deleteCassetteSync(id).catch(error => handleSyncError(error, 'delete cassette'));
+        }
+      }
+    },
+    [isAuthenticated, handleSyncError],
+  );
+
   const updateCassette = useCallback(
-    (id: string, updates: Partial<Pick<Cassette, 'name' | 'versionOverrides'>>) => {
+    (id: string, updates: Partial<Pick<Cassette, 'name' | 'versionOverrides' | 'colorIndex'>>) => {
       let updated: Cassette | null = null;
       setCassettes((prev) =>
         prev.map((c) => {
@@ -453,6 +526,9 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
           }
           if (updates.versionOverrides !== undefined) {
             patched.versionOverrides = updates.versionOverrides;
+          }
+          if (updates.colorIndex !== undefined) {
+            patched.colorIndex = updates.colorIndex;
           }
           updated = patched;
           return patched;
@@ -484,15 +560,18 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
         minidiscs,
         createMiniDisc,
         deleteMiniDisc,
+        deleteMiniDiscs,
         addToMiniDisc,
         removeFromMiniDisc,
         updateMiniDisc,
         reorderMiniDisc,
         getMiniDisc,
+        cloneMiniDisc,
 
         cassettes,
         saveCassette,
         deleteCassette,
+        deleteCassettes,
         updateCassette,
         getCassette,
         getCassettesForAlbum,
@@ -520,11 +599,13 @@ export function useMiniDiscs() {
     syncStatus: ctx.syncStatus,
     createMiniDisc: ctx.createMiniDisc,
     deleteMiniDisc: ctx.deleteMiniDisc,
+    deleteMiniDiscs: ctx.deleteMiniDiscs,
     addToMiniDisc: ctx.addToMiniDisc,
     removeFromMiniDisc: ctx.removeFromMiniDisc,
     updateMiniDisc: ctx.updateMiniDisc,
     reorderMiniDisc: ctx.reorderMiniDisc,
     getMiniDisc: ctx.getMiniDisc,
+    cloneMiniDisc: ctx.cloneMiniDisc,
     forceSync: ctx.forceSync,
   };
 }
@@ -535,8 +616,10 @@ export function useCassettes() {
   return {
     cassettes: ctx.cassettes,
     isLoading: ctx.isLoading,
+    syncStatus: ctx.syncStatus,
     saveCassette: ctx.saveCassette,
     deleteCassette: ctx.deleteCassette,
+    deleteCassettes: ctx.deleteCassettes,
     updateCassette: ctx.updateCassette,
     getCassette: ctx.getCassette,
     getCassettesForAlbum: ctx.getCassettesForAlbum,

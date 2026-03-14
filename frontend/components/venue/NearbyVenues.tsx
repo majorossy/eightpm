@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { VenueDetail } from '@/lib/types';
 import { getNearbyVenues } from '@/lib/api';
+import { titleCaseVenue } from '@/lib/venueUtils';
 
 interface NearbyVenuesProps {
   venueSlug: string;
@@ -54,7 +55,7 @@ export default function NearbyVenues({ venueSlug }: NearbyVenuesProps) {
                 </div>
                 <div className="min-w-0">
                   <div className="text-[var(--text)] font-medium text-sm truncate group-hover:text-accent transition-colors">
-                    {venue.normalized_name}
+                    {titleCaseVenue(venue.normalized_name)}
                   </div>
                   {location && (
                     <div className="text-[var(--text-subdued)] text-xs mt-0.5 truncate">

@@ -26,6 +26,21 @@ class CustomerMiniDiscs implements ResolverInterface
         }
 
         $customerId = (int)$context->getUserId();
-        return $this->miniDiscRepository->getByCustomerId($customerId);
+        $pageSize = max(1, min((int)($args['pageSize'] ?? 50), 200));
+        $currentPage = max(1, (int)($args['currentPage'] ?? 1));
+
+        $items = $this->miniDiscRepository->getByCustomerId($customerId, $pageSize, $currentPage);
+        $totalCount = $this->miniDiscRepository->getCountByCustomerId($customerId);
+        $totalPages = $pageSize > 0 ? (int)ceil($totalCount / $pageSize) : 0;
+
+        return [
+            'items' => $items,
+            'total_count' => $totalCount,
+            'page_info' => [
+                'page_size' => $pageSize,
+                'current_page' => $currentPage,
+                'total_pages' => $totalPages,
+            ],
+        ];
     }
 }

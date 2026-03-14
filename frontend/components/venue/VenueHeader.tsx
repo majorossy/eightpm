@@ -1,6 +1,7 @@
 'use client';
 
 import { VenueDetail } from '@/lib/types';
+import { titleCaseVenue } from '@/lib/venueUtils';
 
 interface VenueHeaderProps {
   venue: VenueDetail;
@@ -31,7 +32,7 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
 
       {/* Venue name */}
       <h1 className="text-3xl sm:text-4xl lg:text-5xl text-[var(--text)] font-bold mb-2 leading-tight">
-        {venue.normalized_name}
+        {titleCaseVenue(venue.normalized_name)}
       </h1>
 
       {/* Location */}

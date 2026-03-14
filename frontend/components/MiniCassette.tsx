@@ -14,13 +14,17 @@ function tintFrom(v: string): Record<string, string> {
   };
 }
 
-export const cassetteTints: Record<string, string>[] = [
-  tintFrom('--secondary'),   // coral/red
-  tintFrom('--tertiary'),    // teal
-  tintFrom('--quaternary'),  // purple
-  tintFrom('--quinary'),     // gold
-  tintFrom('--senary'),      // blue-gray
-];
+export const CASSETTE_PALETTE_VARS = [
+  '--secondary',   // coral/red
+  '--tertiary',    // teal
+  '--quaternary',  // purple
+  '--quinary',     // gold
+  '--senary',      // blue-gray
+] as const;
+
+export const cassetteTints: Record<string, string>[] = CASSETTE_PALETTE_VARS.map(v => tintFrom(v));
+
+export const CASSETTE_COLOR_COUNT = cassetteTints.length;
 
 export function getCassetteTint(index: number): Record<string, string> {
   return cassetteTints[index % cassetteTints.length];
@@ -97,7 +101,7 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
       >
         {/* Header band */}
         <div
-          className="h-4 flex items-center justify-between px-2 text-[7px] font-bold text-white tracking-wider"
+          className="h-4 flex items-center justify-between px-2 text-[8.5px] font-bold text-white tracking-wider"
           style={{ background: blank ? '#a8a098' : 'var(--cassette-header)' }}
         >
           <span>{blank ? 'BLANK TAPE' : headerLabel || 'LIVE RECORDING'}</span>
@@ -123,7 +127,7 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
 
           {blank ? (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-[11px] italic" style={{ color: 'var(--cassette-label-muted)' }}>
+              <p className="text-[13px] italic" style={{ color: 'var(--cassette-label-muted)' }}>
                 Blank tape
               </p>
             </div>
@@ -143,13 +147,13 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
                     }}
                     onClick={(e) => e.stopPropagation()}
                     maxLength={33}
-                    className="w-full text-sm font-semibold bg-transparent border-b border-dashed outline-none"
+                    className="w-full text-[17px] font-semibold bg-transparent border-b border-dashed outline-none"
                     style={{ color: '#1a0f08', fontFamily: 'Georgia, serif', borderColor: '#1a0f0840' }}
                   />
                 ) : (
                   <div className="flex items-start gap-1">
                     <p
-                      className="text-sm font-semibold line-clamp-2 flex-1"
+                      className="text-[17px] font-semibold line-clamp-2 flex-1"
                       style={{ color: '#1a0f08', fontFamily: 'Georgia, serif' }}
                     >
                       {name}
@@ -168,10 +172,10 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
                     )}
                   </div>
                 )}
-                <p className="text-[11px] truncate" style={{ color: 'var(--cassette-label-text)' }}>
+                <p className="text-[13px] truncate" style={{ color: 'var(--cassette-label-text)' }}>
                   {albumName}
                 </p>
-                <p className="text-[9px] italic truncate" style={{ color: 'var(--cassette-label-muted)' }}>
+                <p className="text-[11px] italic truncate" style={{ color: 'var(--cassette-label-muted)' }}>
                   {artistName}
                 </p>
               </div>

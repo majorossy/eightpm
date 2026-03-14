@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { Artist, Song } from '@/lib/api';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
-import ArtistCard from '@/components/ArtistCard';
+import ArtistResult from '@/components/ArtistResult';
 import SongCard from '@/components/SongCard';
 
 interface HomePageContentProps {
@@ -49,9 +49,15 @@ export default function HomePageContent({ artists, songs }: HomePageContentProps
             Show all
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 md:gap-x-6 gap-y-10 md:gap-y-16">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {artists.slice(0, 6).map((artist) => (
-            <ArtistCard key={artist.id} artist={artist} />
+            <ArtistResult
+              key={artist.id}
+              name={artist.name}
+              slug={artist.slug}
+              image={artist.image}
+              subtitle={artist.songCount ? `${artist.songCount.toLocaleString()} recordings` : 'Artist'}
+            />
           ))}
         </div>
       </section>

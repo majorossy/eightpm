@@ -342,6 +342,14 @@ export interface VenueArtist {
   show_count: number;
 }
 
+export interface VenueSongStat {
+  song_title: string;
+  play_count: number;
+  artists?: string[];
+  first_played?: string;
+  last_played?: string;
+}
+
 export interface ArtistVenueCount {
   venue_name: string;
   venue_slug: string;

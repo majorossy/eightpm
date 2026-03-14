@@ -17,7 +17,7 @@ import { TrackRow } from './album/TrackRow';
 import DiscographyCard from '@/components/DiscographyCard';
 import JewelCase from '@/components/JewelCase';
 import DecorativeStars from '@/components/DecorativeStars';
-import MiniCassette from '@/components/MiniCassette';
+import MiniCassette, { CASSETTE_COLOR_COUNT } from '@/components/MiniCassette';
 import OldCassette from '@/components/OldCassette';
 import NewCassette from '@/components/NewCassette';
 import BestCassette from '@/components/BestCassette';
@@ -189,6 +189,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       showVenue: album.showVenue,
       showLocation: album.showLocation,
       versionOverrides: overridesObj,
+      colorIndex: savedCassettes.length % CASSETTE_COLOR_COUNT,
     });
     trackCassetteSave(name, album.artistName);
     setIsNaming(false);
@@ -224,6 +225,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       showVenue: cassette.showVenue,
       showLocation: cassette.showLocation,
       versionOverrides: { ...cassette.versionOverrides },
+      colorIndex: cassette.colorIndex,
     });
     setSelectedCassetteId(cloned.id);
     setAll(cloned.versionOverrides);
@@ -265,10 +267,8 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       <div className="firefly-2 fixed top-[60%] left-[85%] w-1 h-1" />
       <div className="firefly-3 fixed top-[40%] left-[75%] w-1.5 h-1.5" />
 
-      {/* Single-column centered layout */}
-      <div className="max-w-[740px] mx-auto px-4 sm:px-8 pt-8 flex flex-col items-center">
-
-        {/* My Cassettes — top of page */}
+      {/* My Cassettes — wider than main column for 15% larger tapes */}
+      <div className="max-w-[850px] mx-auto px-4 sm:px-8 pt-8">
         <div className="w-full mt-2 mb-6">
             <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-3 text-center">
               My Cassettes
@@ -308,20 +308,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                     />
                   </button>
                   <button
-                    onClick={() => handleLoadVirtualCassette(VIRTUAL_OLDEST_ID)}
-                    className="w-full text-left transition-transform hover:scale-[1.02]"
-                  >
-                    <OldCassette
-                      name={VIRTUAL_OLDEST_NAME}
-                      albumName={album.name}
-                      artistName={album.artistName}
-                      showVenue={album.showVenue}
-                      showDate={album.showDate}
-                      selected={selectedCassetteId === VIRTUAL_OLDEST_ID}
-                      pickCount={Object.keys(oldestOverrides).length}
-                    />
-                  </button>
-                  <button
                     onClick={() => handleLoadVirtualCassette(VIRTUAL_NEWEST_ID)}
                     className="w-full text-left transition-transform hover:scale-[1.02]"
                   >
@@ -333,6 +319,20 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                       showDate={album.showDate}
                       selected={selectedCassetteId === VIRTUAL_NEWEST_ID}
                       pickCount={Object.keys(newestOverrides).length}
+                    />
+                  </button>
+                  <button
+                    onClick={() => handleLoadVirtualCassette(VIRTUAL_OLDEST_ID)}
+                    className="w-full text-left transition-transform hover:scale-[1.02]"
+                  >
+                    <OldCassette
+                      name={VIRTUAL_OLDEST_NAME}
+                      albumName={album.name}
+                      artistName={album.artistName}
+                      showVenue={album.showVenue}
+                      showDate={album.showDate}
+                      selected={selectedCassetteId === VIRTUAL_OLDEST_ID}
+                      pickCount={Object.keys(oldestOverrides).length}
                     />
                   </button>
                 </>
@@ -354,7 +354,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                         coverArt={c.coverArt}
                         selected={selectedCassetteId === c.id}
                         pickCount={picks}
-                        tintIndex={i + 2}
+                        tintIndex={c.colorIndex ?? i}
                         onNameChange={(newName) => updateCassette(c.id, { name: newName })}
                       />
                     </button>
@@ -384,6 +384,10 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
               })}
             </div>
         </div>
+      </div>
+
+      {/* Single-column centered layout */}
+      <div className="max-w-[740px] mx-auto px-4 sm:px-8 flex flex-col items-center">
 
         {/* Action buttons row */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
@@ -474,7 +478,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
           artistImageUrl={artist?.image}
           tintStyle={getVirtualCassetteTint(selectedCassetteId)}
           tintIndex={!isVirtualCassette(selectedCassetteId) && selectedCassetteId != null
-            ? savedCassettes.findIndex(c => c.id === selectedCassetteId) + 2
+            ? savedCassettes.find(c => c.id === selectedCassetteId)?.colorIndex ?? 0
             : undefined
           }
         >

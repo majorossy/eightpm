@@ -49,6 +49,10 @@ export default function Queue() {
     playFromQueue,
     currentTime,
     duration,
+    togglePlay,
+    playNext,
+    playPrev,
+    isPlaying,
   } = usePlayer();
 
   useBackToClose(isQueueOpen, closeQueue);
@@ -137,14 +141,77 @@ export default function Queue() {
           style={{ background: 'linear-gradient(90deg, transparent, var(--quinary-muted), var(--tertiary-muted), transparent)' }}
         />
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3.5 flex-shrink-0">
-          <span className="font-jb-mono text-[13px] font-semibold tracking-[0.14em] uppercase text-primary">
-            Queue
-          </span>
+        {/* Header: nav links + close button */}
+        <nav className="flex items-center gap-1 px-5 pt-3 pb-3 flex-shrink-0">
+          <Link
+            href="/my-library"
+            onClick={closeQueue}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
+            style={{
+              color: 'var(--text-secondary)',
+              border: '1px solid color-mix(in srgb, var(--primary) 23%, transparent)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.background = 'var(--primary-muted)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z" />
+            </svg>
+            <span className="hidden min-[380px]:inline">My Library</span>
+          </Link>
+          <Link
+            href="/find"
+            onClick={closeQueue}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
+            style={{
+              color: 'var(--text-secondary)',
+              border: '1px solid color-mix(in srgb, var(--primary) 23%, transparent)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.background = 'var(--primary-muted)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span className="hidden min-[380px]:inline">Find</span>
+          </Link>
+          <Link
+            href={isAuthenticated ? '/account' : '/sign-in'}
+            onClick={closeQueue}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
+            style={{
+              color: 'var(--text-secondary)',
+              border: '1px solid color-mix(in srgb, var(--primary) 23%, transparent)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.background = 'var(--primary-muted)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span className="hidden min-[380px]:inline">{isAuthenticated ? 'Account' : 'Sign In'}</span>
+          </Link>
           <button
             onClick={toggleQueue}
-            className="w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all"
+            className="ml-auto w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all flex-shrink-0"
             style={{
               border: '1.5px solid color-mix(in srgb, var(--primary) 23%, transparent)',
               background: 'transparent',
@@ -167,76 +234,6 @@ export default function Queue() {
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
-        </div>
-
-        {/* Nav links */}
-        <nav className="flex items-center gap-1 px-5 pb-3 flex-shrink-0">
-          <Link
-            href="/my-library"
-            onClick={closeQueue}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
-            style={{
-              color: 'var(--text-secondary)',
-              border: '1px solid color-mix(in srgb, var(--primary) 23%, transparent)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--text-primary)';
-              e.currentTarget.style.background = 'var(--primary-muted)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--text-secondary)';
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z" />
-            </svg>
-            My Library
-          </Link>
-          <Link
-            href="/find"
-            onClick={closeQueue}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
-            style={{
-              color: 'var(--text-secondary)',
-              border: '1px solid color-mix(in srgb, var(--primary) 23%, transparent)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--text-primary)';
-              e.currentTarget.style.background = 'var(--primary-muted)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--text-secondary)';
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            Find
-          </Link>
-          <Link
-            href={isAuthenticated ? '/account' : '/sign-in'}
-            onClick={closeQueue}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
-            style={{
-              color: 'var(--text-secondary)',
-              border: '1px solid color-mix(in srgb, var(--primary) 23%, transparent)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--text-primary)';
-              e.currentTarget.style.background = 'var(--primary-muted)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--text-secondary)';
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            {isAuthenticated ? 'Account' : 'Sign In'}
-          </Link>
         </nav>
 
         {/* Content */}
@@ -252,7 +249,7 @@ export default function Queue() {
           ) : (
             <>
               {/* Now Playing */}
-              <NowPlayingSection currentItem={currentItem} currentTime={currentTime} duration={duration} />
+              <NowPlayingSection currentItem={currentItem} currentTime={currentTime} duration={duration} removeItem={removeItem} isPlaying={isPlaying} togglePlay={togglePlay} playNext={playNext} playPrev={playPrev} />
 
               {/* Divider */}
               <div
@@ -392,7 +389,7 @@ function DragDots({ className = '' }: { className?: string }) {
 // Now Playing Section
 // =============================================================================
 
-function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem: QueueItem | null; currentTime: number; duration: number }) {
+function NowPlayingSection({ currentItem, currentTime, duration, removeItem, isPlaying, togglePlay, playNext, playPrev }: { currentItem: QueueItem | null; currentTime: number; duration: number; removeItem: (queueId: string) => void; isPlaying: boolean; togglePlay: () => void; playNext: () => void; playPrev: () => void }) {
   if (!currentItem) return null;
 
   const song = currentItem.song;
@@ -422,12 +419,33 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
         }}
       />
 
-      {/* NOW PLAYING label */}
-      <div
-        className="font-jb-mono text-[9.5px] font-semibold tracking-[0.14em] uppercase mb-3 relative z-[1]"
-        style={{ color: 'var(--quinary)' }}
-      >
-        Now Playing
+      {/* NOW PLAYING label + dismiss button */}
+      <div className="flex items-center justify-between mb-3 relative z-[1]">
+        <div
+          className="font-jb-mono text-[9.5px] font-semibold tracking-[0.14em] uppercase"
+          style={{ color: 'var(--quinary)' }}
+        >
+          Now Playing
+        </div>
+        <button
+          onClick={() => removeItem(currentItem.queueId)}
+          className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 opacity-40 hover:!opacity-100 transition-all"
+          style={{ color: 'var(--text-tertiary)', background: 'transparent', border: 'none' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--secondary-muted)';
+            e.currentTarget.style.color = 'var(--secondary)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = 'var(--text-tertiary)';
+          }}
+          aria-label="Dismiss current song"
+        >
+          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
       </div>
 
       {/* Multi-row content — matches SortableTrackRow layout */}
@@ -436,6 +454,79 @@ function NowPlayingSection({ currentItem, currentTime, duration }: { currentItem
           song={song}
           trackNumber={trackNumber}
         />
+      </div>
+
+      {/* Transport controls — back / play-pause / next */}
+      <div className="flex items-center justify-center gap-5 relative z-[1] mb-3.5">
+        {/* Previous */}
+        <button
+          onClick={(e) => { e.stopPropagation(); playPrev(); }}
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+          style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--text-primary)';
+            e.currentTarget.style.background = 'var(--primary-muted)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text-secondary)';
+            e.currentTarget.style.background = 'transparent';
+          }}
+          aria-label="Previous track"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+          </svg>
+        </button>
+
+        {/* Play / Pause */}
+        <button
+          onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+          className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+          style={{
+            color: 'var(--text-primary)',
+            background: 'color-mix(in srgb, var(--quinary) 20%, transparent)',
+            border: '1.5px solid color-mix(in srgb, var(--quinary) 40%, transparent)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'color-mix(in srgb, var(--quinary) 35%, transparent)';
+            e.currentTarget.style.borderColor = 'var(--quinary)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'color-mix(in srgb, var(--quinary) 20%, transparent)';
+            e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--quinary) 40%, transparent)';
+          }}
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+        >
+          {isPlaying ? (
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
+        </button>
+
+        {/* Next */}
+        <button
+          onClick={(e) => { e.stopPropagation(); playNext(); }}
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+          style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--text-primary)';
+            e.currentTarget.style.background = 'var(--primary-muted)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text-secondary)';
+            e.currentTarget.style.background = 'transparent';
+          }}
+          aria-label="Next track"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+          </svg>
+        </button>
       </div>
 
       {/* Mini progress bar */}
@@ -875,6 +966,10 @@ function UpcomingSection({
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
+      {/* Queue label */}
+      <span className="font-jb-mono text-[13px] font-semibold tracking-[0.14em] uppercase text-primary px-5 pt-1 pb-1 flex-shrink-0">
+        Queue
+      </span>
       {/* Up Next header */}
       <div className="flex items-center justify-between px-5 pt-1 pb-2.5 flex-shrink-0">
         <div className="font-jb-mono text-[11px] font-semibold tracking-[0.1em] uppercase">

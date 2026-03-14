@@ -6,8 +6,8 @@ import {
   SkeletonArtistHeader,
   SkeletonAlbumGrid,
   SkeletonCassette,
-  SkeletonAlbumHeader,
-  SkeletonTrackRow,
+  SkeletonMiniCassette,
+  SkeletonTapeTrackRow,
   SkeletonAlbumPage,
   SkeletonFestivalHero,
   SkeletonAlbumGridHome,
@@ -57,12 +57,16 @@ export const Cassette: StoryObj = {
   render: () => <SkeletonCassette />,
 };
 
-export const AlbumHeader: StoryObj = {
-  render: () => <SkeletonAlbumHeader />,
+export const MiniCassette: StoryObj = {
+  render: () => (
+    <div style={{ width: 200 }}>
+      <SkeletonMiniCassette />
+    </div>
+  ),
 };
 
-export const TrackRow: StoryObj = {
-  render: () => <SkeletonTrackRow />,
+export const TapeTrackRow: StoryObj = {
+  render: () => <SkeletonTapeTrackRow />,
 };
 
 export const AlbumPage: StoryObj = {

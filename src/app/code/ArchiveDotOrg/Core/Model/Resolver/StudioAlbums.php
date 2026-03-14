@@ -68,6 +68,7 @@ class StudioAlbums implements ResolverInterface
                 'artwork_url' => $album['artwork_url'],
                 'category_id' => $album['category_id'] ? (int)$album['category_id'] : null,
                 'track_count' => $album['track_count'] ? (int)$album['track_count'] : null,
+                'is_locked' => (bool)($album['is_locked'] ?? false),
             ];
         }
 

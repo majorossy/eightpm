@@ -14,6 +14,7 @@
             "show_venue": true,
             "show_location": true,
             "version_overrides": true,
+            "color_index": true,
             "created_at": true,
             "updated_at": true
         },

@@ -12,11 +12,13 @@ use ArchiveDotOrg\Customer\Model\ResourceModel\MiniDiscSong as MiniDiscSongResou
 use ArchiveDotOrg\Customer\Model\ResourceModel\MiniDisc\CollectionFactory;
 use ArchiveDotOrg\Customer\Model\ResourceModel\MiniDiscSong\CollectionFactory as SongCollectionFactory;
 use ArchiveDotOrg\Customer\Exception\CollectionException;
+use Magento\Framework\App\ResourceConnection;
 
 class MiniDiscRepository implements MiniDiscRepositoryInterface
 {
     private const MAX_MINIDISCS = 200;
     private const MAX_SONGS_PER_MINIDISC = 500;
+    private const MAX_PAGE_SIZE = 200;
 
     private MiniDiscFactory $miniDiscFactory;
     private MiniDiscSongFactory $songFactory;
@@ -24,6 +26,7 @@ class MiniDiscRepository implements MiniDiscRepositoryInterface
     private MiniDiscSongResource $songResource;
     private CollectionFactory $collectionFactory;
     private SongCollectionFactory $songCollectionFactory;
+    private ResourceConnection $resourceConnection;
 
     public function __construct(
         MiniDiscFactory $miniDiscFactory,
@@ -31,7 +34,8 @@ class MiniDiscRepository implements MiniDiscRepositoryInterface
         MiniDiscResource $miniDiscResource,
         MiniDiscSongResource $songResource,
         CollectionFactory $collectionFactory,
-        SongCollectionFactory $songCollectionFactory
+        SongCollectionFactory $songCollectionFactory,
+        ResourceConnection $resourceConnection
     ) {
         $this->miniDiscFactory = $miniDiscFactory;
         $this->songFactory = $songFactory;
@@ -39,13 +43,21 @@ class MiniDiscRepository implements MiniDiscRepositoryInterface
         $this->songResource = $songResource;
         $this->collectionFactory = $collectionFactory;
         $this->songCollectionFactory = $songCollectionFactory;
+        $this->resourceConnection = $resourceConnection;
     }
 
-    public function getByCustomerId(int $customerId): array
+    public function getByCustomerId(int $customerId, int $pageSize = 0, int $currentPage = 1): array
     {
         $collection = $this->collectionFactory->create();
         $collection->addFieldToFilter('customer_id', $customerId);
         $collection->setOrder('updated_at', 'DESC');
+
+        if ($pageSize > 0) {
+            $pageSize = min($pageSize, self::MAX_PAGE_SIZE);
+            $currentPage = max(1, $currentPage);
+            $collection->setPageSize($pageSize);
+            $collection->setCurPage($currentPage);
+        }
 
         $items = [];
         foreach ($collection as $miniDisc) {
@@ -54,6 +66,13 @@ class MiniDiscRepository implements MiniDiscRepositoryInterface
             $items[] = $data;
         }
         return $items;
+    }
+
+    public function getCountByCustomerId(int $customerId): int
+    {
+        $collection = $this->collectionFactory->create();
+        $collection->addFieldToFilter('customer_id', $customerId);
+        return $collection->getSize();
     }
 
     public function save(int $customerId, array $data): MiniDisc
@@ -134,21 +153,30 @@ class MiniDiscRepository implements MiniDiscRepositoryInterface
             throw CollectionException::limitExceeded('songs per minidisc', self::MAX_SONGS_PER_MINIDISC);
         }
 
-        // Delete existing songs and re-insert
-        $existingSongs = $this->songCollectionFactory->create();
-        $existingSongs->addFieldToFilter('minidisc_id', $miniDiscId);
-        foreach ($existingSongs as $existing) {
-            $this->songResource->delete($existing);
-        }
+        $connection = $this->resourceConnection->getConnection();
+        $connection->beginTransaction();
+        try {
+            // Delete existing songs and re-insert
+            $existingSongs = $this->songCollectionFactory->create();
+            $existingSongs->addFieldToFilter('minidisc_id', $miniDiscId);
+            foreach ($existingSongs as $existing) {
+                $this->songResource->delete($existing);
+            }
 
-        foreach ($songs as $position => $songData) {
-            $song = $this->songFactory->create();
-            $song->setData('minidisc_id', $miniDiscId);
-            $song->setData('song_id', $songData['song_id'] ?? '');
-            $song->setData('sku', $songData['sku'] ?? null);
-            $song->setData('position', $songData['position'] ?? $position);
-            $song->setData('song_data_snapshot', $songData['song_data_snapshot'] ?? null);
-            $this->songResource->save($song);
+            foreach ($songs as $position => $songData) {
+                $song = $this->songFactory->create();
+                $song->setData('minidisc_id', $miniDiscId);
+                $song->setData('song_id', $songData['song_id'] ?? '');
+                $song->setData('sku', $songData['sku'] ?? null);
+                $song->setData('position', $songData['position'] ?? $position);
+                $song->setData('song_data_snapshot', $songData['song_data_snapshot'] ?? null);
+                $this->songResource->save($song);
+            }
+
+            $connection->commit();
+        } catch (\Exception $e) {
+            $connection->rollBack();
+            throw $e;
         }
     }
 }

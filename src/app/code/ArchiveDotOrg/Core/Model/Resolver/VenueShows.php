@@ -149,17 +149,21 @@ class VenueShows implements ResolverInterface
         // Get artist URL keys for slug
         $artistSlugs = $this->getArtistSlugs($connection, array_unique(array_column($shows, 'artist_name')));
 
+        // Batch-query recording_type for all show identifiers
+        $recTypeMap = $this->getRecordingTypes($connection, array_filter(array_column($shows, 'identifier')));
+
         $items = [];
         foreach ($shows as $show) {
             $artistName = $show['artist_name'] ?? 'Unknown';
+            $identifier = $show['identifier'] ?? '';
             $items[] = [
-                'identifier' => $show['identifier'] ?? '',
-                'name' => $show['show_name'] ?? $show['identifier'] ?? '',
+                'identifier' => $identifier,
+                'name' => $show['show_name'] ?? $identifier,
                 'show_date' => $show['show_date'] ?? null,
                 'artist_name' => $artistName,
                 'artist_slug' => $artistSlugs[$artistName] ?? '',
                 'track_count' => (int)$show['track_count'],
-                'recording_types' => [],
+                'recording_types' => $recTypeMap[$identifier] ?? [],
             ];
         }
 
@@ -174,6 +178,57 @@ class VenueShows implements ResolverInterface
                 'total_pages' => $totalPages,
             ],
         ];
+    }
+
+    private function getRecordingTypes($connection, array $identifiers): array
+    {
+        if (empty($identifiers)) {
+            return [];
+        }
+
+        $eavAttr = $connection->getTableName('eav_attribute');
+        $cpeVarcharTable = $connection->getTableName('catalog_product_entity_varchar');
+
+        $identifierAttrId = (int)$connection->fetchOne(
+            $connection->select()->from($eavAttr, ['attribute_id'])
+                ->where('attribute_code = ?', 'identifier')
+                ->where('entity_type_id = ?', 4)
+        );
+
+        $recTypeAttrId = (int)$connection->fetchOne(
+            $connection->select()->from($eavAttr, ['attribute_id'])
+                ->where('attribute_code = ?', 'recording_type')
+                ->where('entity_type_id = ?', 4)
+        );
+
+        if (!$identifierAttrId || !$recTypeAttrId) {
+            return [];
+        }
+
+        $select = $connection->select()
+            ->from(['ident' => $cpeVarcharTable], ['identifier' => 'ident.value'])
+            ->join(
+                ['rtype' => $cpeVarcharTable],
+                "rtype.entity_id = ident.entity_id AND rtype.attribute_id = {$recTypeAttrId} AND rtype.store_id = 0",
+                ['recording_type' => 'rtype.value']
+            )
+            ->where('ident.attribute_id = ?', $identifierAttrId)
+            ->where('ident.store_id = ?', 0)
+            ->where('ident.value IN (?)', $identifiers)
+            ->group(['ident.value', 'rtype.value']);
+
+        $rows = $connection->fetchAll($select);
+
+        $map = [];
+        foreach ($rows as $row) {
+            $id = $row['identifier'];
+            $type = $row['recording_type'];
+            if ($type && !in_array($type, $map[$id] ?? [], true)) {
+                $map[$id][] = $type;
+            }
+        }
+
+        return $map;
     }
 
     private function getArtistSlugs($connection, array $artistNames): array
