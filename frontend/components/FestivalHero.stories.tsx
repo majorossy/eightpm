@@ -102,6 +102,8 @@ export const Default: Story = {
   args: {
     artists: lineupArtists,
     onStartListening: fn(),
+    activeTab: 'artists',
+    onTabChange: fn(),
   },
 };
 
@@ -109,6 +111,8 @@ export const FewArtists: Story = {
   args: {
     artists: lineupArtists.slice(0, 3),
     onStartListening: fn(),
+    activeTab: 'artists',
+    onTabChange: fn(),
   },
 };
 
@@ -116,5 +120,7 @@ export const SingleArtist: Story = {
   args: {
     artists: [lineupArtists[0]],
     onStartListening: fn(),
+    activeTab: 'artists',
+    onTabChange: fn(),
   },
 };
