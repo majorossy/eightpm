@@ -53,7 +53,7 @@ interface CollectionContextType {
   saveCassette: (cassette: Omit<Cassette, 'id' | 'createdAt' | 'updatedAt'>) => Cassette;
   deleteCassette: (id: string) => void;
   deleteCassettes: (ids: string[]) => void;
-  updateCassette: (id: string, updates: Partial<Pick<Cassette, 'name' | 'versionOverrides' | 'colorIndex'>>) => void;
+  updateCassette: (id: string, updates: Partial<Pick<Cassette, 'name' | 'versionOverrides' | 'colorIndex' | 'colorHex' | 'colorBrand' | 'isPublic'>>) => void;
   getCassette: (id: string) => Cassette | undefined;
   getCassettesForAlbum: (albumIdentifier: string) => Cassette[];
 
@@ -514,7 +514,7 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
   );
 
   const updateCassette = useCallback(
-    (id: string, updates: Partial<Pick<Cassette, 'name' | 'versionOverrides' | 'colorIndex'>>) => {
+    (id: string, updates: Partial<Pick<Cassette, 'name' | 'versionOverrides' | 'colorIndex' | 'colorHex' | 'colorBrand' | 'isPublic'>>) => {
       let updated: Cassette | null = null;
       setCassettes((prev) =>
         prev.map((c) => {
@@ -529,6 +529,15 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
           }
           if (updates.colorIndex !== undefined) {
             patched.colorIndex = updates.colorIndex;
+          }
+          if (updates.colorHex !== undefined) {
+            patched.colorHex = updates.colorHex || undefined;
+          }
+          if (updates.colorBrand !== undefined) {
+            patched.colorBrand = updates.colorBrand || undefined;
+          }
+          if (updates.isPublic !== undefined) {
+            patched.isPublic = updates.isPublic;
           }
           updated = patched;
           return patched;

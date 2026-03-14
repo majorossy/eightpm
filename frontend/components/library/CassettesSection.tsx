@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useCassettes } from '@/context/CollectionContext';
 import MiniCassette from '@/components/MiniCassette';
+import { resolveCassetteTint } from '@/lib/cassetteColors';
+import { getCassetteBrand } from '@/lib/cassetteBrands';
 import SectionHeader from './SectionHeader';
 
 export default function CassettesSection() {
@@ -34,7 +36,8 @@ export default function CassettesSection() {
               artistName={cassette.artistName}
               showDate={cassette.showDate}
               coverArt={cassette.coverArt}
-              tintIndex={cassette.colorIndex}
+              tintStyle={resolveCassetteTint(cassette)}
+              headerLabel={cassette.colorBrand ? getCassetteBrand(cassette.colorBrand)?.headerLabel : undefined}
               pickCount={Object.keys(cassette.versionOverrides).length}
             />
           </Link>

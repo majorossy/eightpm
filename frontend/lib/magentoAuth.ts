@@ -20,8 +20,8 @@ export function emailToUsername(email: string): string {
   return email.split('@')[0];
 }
 
-// Token expires in 1 hour by default
-const TOKEN_DURATION_MS = 60 * 60 * 1000;
+// 30-day sliding window — refreshed on each successful auth check
+const TOKEN_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
 export function getStoredToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -51,6 +51,13 @@ export function clearStoredToken(): void {
   localStorage.removeItem(TOKEN_EXPIRY_KEY);
 }
 
+class AuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
+
 async function magentoFetch<T>(query: string, variables?: Record<string, unknown>, token?: string): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -69,7 +76,12 @@ async function magentoFetch<T>(query: string, variables?: Record<string, unknown
   const result = await response.json();
 
   if (result.errors) {
-    throw new Error(result.errors[0]?.message || 'GraphQL error');
+    const msg = result.errors[0]?.message || 'GraphQL error';
+    const category = result.errors[0]?.extensions?.category;
+    if (category === 'graphql-authorization' || msg.toLowerCase().includes('not authorized')) {
+      throw new AuthError(msg);
+    }
+    throw new Error(msg);
   }
 
   return result.data;
@@ -148,10 +160,17 @@ export async function getCustomer(token?: string): Promise<MagentoCustomer | nul
 
   try {
     const data = await magentoFetch<{ customer: MagentoCustomer }>(query, undefined, authToken);
+    // Sliding window: extend expiry on every successful check
+    setStoredToken(authToken);
     return data.customer;
-  } catch {
-    clearStoredToken();
-    return null;
+  } catch (err) {
+    if (err instanceof AuthError) {
+      // Token is genuinely invalid/expired — clear it
+      clearStoredToken();
+      return null;
+    }
+    // Network error, 502, timeout — don't destroy valid token
+    throw err;
   }
 }
 

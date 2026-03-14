@@ -9,7 +9,9 @@ import { useCassetteResolution } from '@/hooks/useCassetteResolution';
 import { useBackToClose } from '@/hooks/useBackToClose';
 import { formatDuration } from '@/lib/api';
 import { VALIDATION_LIMITS } from '@/lib/validation';
-import MiniCassette, { CASSETTE_COLOR_COUNT, CASSETTE_PALETTE_VARS } from '@/components/MiniCassette';
+import MiniCassette, { CASSETTE_PRESETS, getSwatchColor, resolveCassetteTint } from '@/components/MiniCassette';
+import { getCassetteColorMode } from '@/lib/cassetteColors';
+import { CASSETTE_BRANDS, getCassetteBrand } from '@/lib/cassetteBrands';
 
 export default function CassetteDetailPage() {
   const params = useParams();
@@ -76,7 +78,8 @@ export default function CassetteDetailPage() {
               artistName={cassette.artistName}
               showDate={cassette.showDate}
               coverArt={cassette.coverArt}
-              tintIndex={cassette.colorIndex}
+              tintStyle={resolveCassetteTint(cassette)}
+              headerLabel={cassette.colorBrand ? getCassetteBrand(cassette.colorBrand)?.headerLabel : undefined}
               pickCount={Object.keys(cassette.versionOverrides).length}
             />
           </div>
@@ -170,26 +173,109 @@ export default function CassetteDetailPage() {
               </svg>
             </button>
 
-            {/* Color swatch picker */}
-            <div className="flex items-center gap-1.5 ml-2 pl-2 border-l" style={{ borderColor: 'color-mix(in srgb, white 12%, transparent)' }}>
-              <span className="text-xs mr-1" style={{ color: 'var(--text-tertiary)' }}>Color</span>
-              {Array.from({ length: CASSETTE_COLOR_COUNT }).map((_, i) => {
-                const isActive = (cassette.colorIndex ?? 0) === i;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => updateCassette(cassette.id, { colorIndex: i })}
-                    className="w-6 h-6 rounded-full transition-all hover:scale-110"
-                    style={{
-                      background: `var(${CASSETTE_PALETTE_VARS[i]})`,
-                      boxShadow: isActive ? `0 0 0 2px var(--surface-base), 0 0 0 4px var(${CASSETTE_PALETTE_VARS[i]})` : 'none',
-                      opacity: isActive ? 1 : 0.6,
-                    }}
-                    aria-label={`Color ${i + 1}${isActive ? ' (selected)' : ''}`}
-                  />
-                );
-              })}
-            </div>
+            {/* Color picker section */}
+            {(() => {
+              const colorMode = getCassetteColorMode(cassette);
+              return (
+                <div className="flex items-center gap-3 ml-2 pl-2 border-l" style={{ borderColor: 'color-mix(in srgb, white 12%, transparent)' }}>
+                  {/* Preset swatches */}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>Presets</span>
+                    <div className="grid grid-cols-6 gap-1.5">
+                      {CASSETTE_PRESETS.map((preset, i) => {
+                        const isActive = colorMode === 'preset' && (cassette.colorIndex ?? 0) === i;
+                        const color = getSwatchColor(i);
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => updateCassette(cassette.id, { colorIndex: i, colorHex: '', colorBrand: '' })}
+                            title={preset.name}
+                            className="w-6 h-6 rounded-full transition-all hover:scale-110"
+                            style={{
+                              background: color,
+                              boxShadow: isActive ? `0 0 0 2px var(--surface-base), 0 0 0 4px ${color}` : 'none',
+                              opacity: colorMode !== 'preset' ? 0.4 : isActive ? 1 : 0.6,
+                            }}
+                            aria-label={`${preset.name}${isActive ? ' (selected)' : ''}`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Custom color */}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>Custom</span>
+                    <div className="flex items-center gap-1.5">
+                      <label className="relative w-7 h-7 rounded-full overflow-hidden cursor-pointer transition-all hover:scale-110" style={{
+                        boxShadow: colorMode === 'hex' ? `0 0 0 2px var(--surface-base), 0 0 0 4px ${cassette.colorHex}` : 'none',
+                      }}>
+                        <input
+                          type="color"
+                          value={cassette.colorHex || '#e84393'}
+                          onChange={(e) => {
+                            const hex = e.target.value;
+                            if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+                              updateCassette(cassette.id, { colorHex: hex, colorBrand: '' });
+                            }
+                          }}
+                          className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+                        />
+                        <div className="w-full h-full rounded-full" style={{
+                          background: colorMode === 'hex' ? cassette.colorHex : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                          opacity: colorMode === 'hex' ? 1 : 0.5,
+                        }} />
+                      </label>
+                      {colorMode === 'hex' && (
+                        <>
+                          <span className="text-[10px] font-mono" style={{ color: 'var(--text-secondary)' }}>{cassette.colorHex}</span>
+                          <button
+                            onClick={() => updateCassette(cassette.id, { colorHex: '' })}
+                            className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+                            style={{ color: 'var(--text-tertiary)' }}
+                            aria-label="Clear custom color"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Brand presets */}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>Brands</span>
+                    <div className="flex items-center gap-2">
+                      {CASSETTE_BRANDS.map((brand) => {
+                        const isActive = colorMode === 'brand' && cassette.colorBrand === brand.key;
+                        return (
+                          <button
+                            key={brand.key}
+                            onClick={() => updateCassette(cassette.id, { colorBrand: brand.key, colorHex: '' })}
+                            title={brand.name}
+                            className="flex flex-col items-center gap-0.5 transition-all hover:scale-110"
+                          >
+                            <div
+                              className="w-10 h-[26px] rounded-[3px] overflow-hidden"
+                              style={{
+                                boxShadow: isActive ? `0 0 0 2px var(--surface-base), 0 0 0 3px ${brand.accent}` : '0 1px 3px rgba(0,0,0,0.4)',
+                                opacity: colorMode === 'brand' && !isActive ? 0.4 : colorMode !== 'brand' ? 0.55 : 1,
+                              }}
+                            >
+                              <div className="h-[8px]" style={{ background: brand.tint['--cassette-header'] }} />
+                              <div className="h-[18px]" style={{ background: brand.tint['--cassette-body'] }} />
+                            </div>
+                            <span className="text-[8px] font-medium leading-none" style={{ color: isActive ? brand.accent : 'var(--text-tertiary)' }}>{brand.name.split(' ')[0]}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </>
         )}
       </div>

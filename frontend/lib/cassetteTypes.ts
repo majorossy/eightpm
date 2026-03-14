@@ -15,7 +15,10 @@ export interface Cassette {
   showVenue?: string;
   showLocation?: string;
   versionOverrides: Record<string, string>;      // trackId → songId (non-default picks only)
-  colorIndex?: number;                            // 0-4 tint from cassetteTints palette
+  colorIndex?: number;                            // 0-11 index into CASSETTE_PRESETS
+  colorHex?: string;                              // "#e84393" — overrides colorIndex
+  colorBrand?: string;                            // "maxell-xlii" — overrides both
+  isPublic?: boolean;                             // Whether cassette is publicly shared
   createdAt: string;
   updatedAt: string;
 }

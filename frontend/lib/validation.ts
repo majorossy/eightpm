@@ -33,6 +33,10 @@ export const VALIDATION_LIMITS = {
   CASSETTE_NAME_MIN: 1,
   VENUE_MAX: 200,
 
+  // Color fields
+  HEX_COLOR_MAX: 7,
+  BRAND_KEY_MAX: 32,
+
   // Numeric ranges
   YEAR_MIN: 1900,
   YEAR_MAX: 2100,
@@ -229,6 +233,20 @@ export function validatePageSize(size: number | string): string | undefined {
 export function validateVenue(venue: string): string | undefined {
   if (venue.length > VALIDATION_LIMITS.VENUE_MAX) {
     return `Venue must be less than ${VALIDATION_LIMITS.VENUE_MAX} characters`;
+  }
+  return undefined;
+}
+
+/**
+ * Validates a hex color value (#RRGGBB)
+ * @returns Error message if invalid, undefined if valid
+ */
+export function validateHexColor(hex: string): string | undefined {
+  if (hex.length > VALIDATION_LIMITS.HEX_COLOR_MAX) {
+    return 'Invalid hex color';
+  }
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    return 'Hex color must be in #RRGGBB format';
   }
   return undefined;
 }

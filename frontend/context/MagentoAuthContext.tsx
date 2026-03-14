@@ -40,7 +40,9 @@ export function MagentoAuthProvider({ children }: { children: React.ReactNode })
           const customerData = await getCustomer(token);
           setCustomer(customerData);
         } catch {
-          setCustomer(null);
+          // getCustomer only returns null for auth failures (token cleared).
+          // Network errors throw — keep customer null but don't clear the token,
+          // so the next page load can retry.
         }
       }
       setIsLoading(false);
@@ -94,8 +96,12 @@ export function MagentoAuthProvider({ children }: { children: React.ReactNode })
   const refreshCustomer = useCallback(async () => {
     const token = getStoredToken();
     if (token) {
-      const customerData = await getCustomer(token);
-      setCustomer(customerData);
+      try {
+        const customerData = await getCustomer(token);
+        setCustomer(customerData);
+      } catch {
+        // Network error — keep existing customer state
+      }
     }
   }, []);
 

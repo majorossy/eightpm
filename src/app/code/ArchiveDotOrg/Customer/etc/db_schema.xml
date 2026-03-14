@@ -18,6 +18,9 @@
         <column xsi:type="varchar" name="show_location" nullable="true" length="255" comment="Show Location"/>
         <column xsi:type="text" name="version_overrides" nullable="true" comment="JSON of trackId to songId overrides"/>
         <column xsi:type="smallint" name="color_index" unsigned="true" nullable="true" comment="Cassette color palette index (0-4)"/>
+        <column xsi:type="varchar" name="color_hex" nullable="true" length="7" comment="Custom hex color (#RRGGBB)"/>
+        <column xsi:type="varchar" name="color_brand" nullable="true" length="32" comment="Brand preset slug (e.g. maxell-xlii)"/>
+        <column xsi:type="smallint" name="is_public" unsigned="true" nullable="false" default="0" comment="Whether cassette is publicly shared"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
@@ -32,6 +35,10 @@
         </constraint>
         <index referenceId="ARCHIVEDOTORG_CASSETTE_CUSTOMER_ID_ALBUM_IDENTIFIER" indexType="btree">
             <column name="customer_id"/>
+            <column name="album_identifier"/>
+        </index>
+        <index referenceId="ARCHIVEDOTORG_CASSETTE_IS_PUBLIC_ALBUM_IDENTIFIER" indexType="btree">
+            <column name="is_public"/>
             <column name="album_identifier"/>
         </index>
     </table>

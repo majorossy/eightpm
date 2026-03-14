@@ -6,15 +6,18 @@ import { useCassettes } from '@/context/CollectionContext';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import { useBackToClose } from '@/hooks/useBackToClose';
 import MiniCassette from '@/components/MiniCassette';
+import { resolveCassetteTint, getCassetteColorMode, CASSETTE_PRESETS, getSwatchColor } from '@/lib/cassetteColors';
+import { CASSETTE_BRANDS, getCassetteBrand } from '@/lib/cassetteBrands';
 import SyncStatusIndicator from '@/components/SyncStatusIndicator';
 
 export default function CassettesPage() {
-  const { cassettes, deleteCassette, deleteCassettes, syncStatus } = useCassettes();
+  const { cassettes, deleteCassette, deleteCassettes, updateCassette, syncStatus } = useCassettes();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
+  const [colorPickerId, setColorPickerId] = useState<string | null>(null);
   const closeDeleteConfirm = useCallback(() => setDeleteConfirmId(null), []);
   useBackToClose(!!deleteConfirmId || showBatchDeleteConfirm, deleteConfirmId ? closeDeleteConfirm : () => setShowBatchDeleteConfirm(false));
 
@@ -92,16 +95,7 @@ export default function CassettesPage() {
               <option value="name">Name A-Z</option>
               <option value="artist">Artist A-Z</option>
             </select>
-            <button
-              onClick={() => { setSelectMode(!selectMode); setSelectedIds(new Set()); }}
-              className="px-3 py-2 rounded-full text-sm font-medium transition-colors shrink-0"
-              style={{
-                border: `1.5px solid ${selectMode ? 'var(--secondary)' : 'color-mix(in srgb, var(--text-secondary) 30%, transparent)'}`,
-                color: selectMode ? 'var(--secondary)' : 'var(--text-secondary)',
-              }}
-            >
-              {selectMode ? 'Cancel' : 'Select'}
-            </button>
+            {/* Select button hidden for now */}
           </div>
         )}
 
@@ -158,7 +152,8 @@ export default function CassettesPage() {
                         artistName={cassette.artistName}
                         showDate={cassette.showDate}
                         coverArt={cassette.coverArt}
-                        tintIndex={cassette.colorIndex}
+                        tintStyle={resolveCassetteTint(cassette)}
+                        headerLabel={cassette.colorBrand ? getCassetteBrand(cassette.colorBrand)?.headerLabel : undefined}
                       />
                     </div>
                   ) : (
@@ -173,18 +168,143 @@ export default function CassettesPage() {
                           artistName={cassette.artistName}
                           showDate={cassette.showDate}
                           coverArt={cassette.coverArt}
-                          tintIndex={cassette.colorIndex}
+                          tintStyle={resolveCassetteTint(cassette)}
+                          headerLabel={cassette.colorBrand ? getCassetteBrand(cassette.colorBrand)?.headerLabel : undefined}
                         />
                       </Link>
-                      <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteConfirmId(cassette.id); }}
-                        className="absolute top-1.5 right-1.5 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
-                        aria-label={`Delete ${cassette.name}`}
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                      <div className="absolute top-1.5 right-1.5 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setColorPickerId(colorPickerId === cassette.id ? null : cassette.id); }}
+                          className="w-6 h-6 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70"
+                          aria-label={`Change color of ${cassette.name}`}
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteConfirmId(cassette.id); }}
+                          className="w-6 h-6 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70"
+                          aria-label={`Delete ${cassette.name}`}
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                      {/* Color picker popover */}
+                      {colorPickerId === cassette.id && (() => {
+                        const colorMode = getCassetteColorMode(cassette);
+                        return (
+                          <>
+                            <div className="fixed inset-0 z-20" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setColorPickerId(null); }} />
+                            <div
+                              className="absolute top-full left-0 right-0 z-30 mt-1 p-3 rounded-lg shadow-xl animate-scale-in"
+                              style={{ background: 'var(--surface-elevated)', border: '1px solid color-mix(in srgb, white 12%, transparent)' }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {/* Presets */}
+                              <div className="mb-3">
+                                <span className="text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: 'var(--text-tertiary)' }}>Presets</span>
+                                <div className="grid grid-cols-6 gap-2">
+                                  {CASSETTE_PRESETS.map((preset, i) => {
+                                    const isActive = colorMode === 'preset' && (cassette.colorIndex ?? 0) === i;
+                                    const color = getSwatchColor(i);
+                                    return (
+                                      <button
+                                        key={i}
+                                        onClick={() => updateCassette(cassette.id, { colorIndex: i, colorHex: '', colorBrand: '' })}
+                                        title={preset.name}
+                                        className="w-7 h-7 rounded-full transition-all hover:scale-110 mx-auto"
+                                        style={{
+                                          background: color,
+                                          boxShadow: isActive ? `0 0 0 2px var(--surface-elevated), 0 0 0 4px ${color}` : 'none',
+                                          opacity: colorMode !== 'preset' ? 0.4 : isActive ? 1 : 0.6,
+                                        }}
+                                        aria-label={`${preset.name}${isActive ? ' (selected)' : ''}`}
+                                      />
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* Custom + Brands row */}
+                              <div className="flex items-start gap-4">
+                                {/* Custom color */}
+                                <div>
+                                  <span className="text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: 'var(--text-tertiary)' }}>Custom</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <label className="relative w-7 h-7 rounded-full overflow-hidden cursor-pointer transition-all hover:scale-110" style={{
+                                      boxShadow: colorMode === 'hex' ? `0 0 0 2px var(--surface-elevated), 0 0 0 4px ${cassette.colorHex}` : 'none',
+                                    }}>
+                                      <input
+                                        type="color"
+                                        value={cassette.colorHex || '#e84393'}
+                                        onChange={(e) => {
+                                          const hex = e.target.value;
+                                          if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+                                            updateCassette(cassette.id, { colorHex: hex, colorBrand: '' });
+                                          }
+                                        }}
+                                        className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+                                      />
+                                      <div className="w-full h-full rounded-full" style={{
+                                        background: colorMode === 'hex' ? cassette.colorHex : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                                        opacity: colorMode === 'hex' ? 1 : 0.5,
+                                      }} />
+                                    </label>
+                                    {colorMode === 'hex' && (
+                                      <>
+                                        <span className="text-[10px] font-mono" style={{ color: 'var(--text-secondary)' }}>{cassette.colorHex}</span>
+                                        <button
+                                          onClick={() => updateCassette(cassette.id, { colorHex: '' })}
+                                          className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-white/10"
+                                          style={{ color: 'var(--text-tertiary)' }}
+                                          aria-label="Clear custom color"
+                                        >
+                                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                          </svg>
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Brands */}
+                                <div className="flex-1">
+                                  <span className="text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: 'var(--text-tertiary)' }}>Brands</span>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    {CASSETTE_BRANDS.map((brand) => {
+                                      const isActive = colorMode === 'brand' && cassette.colorBrand === brand.key;
+                                      return (
+                                        <button
+                                          key={brand.key}
+                                          onClick={() => updateCassette(cassette.id, { colorBrand: brand.key, colorHex: '' })}
+                                          title={brand.name}
+                                          className="flex flex-col items-center gap-0.5 transition-all hover:scale-110"
+                                        >
+                                          <div
+                                            className="w-10 h-[26px] rounded-[3px] overflow-hidden"
+                                            style={{
+                                              boxShadow: isActive ? `0 0 0 2px var(--surface-elevated), 0 0 0 3px ${brand.accent}` : '0 1px 3px rgba(0,0,0,0.4)',
+                                              opacity: colorMode === 'brand' && !isActive ? 0.4 : colorMode !== 'brand' ? 0.55 : 1,
+                                            }}
+                                          >
+                                            <div className="h-[8px]" style={{ background: brand.tint['--cassette-header'] }} />
+                                            <div className="h-[18px]" style={{ background: brand.tint['--cassette-body'] }} />
+                                          </div>
+                                          <span className="text-[8px] font-medium leading-none" style={{ color: isActive ? brand.accent : 'var(--text-tertiary)' }}>{brand.name.split(' ')[0]}</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </>
                   )}
                 </div>

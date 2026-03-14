@@ -2,33 +2,8 @@
 
 import { useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
-
-function tintFrom(v: string): Record<string, string> {
-  return {
-    '--cassette-body': `linear-gradient(180deg, color-mix(in srgb, var(${v}) 45%, black), color-mix(in srgb, var(${v}) 25%, black), color-mix(in srgb, var(${v}) 12%, black))`,
-    '--cassette-window': `color-mix(in srgb, var(${v}) 12%, black)`,
-    '--cassette-reel': `radial-gradient(circle at 40% 40%, color-mix(in srgb, var(${v}) 40%, black), color-mix(in srgb, var(${v}) 12%, black))`,
-    '--cassette-tape': `linear-gradient(180deg, color-mix(in srgb, var(${v}) 12%, black), color-mix(in srgb, var(${v}) 5%, black), color-mix(in srgb, var(${v}) 12%, black))`,
-    '--cassette-screw': `radial-gradient(circle at 35% 35%, color-mix(in srgb, var(${v}) 55%, black), color-mix(in srgb, var(${v}) 40%, black))`,
-    '--cassette-border': `color-mix(in srgb, var(${v}) 40%, black)`,
-  };
-}
-
-export const CASSETTE_PALETTE_VARS = [
-  '--secondary',   // coral/red
-  '--tertiary',    // teal
-  '--quaternary',  // purple
-  '--quinary',     // gold
-  '--senary',      // blue-gray
-] as const;
-
-export const cassetteTints: Record<string, string>[] = CASSETTE_PALETTE_VARS.map(v => tintFrom(v));
-
-export const CASSETTE_COLOR_COUNT = cassetteTints.length;
-
-export function getCassetteTint(index: number): Record<string, string> {
-  return cassetteTints[index % cassetteTints.length];
-}
+import { getCassetteTint } from '@/lib/cassetteColors';
+export { CASSETTE_PRESETS, CASSETTE_COLOR_COUNT, getCassetteTint, getSwatchColor, resolveCassetteTint } from '@/lib/cassetteColors';
 
 interface MiniCassetteProps {
   name: string;
@@ -40,11 +15,12 @@ interface MiniCassetteProps {
   pickCount?: number;
   blank?: boolean;
   tintIndex?: number;
+  tintStyle?: Record<string, string>;
   onNameChange?: (newName: string) => void;
   headerLabel?: string;
 }
 
-export default function MiniCassette({ name, albumName, artistName, coverArt, selected, pickCount, blank, tintIndex, onNameChange, headerLabel }: MiniCassetteProps) {
+export default function MiniCassette({ name, albumName, artistName, coverArt, selected, pickCount, blank, tintIndex, tintStyle, onNameChange, headerLabel }: MiniCassetteProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -71,7 +47,7 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
     <div
       className="relative w-full rounded-lg overflow-hidden transition-shadow"
       style={{
-        ...(tintIndex != null && !blank ? getCassetteTint(tintIndex) : {}),
+        ...(tintStyle && !blank ? tintStyle : tintIndex != null && !blank ? getCassetteTint(tintIndex) : {}),
         aspectRatio: '4 / 2.6',
         background: blank
           ? 'linear-gradient(180deg, #e8e4de 0%, #d8d4cc 50%, #ccc8c0 100%)'

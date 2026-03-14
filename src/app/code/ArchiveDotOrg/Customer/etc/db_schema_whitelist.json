@@ -15,11 +15,15 @@
             "show_location": true,
             "version_overrides": true,
             "color_index": true,
+            "color_hex": true,
+            "color_brand": true,
+            "is_public": true,
             "created_at": true,
             "updated_at": true
         },
         "index": {
-            "ARCHIVEDOTORG_CASSETTE_CUSTOMER_ID_ALBUM_IDENTIFIER": true
+            "ARCHIVEDOTORG_CASSETTE_CUSTOMER_ID_ALBUM_IDENTIFIER": true,
+            "ARCHIVEDOTORG_CASSETTE_IS_PUBLIC_ALBUM_IDENTIFIER": true
         },
         "constraint": {
             "PRIMARY": true,

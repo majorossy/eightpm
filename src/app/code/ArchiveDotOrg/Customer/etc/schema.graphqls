@@ -12,8 +12,36 @@ type CustomerCassette {
     show_location: String @doc(description: "Show location")
     version_overrides: String @doc(description: "JSON of track version overrides")
     color_index: Int @doc(description: "Cassette color palette index (0-4)")
+    color_hex: String @doc(description: "Custom hex color (#RRGGBB)")
+    color_brand: String @doc(description: "Brand preset slug (e.g. maxell-xlii)")
+    is_public: Boolean @doc(description: "Whether the cassette is publicly shared")
     created_at: String @doc(description: "Created timestamp")
     updated_at: String @doc(description: "Updated timestamp")
+}
+
+type SharedCassette {
+    client_id: String! @doc(description: "Client-generated ID")
+    name: String @doc(description: "Cassette name")
+    album_identifier: String @doc(description: "Archive.org album identifier")
+    artist_slug: String @doc(description: "Artist URL slug")
+    artist_name: String @doc(description: "Artist display name")
+    album_name: String @doc(description: "Album display name")
+    cover_art: String @doc(description: "Cover art URL")
+    show_date: String @doc(description: "Show date")
+    show_venue: String @doc(description: "Show venue")
+    show_location: String @doc(description: "Show location")
+    version_overrides: String @doc(description: "JSON of track version overrides")
+    color_index: Int @doc(description: "Cassette color palette index (0-4)")
+    color_hex: String @doc(description: "Custom hex color (#RRGGBB)")
+    color_brand: String @doc(description: "Brand preset slug (e.g. maxell-xlii)")
+    created_by_username: String @doc(description: "Username of the cassette creator")
+    created_at: String @doc(description: "Created timestamp")
+    updated_at: String @doc(description: "Updated timestamp")
+}
+
+type SharedCassettesOutput {
+    items: [SharedCassette!]! @doc(description: "List of shared cassettes")
+    total_count: Int! @doc(description: "Total number of shared cassettes")
 }
 
 type CustomerMiniDisc {
@@ -109,6 +137,9 @@ input CassetteInput {
     show_location: String @doc(description: "Show location")
     version_overrides: String @doc(description: "JSON of track version overrides")
     color_index: Int @doc(description: "Cassette color palette index (0-4)")
+    color_hex: String @doc(description: "Custom hex color (#RRGGBB)")
+    color_brand: String @doc(description: "Brand preset slug (e.g. maxell-xlii)")
+    is_public: Boolean @doc(description: "Whether the cassette is publicly shared")
 }
 
 input MiniDiscInput {
@@ -135,6 +166,10 @@ input LikedSongInput {
 input FollowedAlbumInput {
     artist_slug: String! @doc(description: "Artist URL slug")
     album_title: String! @doc(description: "Album title")
+}
+
+type Query {
+    sharedCassettes(album_identifier: String!, pageSize: Int = 20): SharedCassettesOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SharedCassettes") @cache(cacheable: false) @doc(description: "Get publicly shared cassettes for an album")
 }
 
 type Customer {
@@ -167,4 +202,5 @@ type Mutation {
     syncLikedSongs(input: [LikedSongInput!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncLikedSongs") @doc(description: "Batch sync liked songs")
     syncFollowedArtists(artist_slugs: [String!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncFollowedArtists") @doc(description: "Batch sync followed artists")
     syncFollowedAlbums(input: [FollowedAlbumInput!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncFollowedAlbums") @doc(description: "Batch sync followed albums")
+    toggleCassettePublic(client_id: String!, is_public: Boolean!): SaveCassetteOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\ToggleCassettePublic") @doc(description: "Toggle cassette public/private visibility")
 }

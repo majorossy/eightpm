@@ -53,6 +53,29 @@ export interface ServerCassette {
   show_location: string | null;
   version_overrides: string | null; // JSON string
   color_index: number | null;
+  color_hex: string | null;
+  color_brand: string | null;
+  is_public: boolean | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SharedCassette {
+  client_id: string;
+  name: string;
+  album_identifier: string;
+  artist_slug: string;
+  artist_name: string;
+  album_name: string;
+  cover_art: string | null;
+  show_date: string | null;
+  show_venue: string | null;
+  show_location: string | null;
+  version_overrides: string | null;
+  color_index: number | null;
+  color_hex: string | null;
+  color_brand: string | null;
+  created_by_username: string;
   created_at: string;
   updated_at: string;
 }
@@ -142,11 +165,11 @@ async function magentoAuthFetch<T>(
 
   if (result.errors) {
     const msg = result.errors[0]?.message || 'GraphQL error';
-    // Detect auth errors
+    const category = result.errors[0]?.extensions?.category;
+    // Only treat genuine auth failures as expired — not network/server errors
     if (
-      msg.includes('authorized') ||
-      msg.includes('authentication') ||
-      msg.includes('token') ||
+      category === 'graphql-authorization' ||
+      msg.toLowerCase().includes('not authorized') ||
       response.status === 401
     ) {
       throw new AuthExpiredError(msg);
@@ -186,6 +209,9 @@ const FETCH_COLLECTIONS_QUERY = `
           show_location
           version_overrides
           color_index
+          color_hex
+          color_brand
+          is_public
           created_at
           updated_at
         }
@@ -293,6 +319,9 @@ export async function saveCassette(
         ? JSON.stringify(cassette.versionOverrides)
         : null,
       color_index: cassette.colorIndex ?? null,
+      color_hex: cassette.colorHex || null,
+      color_brand: cassette.colorBrand || null,
+      is_public: cassette.isPublic ?? false,
     },
   }, token);
 
@@ -507,6 +536,85 @@ export async function unfollowAlbum(
 }
 
 // ============================================================================
+// Shared Cassettes (public)
+// ============================================================================
+
+export async function fetchSharedCassettes(
+  albumIdentifier: string,
+  token?: string,
+): Promise<{ items: SharedCassette[]; total_count: number }> {
+  const query = `
+    query SharedCassettes($album_identifier: String!, $pageSize: Int) {
+      sharedCassettes(album_identifier: $album_identifier, pageSize: $pageSize) {
+        items {
+          client_id
+          name
+          album_identifier
+          artist_slug
+          artist_name
+          album_name
+          cover_art
+          show_date
+          show_venue
+          show_location
+          version_overrides
+          color_index
+          color_hex
+          color_brand
+          created_by_username
+          created_at
+          updated_at
+        }
+        total_count
+      }
+    }
+  `;
+
+  // This is a public query — works with or without auth
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetchWithRetry(MAGENTO_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ query, variables: { album_identifier: albumIdentifier, pageSize: 20 } }),
+  });
+
+  const result = await response.json();
+  if (result.errors) {
+    throw new Error(result.errors[0]?.message || 'GraphQL error');
+  }
+
+  return result.data.sharedCassettes;
+}
+
+export async function toggleCassettePublicSync(
+  clientId: string,
+  isPublic: boolean,
+  token?: string,
+): Promise<SaveResult> {
+  const query = `
+    mutation ToggleCassettePublic($client_id: String!, $is_public: Boolean!) {
+      toggleCassettePublic(client_id: $client_id, is_public: $is_public) {
+        cassette { entity_id client_id is_public }
+        user_errors { message path }
+      }
+    }
+  `;
+
+  const data = await magentoAuthFetch<{
+    toggleCassettePublic: { cassette: { entity_id: number } | null; user_errors: Array<{ message: string; path?: string[] }> };
+  }>(query, { client_id: clientId, is_public: isPublic }, token);
+
+  return {
+    success: data.toggleCassettePublic.user_errors.length === 0,
+    user_errors: data.toggleCassettePublic.user_errors,
+  };
+}
+
+// ============================================================================
 // Batch Sync (used on login merge)
 // ============================================================================
 
@@ -541,6 +649,9 @@ export async function syncCassettes(
       version_overrides: Object.keys(c.versionOverrides).length > 0
         ? JSON.stringify(c.versionOverrides)
         : null,
+      color_index: c.colorIndex ?? null,
+      color_hex: c.colorHex || null,
+      color_brand: c.colorBrand || null,
     })),
   }, token);
 
@@ -688,6 +799,9 @@ export function serverCassetteToLocal(sc: ServerCassette): Cassette {
     showLocation: sc.show_location || undefined,
     versionOverrides: sc.version_overrides ? JSON.parse(sc.version_overrides) : {},
     colorIndex: sc.color_index ?? undefined,
+    colorHex: sc.color_hex || undefined,
+    colorBrand: sc.color_brand || undefined,
+    isPublic: sc.is_public ?? false,
     createdAt: sc.created_at,
     updatedAt: sc.updated_at,
   };
