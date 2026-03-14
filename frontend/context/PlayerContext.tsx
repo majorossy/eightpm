@@ -182,10 +182,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   // which would cascade through error-skip logic when backend is unreachable.
   const userInitiatedRef = useRef(false);
 
-  // Tracks whether the component has completed its initial render.
+  // Tracks whether the currentSong effect has run at least once.
   // Prevents the "wasEmpty" auto-play block from firing during localStorage hydration.
+  // IMPORTANT: Set inside the currentSong effect (not a separate effect) so it's still
+  // false on the first run — otherwise React's effect ordering sets it true too early.
   const hasMountedRef = useRef(false);
-  useEffect(() => { hasMountedRef.current = true; }, []);
 
   // When true, the currentSong effect will auto-play even if the item is already played.
   // Used by playPrev to distinguish "user pressed prev" from "cursor fell back due to removal".
@@ -502,6 +503,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = getAudio();
     if (!audio || !currentSong) {
       prevCurrentSongRef.current = currentSong;
+      hasMountedRef.current = true;
       return;
     }
 
@@ -519,6 +521,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       connectAudioElement(audio);
       return;
     }
+
+    hasMountedRef.current = true;
 
     // Don't auto-load audio for localStorage-restored queue on page load.
     // Wait for user to explicitly press play first.

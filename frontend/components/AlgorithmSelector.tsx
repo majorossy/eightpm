@@ -110,7 +110,7 @@ export default function AlgorithmSelector() {
       ref={containerRef}
       role="radiogroup"
       aria-label="Sort algorithm selector"
-      className="relative flex flex-row gap-2 justify-center overflow-x-auto md:flex-wrap md:justify-center px-2"
+      className="relative inline-flex gap-2"
     >
       {/* Sliding background indicator */}
       {bgStyle && (
