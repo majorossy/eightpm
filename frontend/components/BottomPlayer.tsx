@@ -292,7 +292,7 @@ export default function BottomPlayer() {
         onCloseQualityPopup={handleCloseQualityPopup}
         qualityPopupRef={qualityPopupRef}
         onTogglePlay={handleTogglePlay}
-        onMinimize={minimizePlayer}
+        onMinimize={handleMinimize}
         streamingStats={streamingStats}
         swipeHandlers={swipeHandlers}
         announcement={announcement}

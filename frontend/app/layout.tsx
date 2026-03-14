@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Orbitron, Space_Mono, Bebas_Neue, JetBrains_Mono } from 'next/font/google';
+import { Orbitron, Space_Mono, Bebas_Neue, JetBrains_Mono, Caveat, DM_Serif_Display } from 'next/font/google';
 import './globals.css';
 import ClientLayout from '@/components/ClientLayout';
 import ConditionalAnalytics from '@/components/ConditionalAnalytics';
@@ -37,6 +37,23 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
   adjustFontFallback: true,
   fallback: ['Courier New', 'monospace'],
+});
+
+const caveat = Caveat({
+  subsets: ['latin'],
+  variable: '--font-caveat',
+  display: 'swap',
+  adjustFontFallback: true,
+  fallback: ['cursive'],
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-dm-serif',
+  display: 'swap',
+  adjustFontFallback: true,
+  fallback: ['Georgia', 'serif'],
 });
 
 
@@ -82,7 +99,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} theme-lot`}>
+    <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} ${caveat.variable} ${dmSerifDisplay.variable} theme-lot`}>
       <head>
         {/* Preconnect hints for critical resources - improves LCP */}
         <link rel="preconnect" href="https://magento.test" />

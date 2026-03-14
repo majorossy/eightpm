@@ -7,7 +7,7 @@ import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import MiniCassette from '@/components/MiniCassette';
 
 export default function CassettesPage() {
-  const { cassettes } = useCassettes();
+  const { cassettes, deleteCassette } = useCassettes();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
@@ -52,19 +52,29 @@ export default function CassettesPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
             {cassettes.map((cassette) => (
-              <Link
-                key={cassette.id}
-                href={`/artists/${cassette.artistSlug}/album/${cassette.albumIdentifier}?cassette=${cassette.id}`}
-                className="flex flex-col gap-2 p-3 rounded-lg hover:bg-surface-elevated transition-colors group"
-              >
-                <MiniCassette
-                  name={cassette.name}
-                  albumName={cassette.albumName}
-                  artistName={cassette.artistName}
-                  showDate={cassette.showDate}
-                  coverArt={cassette.coverArt}
-                />
-              </Link>
+              <div key={cassette.id} className="relative group">
+                <Link
+                  href={`/artists/${cassette.artistSlug}/album/${cassette.albumIdentifier}?cassette=${cassette.id}`}
+                  className="flex flex-col gap-2 p-3 rounded-lg hover:bg-surface-elevated transition-colors"
+                >
+                  <MiniCassette
+                    name={cassette.name}
+                    albumName={cassette.albumName}
+                    artistName={cassette.artistName}
+                    showDate={cassette.showDate}
+                    coverArt={cassette.coverArt}
+                  />
+                </Link>
+                <button
+                  onClick={() => deleteCassette(cassette.id)}
+                  className="absolute top-1.5 right-1.5 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label={`Delete ${cassette.name}`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             ))}
           </div>
         )}

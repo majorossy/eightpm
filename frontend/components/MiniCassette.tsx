@@ -37,9 +37,10 @@ interface MiniCassetteProps {
   blank?: boolean;
   tintIndex?: number;
   onNameChange?: (newName: string) => void;
+  headerLabel?: string;
 }
 
-export default function MiniCassette({ name, albumName, artistName, coverArt, selected, pickCount, blank, tintIndex, onNameChange }: MiniCassetteProps) {
+export default function MiniCassette({ name, albumName, artistName, coverArt, selected, pickCount, blank, tintIndex, onNameChange, headerLabel }: MiniCassetteProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -99,7 +100,7 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
           className="h-4 flex items-center justify-between px-2 text-[7px] font-bold text-white tracking-wider"
           style={{ background: blank ? '#a8a098' : 'var(--cassette-header)' }}
         >
-          <span>{blank ? 'BLANK TAPE' : 'LIVE RECORDING'}</span>
+          <span>{blank ? 'BLANK TAPE' : headerLabel || 'LIVE RECORDING'}</span>
           <span className="opacity-70 font-normal">
             {blank ? 'New' : pickCount != null && pickCount > 0 ? `${pickCount} pick${pickCount !== 1 ? 's' : ''}` : 'Type II'}
           </span>

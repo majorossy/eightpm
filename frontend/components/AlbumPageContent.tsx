@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Album, Track, Song, Artist } from '@/lib/api';
@@ -18,6 +18,15 @@ import DiscographyCard from '@/components/DiscographyCard';
 import JewelCase from '@/components/JewelCase';
 import DecorativeStars from '@/components/DecorativeStars';
 import MiniCassette from '@/components/MiniCassette';
+import OldCassette from '@/components/OldCassette';
+import NewCassette from '@/components/NewCassette';
+import BestCassette from '@/components/BestCassette';
+import {
+  VIRTUAL_BEST_ID, VIRTUAL_OLDEST_ID, VIRTUAL_NEWEST_ID,
+  VIRTUAL_BEST_NAME, VIRTUAL_OLDEST_NAME, VIRTUAL_NEWEST_NAME,
+  computeVirtualOverrides, isVirtualCassette, hasMultiVersionTracks,
+  getVirtualCassetteTint,
+} from '@/lib/virtualCassettes';
 
 interface AlbumWithTracks extends Album {
   tracks: Track[];
@@ -60,20 +69,36 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const hasTrackedView = useRef(false);
   const searchParams = useSearchParams();
 
-  // Auto-load cassette from ?cassette=<id> query param
+  const allTracks = album.tracks;
+
+  // Virtual cassette computation
+  const showVirtualCassettes = useMemo(() => hasMultiVersionTracks(allTracks), [allTracks]);
+  const bestOverrides = useMemo(() => computeVirtualOverrides(allTracks, 'best'), [allTracks]);
+  const oldestOverrides = useMemo(() => computeVirtualOverrides(allTracks, 'oldest'), [allTracks]);
+  const newestOverrides = useMemo(() => computeVirtualOverrides(allTracks, 'newest'), [allTracks]);
+
+  // Auto-load cassette from ?cassette=<id> query param (supports virtual + saved IDs)
   const hasAutoLoaded = useRef(false);
   useEffect(() => {
     if (hasAutoLoaded.current) return;
     const cassetteId = searchParams.get('cassette');
     if (cassetteId) {
-      const cassette = savedCassettes.find(c => c.id === cassetteId);
-      if (cassette) {
+      if (isVirtualCassette(cassetteId)) {
         hasAutoLoaded.current = true;
+        const overrides = cassetteId === VIRTUAL_BEST_ID ? bestOverrides
+          : cassetteId === VIRTUAL_OLDEST_ID ? oldestOverrides : newestOverrides;
         setSelectedCassetteId(cassetteId);
-        setAll(cassette.versionOverrides);
+        setAll(overrides);
+      } else {
+        const cassette = savedCassettes.find(c => c.id === cassetteId);
+        if (cassette) {
+          hasAutoLoaded.current = true;
+          setSelectedCassetteId(cassetteId);
+          setAll(cassette.versionOverrides);
+        }
       }
     }
-  }, [searchParams, savedCassettes, setAll]);
+  }, [searchParams, savedCassettes, setAll, bestOverrides, oldestOverrides, newestOverrides]);
 
   // Check if this album is currently loaded in the queue
   const isCurrentAlbum = currentItem?.albumSource?.albumIdentifier === album.identifier;
@@ -98,7 +123,18 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
     }
   }, [album]);
 
-  const allTracks = album.tracks;
+  const handleLoadVirtualCassette = (virtualId: string) => {
+    vibrate(BUTTON_PRESS);
+    if (selectedCassetteId === virtualId) {
+      setSelectedCassetteId(null);
+      setAll({});
+    } else {
+      const overrides = virtualId === VIRTUAL_BEST_ID ? bestOverrides
+        : virtualId === VIRTUAL_OLDEST_ID ? oldestOverrides : newestOverrides;
+      setSelectedCassetteId(virtualId);
+      setAll(overrides);
+    }
+  };
 
   const handleAddToQueue = () => {
     vibrate(BUTTON_PRESS);
@@ -113,7 +149,8 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
   const handleSaveCassette = () => {
     vibrate(BUTTON_PRESS);
-    if (selectedCassetteId) {
+    const isVirtual = isVirtualCassette(selectedCassetteId);
+    if (selectedCassetteId && !isVirtual) {
       const overrides = getOverridesMap();
       const overridesObj: Record<string, string> = {};
       overrides.forEach((songId, trackId) => { overridesObj[trackId] = songId; });
@@ -226,33 +263,125 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       {/* Single-column centered layout */}
       <div className="max-w-[740px] mx-auto px-4 sm:px-8 pt-8 flex flex-col items-center">
 
-        {/* Cassette shell with tracks inside */}
-        <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image} tintIndex={selectedCassetteId != null ? savedCassettes.findIndex(c => c.id === selectedCassetteId) : undefined}>
-          {allTracks.map((track, idx) => {
-            return (
-              <div key={track.id} className="tape-trk">
-                <TrackRow
-                  track={track}
-                  displayIndex={idx + 1}
-                  onPlay={handlePlaySong}
-                  currentSong={null}
-                  isPlaying={false}
-                  waveform={analyzerData.waveform}
-                  preferredSongId={getPreferred(track.id)}
-                  onSwapVersion={(songId) => {
-                    if (getPreferred(track.id) === songId) clearPreferred(track.id);
-                    else setPreferred(track.id, songId);
-                  }}
-                  artistName={album.artistName}
-                  coverArt={album.coverArt}
+        {/* My Cassettes — top of page */}
+        <div className="w-full mt-2 mb-6">
+            <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-3 text-center">
+              My Cassettes
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {/* Blank tape — clears all version selections */}
+              <button
+                onClick={() => {
+                  vibrate(BUTTON_PRESS);
+                  setSelectedCassetteId(null);
+                  setAll({});
+                }}
+                className="w-full text-left transition-transform hover:scale-[1.02]"
+              >
+                <MiniCassette
+                  name=""
+                  albumName=""
+                  artistName=""
+                  blank
+                  selected={selectedCassetteId === null}
                 />
-              </div>
-            );
-          })}
-        </CassetteTape>
+              </button>
+              {/* Virtual cassettes — computed auto-mixes */}
+              {showVirtualCassettes && (
+                <>
+                  <button
+                    onClick={() => handleLoadVirtualCassette(VIRTUAL_BEST_ID)}
+                    className="w-full text-left transition-transform hover:scale-[1.02]"
+                  >
+                    <BestCassette
+                      name={VIRTUAL_BEST_NAME}
+                      albumName={album.name}
+                      artistName={album.artistName}
+                      showVenue={album.showVenue}
+                      selected={selectedCassetteId === VIRTUAL_BEST_ID}
+                      versionCount={album.totalSongs}
+                    />
+                  </button>
+                  <button
+                    onClick={() => handleLoadVirtualCassette(VIRTUAL_OLDEST_ID)}
+                    className="w-full text-left transition-transform hover:scale-[1.02]"
+                  >
+                    <OldCassette
+                      name={VIRTUAL_OLDEST_NAME}
+                      albumName={album.name}
+                      artistName={album.artistName}
+                      showVenue={album.showVenue}
+                      showDate={album.showDate}
+                      selected={selectedCassetteId === VIRTUAL_OLDEST_ID}
+                      pickCount={Object.keys(oldestOverrides).length}
+                    />
+                  </button>
+                  <button
+                    onClick={() => handleLoadVirtualCassette(VIRTUAL_NEWEST_ID)}
+                    className="w-full text-left transition-transform hover:scale-[1.02]"
+                  >
+                    <NewCassette
+                      name={VIRTUAL_NEWEST_NAME}
+                      albumName={album.name}
+                      artistName={album.artistName}
+                      showVenue={album.showVenue}
+                      showDate={album.showDate}
+                      selected={selectedCassetteId === VIRTUAL_NEWEST_ID}
+                      pickCount={Object.keys(newestOverrides).length}
+                    />
+                  </button>
+                </>
+              )}
+              {/* User-saved cassettes */}
+              {savedCassettes.map((c, i) => {
+                const picks = Object.keys(c.versionOverrides).length;
+                return (
+                  <div key={c.id} className="relative group">
+                    <button
+                      onClick={() => handleLoadCassette(c.id)}
+                      className="w-full text-left transition-transform hover:scale-[1.02]"
+                    >
+                      <MiniCassette
+                        name={c.name}
+                        albumName={c.albumName}
+                        artistName={c.artistName}
+                        showDate={c.showDate}
+                        coverArt={c.coverArt}
+                        selected={selectedCassetteId === c.id}
+                        pickCount={picks}
+                        tintIndex={i + 2}
+                        onNameChange={(newName) => updateCassette(c.id, { name: newName })}
+                      />
+                    </button>
+                    <div className="absolute top-1.5 right-1.5 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => handleCloneCassette(e, c)}
+                        className="w-5 h-5 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70"
+                        aria-label={`Duplicate ${c.name}`}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <rect x="9" y="9" width="13" height="13" rx="2" />
+                          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteCassette(e, c.id)}
+                        className="w-5 h-5 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70"
+                        aria-label={`Delete ${c.name}`}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+        </div>
 
-        {/* Action buttons row — below cassette */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+        {/* Action buttons row */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
           {/* Queue Cassette */}
           <button
             onClick={handleAddToQueue}
@@ -297,7 +426,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Cassette {selectedCassetteId ? 'Updated' : 'Saved'}
+                  Cassette {selectedCassetteId && !isVirtualCassette(selectedCassetteId) ? 'Updated' : 'Saved'}
                 </>
               ) : (
                 <>
@@ -307,7 +436,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                     <circle cx="16" cy="12" r="2" />
                     <path d="M8 14h8" />
                   </svg>
-                  {selectedCassetteId ? 'Update Cassette' : 'Save Cassette'}
+                  {selectedCassetteId && !isVirtualCassette(selectedCassetteId) ? 'Update Cassette' : 'Save Cassette'}
                 </>
               )}
             </button>
@@ -333,77 +462,39 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
           </button>
         </div>
 
-        {/* Saved cassettes — My Cassettes */}
-        {savedCassettes.length > 0 && (
-          <div className="w-full max-w-[680px] mt-6">
-            <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-3 text-center">
-              My Cassettes
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {/* Blank tape — clears all version selections */}
-              <button
-                onClick={() => {
-                  vibrate(BUTTON_PRESS);
-                  setSelectedCassetteId(null);
-                  setAll({});
-                }}
-                className="w-full text-left transition-transform hover:scale-[1.02]"
-              >
-                <MiniCassette
-                  name=""
-                  albumName=""
-                  artistName=""
-                  blank
-                  selected={selectedCassetteId === null}
+        {/* Cassette shell with tracks inside */}
+        <CassetteTape
+          album={album}
+          isPlaying={albumIsPlaying}
+          artistImageUrl={artist?.image}
+          tintStyle={getVirtualCassetteTint(selectedCassetteId)}
+          tintIndex={!isVirtualCassette(selectedCassetteId) && selectedCassetteId != null
+            ? savedCassettes.findIndex(c => c.id === selectedCassetteId) + 2
+            : undefined
+          }
+        >
+          {allTracks.map((track, idx) => {
+            return (
+              <div key={track.id} className="tape-trk">
+                <TrackRow
+                  track={track}
+                  displayIndex={idx + 1}
+                  onPlay={handlePlaySong}
+                  currentSong={null}
+                  isPlaying={false}
+                  waveform={analyzerData.waveform}
+                  preferredSongId={getPreferred(track.id)}
+                  onSwapVersion={(songId) => {
+                    if (getPreferred(track.id) === songId) clearPreferred(track.id);
+                    else setPreferred(track.id, songId);
+                  }}
+                  artistName={album.artistName}
+                  coverArt={album.coverArt}
                 />
-              </button>
-              {savedCassettes.map((c, i) => {
-                const picks = Object.keys(c.versionOverrides).length;
-                return (
-                  <div key={c.id} className="relative group">
-                    <button
-                      onClick={() => handleLoadCassette(c.id)}
-                      className="w-full text-left transition-transform hover:scale-[1.02]"
-                    >
-                      <MiniCassette
-                        name={c.name}
-                        albumName={c.albumName}
-                        artistName={c.artistName}
-                        showDate={c.showDate}
-                        coverArt={c.coverArt}
-                        selected={selectedCassetteId === c.id}
-                        pickCount={picks}
-                        tintIndex={i}
-                        onNameChange={(newName) => updateCassette(c.id, { name: newName })}
-                      />
-                    </button>
-                    <div className="absolute top-1.5 right-1.5 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => handleCloneCassette(e, c)}
-                        className="w-5 h-5 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70"
-                        aria-label={`Duplicate ${c.name}`}
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                          <rect x="9" y="9" width="13" height="13" rx="2" />
-                          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={(e) => handleDeleteCassette(e, c.id)}
-                        className="w-5 h-5 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70"
-                        aria-label={`Delete ${c.name}`}
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </CassetteTape>
 
         {/* Album description quote */}
         {album.description && (
