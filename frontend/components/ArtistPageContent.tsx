@@ -7,7 +7,7 @@ import { BandMemberData } from '@/lib/types';
 import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useHaptic } from '@/hooks/useHaptic';
-import DiscographyCard from '@/components/DiscographyCard';
+import AlbumResult from '@/components/AlbumResult';
 import SongsTable from '@/components/SongsTable';
 import BandMembersTimeline from '@/components/artist/BandMembersTimeline';
 import BandStatistics from '@/components/artist/BandStatistics';
@@ -333,10 +333,19 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
           Stream {artist.albums.length} {artist.albums.length === 1 ? 'show' : 'shows'} - High-quality recordings from Archive.org
         </p>
         {artist.albums.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-            {artist.albums.map((album) => (
-              <DiscographyCard key={album.id} album={album} />
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {artist.albums.map((album) => {
+              const subtitle = [album.showDate, album.showVenue].filter(Boolean).join(' · ');
+              return (
+                <AlbumResult
+                  key={album.id}
+                  name={album.name}
+                  href={`/artists/${album.artistSlug}/album/${album.slug}`}
+                  image={album.coverArt || album.wikipediaArtworkUrl}
+                  subtitle={subtitle || `${album.totalSongs} recordings`}
+                />
+              );
+            })}
           </div>
         ) : (
           <p className="text-secondary text-center">No albums available.</p>

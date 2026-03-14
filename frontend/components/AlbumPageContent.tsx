@@ -14,7 +14,7 @@ import { trackAlbumView, trackCassetteSave } from '@/lib/analytics';
 import { useCassettes } from '@/context/CollectionContext';
 import { CassetteTape } from './album/CassetteTape';
 import { TrackRow } from './album/TrackRow';
-import DiscographyCard from '@/components/DiscographyCard';
+import AlbumResult from '@/components/AlbumResult';
 import JewelCase from '@/components/JewelCase';
 import DecorativeStars from '@/components/DecorativeStars';
 import MiniCassette, { CASSETTE_COLOR_COUNT } from '@/components/MiniCassette';
@@ -575,12 +575,21 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
               All shows <span className="text-[var(--secondary)]">→</span>
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             {artistAlbums
               .filter((a) => a.slug !== album.slug)
-              .map((a) => (
-                <DiscographyCard key={a.id} album={a} />
-              ))}
+              .map((a) => {
+                const subtitle = [a.showDate, a.showVenue].filter(Boolean).join(' · ');
+                return (
+                  <AlbumResult
+                    key={a.id}
+                    name={a.name}
+                    href={`/artists/${a.artistSlug}/album/${a.slug}`}
+                    image={a.coverArt || a.wikipediaArtworkUrl}
+                    subtitle={subtitle || `${a.totalSongs} recordings`}
+                  />
+                );
+              })}
           </div>
         </section>
       )}
