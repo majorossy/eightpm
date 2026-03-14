@@ -823,6 +823,8 @@ function normalizeUrl(url: string): string {
     url = `https://archive.org/download/${archiveServerMatch[1]}/${archiveServerMatch[2]}`;
   }
 
+  url = url.replace(/ /g, '%20');
+
   return url;
 }
 

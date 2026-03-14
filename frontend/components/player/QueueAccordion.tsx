@@ -499,7 +499,7 @@ export default function QueueAccordion({
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
-          <div ref={scrollContainerRef} className="relative z-[2] flex gap-2 overflow-x-auto queue-scrollbar pb-1 pt-4 items-center">
+          <div ref={scrollContainerRef} className="relative z-[2] flex gap-2 overflow-x-auto queue-scrollbar pb-1 pt-6 items-center">
             {/* History toggle button — temporarily hidden */}
             {/* {historyChips.length > 0 && (
               <HistoryToggleButton

@@ -92,8 +92,8 @@
   --accent-ambient: color-mix(in srgb, var(--quaternary) 60%, transparent);
   --accent-ambient-cool: color-mix(in srgb, var(--tertiary) 50%, transparent);
   --row-hover-bg: color-mix(in srgb, var(--tertiary) 5%, transparent);
-  --loading-bar-from: var(--tertiary);
-  --loading-bar-to: color-mix(in srgb, var(--tertiary) 80%, black);
+  --loading-bar-from: var(--quinary);
+  --loading-bar-to: color-mix(in srgb, var(--quinary) 80%, black);
   --vinyl-glow: color-mix(in srgb, var(--tertiary) 40%, transparent);
   --vinyl-glow-strong: color-mix(in srgb, var(--tertiary) 70%, transparent);
 

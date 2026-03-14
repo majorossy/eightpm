@@ -60,7 +60,7 @@ export default function RecordingMetaBlock({
   className = '',
 }: RecordingMetaBlockProps) {
   const {
-    venueAsLink = true,
+    venueAsLink: venueAsLinkConfig,
     venueTruncateLength,
     taperLinkToArchive = false,
     taperIconSize: taperIconSizeOverride,
@@ -75,6 +75,7 @@ export default function RecordingMetaBlock({
   } = config;
 
   const cfg = SIZE_CONFIG[size];
+  const venueAsLink = venueAsLinkConfig ?? true;
   const taperIconSize = taperIconSizeOverride ?? cfg.taperIconSize;
   const downloadIconSize = downloadIconSizeOverride ?? cfg.downloadIconSize;
   const isHorizontal = layout === 'horizontal';

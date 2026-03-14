@@ -17,6 +17,7 @@ import { TrackRow } from './album/TrackRow';
 import DiscographyCard from '@/components/DiscographyCard';
 import JewelCase from '@/components/JewelCase';
 import DecorativeStars from '@/components/DecorativeStars';
+import MiniCassette from '@/components/MiniCassette';
 
 interface AlbumWithTracks extends Album {
   tracks: Track[];
@@ -313,47 +314,61 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
           </button>
         </div>
 
-        {/* Saved cassettes — Your Takes */}
+        {/* Saved cassettes — My Cassettes */}
         {savedCassettes.length > 0 && (
-          <div className="w-full max-w-[400px] mt-6">
-            <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-2 text-center">
-              Your Takes
+          <div className="w-full max-w-[500px] mt-6">
+            <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-3 text-center">
+              My Cassettes
             </div>
-            <div className="flex flex-col gap-1.5">
-              {savedCassettes.map(c => (
-                <div key={c.id} className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleLoadCassette(c.id)}
-                    className={`flex-1 min-w-0 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-left ${
-                      selectedCassetteId === c.id
-                        ? 'bg-[var(--secondary)] text-[var(--primary)] font-semibold'
-                        : 'bg-[var(--surface-card)] text-[var(--text-dim)] hover:text-[var(--text)] hover:bg-[var(--surface-card-hover)]'
-                    }`}
-                  >
-                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                      <rect x="2" y="5" width="20" height="14" rx="2" />
-                      <circle cx="8" cy="12" r="2" />
-                      <circle cx="16" cy="12" r="2" />
-                      <path d="M8 14h8" />
-                    </svg>
-                    <span className="truncate">{c.name}</span>
-                    {Object.keys(c.versionOverrides).length > 0 && (
-                      <span className="ml-auto text-[10px] opacity-60 shrink-0">
-                        {Object.keys(c.versionOverrides).length} pick{Object.keys(c.versionOverrides).length !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    onClick={(e) => handleDeleteCassette(e, c.id)}
-                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-subdued)] hover:text-[var(--secondary)] hover:bg-[var(--surface-card-hover)] transition-all"
-                    aria-label={`Delete ${c.name}`}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Blank tape — clears all version selections */}
+              <button
+                onClick={() => {
+                  vibrate(BUTTON_PRESS);
+                  setSelectedCassetteId(null);
+                  setAll({});
+                }}
+                className="w-full text-left transition-transform hover:scale-[1.02]"
+              >
+                <MiniCassette
+                  name=""
+                  albumName=""
+                  artistName=""
+                  blank
+                  selected={selectedCassetteId === null}
+                />
+              </button>
+              {savedCassettes.map(c => {
+                const picks = Object.keys(c.versionOverrides).length;
+                return (
+                  <div key={c.id} className="relative group">
+                    <button
+                      onClick={() => handleLoadCassette(c.id)}
+                      className="w-full text-left transition-transform hover:scale-[1.02]"
+                    >
+                      <MiniCassette
+                        name={c.name}
+                        albumName={c.albumName}
+                        artistName={c.artistName}
+                        showDate={c.showDate}
+                        coverArt={c.coverArt}
+                        selected={selectedCassetteId === c.id}
+                        pickCount={picks}
+                        onNameChange={(newName) => updateCassette(c.id, { name: newName })}
+                      />
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteCassette(e, c.id)}
+                      className="absolute top-1.5 right-1.5 z-10 w-5 h-5 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label={`Delete ${c.name}`}
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

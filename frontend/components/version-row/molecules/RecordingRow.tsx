@@ -45,6 +45,7 @@ export interface RecordingRowProps {
   showBadges?: boolean;
   showDownloads?: boolean;
   taperLinkToArchive?: boolean;
+  venueAsLink?: boolean;
   downloadFormat?: 'full' | 'compact';
   versionCount?: number;
   onVersionsClick?: (e: React.MouseEvent) => void;
@@ -80,6 +81,7 @@ export default function RecordingRow({
   showBadges = true,
   showDownloads = true,
   taperLinkToArchive = false,
+  venueAsLink,
   downloadFormat = 'full',
   versionCount,
   onVersionsClick,
@@ -159,6 +161,7 @@ export default function RecordingRow({
             showBadges,
             showDownloads,
             taperLinkToArchive,
+            venueAsLink,
             downloadFormat,
             layout: 'horizontal',
           }}
@@ -220,6 +223,7 @@ export default function RecordingRow({
             showBadges,
             showDownloads,
             taperLinkToArchive,
+            venueAsLink,
             downloadFormat,
           }}
           versionCount={versionCount}
