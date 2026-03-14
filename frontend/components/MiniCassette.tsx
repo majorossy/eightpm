@@ -3,6 +3,29 @@
 import { useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 
+function tintFrom(v: string): Record<string, string> {
+  return {
+    '--cassette-body': `linear-gradient(180deg, color-mix(in srgb, var(${v}) 45%, black), color-mix(in srgb, var(${v}) 25%, black), color-mix(in srgb, var(${v}) 12%, black))`,
+    '--cassette-window': `color-mix(in srgb, var(${v}) 12%, black)`,
+    '--cassette-reel': `radial-gradient(circle at 40% 40%, color-mix(in srgb, var(${v}) 40%, black), color-mix(in srgb, var(${v}) 12%, black))`,
+    '--cassette-tape': `linear-gradient(180deg, color-mix(in srgb, var(${v}) 12%, black), color-mix(in srgb, var(${v}) 5%, black), color-mix(in srgb, var(${v}) 12%, black))`,
+    '--cassette-screw': `radial-gradient(circle at 35% 35%, color-mix(in srgb, var(${v}) 55%, black), color-mix(in srgb, var(${v}) 40%, black))`,
+    '--cassette-border': `color-mix(in srgb, var(${v}) 40%, black)`,
+  };
+}
+
+export const cassetteTints: Record<string, string>[] = [
+  tintFrom('--secondary'),   // coral/red
+  tintFrom('--tertiary'),    // teal
+  tintFrom('--quaternary'),  // purple
+  tintFrom('--quinary'),     // gold
+  tintFrom('--senary'),      // blue-gray
+];
+
+export function getCassetteTint(index: number): Record<string, string> {
+  return cassetteTints[index % cassetteTints.length];
+}
+
 interface MiniCassetteProps {
   name: string;
   albumName: string;
@@ -12,10 +35,11 @@ interface MiniCassetteProps {
   selected?: boolean;
   pickCount?: number;
   blank?: boolean;
+  tintIndex?: number;
   onNameChange?: (newName: string) => void;
 }
 
-export default function MiniCassette({ name, albumName, artistName, coverArt, selected, pickCount, blank, onNameChange }: MiniCassetteProps) {
+export default function MiniCassette({ name, albumName, artistName, coverArt, selected, pickCount, blank, tintIndex, onNameChange }: MiniCassetteProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,9 +54,10 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
     setEditing(false);
   }, [draft, name, onNameChange]);
 
-  const startEditing = useCallback((e: React.MouseEvent) => {
+  const startEditing = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!onNameChange) return;
     e.stopPropagation();
+    e.preventDefault();
     setDraft(name);
     setEditing(true);
     setTimeout(() => inputRef.current?.select(), 0);
@@ -41,6 +66,7 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
     <div
       className="relative w-full rounded-lg overflow-hidden transition-shadow"
       style={{
+        ...(tintIndex != null && !blank ? getCassetteTint(tintIndex) : {}),
         aspectRatio: '4 / 2.6',
         background: blank
           ? 'linear-gradient(180deg, #e8e4de 0%, #d8d4cc 50%, #ccc8c0 100%)'
@@ -53,7 +79,7 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
         boxShadow: selected
           ? '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 12px color-mix(in srgb, var(--secondary) 40%, transparent)'
           : '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08)',
-      }}
+      } as React.CSSProperties}
     >
       {/* Corner screws */}
       {[{ top: 5, left: 5 }, { top: 5, right: 5 }, { bottom: 5, left: 5 }, { bottom: 5, right: 5 }].map((pos, i) => (
@@ -120,13 +146,26 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
                     style={{ color: '#1a0f08', fontFamily: 'Georgia, serif', borderColor: '#1a0f0840' }}
                   />
                 ) : (
-                  <p
-                    className={`text-sm font-semibold line-clamp-2${onNameChange ? ' cursor-text' : ''}`}
-                    style={{ color: '#1a0f08', fontFamily: 'Georgia, serif' }}
-                    onDoubleClick={startEditing}
-                  >
-                    {name}
-                  </p>
+                  <div className="flex items-start gap-1">
+                    <p
+                      className="text-sm font-semibold line-clamp-2 flex-1"
+                      style={{ color: '#1a0f08', fontFamily: 'Georgia, serif' }}
+                    >
+                      {name}
+                    </p>
+                    {onNameChange && (
+                      <button
+                        type="button"
+                        onClick={startEditing}
+                        className="shrink-0 mt-0.5 opacity-40 hover:opacity-80 transition-opacity"
+                        aria-label="Edit cassette name"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="#1a0f08" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 )}
                 <p className="text-[11px] truncate" style={{ color: 'var(--cassette-label-text)' }}>
                   {albumName}

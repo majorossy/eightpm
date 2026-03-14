@@ -168,6 +168,25 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
     }
   };
 
+  const handleCloneCassette = (e: React.MouseEvent, cassette: typeof savedCassettes[number]) => {
+    e.stopPropagation();
+    vibrate(BUTTON_PRESS);
+    const cloned = saveCassette({
+      name: `${cassette.name} copy`,
+      albumIdentifier: cassette.albumIdentifier,
+      artistSlug: cassette.artistSlug,
+      artistName: cassette.artistName,
+      albumName: cassette.albumName,
+      coverArt: cassette.coverArt,
+      showDate: cassette.showDate,
+      showVenue: cassette.showVenue,
+      showLocation: cassette.showLocation,
+      versionOverrides: { ...cassette.versionOverrides },
+    });
+    setSelectedCassetteId(cloned.id);
+    setAll(cloned.versionOverrides);
+  };
+
   const handleDeleteCassette = (e: React.MouseEvent, cassetteId: string) => {
     e.stopPropagation();
     vibrate(BUTTON_PRESS);
@@ -208,7 +227,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       <div className="max-w-[740px] mx-auto px-4 sm:px-8 pt-8 flex flex-col items-center">
 
         {/* Cassette shell with tracks inside */}
-        <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image}>
+        <CassetteTape album={album} isPlaying={albumIsPlaying} artistImageUrl={artist?.image} tintIndex={selectedCassetteId != null ? savedCassettes.findIndex(c => c.id === selectedCassetteId) : undefined}>
           {allTracks.map((track, idx) => {
             return (
               <div key={track.id} className="tape-trk">
@@ -316,11 +335,11 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
         {/* Saved cassettes — My Cassettes */}
         {savedCassettes.length > 0 && (
-          <div className="w-full max-w-[500px] mt-6">
+          <div className="w-full max-w-[680px] mt-6">
             <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-3 text-center">
               My Cassettes
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {/* Blank tape — clears all version selections */}
               <button
                 onClick={() => {
@@ -338,7 +357,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                   selected={selectedCassetteId === null}
                 />
               </button>
-              {savedCassettes.map(c => {
+              {savedCassettes.map((c, i) => {
                 const picks = Object.keys(c.versionOverrides).length;
                 return (
                   <div key={c.id} className="relative group">
@@ -354,18 +373,31 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                         coverArt={c.coverArt}
                         selected={selectedCassetteId === c.id}
                         pickCount={picks}
+                        tintIndex={i}
                         onNameChange={(newName) => updateCassette(c.id, { name: newName })}
                       />
                     </button>
-                    <button
-                      onClick={(e) => handleDeleteCassette(e, c.id)}
-                      className="absolute top-1.5 right-1.5 z-10 w-5 h-5 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
-                      aria-label={`Delete ${c.name}`}
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                    <div className="absolute top-1.5 right-1.5 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => handleCloneCassette(e, c)}
+                        className="w-5 h-5 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70"
+                        aria-label={`Duplicate ${c.name}`}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <rect x="9" y="9" width="13" height="13" rx="2" />
+                          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteCassette(e, c.id)}
+                        className="w-5 h-5 flex items-center justify-center rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70"
+                        aria-label={`Delete ${c.name}`}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 );
               })}

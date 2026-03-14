@@ -7,6 +7,7 @@ import { Track } from '@/lib/types';
 import { usePlayer } from '@/context/PlayerContext';
 import { VUMeter } from '@/components/AudioVisualizations';
 import VenueLink from '@/components/VenueLink';
+import { getCassetteTint } from '@/components/MiniCassette';
 
 interface AlbumWithTracks extends Album {
   tracks: Track[];
@@ -77,18 +78,20 @@ export const CassetteTape = memo(function CassetteTape({
   album,
   isPlaying,
   artistImageUrl,
+  tintIndex,
   children,
 }: {
   album: AlbumWithTracks;
   isPlaying: boolean;
   artistImageUrl?: string;
+  tintIndex?: number;
   children?: React.ReactNode;
 }) {
   const [imgError, setImgError] = useState(false);
   const year = album.showDate?.split('-')[0] || '';
 
   return (
-    <div className="relative w-full max-w-[680px] mx-auto">
+    <div className="relative w-full max-w-[680px] mx-auto transition-[background] duration-300" style={tintIndex != null ? getCassetteTint(tintIndex) as React.CSSProperties : undefined}>
       {/* Main cassette shell */}
       <div className="tape-shell">
         {/* Corner screws */}
