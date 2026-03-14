@@ -457,7 +457,7 @@ export default function MiniDiscDetailPage() {
   const dominantType = getDominantRecType(disc.songs);
 
   // Subtitle: artist - venue (or "Various Artists")
-  const artists = [...new Set(disc.songs.map(s => s.artistName))];
+  const artists = Array.from(new Set(disc.songs.map(s => s.artistName)));
   const subtitle = disc.songs.length === 0
     ? ''
     : artists.length === 1
