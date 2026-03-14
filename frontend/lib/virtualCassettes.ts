@@ -98,7 +98,7 @@ export function computeVirtualOverrides(
     let pick: Song | undefined;
 
     if (mode === 'best') {
-      // Best matches default — empty overrides
+      if (best) overrides[track.id] = best.id;
       continue;
     } else if (mode === 'oldest') {
       pick = pickByDate(track.songs, 'asc');

@@ -124,7 +124,7 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
           {blank ? (
             <div className="flex-1 flex items-center justify-center">
               <p className="text-[11px] italic" style={{ color: 'var(--cassette-label-muted)' }}>
-                Default versions
+                Blank tape
               </p>
             </div>
           ) : (

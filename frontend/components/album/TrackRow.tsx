@@ -76,9 +76,10 @@ export const TrackRow = React.memo(function TrackRow({
     : null;
 
   // Song to show in the chip: currently playing > stored preference > best version
+  // For multi-version tracks with no preference, show nothing (blank tape state)
   const chipSong = isCurrentTrack && currentSong
     ? track.songs.find(s => s.id === currentSong.id) || preferredSong || bestSong
-    : preferredSong || bestSong;
+    : preferredSong || (hasMultipleVersions ? null : bestSong);
 
   const handleSwapVersion = useCallback((songId: string) => {
     onSwapVersion?.(songId);

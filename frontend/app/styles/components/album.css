@@ -148,7 +148,7 @@
   position: relative;
   margin: 12px 0;
   border-radius: 0.5rem;
-  background: var(--cassette-window);
+  background: var(--surface-card);
   border: 2px solid var(--cassette-border);
   z-index: 1;
   overflow: hidden;
