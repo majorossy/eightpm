@@ -1,8 +1,24 @@
 import { MagentoCustomer, MagentoCustomerCreateInput } from './types';
 
-const MAGENTO_URL = process.env.NEXT_PUBLIC_MAGENTO_GRAPHQL_URL || 'https://magento.test/graphql';
+// Use the Next.js API proxy to avoid self-signed cert issues in the browser
+const MAGENTO_URL = '/api/graphql';
 const TOKEN_KEY = 'magento_customer_token';
 const TOKEN_EXPIRY_KEY = 'magento_customer_token_expiry';
+const USERNAME_DOMAIN = '8pm.me';
+
+/** Convert a username to the internal email format */
+export function usernameToEmail(username: string): string {
+  return `${username.toLowerCase().trim()}@${USERNAME_DOMAIN}`;
+}
+
+/** Extract a username from the internal email format */
+export function emailToUsername(email: string): string {
+  if (email.endsWith(`@${USERNAME_DOMAIN}`)) {
+    return email.slice(0, -(USERNAME_DOMAIN.length + 1));
+  }
+  // Fallback for legacy accounts with real emails
+  return email.split('@')[0];
+}
 
 // Token expires in 1 hour by default
 const TOKEN_DURATION_MS = 60 * 60 * 1000;

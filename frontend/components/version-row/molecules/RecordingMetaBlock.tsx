@@ -23,10 +23,10 @@ interface MetaBlockSizeConfig {
 }
 
 const SIZE_CONFIG: Record<RecordingMetaBlockSize, MetaBlockSizeConfig> = {
-  sm:  { textSm: 'text-[10px]', textXs: 'text-[9px]',  taperIconSize: 10, downloadIconSize: 7,  containerGap: 'gap-px',  dateVenueGap: 'gap-0.5', badgeRowGap: 'gap-1'   },
-  md:  { textSm: 'text-[13px]', textXs: 'text-[11px]', taperIconSize: 12, downloadIconSize: 9,  containerGap: 'gap-px',  dateVenueGap: 'gap-1',   badgeRowGap: 'gap-1.5' },
-  lg:  { textSm: 'text-[14px]', textXs: 'text-[12px]', taperIconSize: 14, downloadIconSize: 11, containerGap: 'gap-1',   dateVenueGap: 'gap-1.5', badgeRowGap: 'gap-2'   },
-  xl:  { textSm: 'text-[16px]', textXs: 'text-[14px]', taperIconSize: 16, downloadIconSize: 12, containerGap: 'gap-1',   dateVenueGap: 'gap-2',   badgeRowGap: 'gap-2.5' },
+  sm:  { textSm: 'text-[10px]', textXs: 'text-[9px]',  taperIconSize: 14, downloadIconSize: 9,  containerGap: 'gap-px',  dateVenueGap: 'gap-0.5', badgeRowGap: 'gap-1'   },
+  md:  { textSm: 'text-[13px]', textXs: 'text-[11px]', taperIconSize: 16, downloadIconSize: 12, containerGap: 'gap-px',  dateVenueGap: 'gap-1',   badgeRowGap: 'gap-1.5' },
+  lg:  { textSm: 'text-[14px]', textXs: 'text-[12px]', taperIconSize: 18, downloadIconSize: 15, containerGap: 'gap-1',   dateVenueGap: 'gap-1.5', badgeRowGap: 'gap-2'   },
+  xl:  { textSm: 'text-[16px]', textXs: 'text-[14px]', taperIconSize: 20, downloadIconSize: 16, containerGap: 'gap-1',   dateVenueGap: 'gap-2',   badgeRowGap: 'gap-2.5' },
 };
 
 interface RecordingMetaBlockConfig {
@@ -116,9 +116,9 @@ export default function RecordingMetaBlock({
             <span className={`${cfg.textXs} flex-shrink-0`} style={{ color: 'var(--text-subdued)' }}>·</span>
             <div className={`flex items-center ${cfg.badgeRowGap} flex-shrink-0`}>
               <RecTypeBadge type={song.recordingType} />
-              <StarRating rating={song.avgRating} count={song.numReviews} />
+              <StarRating rating={song.avgRating} count={song.numReviews} identifier={song.albumIdentifier} />
               {showDownloads && (
-                <DownloadCount downloads={song.downloads} format={downloadFormat} iconSize={downloadIconSize} />
+                <DownloadCount downloads={song.downloads} format={downloadFormat} iconSize={downloadIconSize} identifier={song.albumIdentifier} />
               )}
             </div>
           </>
@@ -166,9 +166,9 @@ export default function RecordingMetaBlock({
       {showBadges && (
         <div className={`flex items-center ${cfg.badgeRowGap}`}>
           <RecTypeBadge type={song.recordingType} />
-          <StarRating rating={song.avgRating} count={song.numReviews} />
+          <StarRating rating={song.avgRating} count={song.numReviews} identifier={song.albumIdentifier} />
           {showDownloads && (
-            <DownloadCount downloads={song.downloads} format={downloadFormat} iconSize={downloadIconSize} />
+            <DownloadCount downloads={song.downloads} format={downloadFormat} iconSize={downloadIconSize} identifier={song.albumIdentifier} />
           )}
           {versionCount != null && versionCount > 1 && (
             <span className="ml-auto">

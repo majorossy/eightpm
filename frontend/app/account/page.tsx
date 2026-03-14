@@ -4,10 +4,18 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMagentoAuth } from '@/context/MagentoAuthContext';
+import { useBreadcrumbs } from '@/context/BreadcrumbContext';
+import { emailToUsername } from '@/lib/magentoAuth';
 
 export default function AccountPage() {
   const router = useRouter();
   const { customer, isAuthenticated, isLoading, signOut } = useMagentoAuth();
+  const { setBreadcrumbs } = useBreadcrumbs();
+
+  useEffect(() => {
+    setBreadcrumbs([{ label: 'Account' }]);
+    return () => setBreadcrumbs([]);
+  }, [setBreadcrumbs]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -25,7 +33,9 @@ export default function AccountPage() {
 
   if (!customer) return null;
 
-  const displayName = `${customer.firstname} ${customer.lastname}`.trim();
+  const displayName = customer.lastname === '.'
+    ? customer.firstname
+    : `${customer.firstname} ${customer.lastname}`.trim();
 
   return (
     <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px]">
@@ -40,7 +50,7 @@ export default function AccountPage() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">{displayName}</h2>
-              <p className="text-secondary">{customer.email}</p>
+              <p className="text-secondary">@{emailToUsername(customer.email)}</p>
             </div>
           </div>
         </div>
@@ -55,14 +65,14 @@ export default function AccountPage() {
             <p className="text-secondary text-sm">Edit your name and contact info</p>
           </Link>
           <Link
-            href="/library"
+            href="/my-library"
             className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
           >
             <h3 className="text-lg font-bold text-white mb-2">Cassettes</h3>
             <p className="text-secondary text-sm">Your saved album versions</p>
           </Link>
           <Link
-            href="/library"
+            href="/my-library"
             className="bg-surface-elevated rounded-lg p-6 hover:bg-border transition-colors"
           >
             <h3 className="text-lg font-bold text-white mb-2">MiniDiscs</h3>

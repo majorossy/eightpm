@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function PlaylistsRedirect() {
-  redirect('/minidiscs');
+  redirect('/my-library/minidiscs');
 }

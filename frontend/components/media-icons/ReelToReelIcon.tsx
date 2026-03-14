@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 interface Props {
   size?: number;
   className?: string;
@@ -9,7 +7,6 @@ interface Props {
 }
 
 export default function ReelToReelIcon({ size = 1, className = '', isPlaying }: Props) {
-  const [hovered, setHovered] = useState(false);
   const s = size;
   const sc = (px: number) => Math.round(px * 0.44 * s);
 
@@ -19,18 +16,13 @@ export default function ReelToReelIcon({ size = 1, className = '', isPlaying }: 
   return (
     <div
       className={`relative flex-shrink-0 ${className}`}
-      style={{ width: w, height: h, cursor: 'pointer' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      style={{ width: w, height: h }}
     >
       <div
         style={{
           width: '100%',
           height: '100%',
           position: 'relative',
-          transition: 'transform 0.3s ease, filter 0.3s',
-          transform: hovered ? 'translateY(-4px)' : 'none',
-          filter: hovered ? 'brightness(1.04)' : 'none',
         }}
       >
         {isPlaying ? <PlayingState sc={sc} /> : <StaticState sc={sc} />}

@@ -169,6 +169,7 @@ export const TrackRow = React.memo(function TrackRow({
               song={chipSong}
               showTitle={false}
               iconScale={1.2}
+              taperLinkToArchive
               actionsAlign="start"
               swapLabel="swap out"
               swapHighlighted={hovered && hasMultipleVersions}

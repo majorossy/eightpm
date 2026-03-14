@@ -1,15 +1,18 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useWishlist } from '@/context/WishlistContext';
 import { useQueue } from '@/context/QueueContext';
 import { useRecentlyPlayed } from '@/context/RecentlyPlayedContext';
 import { useCassettes, useMiniDiscs } from '@/context/CollectionContext';
+import { useBreadcrumbs } from '@/context/BreadcrumbContext';
+import { useMagentoAuth } from '@/context/MagentoAuthContext';
 import { useHaptic } from '@/hooks/useHaptic';
 import { formatDuration } from '@/lib/api';
 import RecSourceIcon from '@/components/RecSourceIcon';
+import SignInForm from '@/components/SignInForm';
 import Link from 'next/link';
 
 type TabType = 'songs' | 'artists' | 'albums' | 'recent';
@@ -19,6 +22,7 @@ function LibraryPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { isAuthenticated, isLoading: authLoading } = useMagentoAuth();
 
   // Initialize from URL or default to 'songs'
   const initialTab = (searchParams.get('tab') as TabType) || 'songs';
@@ -29,7 +33,13 @@ function LibraryPageInner() {
   const { recentlyPlayed } = useRecentlyPlayed();
   const { cassettes } = useCassettes();
   const { minidiscs } = useMiniDiscs();
+  const { setBreadcrumbs } = useBreadcrumbs();
   const { vibrate, BUTTON_PRESS, DELETE_ACTION } = useHaptic();
+
+  useEffect(() => {
+    setBreadcrumbs([{ label: 'My Library', type: 'library' }]);
+    return () => setBreadcrumbs([]);
+  }, [setBreadcrumbs]);
 
   // Update URL when tab changes
   const changeTab = (tab: TabType) => {
@@ -442,6 +452,24 @@ function LibraryPageInner() {
     );
   };
 
+  // Auth gate — show sign-in form when not logged in
+  if (!authLoading && !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px] safe-top">
+        <div className="max-w-md mx-auto px-4 pt-16">
+          <div className="text-center mb-6">
+            <svg className="w-16 h-16 text-border mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z" />
+            </svg>
+            <h1 className="text-2xl font-bold text-white mb-2">Your Library</h1>
+            <p className="text-secondary">Sign in to access your liked songs, followed artists, cassettes, and minidiscs.</p>
+          </div>
+          <SignInForm onSuccess={() => router.refresh()} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px] safe-top">
       <div className="max-w-[1000px] mx-auto">
@@ -454,7 +482,7 @@ function LibraryPageInner() {
         {/* Collection quick links */}
         <div className="flex gap-3 px-4 md:px-6 mb-6">
           <Link
-            href="/cassettes"
+            href="/my-library/cassettes"
             className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-elevated hover:bg-white/10 transition-colors flex-1"
           >
             <svg className="w-6 h-6 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -469,7 +497,7 @@ function LibraryPageInner() {
             </div>
           </Link>
           <Link
-            href="/minidiscs"
+            href="/my-library/minidiscs"
             className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-elevated hover:bg-white/10 transition-colors flex-1"
           >
             <svg className="w-6 h-6 text-accent flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">

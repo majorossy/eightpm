@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 interface Props {
   size?: number;
   className?: string;
@@ -29,7 +27,6 @@ const BAR_ANIMATIONS: [string, string, string][] = [
 ];
 
 export default function BandcampIcon({ size = 1, className = '', isPlaying }: Props) {
-  const [hovered, setHovered] = useState(false);
   const s = size;
   const sc = (px: number) => Math.round(px * 0.7 * s);
 
@@ -44,13 +41,7 @@ export default function BandcampIcon({ size = 1, className = '', isPlaying }: Pr
       style={{
         width: w,
         height: h,
-        cursor: 'pointer',
-        transition: 'transform 0.3s ease, filter 0.3s',
-        transform: hovered ? 'translateY(-4px)' : 'none',
-        filter: hovered ? 'brightness(1.06)' : 'none',
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       {/* Body */}
       <div

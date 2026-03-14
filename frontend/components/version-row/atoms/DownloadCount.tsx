@@ -49,7 +49,7 @@ export default function DownloadCount({ downloads, format = 'full', iconSize = 1
 
   if (identifier) {
     return (
-      <a href={`https://archive.org/details/${identifier}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+      <a href={`https://archive.org/details/${identifier}`} target="_blank" rel="noopener noreferrer" className="hover:underline transition-all hover:brightness-[1.2] hover:scale-[1.04]" onClick={(e) => e.stopPropagation()}>
         {content}
       </a>
     );

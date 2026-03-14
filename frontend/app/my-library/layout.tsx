@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Your Library',
   description: 'Your personal music library on 8pm.me. View liked songs, followed artists, albums, and recently played tracks.',
   alternates: {
-    canonical: '/library',
+    canonical: '/my-library',
   },
 };
 

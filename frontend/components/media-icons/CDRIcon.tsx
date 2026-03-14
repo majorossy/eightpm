@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 interface Props {
   size?: number;
   className?: string;
@@ -9,7 +7,6 @@ interface Props {
 }
 
 export default function CDRIcon({ size = 1, className = '', isPlaying }: Props) {
-  const [hovered, setHovered] = useState(false);
   const s = size;
   const sc = (px: number) => Math.round(px * 0.508 * s);
 
@@ -19,19 +16,13 @@ export default function CDRIcon({ size = 1, className = '', isPlaying }: Props) 
   return (
     <div
       className={`relative flex-shrink-0 ${className}`}
-      style={{ width: w, height: h, cursor: 'pointer' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      style={{ width: w, height: h }}
     >
-      {/* Outer wrapper with hover transform */}
       <div
         style={{
           width: '100%',
           height: '100%',
           position: 'relative',
-          transition: 'transform 0.3s ease, filter 0.3s',
-          transform: hovered ? 'translateY(-4px) rotate(3deg)' : 'none',
-          filter: hovered ? 'brightness(1.08)' : 'none',
         }}
       >
         {/* cu-disc — main spinning disc */}
@@ -85,8 +76,6 @@ export default function CDRIcon({ size = 1, className = '', isPlaying }: Props) 
                   background:
                     'linear-gradient(135deg, transparent 25%, rgba(255,245,220,0.2) 38%, rgba(255,245,220,0.4) 42%, rgba(255,250,230,0.55) 48%, rgba(255,245,220,0.4) 54%, rgba(255,245,220,0.2) 58%, transparent 75%)',
                   zIndex: 2,
-                  transition: 'transform 0.4s',
-                  transform: hovered ? 'rotate(15deg)' : 'none',
                   pointerEvents: 'none',
                 }}
               />

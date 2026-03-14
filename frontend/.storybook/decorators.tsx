@@ -144,10 +144,9 @@ const MockAuthContext = createContext({
   isAuthenticated: false,
   isLoading: false,
   error: null as string | null,
-  signIn: noopAsync as (email: string, password: string) => Promise<boolean>,
-  signUp: noopAsync as (input: { email: string; password: string; firstname: string; lastname: string }) => Promise<boolean>,
+  signIn: noopAsync as (username: string, password: string) => Promise<boolean>,
+  signUp: noopAsync as (input: { username: string; password: string; firstname: string; lastname: string }) => Promise<boolean>,
   signOut: noopAsync,
-  resetPassword: noopAsync as (email: string) => Promise<boolean>,
   refreshCustomer: noopAsync,
 });
 

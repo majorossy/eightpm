@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useRouter } from 'next/navigation';
+import { useBreadcrumbs } from '@/context/BreadcrumbContext';
 import {
   type Artist,
   type AlbumCategory,
@@ -23,7 +24,7 @@ interface SearchResults {
   albums: AlbumCategory[];
 }
 
-export default function SearchPage() {
+export default function FindPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [results, setResults] = useState<SearchResults>({ artists: [], albums: [] });
@@ -31,6 +32,12 @@ export default function SearchPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { recentSearches, addSearch, removeSearch, clearSearches } = useRecentSearches();
   const router = useRouter();
+  const { setBreadcrumbs } = useBreadcrumbs();
+
+  useEffect(() => {
+    setBreadcrumbs([{ label: 'Find' }]);
+    return () => setBreadcrumbs([]);
+  }, [setBreadcrumbs]);
 
   // Filter state
   const [filters, setFilters] = useState<VersionFilters>({});
@@ -193,7 +200,7 @@ export default function SearchPage() {
       <div className="max-w-[1000px] mx-auto">
         {/* Header */}
         <div className="p-6 md:p-8 border-b border-white/10">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Search</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Find</h1>
 
           {/* Search input */}
           <div className="relative max-w-2xl">

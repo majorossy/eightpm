@@ -34,7 +34,9 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
-  const [isPlayerMinimized, setIsPlayerMinimized] = useState(false);
+  const [isPlayerMinimized, setIsPlayerMinimized] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem('8pm_player_minimized') === 'true'
+  );
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const isProgrammaticBackRef = useRef(false);
@@ -123,10 +125,12 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
 
   const minimizePlayer = useCallback(() => {
     setIsPlayerMinimized(true);
+    localStorage.setItem('8pm_player_minimized', 'true');
   }, []);
 
   const restorePlayer = useCallback(() => {
     setIsPlayerMinimized(false);
+    localStorage.setItem('8pm_player_minimized', 'false');
   }, []);
 
   // Handle Android back button: collapse player instead of navigating away

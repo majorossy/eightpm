@@ -5,16 +5,17 @@ interface StarRatingProps {
   count?: number;
   starSize?: string;
   className?: string;
+  identifier?: string;
 }
 
-export default function StarRating({ rating, count, starSize = 'w-2.5 h-2.5', className = '' }: StarRatingProps) {
+export default function StarRating({ rating, count, starSize = 'w-3 h-3', className = '', identifier }: StarRatingProps) {
   if (!rating) return null;
 
   const fullStars = Math.floor(rating);
   const hasHalf = rating - fullStars >= 0.25 && rating - fullStars < 0.75;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
-  return (
+  const stars = (
     <div className={`flex items-center gap-0.5 ${className}`} title={`${rating.toFixed(1)}/5${count ? ` (${count})` : ''}`}>
       {Array.from({ length: fullStars }).map((_, i) => (
         <svg key={`f${i}`} className={starSize} style={{ color: 'var(--quinary)' }} fill="currentColor" viewBox="0 0 24 24">
@@ -44,4 +45,16 @@ export default function StarRating({ rating, count, starSize = 'w-2.5 h-2.5', cl
       )}
     </div>
   );
+
+  if (identifier) {
+    return (
+      <a href={`https://archive.org/details/${identifier}#reviews`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+        className="transition-all hover:brightness-125 hover:scale-105"
+      >
+        {stars}
+      </a>
+    );
+  }
+
+  return stars;
 }

@@ -10,9 +10,19 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Forward Authorization header for authenticated requests
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
     const response = await fetch(GRAPHQL_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(body),
       cache: 'no-store',
     });

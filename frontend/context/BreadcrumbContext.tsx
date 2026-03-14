@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
-export type BreadcrumbType = 'artist' | 'album' | 'track' | 'version';
+export type BreadcrumbType = 'artist' | 'album' | 'track' | 'version' | 'library';
 
 export interface BreadcrumbItem {
   label: string;

@@ -2,16 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useMagentoAuth } from '@/context/MagentoAuthContext';
+import { useBreadcrumbs } from '@/context/BreadcrumbContext';
+import { emailToUsername } from '@/lib/magentoAuth';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { customer, isAuthenticated, isLoading, refreshCustomer } = useMagentoAuth();
-  const [firstname, setFirstname] = useState('');
-  const [lastname, setLastname] = useState('');
+  const { setBreadcrumbs } = useBreadcrumbs();
+  const [displayName, setDisplayName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    setBreadcrumbs([
+      { label: 'Account', href: '/account' },
+      { label: 'Profile' },
+    ]);
+    return () => setBreadcrumbs([]);
+  }, [setBreadcrumbs]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -21,8 +30,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (customer) {
-      setFirstname(customer.firstname);
-      setLastname(customer.lastname);
+      setDisplayName(customer.firstname);
     }
   }, [customer]);
 
@@ -37,36 +45,24 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-surface-base pb-[140px] md:pb-[90px]">
       <div className="p-6 md:p-8 max-w-2xl mx-auto">
-        <Link href="/account" className="text-accent hover:underline mb-4 inline-block">
-          ← Back to Account
-        </Link>
         <h1 className="text-3xl font-bold text-white mb-8">Edit Profile</h1>
 
         <form onSubmit={(e) => { e.preventDefault(); setMessage({ type: 'success', text: 'Profile update coming soon!' }); }} className="space-y-6">
           <div>
-            <label className="block text-white mb-2">Email</label>
+            <label className="block text-white mb-2">Username</label>
             <input
-              type="email"
-              value={customer.email}
+              type="text"
+              value={`@${emailToUsername(customer.email)}`}
               disabled
               className="w-full bg-surface-base text-secondary rounded px-4 py-3 border border-default"
             />
           </div>
           <div>
-            <label className="block text-white mb-2">First Name</label>
+            <label className="block text-white mb-2">Display Name</label>
             <input
               type="text"
-              value={firstname}
-              onChange={(e) => setFirstname(e.target.value)}
-              className="w-full bg-surface-elevated text-white rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-          <div>
-            <label className="block text-white mb-2">Last Name</label>
-            <input
-              type="text"
-              value={lastname}
-              onChange={(e) => setLastname(e.target.value)}
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
               className="w-full bg-surface-elevated text-white rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>

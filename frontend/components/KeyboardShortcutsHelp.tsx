@@ -35,7 +35,7 @@ const shortcuts = [
     category: 'Navigation',
     items: [
       { keys: ['Q'], description: 'Toggle queue drawer' },
-      { keys: ['K', 'Cmd+K', 'Ctrl+K'], description: 'Open search' },
+      { keys: ['K', 'Cmd+K', 'Ctrl+K'], description: 'Open find' },
       { keys: ['Escape'], description: 'Close modals/queue' },
     ],
   },

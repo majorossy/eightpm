@@ -7,7 +7,8 @@ import { Song, WishlistItem, SyncStatus } from './types';
 import { Cassette } from './cassetteTypes';
 import { MiniDisc } from './minidiscTypes';
 
-const MAGENTO_URL = process.env.NEXT_PUBLIC_MAGENTO_GRAPHQL_URL || 'https://magento.test/graphql';
+// Use the Next.js API proxy to avoid self-signed cert issues in the browser
+const MAGENTO_URL = '/api/graphql';
 
 // ============================================================================
 // Types

@@ -4,16 +4,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { EightPmSearchOverlay } from './EightPmSearchOverlay';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useMagentoAuth } from '@/context/MagentoAuthContext';
-import AuthModal from '@/components/AuthModal';
 
 export default function EightPmMobileNav() {
   const pathname = usePathname();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { vibrate, BUTTON_PRESS } = useHaptic();
   const { isAuthenticated, customer } = useMagentoAuth();
 
@@ -31,7 +26,6 @@ export default function EightPmMobileNav() {
     {
       href: '/',
       label: 'Home',
-      action: null,
       icon: (active: boolean) => (
         <svg className="w-6 h-6" fill={active ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
           {active ? (
@@ -43,12 +37,8 @@ export default function EightPmMobileNav() {
       ),
     },
     {
-      href: '/search',
-      label: 'Search',
-      action: () => {
-        vibrate(BUTTON_PRESS);
-        setIsSearchOpen(true);
-      },
+      href: '/find',
+      label: 'Find',
       icon: (active: boolean) => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -61,9 +51,8 @@ export default function EightPmMobileNav() {
       ),
     },
     {
-      href: '/library',
+      href: '/my-library',
       label: 'Your Library',
-      action: null,
       icon: (active: boolean) => (
         <svg className="w-6 h-6" fill={active ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
           {active ? (
@@ -77,12 +66,8 @@ export default function EightPmMobileNav() {
       ),
     },
     {
-      href: isAuthenticated ? '/account' : '#',
+      href: isAuthenticated ? '/account' : '/sign-in',
       label: isAuthenticated ? 'Profile' : 'Sign In',
-      action: isAuthenticated ? null : () => {
-        vibrate(BUTTON_PRESS);
-        setIsAuthModalOpen(true);
-      },
       icon: (active: boolean) => (
         isAuthenticated ? (
           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
@@ -105,58 +90,28 @@ export default function EightPmMobileNav() {
   ];
 
   return (
-    <>
-      <nav className="fixed bottom-0 left-0 right-0 h-[50px] bg-[var(--bg)] z-[35] safe-bottom" aria-label="Main navigation">
-        <div className="flex items-center justify-around h-full px-4 max-w-[1000px] mx-auto">
-          {tabs.map((tab) => {
-            const active = isActive(tab.href);
+    <nav className="fixed bottom-0 left-0 right-0 h-[50px] bg-[var(--bg)] z-[35] safe-bottom" aria-label="Main navigation">
+      <div className="flex items-center justify-around h-full px-4 max-w-[1000px] mx-auto">
+        {tabs.map((tab) => {
+          const active = isActive(tab.href);
 
-            // If tab has an action, render as button
-            if (tab.action) {
-              return (
-                <button
-                  key={tab.href}
-                  onClick={tab.action}
-                  className={`flex flex-col items-center justify-center gap-1 min-w-[64px] py-1 transition-colors ${
-                    active ? 'text-accent' : 'text-secondary'
-                  }`}
-                  aria-label={tab.label}
-                  aria-current={active ? 'page' : undefined}
-                >
-                  {tab.icon(active)}
-                  <span className="text-[10px] font-medium font-sans" aria-hidden="true">{tab.label}</span>
-                </button>
-              );
-            }
-
-            // Otherwise render as link
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                onClick={() => vibrate(BUTTON_PRESS)}
-                className={`flex flex-col items-center justify-center gap-1 min-w-[64px] py-1 transition-colors ${
-                  active ? 'text-accent' : 'text-secondary'
-                }`}
-                aria-label={tab.label}
-                aria-current={active ? 'page' : undefined}
-              >
-                {tab.icon(active)}
-                <span className="text-[10px] font-medium font-sans" aria-hidden="true">{tab.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Search Overlay */}
-      <EightPmSearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
-    </>
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              onClick={() => vibrate(BUTTON_PRESS)}
+              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] py-1 transition-colors ${
+                active ? 'text-accent' : 'text-secondary'
+              }`}
+              aria-label={tab.label}
+              aria-current={active ? 'page' : undefined}
+            >
+              {tab.icon(active)}
+              <span className="text-[10px] font-medium font-sans" aria-hidden="true">{tab.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 }

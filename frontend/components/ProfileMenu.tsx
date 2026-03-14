@@ -4,11 +4,7 @@ import { useMagentoAuth } from '@/context/MagentoAuthContext';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-interface ProfileMenuProps {
-  onSignInClick: () => void;
-}
-
-export default function ProfileMenu({ onSignInClick }: ProfileMenuProps) {
+export default function ProfileMenu() {
   const { customer, isAuthenticated, isLoading, signOut } = useMagentoAuth();
 
   const handleSignOut = async () => {
@@ -22,18 +18,18 @@ export default function ProfileMenu({ onSignInClick }: ProfileMenuProps) {
     );
   }
 
-  // Not authenticated - show sign in button
+  // Not authenticated - show sign in link
   if (!isAuthenticated) {
     return (
-      <button
-        onClick={onSignInClick}
+      <Link
+        href="/sign-in"
         className="flex items-center gap-2 px-4 py-2 text-sm text-primary bg-surface-elevated hover:bg-border border border-default rounded-full transition-colors"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
         Sign In
-      </button>
+      </Link>
     );
   }
 
@@ -93,7 +89,7 @@ export default function ProfileMenu({ onSignInClick }: ProfileMenuProps) {
 
             <DropdownMenu.Item asChild>
               <Link
-                href="/library"
+                href="/my-library"
                 className="flex items-center gap-3 px-4 py-2 text-sm text-primary hover:bg-border transition-colors outline-none data-[highlighted]:bg-border"
               >
                 <svg className="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 24 24">

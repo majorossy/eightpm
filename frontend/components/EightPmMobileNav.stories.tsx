@@ -33,12 +33,12 @@ export const HomeActive: Story = {
 
 export const SearchActive: Story = {
   parameters: {
-    nextjs: { appDirectory: true, navigation: { pathname: '/search' } },
+    nextjs: { appDirectory: true, navigation: { pathname: '/find' } },
   },
 };
 
 export const LibraryActive: Story = {
   parameters: {
-    nextjs: { appDirectory: true, navigation: { pathname: '/library' } },
+    nextjs: { appDirectory: true, navigation: { pathname: '/my-library' } },
   },
 };

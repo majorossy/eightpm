@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Song } from '@/lib/types';
-import RecSourceIcon from '@/components/RecSourceIcon';
 import { usePlayer } from '@/context/PlayerContext';
 import { type VersionFilters, applyFilters, hasActiveFilters } from '@/lib/filters';
 import { RecordingRow } from '@/components/version-row';
@@ -34,8 +33,8 @@ interface SearchTrackResultProps {
   onPlay?: (song: Song) => void;
 }
 
-// Version card component — uses RecordingRow with inline action buttons
-function VersionCard({
+// Version row component — matches the VersionPickerModal layout
+function VersionRow({
   song,
   isPlaying,
   onPlay,
@@ -46,37 +45,24 @@ function VersionCard({
   onPlay: () => void;
   availableVersions?: Song[];
 }) {
-  const year = song.showDate?.split('-')[0] || '--';
-  const recordingType = song.recordingType;
-
   return (
     <div
-      className={`
-        min-w-[180px] max-w-[200px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200
-        ${isPlaying
-          ? 'bg-gradient-to-b from-[var(--cream)] to-[color-mix(in_srgb,var(--cream)_85%,var(--secondary))] border-2 border-accent'
-          : 'bg-gradient-to-b from-surface-card to-surface-base border border-subtle-token hover:border-default'
-        }
-      `}
+      className="mx-0.5 mb-2 rounded-lg transition-all overflow-hidden"
+      style={{
+        background: isPlaying
+          ? 'color-mix(in srgb, var(--secondary) 10%, var(--surface-card))'
+          : 'color-mix(in srgb, var(--text) 2%, transparent)',
+        border: isPlaying
+          ? '1px solid var(--secondary)'
+          : '1px solid color-mix(in srgb, var(--text) 6%, transparent)',
+      }}
     >
-      {/* Card header with year and badge */}
-      <div className={`px-3 pt-3 pb-2 border-b ${isPlaying ? 'border-accent/15' : 'border-accent/8'}`}>
-        <div className="flex justify-between items-center">
-          <span className={`text-2xl font-bold font-serif ${isPlaying ? 'text-inverse' : 'text-secondary'}`}>
-            {year}
-          </span>
-          <RecSourceIcon type={recordingType} lineage={song.lineage} size={20} />
-        </div>
-      </div>
-
-      {/* Card body with inline actions */}
-      <div className="px-3 py-2">
+      <div className="px-4 pt-3 pb-3">
         <RecordingRow
           song={song}
-          size="sm"
-          showTitle={false}
-          showTaper={false}
-          showDownloads={false}
+          taperLinkToArchive
+          iconScale={1.2}
+          actionsAlign="start"
           actions={['play', 'play-next', 'queue', 'playlist', 'favorite']}
           onPlay={() => onPlay()}
           isCurrentlyPlaying={isPlaying}
@@ -100,7 +86,6 @@ export function SearchTrackResult({
   const [allVersions, setAllVersions] = useState<Song[]>([]); // Store unfiltered for re-filtering
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const carouselRef = useRef<HTMLDivElement>(null);
 
   const { currentSong, isPlaying, playSong } = usePlayer();
 
@@ -168,7 +153,7 @@ export function SearchTrackResult({
 
   return (
     <div className={`
-      rounded-lg overflow-hidden transition-all duration-200
+      rounded-lg overflow-hidden transition-colors duration-200
       ${hasNoVersions
         ? 'opacity-50 cursor-not-allowed'
         : isExpanded
@@ -191,9 +176,9 @@ export function SearchTrackResult({
             // Animated bars when playing (overlay on image)
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <div className="flex items-end gap-0.5 h-4">
-                <div className="w-1 bg-accent animate-[soundbar_0.5s_ease-in-out_infinite_alternate]" style={{ height: '60%' }} />
-                <div className="w-1 bg-accent animate-[soundbar_0.5s_ease-in-out_infinite_alternate_0.2s]" style={{ height: '100%' }} />
-                <div className="w-1 bg-accent animate-[soundbar_0.5s_ease-in-out_infinite_alternate_0.4s]" style={{ height: '40%' }} />
+                <div className="w-1 bg-accent animate-equalizer-1" />
+                <div className="w-1 bg-accent animate-equalizer-2" />
+                <div className="w-1 bg-accent animate-equalizer-3" />
               </div>
             </div>
           ) : null}
@@ -296,7 +281,7 @@ export function SearchTrackResult({
             </div>
           )}
 
-          {/* Versions carousel */}
+          {/* Versions list */}
           {!isLoading && displayVersions.length > 0 && (
             <div className="pt-4">
               <div className="flex items-center justify-between mb-3">
@@ -307,12 +292,9 @@ export function SearchTrackResult({
                   Sorted by rating
                 </span>
               </div>
-              <div
-                ref={carouselRef}
-                className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
-              >
+              <div>
                 {displayVersions.map((song) => (
-                  <VersionCard
+                  <VersionRow
                     key={song.id}
                     song={song}
                     isPlaying={currentSong?.id === song.id && isPlaying}

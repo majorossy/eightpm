@@ -21,8 +21,8 @@ interface KeyboardShortcutsConfig {
   // Queue controls
   onToggleQueue: () => void;
 
-  // Search
-  onOpenSearch?: () => void;
+  // Find
+  onOpenFind?: () => void;
 
   // Help modal
   onShowHelp?: () => void;
@@ -46,7 +46,7 @@ interface KeyboardShortcutsConfig {
  * - R: Cycle repeat (off → all → one)
  * - L: Like/unlike current song
  * - Q: Toggle queue drawer
- * - K or Cmd+K or Ctrl+K: Open search
+ * - K or Cmd+K or Ctrl+K: Open find
  * - Escape: Close queue/modals
  * - ?: Show shortcuts help modal
  * - M: Toggle minimize player
@@ -61,7 +61,7 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
     onCycleRepeat,
     onToggleLike,
     onToggleQueue,
-    onOpenSearch,
+    onOpenFind,
     onShowHelp,
     onToggleMinimize,
     isQueueOpen = false,
@@ -80,9 +80,9 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
 
     // Special case: Allow Escape and Cmd/Ctrl+K even when typing
     const isEscape = e.key === 'Escape';
-    const isSearchShortcut = e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey);
+    const isFindShortcut = e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey);
 
-    if (isTyping && !isEscape && !isSearchShortcut) {
+    if (isTyping && !isEscape && !isFindShortcut) {
       return;
     }
 
@@ -95,17 +95,17 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
       return;
     }
 
-    // Handle search shortcut (Cmd/Ctrl+K or just K)
+    // Handle find shortcut (Cmd/Ctrl+K or just K)
     if (e.key.toLowerCase() === 'k') {
       if (e.metaKey || e.ctrlKey) {
         e.preventDefault();
-        onOpenSearch?.();
+        onOpenFind?.();
         return;
       }
       // Plain 'k' only works outside of input fields
       if (!isTyping) {
         e.preventDefault();
-        onOpenSearch?.();
+        onOpenFind?.();
         return;
       }
     }
@@ -178,7 +178,7 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
     onCycleRepeat,
     onToggleLike,
     onToggleQueue,
-    onOpenSearch,
+    onOpenFind,
     onShowHelp,
     onToggleMinimize,
     isQueueOpen,

@@ -147,7 +147,11 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
     announcement,
   } = props;
 
-  const [queueStripOpen, setQueueStripOpen] = useState(true);
+  const [queueStripOpen, setQueueStripOpen] = useState(() =>
+    typeof window !== 'undefined'
+      ? localStorage.getItem('8pm_queue_strip') !== 'false'
+      : true
+  );
   const [summaryDismissed, setSummaryDismissed] = useState(false);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -316,7 +320,11 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
           {/* Toggle handle — slim pill overlapping the border */}
           <div className="flex justify-center -mt-[7px] relative z-[3]">
             <button
-              onClick={() => setQueueStripOpen(prev => !prev)}
+              onClick={() => setQueueStripOpen(prev => {
+                const next = !prev;
+                localStorage.setItem('8pm_queue_strip', String(next));
+                return next;
+              })}
               className="flex items-center gap-1 px-3 h-[14px] rounded-full transition-all"
               style={{
                 background: 'var(--player-surface-bar)',

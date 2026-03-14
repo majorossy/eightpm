@@ -13,6 +13,8 @@ import { AlbumGroup, QueueItem } from '@/lib/queueTypes';
 import type { Song, AudioQuality } from '@/lib/types';
 import { glowClassName, ChipGlowType, ChipGlow } from '@/lib/chipGlow';
 import { useBackToClose } from '@/hooks/useBackToClose';
+import { useMagentoAuth } from '@/context/MagentoAuthContext';
+import Link from 'next/link';
 
 import { VALIDATION_LIMITS } from '@/lib/validation';
 import VersionPickerModal from '@/components/VersionPickerModal';
@@ -67,6 +69,8 @@ export default function Queue() {
 
   const { preferredQuality } = useQuality();
   const { createMiniDisc, addToMiniDisc } = useMiniDiscs();
+
+  const { isAuthenticated } = useMagentoAuth();
 
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [discName, setDiscName] = useState('');
@@ -164,6 +168,76 @@ export default function Queue() {
             </svg>
           </button>
         </div>
+
+        {/* Nav links */}
+        <nav className="flex items-center gap-1 px-5 pb-3 flex-shrink-0">
+          <Link
+            href="/my-library"
+            onClick={closeQueue}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
+            style={{
+              color: 'var(--text-secondary)',
+              border: '1px solid color-mix(in srgb, var(--primary) 23%, transparent)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.background = 'var(--primary-muted)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z" />
+            </svg>
+            My Library
+          </Link>
+          <Link
+            href="/find"
+            onClick={closeQueue}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
+            style={{
+              color: 'var(--text-secondary)',
+              border: '1px solid color-mix(in srgb, var(--primary) 23%, transparent)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.background = 'var(--primary-muted)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Find
+          </Link>
+          <Link
+            href={isAuthenticated ? '/account' : '/sign-in'}
+            onClick={closeQueue}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
+            style={{
+              color: 'var(--text-secondary)',
+              border: '1px solid color-mix(in srgb, var(--primary) 23%, transparent)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.background = 'var(--primary-muted)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            {isAuthenticated ? 'Account' : 'Sign In'}
+          </Link>
+        </nav>
 
         {/* Content */}
         <div className="flex-1 flex flex-col min-h-0" role="region" aria-label="Queue tracks">

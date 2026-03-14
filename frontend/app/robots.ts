@@ -27,6 +27,7 @@ export default function robots(): MetadataRoute.Robots {
           // Next.js internals
           '/_next/',
           // Avoid duplicate search results
+          '/find?*',
           '/search?*',
           // Pagination URLs (duplicate content)
           '/*?page=*',

@@ -2,7 +2,7 @@
 
 import ErrorFallback from '@/components/ErrorFallback';
 
-export default function SearchError({
+export default function FindError({
   error,
   reset,
 }: {
@@ -13,7 +13,7 @@ export default function SearchError({
     <ErrorFallback
       error={error}
       reset={reset}
-      title="Search failed"
+      title="Find failed"
       description="We had trouble with your search. Please try again."
     />
   );

@@ -203,16 +203,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const [state, setState] = useState<PlayerState>({
+  const [state, setState] = useState<PlayerState>(() => ({
     isPlaying: false,
     isBuffering: false,
     volume: 0.7,
     currentTime: 0,
     duration: 0,
-    isQueueOpen: false,
+    isQueueOpen: typeof window !== 'undefined' && localStorage.getItem('8pm_queue_open') === 'true',
     crossfadeDuration,
     announcement: '',
-  });
+  }));
 
   // Single source of truth for current song from QueueContext
   const currentSong = queueContext.currentSong;
@@ -832,10 +832,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [queueContext, crossfade]);
 
   const toggleQueue = useCallback(() => {
-    setState(prev => ({ ...prev, isQueueOpen: !prev.isQueueOpen }));
+    setState(prev => {
+      const next = !prev.isQueueOpen;
+      localStorage.setItem('8pm_queue_open', String(next));
+      return { ...prev, isQueueOpen: next };
+    });
   }, []);
 
   const closeQueue = useCallback(() => {
+    localStorage.setItem('8pm_queue_open', 'false');
     setState(prev => ({ ...prev, isQueueOpen: false }));
   }, []);
 

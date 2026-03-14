@@ -107,7 +107,11 @@ export default function MobileMiniPlayer({
   onDetachItem,
   onRestoreFromHistory,
 }: MobileMiniPlayerProps) {
-  const [queueStripOpen, setQueueStripOpen] = useState(true);
+  const [queueStripOpen, setQueueStripOpen] = useState(() =>
+    typeof window !== 'undefined'
+      ? localStorage.getItem('8pm_queue_strip') !== 'false'
+      : true
+  );
   const qualityInfo = getQualityBadge(preferredQuality);
   const recordingType = currentItem?.song?.recordingType;
 
@@ -291,6 +295,7 @@ export default function MobileMiniPlayer({
                   e.stopPropagation();
                   if (queueStripOpen && queueChips.length > 0) {
                     setQueueStripOpen(false);
+                    localStorage.setItem('8pm_queue_strip', 'false');
                   } else {
                     onMinimize();
                   }

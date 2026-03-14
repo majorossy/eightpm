@@ -7,8 +7,8 @@ import {
   createCustomer,
   getCustomer,
   revokeCustomerToken,
-  requestPasswordReset,
   getStoredToken,
+  usernameToEmail,
 } from '@/lib/magentoAuth';
 
 interface MagentoAuthContextType {
@@ -16,10 +16,9 @@ interface MagentoAuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  signIn: (email: string, password: string) => Promise<boolean>;
-  signUp: (input: MagentoCustomerCreateInput) => Promise<boolean>;
+  signIn: (username: string, password: string) => Promise<boolean>;
+  signUp: (input: { username: string; password: string; firstname: string; lastname: string }) => Promise<boolean>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<boolean>;
   refreshCustomer: () => Promise<void>;
 }
 
@@ -49,10 +48,11 @@ export function MagentoAuthProvider({ children }: { children: React.ReactNode })
     checkAuth();
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string): Promise<boolean> => {
+  const signIn = useCallback(async (username: string, password: string): Promise<boolean> => {
     setError(null);
     setIsLoading(true);
     try {
+      const email = usernameToEmail(username);
       const token = await generateCustomerToken(email, password);
       const customerData = await getCustomer(token);
       setCustomer(customerData);
@@ -65,13 +65,14 @@ export function MagentoAuthProvider({ children }: { children: React.ReactNode })
     }
   }, []);
 
-  const signUp = useCallback(async (input: MagentoCustomerCreateInput): Promise<boolean> => {
+  const signUp = useCallback(async (input: { username: string; password: string; firstname: string; lastname: string }): Promise<boolean> => {
     setError(null);
     setIsLoading(true);
     try {
-      await createCustomer(input);
+      const email = usernameToEmail(input.username);
+      await createCustomer({ email, password: input.password, firstname: input.firstname, lastname: input.lastname });
       // Auto sign in after registration
-      return await signIn(input.email, input.password);
+      return await signIn(input.username, input.password);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed');
       return false;
@@ -87,16 +88,6 @@ export function MagentoAuthProvider({ children }: { children: React.ReactNode })
     } finally {
       setCustomer(null);
       setIsLoading(false);
-    }
-  }, []);
-
-  const resetPassword = useCallback(async (email: string): Promise<boolean> => {
-    setError(null);
-    try {
-      return await requestPasswordReset(email);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Password reset failed');
-      return false;
     }
   }, []);
 
@@ -118,7 +109,6 @@ export function MagentoAuthProvider({ children }: { children: React.ReactNode })
         signIn,
         signUp,
         signOut,
-        resetPassword,
         refreshCustomer,
       }}
     >

@@ -2,6 +2,7 @@
 
 import { ReactNode, useState, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider, useWishlist } from '@/context/WishlistContext';
 import { CollectionProvider } from '@/context/CollectionContext';
@@ -31,10 +32,6 @@ import CookieConsentBanner from '@/components/CookieConsentBanner';
 // Lazy load heavy components that aren't immediately visible
 const Queue = dynamic(() => import('@/components/Queue'), { ssr: false });
 const EightPmFullPlayer = dynamic(() => import('@/components/EightPmFullPlayer'), { ssr: false });
-const EightPmSearchOverlay = dynamic(
-  () => import('@/components/EightPmSearchOverlay').then(mod => ({ default: mod.EightPmSearchOverlay })),
-  { ssr: false }
-);
 const KeyboardShortcutsHelp = dynamic(() => import('@/components/KeyboardShortcutsHelp'), { ssr: false });
 
 // Inner layout that can access player state and contexts
@@ -43,9 +40,8 @@ function InnerLayout({ children }: { children: ReactNode }) {
   const player = usePlayer();
   const queue = useQueue();
   const wishlist = useWishlist();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const router = useRouter();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
-  const handleCloseSearch = useCallback(() => setIsSearchOpen(false), []);
   const handleCloseHelp = useCallback(() => setIsHelpOpen(false), []);
 
   useAnalytics();
@@ -93,7 +89,7 @@ function InnerLayout({ children }: { children: ReactNode }) {
     onCycleRepeat: handleCycleRepeat,
     onToggleLike: handleToggleLike,
     onToggleQueue: player.toggleQueue,
-    onOpenSearch: () => setIsSearchOpen(true),
+    onOpenFind: () => router.push('/find'),
     onShowHelp: () => setIsHelpOpen(true),
     onToggleMinimize: () => {
       if (!isMobile && player.currentSong) {
@@ -178,12 +174,6 @@ function InnerLayout({ children }: { children: ReactNode }) {
 
       {/* Queue drawer (left side) */}
       <Queue />
-
-      {/* Search overlay */}
-      <EightPmSearchOverlay
-        isOpen={isSearchOpen}
-        onClose={handleCloseSearch}
-      />
 
       {/* Keyboard shortcuts help modal */}
       <KeyboardShortcutsHelp

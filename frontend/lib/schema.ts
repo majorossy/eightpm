@@ -435,7 +435,7 @@ export function generateWebSiteSchema(baseUrl: string): Record<string, unknown> 
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `${baseUrl}/search?q={search_term_string}`,
+        urlTemplate: `${baseUrl}/find?q={search_term_string}`,
       },
       'query-input': 'required name=search_term_string',
     },

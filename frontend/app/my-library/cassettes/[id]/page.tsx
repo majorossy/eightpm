@@ -32,7 +32,7 @@ export default function CassetteDetailPage() {
       <div className="min-h-screen bg-surface-base flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2">Cassette not found</h1>
-          <Link href="/cassettes" className="text-accent hover:underline">Back to Cassettes</Link>
+          <Link href="/my-library/cassettes" className="text-accent hover:underline">Back to Cassettes</Link>
         </div>
       </div>
     );
@@ -58,7 +58,7 @@ export default function CassetteDetailPage() {
 
   const handleDelete = () => {
     deleteCassette(cassette.id);
-    router.push('/cassettes');
+    router.push('/my-library/cassettes');
   };
 
   const totalDuration = resolvedTracks.reduce((sum, rt) => sum + rt.selectedSong.duration, 0);

@@ -20,28 +20,32 @@ function TaperIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-export default function TaperDisplay({ taper, iconSize = 16, fontSize = 'text-[11px]', linkToArchive = false, className = '' }: TaperDisplayProps) {
+export default function TaperDisplay({ taper, iconSize = 18, fontSize = 'text-[11px]', linkToArchive = false, className = '' }: TaperDisplayProps) {
   if (!taper) return null;
 
-  return (
-    <div className={`flex items-center gap-1.5 ${className}`}>
-      <TaperIcon size={iconSize} />
-      {linkToArchive ? (
-        <a
-          href={`https://archive.org/search?query=taper:${encodeURIComponent('"' + taper + '"')}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`font-jb-mono ${fontSize} font-medium hover:underline transition-colors truncate`}
-          style={{ color: 'var(--text-tertiary)' }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {taper}
-        </a>
-      ) : (
+  if (linkToArchive) {
+    return (
+      <a
+        href={`https://archive.org/search?query=taper:${encodeURIComponent('"' + taper + '"')}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`flex items-center gap-0 transition-all hover:brightness-[1.2] hover:scale-[1.04] ${className}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <TaperIcon size={iconSize} />
         <span className={`font-jb-mono ${fontSize} font-medium truncate`} style={{ color: 'var(--text-tertiary)' }}>
           {taper}
         </span>
-      )}
+      </a>
+    );
+  }
+
+  return (
+    <div className={`flex items-center gap-0 ${className}`}>
+      <TaperIcon size={iconSize} />
+      <span className={`font-jb-mono ${fontSize} font-medium truncate`} style={{ color: 'var(--text-tertiary)' }}>
+        {taper}
+      </span>
     </div>
   );
 }

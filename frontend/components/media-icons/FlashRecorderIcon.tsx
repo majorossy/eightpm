@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 interface Props {
   size?: number;
   className?: string;
@@ -11,7 +9,6 @@ interface Props {
 const NOISE_SVG = "data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E";
 
 export default function FlashRecorderIcon({ size = 1, className = '', isPlaying }: Props) {
-  const [hovered, setHovered] = useState(false);
   const s = size;
   const sc = (px: number) => Math.round(px * 0.5 * s);
 
@@ -120,13 +117,7 @@ export default function FlashRecorderIcon({ size = 1, className = '', isPlaying 
       style={{
         width: w,
         height: h,
-        cursor: 'pointer',
-        transition: 'transform 0.3s ease, filter 0.3s',
-        transform: hovered ? 'translateY(-4px)' : 'none',
-        filter: hovered ? 'brightness(1.04)' : 'none',
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       {/* ru-body */}
       <div

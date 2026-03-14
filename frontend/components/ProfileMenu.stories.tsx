@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { fn } from 'storybook/test';
 import ProfileMenu from './ProfileMenu';
 import { MagentoAuthProvider } from '@/context/MagentoAuthContext';
 
@@ -14,9 +13,6 @@ const meta = {
       </MagentoAuthProvider>
     ),
   ],
-  args: {
-    onSignInClick: fn(),
-  },
 } satisfies Meta<typeof ProfileMenu>;
 
 export default meta;
