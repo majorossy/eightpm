@@ -659,9 +659,9 @@ function validateSongSnapshot(
   data: unknown,
   fallbackId: string,
   fallbackSku: string | null,
-): Record<string, unknown> {
+): Song {
   if (!data || typeof data !== 'object') {
-    return { id: fallbackId, sku: fallbackSku || '', title: 'Unknown', duration: 0, artistName: 'Unknown', albumName: 'Unknown', streamUrl: '', albumArt: '', albumIdentifier: '', trackTitle: '', artistId: '', artistSlug: '' };
+    return { id: fallbackId, sku: fallbackSku || '', title: 'Unknown', duration: 0, artistName: 'Unknown', albumName: 'Unknown', streamUrl: '', albumArt: '', albumIdentifier: '', trackTitle: '', artistId: '', artistSlug: '' } as Song;
   }
   const obj = data as Record<string, unknown>;
   return {
@@ -670,7 +670,7 @@ function validateSongSnapshot(
     title: (typeof obj.title === 'string' && obj.title) ? obj.title : 'Unknown',
     duration: (typeof obj.duration === 'number' && obj.duration >= 0) ? obj.duration : 0,
     sku: (typeof obj.sku === 'string') ? obj.sku : (fallbackSku || ''),
-  };
+  } as Song;
 }
 
 /** Convert server cassette to local Cassette format */

@@ -49,7 +49,7 @@ export default function DebugImagesClient({ initialArtists }: { initialArtists: 
     ).then(results => {
       const merged = new Map<number, boolean>();
       for (const m of results) {
-        for (const [k, v] of m) merged.set(k, v);
+        m.forEach((v, k) => merged.set(k, v));
       }
       setLockMap(merged);
     });
