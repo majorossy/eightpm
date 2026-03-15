@@ -36,22 +36,24 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+function AlreadyConsentedWrapper() {
+  useEffect(() => {
+    localStorage.setItem(
+      CONSENT_KEY,
+      JSON.stringify({
+        necessary: true,
+        functional: true,
+        analytics: true,
+        timestamp: Date.now(),
+        version: '1.0',
+      })
+    );
+  }, []);
+  return <CookieConsentBanner />;
+}
+
 export const AlreadyConsented: Story = {
-  render: () => {
-    useEffect(() => {
-      localStorage.setItem(
-        CONSENT_KEY,
-        JSON.stringify({
-          necessary: true,
-          functional: true,
-          analytics: true,
-          timestamp: Date.now(),
-          version: '1.0',
-        })
-      );
-    }, []);
-    return <CookieConsentBanner />;
-  },
+  render: () => <AlreadyConsentedWrapper />,
   parameters: {
     docs: {
       description: {

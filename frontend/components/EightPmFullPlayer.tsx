@@ -253,7 +253,7 @@ export default function EightPmFullPlayer() {
           <button
             onClick={() => {
               vibrate(BUTTON_PRESS);
-              currentSong && openShareModal(shareableSong(currentSong));
+              if (currentSong) { openShareModal(shareableSong(currentSong)); }
             }}
             className="p-2 text-white btn-touch"
             aria-label={`Share ${currentSong.title}`}

@@ -46,6 +46,24 @@ export const TrackRow = React.memo(function TrackRow({
   const bestSong = useMemo(() => getBestVersion(track.songs), [track.songs]);
   const isEmpty = !bestSong;
 
+  // Stored preference (if any)
+  const preferredSong = preferredSongId
+    ? track.songs.find(s => s.id === preferredSongId) ?? null
+    : null;
+
+  // Song to show in the chip: currently playing > stored preference > best version
+  // For multi-version tracks with no preference, show nothing (blank tape state)
+  const chipSong = isCurrentTrack && currentSong
+    ? track.songs.find(s => s.id === currentSong.id) || preferredSong || bestSong
+    : preferredSong || (hasMultipleVersions ? null : bestSong);
+
+  const handleSwapVersion = useCallback((songId: string) => {
+    onSwapVersion?.(songId);
+    setJustSwapped(true);
+    if (swapTimerRef.current) clearTimeout(swapTimerRef.current);
+    swapTimerRef.current = setTimeout(() => setJustSwapped(false), 1800);
+  }, [onSwapVersion]);
+
   // Empty track — grayed-out row with "no recordings found" subtext
   if (isEmpty) {
     return (
@@ -69,24 +87,6 @@ export const TrackRow = React.memo(function TrackRow({
       </div>
     );
   }
-
-  // Stored preference (if any)
-  const preferredSong = preferredSongId
-    ? track.songs.find(s => s.id === preferredSongId) ?? null
-    : null;
-
-  // Song to show in the chip: currently playing > stored preference > best version
-  // For multi-version tracks with no preference, show nothing (blank tape state)
-  const chipSong = isCurrentTrack && currentSong
-    ? track.songs.find(s => s.id === currentSong.id) || preferredSong || bestSong
-    : preferredSong || (hasMultipleVersions ? null : bestSong);
-
-  const handleSwapVersion = useCallback((songId: string) => {
-    onSwapVersion?.(songId);
-    setJustSwapped(true);
-    if (swapTimerRef.current) clearTimeout(swapTimerRef.current);
-    swapTimerRef.current = setTimeout(() => setJustSwapped(false), 1800);
-  }, [onSwapVersion]);
 
   const handleRowClick = () => {
     if (hasMultipleVersions) {

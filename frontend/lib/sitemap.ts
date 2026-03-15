@@ -156,8 +156,7 @@ export async function getAllAlbumsPaginated(): Promise<AlbumCategory[]> {
     currentPage++;
 
     // Log progress every 10 pages
-    if ((currentPage - 1) % 10 === 0) {
-    }
+    if ((currentPage - 1) % 10 === 0) { /* progress checkpoint */ }
   }
 
   return albums;

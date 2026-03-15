@@ -145,14 +145,14 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
     } else {
       const stored = localStorage.getItem(MINIDISCS_STORAGE_KEY);
       if (stored) {
-        try { setMiniDiscs(JSON.parse(stored)); } catch {}
+        try { setMiniDiscs(JSON.parse(stored)); } catch { /* corrupt localStorage */ }
       }
     }
 
     // Load cassettes
     const storedCassettes = localStorage.getItem(CASSETTES_STORAGE_KEY);
     if (storedCassettes) {
-      try { setCassettes(JSON.parse(storedCassettes)); } catch {}
+      try { setCassettes(JSON.parse(storedCassettes)); } catch { /* corrupt localStorage */ }
     }
 
     setIsLoading(false);

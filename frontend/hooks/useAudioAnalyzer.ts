@@ -176,8 +176,7 @@ export function useAudioAnalyzer(): UseAudioAnalyzerReturn {
           // Don't proceed if we can't create the source
           return;
         }
-      } else {
-      }
+      } else { /* source already connected */ }
 
       // Clean up previous play handler
       if (audioElementRef.current && playHandlerRef.current) {

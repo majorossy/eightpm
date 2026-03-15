@@ -93,7 +93,7 @@ function InnerLayout({ children }: { children: ReactNode }) {
     onShowHelp: () => setIsHelpOpen(true),
     onToggleMinimize: () => {
       if (!isMobile && player.currentSong) {
-        isPlayerMinimized ? restorePlayer() : minimizePlayer();
+        if (isPlayerMinimized) { restorePlayer(); } else { minimizePlayer(); }
       }
     },
     isQueueOpen: player.isQueueOpen,

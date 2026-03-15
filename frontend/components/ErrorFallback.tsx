@@ -28,7 +28,7 @@ export default function ErrorFallback({
         )}
         <div className="flex gap-3 justify-center">
           <button onClick={reset} className="px-6 py-3 rounded-full bg-accent text-black font-medium hover:bg-accent-hover transition-colors">Try again</button>
-          <a href="/" className="px-6 py-3 rounded-full border border-white/20 text-white hover:bg-white/10 transition-colors">Go home</a>
+          <a href="/" className="px-6 py-3 rounded-full border border-white/20 text-white hover:bg-white/10 transition-colors">Go home</a>{/* eslint-disable-line @next/next/no-html-link-for-pages -- ErrorFallback renders outside Next.js router */}
         </div>
       </div>
     </div>

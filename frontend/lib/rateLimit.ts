@@ -323,12 +323,7 @@ export function withRateLimit(
       return result.response!;
     }
 
-    try {
-      const response = await handler(request, context);
-      return limiter.addHeaders(response, result);
-    } catch (error) {
-      // Re-throw to let Next.js handle the error
-      throw error;
-    }
+    const response = await handler(request, context);
+    return limiter.addHeaders(response, result);
   };
 }

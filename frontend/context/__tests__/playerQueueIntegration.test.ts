@@ -439,7 +439,7 @@ describe('Player-Queue Integration', () => {
 
     it('cannot change version of played item', () => {
       const items = makeAlbumItems(3, 'batch-ver-played');
-      let state = runActions(initialQueueState, [
+      const state = runActions(initialQueueState, [
         { type: 'LOAD_ITEMS', items, cursorIndex: 0 },
         { type: 'MARK_PLAYED' },
       ]);

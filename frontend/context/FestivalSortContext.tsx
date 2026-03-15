@@ -110,8 +110,7 @@ export function FestivalSortProvider({
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem(ALPHA_STORAGE_KEY, String(newValue));
-        } catch (error) {
-        }
+        } catch { /* localStorage unavailable */ }
       }
 
       return newValue;

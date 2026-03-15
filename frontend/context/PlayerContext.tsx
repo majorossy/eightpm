@@ -87,13 +87,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const completedSongsRef = useRef<Set<string>>(new Set()); // Track which songs completed (>90%)
 
   // Toast notifications for playback errors
-  // Note: useToast may throw if not in ToastProvider - we handle this gracefully
-  let toast: ReturnType<typeof useToast> | null = null;
-  try {
-    toast = useToast();
-  } catch {
-    // ToastProvider not available yet - this is fine during initial render
-  }
+  const toast = useToast();
 
   // Build legacy queue from QueueContext for compatibility
   const legacyQueue: Song[] = queueContext.queue.items.map(item => item.song);

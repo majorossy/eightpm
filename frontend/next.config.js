@@ -129,7 +129,7 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: false,
+    ignoreDuringBuilds: true, // ESLint runs via `npm run lint` (flat config); next lint doesn't support flat config
   },
   // ==========================================================================
   // SECURITY HEADERS

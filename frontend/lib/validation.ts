@@ -94,7 +94,7 @@ export function validateSlug(slug: string): string | undefined {
   }
   // Slugs should only contain URL-safe characters
   // Allow lowercase alphanumeric, hyphens, underscores, and numbers
-  if (!/^[a-z0-9_\-]+$/i.test(slug)) {
+  if (!/^[a-z0-9_-]+$/i.test(slug)) {
     return 'Invalid slug format';
   }
   return undefined;
@@ -190,7 +190,7 @@ export function validatePlaylistId(id: string): string | undefined {
     return 'Invalid playlist ID';
   }
   // Playlist IDs should only contain safe characters
-  if (!/^[a-zA-Z0-9_\-]+$/.test(id)) {
+  if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
     return 'Invalid playlist ID format';
   }
   return undefined;

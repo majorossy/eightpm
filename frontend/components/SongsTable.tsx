@@ -457,7 +457,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
   const toggleSrcFilter = (id: string) => {
     setSrcFilter(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
   };
@@ -465,7 +465,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
   const toggleMediumFilter = (id: string) => {
     setMediumFilter(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
   };

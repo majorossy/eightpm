@@ -429,7 +429,7 @@ describe('MOVE_BLOCK edge cases', () => {
 
   it('Move block with batchId that does not match any items in range -- no-op', () => {
     const items = makeAlbumItems(5, 'batch-nomatch');
-    let state = runActions(initialQueueState, [
+    const state = runActions(initialQueueState, [
       { type: 'LOAD_ITEMS', items, cursorIndex: 0 },
     ]);
 
@@ -721,7 +721,7 @@ describe('CLEAR_QUEUE preserves repeat mode', () => {
 describe('SELECT_VERSION with same song', () => {
   it('SELECT_VERSION with the same song object still updates state', () => {
     const items = makeAlbumItems(3, 'batch-ver');
-    let state = runActions(initialQueueState, [
+    const state = runActions(initialQueueState, [
       { type: 'LOAD_ITEMS', items, cursorIndex: 0 },
     ]);
 
@@ -743,7 +743,7 @@ describe('SELECT_VERSION with same song', () => {
 
   it('SELECT_VERSION with non-existent queueId returns state unchanged', () => {
     const items = makeAlbumItems(2, 'batch-ver2');
-    let state = runActions(initialQueueState, [
+    const state = runActions(initialQueueState, [
       { type: 'LOAD_ITEMS', items, cursorIndex: 0 },
     ]);
 
@@ -816,7 +816,7 @@ describe('Rapid ADVANCE_CURSOR calls', () => {
 describe('INSERT_AFTER_CURSOR with empty array', () => {
   it('INSERT_AFTER_CURSOR with [] returns state unchanged', () => {
     const items = makeAlbumItems(3, 'batch-empty-insert');
-    let state = runActions(initialQueueState, [
+    const state = runActions(initialQueueState, [
       { type: 'LOAD_ITEMS', items, cursorIndex: 1 },
     ]);
 
@@ -831,7 +831,7 @@ describe('INSERT_AFTER_CURSOR with empty array', () => {
 
   it('APPEND_ITEMS with [] returns state unchanged', () => {
     const items = makeAlbumItems(3, 'batch-empty-append');
-    let state = runActions(initialQueueState, [
+    const state = runActions(initialQueueState, [
       { type: 'LOAD_ITEMS', items, cursorIndex: 1 },
     ]);
 
@@ -851,7 +851,7 @@ describe('APPEND_ITEMS to queue with cursor at -1', () => {
   it('Start empty, APPEND 3 items -- cursor stays -1 (user has not started playing)', () => {
     const items = makeAlbumItems(3, 'batch-append-no-play');
 
-    let state = queueReducer(initialQueueState, {
+    const state = queueReducer(initialQueueState, {
       type: 'APPEND_ITEMS',
       items,
     });
@@ -1142,7 +1142,7 @@ describe('CLEAR_UPCOMING edge cases', () => {
 
   it('CLEAR_UPCOMING when cursor is at last item is a no-op (nothing to clear)', () => {
     const items = makeAlbumItems(3, 'batch-clear-at-end');
-    let state = runActions(initialQueueState, [
+    const state = runActions(initialQueueState, [
       { type: 'LOAD_ITEMS', items, cursorIndex: 2 },
     ]);
 
@@ -1154,7 +1154,7 @@ describe('CLEAR_UPCOMING edge cases', () => {
 
   it('CLEAR_UPCOMING when cursor is -1 returns state unchanged', () => {
     const items = makeAlbumItems(3, 'batch-clear-neg');
-    let state: UnifiedQueue = {
+    const state: UnifiedQueue = {
       items,
       cursorIndex: -1,
       repeat: 'off',
