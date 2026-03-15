@@ -163,9 +163,9 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
   return (
     <div
       id="bottom-player-bar"
-      className="fixed bottom-0 left-0 right-0 z-[40] bg-surface-player-deep player-glow-line"
+      className="fixed left-0 right-0 z-[40] bg-surface-player-deep player-glow-line"
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))',
         borderTop: isPlayerMinimized ? 'none' : '1px solid color-mix(in srgb, var(--border-default) 19%, transparent)',
         boxShadow: isPlayerMinimized ? 'none' : '0 -8px 40px color-mix(in srgb, black 40%, transparent)',
         transform: isPlayerMinimized ? 'translateY(100%)' : 'none',

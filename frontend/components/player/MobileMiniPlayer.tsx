@@ -289,20 +289,20 @@ export default function MobileMiniPlayer({
                 )}
               </button>
 
-              {/* Queue toggle / minimize — toggles queue strip when items exist, minimizes player when empty */}
+              {/* Queue toggle / minimize — 3-state cycle: strip open → strip closed → minimized */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (queueChips.length > 0) {
-                    const next = !queueStripOpen;
-                    setQueueStripOpen(next);
-                    localStorage.setItem('8pm_queue_strip', String(next));
+                  if (queueStripOpen && queueChips.length > 0) {
+                    setQueueStripOpen(false);
+                    localStorage.setItem('8pm_queue_strip', 'false');
                   } else {
+                    localStorage.setItem('8pm_queue_strip', 'true');
                     onMinimize();
                   }
                 }}
                 className="w-8 h-8 flex items-center justify-center text-white/40 hover:text-white/70 flex-shrink-0 transition-colors"
-                aria-label={queueChips.length > 0 ? (queueStripOpen ? 'Hide queue' : 'Show queue') : 'Minimize player'}
+                aria-label={queueStripOpen && queueChips.length > 0 ? 'Hide queue' : 'Minimize player'}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={queueStripOpen && queueChips.length > 0 ? 'M19 9l-7 7-7-7' : 'M5 15l7-7 7 7'} />
