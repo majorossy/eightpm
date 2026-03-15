@@ -6,8 +6,6 @@ interface NewCassetteProps {
   name: string;
   albumName: string;
   artistName: string;
-  showVenue?: string;
-  showDate?: string;
   selected?: boolean;
   pickCount?: number;
 }
@@ -16,17 +14,8 @@ function truncate(s: string, max: number): string {
   return s.length > max ? s.slice(0, max - 1) + '\u2026' : s;
 }
 
-function formatDate(d?: string): string {
-  if (!d) return '';
-  const parts = d.split('-');
-  if (parts.length !== 3) return d;
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${months[parseInt(parts[1], 10) - 1]} ${parseInt(parts[2], 10)}, ${parts[0]}`;
-}
-
-export default function NewCassette({ name, albumName, artistName, showVenue, showDate, selected, pickCount }: NewCassetteProps) {
+export default function NewCassette({ name, albumName, artistName, selected, pickCount }: NewCassetteProps) {
   const uid = useId().replace(/:/g, '');
-  const date = formatDate(showDate);
   const picksLabel = pickCount != null && pickCount > 0 ? `${pickCount} pick${pickCount !== 1 ? 's' : ''}` : 'Type II';
 
   return (
@@ -99,19 +88,12 @@ export default function NewCassette({ name, albumName, artistName, showVenue, sh
           {truncate(name, 18)}
         </text>
         <line x1="28" y1="62" x2="220" y2="62" stroke="#1a4a6a" strokeWidth="0.5"/>
-        <text x="28" y="74" fontFamily="var(--font-space-mono), monospace" fontSize="11" fill="#5a9ab8" letterSpacing="0.04em">
-          {truncate(showVenue || albumName, 30)}
+        <text x="28" y="75" fontFamily="var(--font-space-mono), monospace" fontSize="14" fill="#5a9ab8" letterSpacing="0.04em">
+          {truncate(albumName, 26)}
         </text>
-        <text x="28" y="87" fontFamily="var(--font-dm-serif), serif" fontStyle="italic" fontSize="13" fill="#4a8aaa">
-          {truncate(artistName, 22)}
+        <text x="28" y="91" fontFamily="var(--font-dm-serif), serif" fontStyle="italic" fontSize="16" fill="#4a8aaa">
+          {truncate(artistName, 20)}
         </text>
-        {/* Date pill */}
-        {date && (
-          <>
-            <rect x="28" y="94" width={Math.max(date.length * 6.5 + 16, 70)} height="13" rx="6" fill="#0d3a52"/>
-            <text x={28 + Math.max(date.length * 6.5 + 16, 70) / 2} y="103.5" fontFamily="var(--font-space-mono), monospace" fontSize="10" fill="#5ad0f8" textAnchor="middle" letterSpacing="0.06em">{date}</text>
-          </>
-        )}
         {/* Barcode */}
         <g transform="translate(232,46)">
           <rect x="0" y="0" width="1.5" height="32" fill="#1a5a7a"/>

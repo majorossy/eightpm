@@ -2,11 +2,10 @@
 
 import { useId } from 'react';
 
-interface BestCassetteProps {
+interface RatingsCassetteProps {
   name: string;
   albumName: string;
   artistName: string;
-  showVenue?: string;
   selected?: boolean;
   versionCount?: number;
 }
@@ -15,14 +14,14 @@ function truncate(s: string, max: number): string {
   return s.length > max ? s.slice(0, max - 1) + '\u2026' : s;
 }
 
-export default function BestCassette({ name, albumName, artistName, showVenue, selected, versionCount }: BestCassetteProps) {
+export default function RatingsCassette({ name, albumName, artistName, selected, versionCount }: RatingsCassetteProps) {
   const uid = useId().replace(/:/g, '');
 
   return (
     <div
       className="relative w-full rounded-lg overflow-hidden transition-shadow"
       style={{
-        aspectRatio: '380 / 225',
+        aspectRatio: '320 / 210',
         boxShadow: selected
           ? '0 4px 20px rgba(0,0,0,0.4), 0 0 16px rgba(200,160,20,0.35)'
           : '0 4px 16px rgba(0,0,0,0.3)',
@@ -30,7 +29,7 @@ export default function BestCassette({ name, albumName, artistName, showVenue, s
         borderRadius: 12,
       }}
     >
-      <svg width="100%" height="100%" viewBox="0 0 380 225" xmlns="http://www.w3.org/2000/svg">
+      <svg width="100%" height="100%" viewBox="0 0 380 225" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={`${uid}-shell`} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#1e1a10"/>
@@ -87,7 +86,7 @@ export default function BestCassette({ name, albumName, artistName, showVenue, s
           <rect x="0" y="0" width="332" height="20" rx="4" fill="rgba(0,0,0,0.55)"/>
           <rect x="0" y="12" width="332" height="8" fill="rgba(0,0,0,0.55)"/>
           <text x="166" y="13.5" fontFamily="var(--font-space-mono), monospace" fontSize="10" fontWeight="700" fill="#f0c840" textAnchor="middle" letterSpacing="0.25em">
-            ★  BEST VERSION  ★
+            ★  RATINGS  ★
           </text>
 
           {/* Gold rule below header */}
@@ -103,11 +102,11 @@ export default function BestCassette({ name, albumName, artistName, showVenue, s
             {truncate(name, 16)}
           </text>
           <line x1="96" y1="55" x2="295" y2="55" stroke="rgba(100,70,0,0.3)" strokeWidth="0.6"/>
-          <text x="96" y="67" fontFamily="var(--font-space-mono), monospace" fontSize="11.5" fill="#5a3a04" letterSpacing="0.05em">
-            {truncate(showVenue || albumName, 24)}
+          <text x="96" y="67" fontFamily="var(--font-space-mono), monospace" fontSize="14" fill="#5a3a04" letterSpacing="0.05em">
+            {truncate(albumName, 22)}
           </text>
-          <text x="96" y="81" fontFamily="var(--font-dm-serif), serif" fontStyle="italic" fontSize="16" fill="#7a5008">
-            {truncate(artistName, 20)}
+          <text x="96" y="84" fontFamily="var(--font-dm-serif), serif" fontStyle="italic" fontSize="19" fill="#7a5008">
+            {truncate(artistName, 18)}
           </text>
 
           {/* Rating stars */}

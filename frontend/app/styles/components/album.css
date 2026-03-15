@@ -72,7 +72,7 @@
 .tape-shell {
   position: relative;
   width: 100%;
-  max-width: 680px;
+  max-width: 900px;
   margin: 0 auto;
   border-radius: 1rem;
   background: var(--cassette-body);

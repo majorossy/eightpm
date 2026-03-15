@@ -7,7 +7,7 @@ export const VIRTUAL_OLDEST_ID = 'virtual-oldest';
 export const VIRTUAL_NEWEST_ID = 'virtual-newest';
 
 // Display names
-export const VIRTUAL_BEST_NAME = 'Best Versions';
+export const VIRTUAL_BEST_NAME = 'Ratings';
 export const VIRTUAL_OLDEST_NAME = 'Earliest Recording';
 export const VIRTUAL_NEWEST_NAME = 'Latest Recording';
 

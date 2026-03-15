@@ -123,13 +123,15 @@ export default function Queue() {
       <aside
         className={`fixed z-[70] flex flex-col ${
           isMobile
-            ? 'inset-0 safe-top safe-bottom'
+            ? 'inset-x-0 top-0 safe-top'
             : 'left-0 top-0 bottom-0 w-[420px]'
         }`}
         style={{
           background: 'linear-gradient(180deg, var(--player-surface-deep) 0%, var(--player-surface-queue) 100%)',
           borderRight: isMobile ? 'none' : '1px solid var(--border-subtle-player)',
           boxShadow: '24px 0 80px color-mix(in srgb, black 50%, transparent), 0 0 0 1px color-mix(in srgb, var(--primary) 10%, transparent)',
+          // On mobile, stop above the 50px bottom nav + safe-area
+          ...(isMobile ? { bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' } : {}),
         }}
         role="dialog"
         aria-modal="true"
@@ -400,13 +402,13 @@ function NowPlayingSection({ currentItem, currentTime, duration, removeItem, isP
 
   return (
     <div
-      className="mx-4 mb-4 p-4 rounded-xl relative overflow-hidden flex-shrink-0"
+      className="mx-4 mb-3 px-3 py-2 rounded-xl relative overflow-hidden flex-shrink-0"
       style={{
         background: 'linear-gradient(135deg, var(--player-surface-bar) 0%, var(--player-surface-chip) 100%)',
-        border: '1px solid var(--quinary-muted)',
+        border: '1px solid color-mix(in srgb, var(--secondary) 30%, transparent)',
       }}
     >
-      {/* Warm inner glow */}
+      {/* Warm inner glow — secondary tint */}
       <div
         className="absolute pointer-events-none"
         style={{
@@ -414,16 +416,16 @@ function NowPlayingSection({ currentItem, currentTime, duration, removeItem, isP
           right: '-50%',
           width: '100%',
           height: '100%',
-          background: 'radial-gradient(circle, var(--quinary-muted) 0%, transparent 70%)',
-          opacity: 0.3,
+          background: 'radial-gradient(circle, color-mix(in srgb, var(--secondary) 15%, transparent) 0%, transparent 70%)',
+          opacity: 0.4,
         }}
       />
 
       {/* NOW PLAYING label + dismiss button */}
-      <div className="flex items-center justify-between mb-3 relative z-[1]">
+      <div className="flex items-center justify-between mb-1.5 relative z-[1]">
         <div
-          className="font-jb-mono text-[9.5px] font-semibold tracking-[0.14em] uppercase"
-          style={{ color: 'var(--quinary)' }}
+          className="font-jb-mono text-[9px] font-semibold tracking-[0.14em] uppercase"
+          style={{ color: 'var(--secondary)' }}
         >
           Now Playing
         </div>
@@ -448,20 +450,21 @@ function NowPlayingSection({ currentItem, currentTime, duration, removeItem, isP
         </button>
       </div>
 
-      {/* Multi-row content — matches SortableTrackRow layout */}
-      <div className="flex-1 min-w-0 relative z-[1] mb-3.5">
+      {/* Track info — compact */}
+      <div className="flex-1 min-w-0 relative z-[1] mb-2">
         <RecordingRow
           song={song}
+          size="sm"
           trackNumber={trackNumber}
         />
       </div>
 
-      {/* Transport controls — back / play-pause / next */}
-      <div className="flex items-center justify-center gap-5 relative z-[1] mb-3.5">
+      {/* Transport + progress — single row */}
+      <div className="flex items-center gap-2 relative z-[1]">
         {/* Previous */}
         <button
           onClick={(e) => { e.stopPropagation(); playPrev(); }}
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
           style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = 'var(--text-primary)';
@@ -481,19 +484,19 @@ function NowPlayingSection({ currentItem, currentTime, duration, removeItem, isP
         {/* Play / Pause */}
         <button
           onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-          className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
           style={{
             color: 'var(--text-primary)',
-            background: 'color-mix(in srgb, var(--quinary) 20%, transparent)',
-            border: '1.5px solid color-mix(in srgb, var(--quinary) 40%, transparent)',
+            background: 'color-mix(in srgb, var(--secondary) 20%, transparent)',
+            border: '1.5px solid color-mix(in srgb, var(--secondary) 40%, transparent)',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'color-mix(in srgb, var(--quinary) 35%, transparent)';
-            e.currentTarget.style.borderColor = 'var(--quinary)';
+            e.currentTarget.style.background = 'color-mix(in srgb, var(--secondary) 35%, transparent)';
+            e.currentTarget.style.borderColor = 'var(--secondary)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'color-mix(in srgb, var(--quinary) 20%, transparent)';
-            e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--quinary) 40%, transparent)';
+            e.currentTarget.style.background = 'color-mix(in srgb, var(--secondary) 20%, transparent)';
+            e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--secondary) 40%, transparent)';
           }}
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
@@ -511,7 +514,7 @@ function NowPlayingSection({ currentItem, currentTime, duration, removeItem, isP
         {/* Next */}
         <button
           onClick={(e) => { e.stopPropagation(); playNext(); }}
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
           style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = 'var(--text-primary)';
@@ -527,11 +530,9 @@ function NowPlayingSection({ currentItem, currentTime, duration, removeItem, isP
             <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
           </svg>
         </button>
-      </div>
 
-      {/* Mini progress bar */}
-      <div className="flex items-center gap-2.5 relative z-[1]">
-        <span className="font-jb-mono text-[11px] min-w-[34px]" style={{ color: 'var(--text-tertiary)' }}>
+        {/* Progress bar + times inline */}
+        <span className="font-jb-mono text-[10px] flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
           {formatDuration(Math.floor(currentTime))}
         </span>
         <div
@@ -542,7 +543,7 @@ function NowPlayingSection({ currentItem, currentTime, duration, removeItem, isP
             className="absolute left-0 top-0 h-full rounded-sm"
             style={{
               width: `${progress}%`,
-              background: 'linear-gradient(90deg, var(--quinary), var(--secondary))',
+              background: 'var(--secondary)',
             }}
           />
           <div
@@ -550,14 +551,14 @@ function NowPlayingSection({ currentItem, currentTime, duration, removeItem, isP
             style={{
               left: `${progress}%`,
               transform: 'translate(-50%, -50%)',
-              width: '8px',
-              height: '8px',
-              background: 'var(--quinary)',
-              boxShadow: '0 0 6px color-mix(in srgb, var(--quinary) 40%, transparent)',
+              width: '6px',
+              height: '6px',
+              background: 'var(--secondary)',
+              boxShadow: '0 0 6px color-mix(in srgb, var(--secondary) 40%, transparent)',
             }}
           />
         </div>
-        <span className="font-jb-mono text-[11px] min-w-[34px] text-right" style={{ color: 'var(--text-tertiary)' }}>
+        <span className="font-jb-mono text-[10px] flex-shrink-0 text-right" style={{ color: 'var(--text-tertiary)' }}>
           {formatDuration(Math.floor(duration))}
         </span>
       </div>

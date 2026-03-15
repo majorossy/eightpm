@@ -48,7 +48,7 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
       className="relative w-full rounded-lg overflow-hidden transition-shadow"
       style={{
         ...(tintStyle && !blank ? tintStyle : tintIndex != null && !blank ? getCassetteTint(tintIndex) : {}),
-        aspectRatio: '4 / 2.6',
+        aspectRatio: '320 / 210',
         background: blank
           ? 'linear-gradient(180deg, #e8e4de 0%, #d8d4cc 50%, #ccc8c0 100%)'
           : 'var(--cassette-body)',
@@ -102,8 +102,8 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
           )}
 
           {blank ? (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-[13px] italic" style={{ color: 'var(--cassette-label-muted)' }}>
+            <div className="flex-1 relative">
+              <p className="absolute bottom-0 right-1 text-[13px] italic" style={{ color: 'var(--cassette-label-muted)' }}>
                 Blank tape
               </p>
             </div>
@@ -155,18 +155,6 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
                   {artistName}
                 </p>
               </div>
-              {coverArt && (
-                <div className="relative w-20 h-20 flex-shrink-0" style={{ transform: 'rotate(5deg)', marginTop: '-10px', marginRight: '-6px' }}>
-                  <Image
-                    src={coverArt}
-                    alt=""
-                    fill
-                    sizes="80px"
-                    className="object-cover rounded-[1px]"
-                    style={{ border: '2px solid white', boxShadow: '0 3px 10px rgba(0,0,0,0.35)' }}
-                  />
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -198,6 +186,27 @@ export default function MiniCassette({ name, albumName, artistName, coverArt, se
           <div className="w-2 h-2 rounded-full" style={{ background: blank ? '#b8b4ac' : 'var(--cassette-window)', border: blank ? '1px solid #a8a4a0' : '1px solid var(--cassette-border)' }} />
         </div>
       </div>
+
+      {/* Album art photo taped to cassette */}
+      {blank && coverArt && (
+        <>
+          <div className="absolute top-2 left-2 z-10" style={{ transform: 'rotate(-4deg)', transformOrigin: 'top left' }}>
+            <div className="relative w-[7rem] h-[7rem]">
+              <Image
+                src={coverArt}
+                alt=""
+                fill
+                sizes="112px"
+                className="object-cover rounded-[1px]"
+                style={{ border: '2px solid white', boxShadow: '0 3px 10px rgba(0,0,0,0.35)' }}
+              />
+            </div>
+          </div>
+          {/* Tape strips */}
+          <div className="absolute top-2 left-10 z-20 w-10 h-2.5 rounded-[1px] opacity-60" style={{ background: 'linear-gradient(180deg, rgba(200,190,140,0.5) 0%, rgba(200,190,140,0.3) 100%)', transform: 'rotate(-8deg)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.1)' }} />
+          <div className="absolute top-[5rem] left-1 z-20 w-10 h-2.5 rounded-[1px] opacity-60" style={{ background: 'linear-gradient(180deg, rgba(200,190,140,0.5) 0%, rgba(200,190,140,0.3) 100%)', transform: 'rotate(5deg)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.1)' }} />
+        </>
+      )}
     </div>
   );
 }

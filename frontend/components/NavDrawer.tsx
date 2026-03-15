@@ -115,11 +115,12 @@ export default function NavDrawer() {
 
         <Dialog.Content asChild>
           <aside
-            className={`fixed z-50 left-0 top-0 bottom-0 flex flex-col ${
+            className={`fixed z-50 left-0 top-0 flex flex-col ${
               isMobile
-                ? 'w-[280px] bg-gradient-to-b from-border to-surface-base safe-top safe-bottom'
-                : 'w-72 bg-surface-base border-r border-default'
+                ? 'w-[280px] bg-gradient-to-b from-border to-surface-base safe-top'
+                : 'w-72 bg-surface-base border-r border-default bottom-0'
             }`}
+            style={isMobile ? { bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' } : undefined}
             aria-label="Navigation menu"
           >
             {/* Header */}

@@ -93,7 +93,7 @@ export const CassetteTape = memo(function CassetteTape({
   const year = album.showDate?.split('-')[0] || '';
 
   return (
-    <div className="relative w-full max-w-[680px] mx-auto transition-[background] duration-300" style={tintStyle ? tintStyle as React.CSSProperties : tintIndex != null ? getCassetteTint(tintIndex) as React.CSSProperties : undefined}>
+    <div className="relative w-full transition-[background] duration-300" style={tintStyle ? tintStyle as React.CSSProperties : tintIndex != null ? getCassetteTint(tintIndex) as React.CSSProperties : undefined}>
       {/* Main cassette shell */}
       <div className="tape-shell">
         {/* Corner screws */}

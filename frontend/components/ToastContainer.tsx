@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useContext } from 'react';
+import Link from 'next/link';
 import { Toast, ToastContext, useToastState } from '@/hooks/useToast';
 
 // Inline SVG icons (matching app style - no external icon library)
@@ -123,6 +124,18 @@ function ToastItem({
         style={custom ? { color: custom.text } : styles.colorStyle}
       >
         {toast.message}
+        {custom?.link && (
+          <>
+            {' '}
+            <Link
+              href={custom.link.href}
+              className="underline font-medium hover:brightness-125 transition-all"
+              style={{ color: custom.icon ?? custom.text }}
+            >
+              {custom.link.label}
+            </Link>
+          </>
+        )}
       </p>
 
       {/* Dismiss button */}

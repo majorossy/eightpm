@@ -25,6 +25,7 @@ export interface MagentoCategory {
   band_origin_location?: string;
   band_years_active?: string;
   band_extended_bio?: string;
+  band_short_name?: string;
   band_image_url?: string;
   band_genres?: string;
   band_official_website?: string;
@@ -217,6 +218,7 @@ export function categoryToArtist(category: MagentoCategory): Artist {
     id: category.uid,
     name: category.name,
     slug: category.url_key,
+    shortName: category.band_short_name || undefined,
     image: getCategoryImageUrl(category.url_key),
     bio: category.description || '',
     songCount: category.product_count || 0,

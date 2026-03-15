@@ -29,6 +29,10 @@ export interface QueueChipProps {
   compact?: boolean;
   /** Glow type to apply (swap=purple, play-next=coral, queued=gold), null=none */
   glowType?: ChipGlowType | null;
+  /** Ref for the drag handle activator node (from useSortable) */
+  dragHandleRef?: React.Ref<HTMLButtonElement>;
+  /** Props (attributes + listeners) to spread on the drag handle */
+  dragHandleProps?: Record<string, unknown>;
 }
 
 export default function QueueChip({
@@ -45,6 +49,8 @@ export default function QueueChip({
   inSortable,
   compact,
   glowType,
+  dragHandleRef,
+  dragHandleProps,
 }: QueueChipProps) {
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const modalClosedAtRef = useRef(0);
@@ -146,14 +152,33 @@ export default function QueueChip({
 
         {/* Drag grip — 2x3 dot grid on left edge, hidden when active (EQ bars replace it) */}
         {!isPlayed && !isActive && (
-          <div className="absolute top-1/2 left-[5px] -translate-y-1/2 grid grid-cols-2 gap-[3px] opacity-30 group-hover/chip:opacity-50 transition-opacity">
-            <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
-            <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
-            <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
-            <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
-            <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
-            <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
-          </div>
+          dragHandleRef ? (
+            <button
+              ref={dragHandleRef}
+              {...(dragHandleProps || {})}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute left-0 top-0 bottom-0 w-[16px] flex items-center justify-center touch-none cursor-grab active:cursor-grabbing z-[1]"
+              aria-label="Drag to reorder"
+            >
+              <span className="grid grid-cols-2 gap-[3px] opacity-30 group-hover/chip:opacity-50 transition-opacity pointer-events-none">
+                <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+                <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+                <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+                <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+                <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+                <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+              </span>
+            </button>
+          ) : (
+            <div className="absolute top-1/2 left-[5px] -translate-y-1/2 grid grid-cols-2 gap-[3px] opacity-30 group-hover/chip:opacity-50 transition-opacity">
+              <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+              <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+              <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+              <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+              <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+              <span className="w-[3px] h-[3px] rounded-full bg-[var(--quinary)]" />
+            </div>
+          )
         )}
 
         {/* Remove button — visible on active card or hover; disabled in compact mode to prevent accidental taps */}

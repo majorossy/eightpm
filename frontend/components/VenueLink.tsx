@@ -28,6 +28,7 @@ export default function VenueLink({ venueName, slug, className, truncateLength }
   return (
     <Link
       href={`/venues/${resolvedSlug}`}
+      onClick={(e) => e.stopPropagation()}
       className={className || 'hover:underline'}
       title={venueName}
     >

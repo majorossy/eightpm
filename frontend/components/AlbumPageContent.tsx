@@ -26,7 +26,7 @@ import { resolveCassetteTint } from '@/lib/cassetteColors';
 import { getCassetteBrand } from '@/lib/cassetteBrands';
 import OldCassette from '@/components/OldCassette';
 import NewCassette from '@/components/NewCassette';
-import BestCassette from '@/components/BestCassette';
+import RatingsCassette from '@/components/RatingsCassette';
 import {
   VIRTUAL_BEST_ID, VIRTUAL_OLDEST_ID, VIRTUAL_NEWEST_ID,
   VIRTUAL_BEST_NAME, VIRTUAL_OLDEST_NAME, VIRTUAL_NEWEST_NAME,
@@ -123,11 +123,11 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: album.artistName, href: `/artists/${album.artistSlug}`, type: 'artist' },
+      { label: album.artistName, shortLabel: artist?.shortName, href: `/artists/${album.artistSlug}`, type: 'artist' },
       { label: album.name, type: 'album' }
     ]);
     return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs, album.artistName, album.artistSlug, album.name]);
+  }, [setBreadcrumbs, album.artistName, album.artistSlug, album.name, artist?.shortName]);
 
   // Track album page view (once per mount)
   useEffect(() => {
@@ -189,18 +189,14 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
         icon: 'var(--tertiary)',
       });
     } else {
-      const sd = album.showDate?.split('-');
-      const datePart = sd?.length === 3 ? `${sd[1]}/${sd[2]}/${sd[0].slice(2)} ` : '';
-      setCassetteName(`${datePart}${album.name}`.slice(0, 33));
+      setCassetteName(`My Mix ${savedCassettes.length + 1}`);
       setIsNaming(true);
       setTimeout(() => nameInputRef.current?.select(), 0);
     }
   };
 
   const confirmSaveCassette = () => {
-    const sd2 = album.showDate?.split('-');
-    const dateFallback = sd2?.length === 3 ? `${sd2[1]}/${sd2[2]}/${sd2[0].slice(2)} ` : '';
-    const name = cassetteName.trim() || `${dateFallback}${album.name}`.slice(0, 33);
+    const name = cassetteName.trim() || `My Mix ${savedCassettes.length + 1}`;
     const overrides = getOverridesMap();
     const overridesObj: Record<string, string> = {};
     overrides.forEach((songId, trackId) => { overridesObj[trackId] = songId; });
@@ -359,12 +355,53 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       <div className="firefly-2 fixed top-[60%] left-[85%] w-1 h-1" />
       <div className="firefly-3 fixed top-[40%] left-[75%] w-1.5 h-1.5" />
 
-      {/* My Cassettes — wider than main column for 15% larger tapes */}
-      <div className="max-w-[850px] mx-auto px-4 sm:px-8 pt-8">
+      {/* My Cassettes */}
+      <div className="max-w-[850px] lg:max-w-[1100px] mx-auto px-4 sm:px-8 pt-8">
         <div className="w-full mt-2 mb-6">
             <div className="text-[var(--text-subdued)] text-[10px] tracking-[2px] uppercase mb-3 text-center">
               My Cassettes
             </div>
+            {/* Virtual cassettes — own row, larger */}
+            {showVirtualCassettes && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+                <button
+                  onClick={() => handleLoadVirtualCassette(VIRTUAL_OLDEST_ID)}
+                  className="w-full text-left transition-transform hover:scale-[1.02]"
+                >
+                  <OldCassette
+                    name={VIRTUAL_OLDEST_NAME}
+                    albumName={album.name}
+                    artistName={album.artistName}
+                    selected={selectedCassetteId === VIRTUAL_OLDEST_ID}
+                  />
+                </button>
+                <button
+                  onClick={() => handleLoadVirtualCassette(VIRTUAL_BEST_ID)}
+                  className="w-full text-left transition-transform hover:scale-[1.02]"
+                >
+                  <RatingsCassette
+                    name={VIRTUAL_BEST_NAME}
+                    albumName={album.name}
+                    artistName={album.artistName}
+                    selected={selectedCassetteId === VIRTUAL_BEST_ID}
+                    versionCount={album.totalSongs}
+                  />
+                </button>
+                <button
+                  onClick={() => handleLoadVirtualCassette(VIRTUAL_NEWEST_ID)}
+                  className="w-full text-left transition-transform hover:scale-[1.02]"
+                >
+                  <NewCassette
+                    name={VIRTUAL_NEWEST_NAME}
+                    albumName={album.name}
+                    artistName={album.artistName}
+                    selected={selectedCassetteId === VIRTUAL_NEWEST_ID}
+                    pickCount={Object.keys(newestOverrides).length}
+                  />
+                </button>
+              </div>
+            )}
+            {/* User cassettes */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {/* Blank tape — clears all version selections */}
               <button
@@ -380,55 +417,10 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                   albumName=""
                   artistName=""
                   blank
+                  coverArt={album.coverArt}
                   selected={selectedCassetteId === null}
                 />
               </button>
-              {/* Virtual cassettes — computed auto-mixes */}
-              {showVirtualCassettes && (
-                <>
-                  <button
-                    onClick={() => handleLoadVirtualCassette(VIRTUAL_BEST_ID)}
-                    className="w-full text-left transition-transform hover:scale-[1.02]"
-                  >
-                    <BestCassette
-                      name={VIRTUAL_BEST_NAME}
-                      albumName={album.name}
-                      artistName={album.artistName}
-                      showVenue={album.showVenue}
-                      selected={selectedCassetteId === VIRTUAL_BEST_ID}
-                      versionCount={album.totalSongs}
-                    />
-                  </button>
-                  <button
-                    onClick={() => handleLoadVirtualCassette(VIRTUAL_NEWEST_ID)}
-                    className="w-full text-left transition-transform hover:scale-[1.02]"
-                  >
-                    <NewCassette
-                      name={VIRTUAL_NEWEST_NAME}
-                      albumName={album.name}
-                      artistName={album.artistName}
-                      showVenue={album.showVenue}
-                      showDate={album.showDate}
-                      selected={selectedCassetteId === VIRTUAL_NEWEST_ID}
-                      pickCount={Object.keys(newestOverrides).length}
-                    />
-                  </button>
-                  <button
-                    onClick={() => handleLoadVirtualCassette(VIRTUAL_OLDEST_ID)}
-                    className="w-full text-left transition-transform hover:scale-[1.02]"
-                  >
-                    <OldCassette
-                      name={VIRTUAL_OLDEST_NAME}
-                      albumName={album.name}
-                      artistName={album.artistName}
-                      showVenue={album.showVenue}
-                      showDate={album.showDate}
-                      selected={selectedCassetteId === VIRTUAL_OLDEST_ID}
-                      pickCount={Object.keys(oldestOverrides).length}
-                    />
-                  </button>
-                </>
-              )}
               {/* User-saved cassettes */}
               {savedCassettes.map((c, i) => {
                 const picks = Object.keys(c.versionOverrides).length;
@@ -443,7 +435,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                         albumName={c.albumName}
                         artistName={c.artistName}
                         showDate={c.showDate}
-                        coverArt={c.coverArt}
                         selected={selectedCassetteId === c.id}
                         pickCount={picks}
                         tintStyle={resolveCassetteTint({ ...c, colorIndex: c.colorIndex ?? i })}
@@ -520,7 +511,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       </div>
 
       {/* Single-column centered layout */}
-      <div className="max-w-[740px] mx-auto px-4 sm:px-8 flex flex-col items-center">
+      <div className="max-w-[740px] md:max-w-[900px] lg:max-w-[1060px] mx-auto px-[2%] sm:px-0 flex flex-col items-center">
 
         {/* Action buttons row */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
@@ -606,7 +597,8 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
           </button>
         </div>
 
-        {/* Cassette shell with tracks inside */}
+        {/* Cassette shell with tracks inside — negative margin cancels parent px-4 on mobile */}
+        <div className="w-full -mx-4 sm:mx-0">
         <CassetteTape
           album={album}
           isPlaying={albumIsPlaying}
@@ -639,6 +631,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
             );
           })}
         </CassetteTape>
+        </div>
 
         {/* Album description quote */}
         {album.description && (
@@ -740,7 +733,6 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
                       name={sc.name || ''}
                       albumName={sc.album_name || ''}
                       artistName={sc.artist_name || ''}
-                      coverArt={sc.cover_art || undefined}
                       selected={isLoaded}
                       pickCount={picks}
                       tintStyle={resolveCassetteTint({ colorIndex: sc.color_index ?? 0, colorHex: sc.color_hex ?? undefined, colorBrand: sc.color_brand ?? undefined })}

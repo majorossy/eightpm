@@ -23,6 +23,7 @@ artist:
   name: "Goose"
   collection_id: "GooseBand"
   url_key: "goose"
+  short_name: "Goose"
 
 # ========================================
 # ALBUMS SECTION

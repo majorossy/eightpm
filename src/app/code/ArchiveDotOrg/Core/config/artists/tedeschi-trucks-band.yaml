@@ -23,6 +23,7 @@ artist:
   name: "Tedeschi Trucks Band"
   collection_id: "TedeschiTrucksBand"
   url_key: "tedeschi-trucks-band"
+  short_name: "TTB"
 
 # ========================================
 # ALBUMS SECTION

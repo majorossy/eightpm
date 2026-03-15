@@ -23,6 +23,7 @@ artist:
   name: "The String Cheese Incident"
   collection_id: "TheStringCheeseIncident"
   url_key: "the-string-cheese-incident"
+  short_name: "SCI"
 
 # ========================================
 # ALBUMS SECTION

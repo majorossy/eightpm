@@ -121,9 +121,7 @@
 }
 
 .artist-name-hover:hover {
-  background: linear-gradient(180deg, var(--quinary) 0%, var(--secondary) 50%, color-mix(in srgb, var(--quinary) 60%, black) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-text-fill-color: #f0e040;
+  color: #f0e040;
   filter: drop-shadow(0 2px 2px color-mix(in srgb, black 30%, transparent));
 }

@@ -186,13 +186,21 @@ class SetupArtistCommand extends Command
             // Get Artists container category ID
             $artistsContainerId = $this->getArtistsContainerId();
 
+            // Build custom attributes from YAML config
+            $customAttributes = [];
+            if (!empty($artistConfig['short_name'])) {
+                $customAttributes['band_short_name'] = $artistConfig['short_name'];
+            }
+
             // 1. Create/find artist category
             $artistCategory = $this->findOrCreateCategory(
                 $artistConfig['name'],
                 $artistConfig['url_key'] ?? $artistKey,
                 $artistsContainerId,
                 $output,
-                $dryRun
+                $dryRun,
+                '  ',
+                $customAttributes
             );
 
             if (!$artistCategory) {
@@ -250,7 +258,8 @@ class SetupArtistCommand extends Command
         int $parentId,
         OutputInterface $output,
         bool $dryRun,
-        string $indent = '  '
+        string $indent = '  ',
+        array $customAttributes = []
     ): ?Category {
         // Check if category already exists
         $collection = $this->categoryCollectionFactory->create();
@@ -259,9 +268,26 @@ class SetupArtistCommand extends Command
                    ->setPageSize(1);
 
         if ($collection->getSize() > 0) {
-            $this->categoriesSkipped++;
-            $output->writeln($indent . '<comment>⊘ Skipped (exists): ' . $name . '</comment>');
-            return $collection->getFirstItem();
+            $category = $collection->getFirstItem();
+
+            // Update custom attributes if values differ
+            $updated = false;
+            foreach ($customAttributes as $attrCode => $attrValue) {
+                if ($category->getData($attrCode) !== $attrValue) {
+                    $category->setData($attrCode, $attrValue);
+                    $updated = true;
+                }
+            }
+
+            if ($updated && !$dryRun) {
+                $this->categoryRepository->save($category);
+                $output->writeln($indent . '<info>↻ Updated attributes: ' . $name . '</info>');
+            } else {
+                $this->categoriesSkipped++;
+                $output->writeln($indent . '<comment>⊘ Skipped (exists): ' . $name . '</comment>');
+            }
+
+            return $category;
         }
 
         // Create new category
@@ -278,6 +304,10 @@ class SetupArtistCommand extends Command
                  ->setIsActive(true)
                  ->setIncludeInMenu(true)
                  ->setAttributeSetId($category->getDefaultAttributeSetId());
+
+        foreach ($customAttributes as $attrCode => $attrValue) {
+            $category->setData($attrCode, $attrValue);
+        }
 
         $category = $this->categoryRepository->save($category);
         $this->categoriesCreated++;

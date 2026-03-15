@@ -6,28 +6,15 @@ interface OldCassetteProps {
   name: string;
   albumName: string;
   artistName: string;
-  showVenue?: string;
-  showDate?: string;
   selected?: boolean;
-  pickCount?: number;
 }
 
 function truncate(s: string, max: number): string {
   return s.length > max ? s.slice(0, max - 1) + '\u2026' : s;
 }
 
-function formatDate(d?: string): string {
-  if (!d) return '';
-  const parts = d.split('-');
-  if (parts.length !== 3) return d;
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${months[parseInt(parts[1], 10) - 1]} ${parseInt(parts[2], 10)}, ${parts[0]}`;
-}
-
-export default function OldCassette({ name, albumName, artistName, showVenue, showDate, selected, pickCount }: OldCassetteProps) {
+export default function OldCassette({ name, albumName, artistName, selected }: OldCassetteProps) {
   const uid = useId().replace(/:/g, '');
-  const date = formatDate(showDate);
-  const picks = pickCount != null && pickCount > 0 ? `${pickCount} pick${pickCount !== 1 ? 's' : ''}` : '';
 
   return (
     <div
@@ -95,28 +82,12 @@ export default function OldCassette({ name, albumName, artistName, showVenue, sh
           <text x="8" y="22" fontFamily="var(--font-caveat), cursive" fontSize="26" fontWeight="700" fill="#1a0e04" transform="rotate(-0.5,8,22)">
             {truncate(name, 22)}
           </text>
-          <text x="9" y="40" fontFamily="var(--font-caveat), cursive" fontSize="16" fill="#3a2810">
-            {truncate(showVenue || albumName, 28)}
+          <text x="9" y="42" fontFamily="var(--font-caveat), cursive" fontSize="19" fill="#3a2810">
+            {truncate(albumName, 24)}
           </text>
-          <text x="9" y="56" fontFamily="var(--font-caveat), cursive" fontSize="16" fill="#3a2810" fontStyle="italic">
-            {truncate(artistName, 22)}
+          <text x="9" y="60" fontFamily="var(--font-caveat), cursive" fontSize="19" fill="#3a2810" fontStyle="italic">
+            {truncate(artistName, 20)}
           </text>
-          {date && (
-            <>
-              <text x="8" y="74" fontFamily="var(--font-caveat), cursive" fontSize="14" fill="#5a3a10" transform="rotate(0.8,8,74)">
-                {date}
-              </text>
-              <line x1="8" y1="76" x2={8 + date.length * 5.5} y2="75" stroke="#5a3a10" strokeWidth="0.8" opacity="0.5"/>
-            </>
-          )}
-          <text x="8" y="86" fontFamily="var(--font-caveat), cursive" fontSize="12" fill="#7a5020">aud tape</text>
-
-          {/* Picks annotation */}
-          {picks && (
-            <text x="175" y="50" fontFamily="var(--font-caveat), cursive" fontSize="12" fill="#5a3a10" transform="rotate(1.5,175,50)">
-              {picks}
-            </text>
-          )}
 
           {/* Peeling corner bottom-right */}
           <path d="M210,75 Q240,72 265,68 L276,90 Q255,95 220,92 Z" fill="#c8b870" stroke="rgba(100,70,0,0.3)" strokeWidth="0.5"/>

@@ -27,6 +27,7 @@ const GET_ARTISTS_QUERY = `
         image
         product_count
         children_count
+        band_short_name
         band_total_shows
         band_most_played_track
         band_formation_date
@@ -47,6 +48,7 @@ const GET_ARTIST_BY_SLUG_QUERY = `
       description
       image
       product_count
+      band_short_name
       band_formation_date
       band_origin_location
       band_years_active

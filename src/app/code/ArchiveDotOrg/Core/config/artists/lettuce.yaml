@@ -23,6 +23,7 @@ artist:
   name: "Lettuce"
   collection_id: "Lettuce"
   url_key: "lettuce"
+  short_name: "LET"
 
 # ========================================
 # ALBUMS SECTION

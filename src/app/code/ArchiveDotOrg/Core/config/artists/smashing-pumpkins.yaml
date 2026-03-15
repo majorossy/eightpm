@@ -23,6 +23,7 @@ artist:
   name: "Smashing Pumpkins"
   collection_id: "SmashingPumpkins"
   url_key: "smashing-pumpkins"
+  short_name: "Pumpkins"
 
 # ========================================
 # ALBUMS SECTION

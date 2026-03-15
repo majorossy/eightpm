@@ -23,6 +23,7 @@ artist:
   name: "Grateful Dead"
   collection_id: "GratefulDead"
   url_key: "grateful-dead"
+  short_name: "GD"
 
 # ========================================
 # ALBUMS SECTION

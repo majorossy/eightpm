@@ -23,6 +23,7 @@ artist:
   name: "RatDog"
   collection_id: "Ratdog"
   url_key: "ratdog"
+  short_name: "Ratdog"
 
 # ========================================
 # ALBUMS SECTION

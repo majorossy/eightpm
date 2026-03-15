@@ -9,6 +9,7 @@ export interface ToastStyle {
   border?: string;
   text?: string;
   icon?: string;
+  link?: { href: string; label: string };
 }
 
 export interface Toast {

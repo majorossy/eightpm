@@ -23,6 +23,7 @@ artist:
   name: "Tea Leaf Green"
   collection_id: "TeaLeafGreen"
   url_key: "tea-leaf-green"
+  short_name: "TLG"
 
 # ========================================
 # ALBUMS SECTION

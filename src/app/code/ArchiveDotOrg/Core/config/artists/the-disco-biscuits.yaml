@@ -23,6 +23,7 @@ artist:
   name: "The Disco Biscuits"
   collection_id: "TheDiscoBiscuits"
   url_key: "the-disco-biscuits"
+  short_name: "TDB"
 
 # ========================================
 # ALBUMS SECTION

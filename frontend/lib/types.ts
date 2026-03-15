@@ -120,6 +120,7 @@ export interface Artist {
   id: string;                    // Magento category uid
   name: string;                  // category.name
   slug: string;                  // category.url_key
+  shortName?: string;            // band_short_name (e.g., GD, RRE, SCI)
   image: string;                 // category.image
   bio: string;                   // custom attribute: description
   songCount?: number;            // product_count (total recordings)

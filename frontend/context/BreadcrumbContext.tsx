@@ -6,6 +6,7 @@ export type BreadcrumbType = 'artist' | 'album' | 'track' | 'version' | 'library
 
 export interface BreadcrumbItem {
   label: string;
+  shortLabel?: string;
   href?: string;
   type?: BreadcrumbType;
 }

@@ -131,6 +131,7 @@ export default function Breadcrumb() {
           const isLast = index === breadcrumbs.length - 1;
           const prefix = getTypePrefix(crumb.type);
           const displayLabel = prefix + crumb.label;
+          const hasShortLabel = !!crumb.shortLabel;
 
           return (
             <li key={index} className="flex items-center min-w-0 self-center">
@@ -156,7 +157,12 @@ export default function Breadcrumb() {
                   title={displayLabel}
                 >
                   {prefix && <span className="text-[var(--text-subdued)]">{prefix}</span>}
-                  {crumb.label}
+                  {hasShortLabel ? (
+                    <>
+                      <span className="lg:hidden">{crumb.shortLabel}</span>
+                      <span className="hidden lg:inline">{crumb.label}</span>
+                    </>
+                  ) : crumb.label}
                 </span>
               ) : (
                 // Clickable link
@@ -166,7 +172,12 @@ export default function Breadcrumb() {
                   title={displayLabel}
                 >
                   {prefix && <span className="text-[var(--text-subdued)]">{prefix}</span>}
-                  {crumb.label}
+                  {hasShortLabel ? (
+                    <>
+                      <span className="lg:hidden">{crumb.shortLabel}</span>
+                      <span className="hidden lg:inline">{crumb.label}</span>
+                    </>
+                  ) : crumb.label}
                 </Link>
               )}
             </li>

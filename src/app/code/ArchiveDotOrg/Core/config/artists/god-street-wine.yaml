@@ -23,6 +23,7 @@ artist:
   name: "God Street Wine"
   collection_id: "GodStreetWine"
   url_key: "god-street-wine"
+  short_name: "GSW"
 
 # ========================================
 # ALBUMS SECTION

@@ -23,6 +23,7 @@ artist:
   name: "My Morning Jacket"
   collection_id: "MyMorningJacket"
   url_key: "my-morning-jacket"
+  short_name: "MMJ"
 
 # ========================================
 # ALBUMS SECTION

@@ -23,6 +23,7 @@ artist:
   name: "Phish"
   collection_id: "Phish"
   url_key: "phish"
+  short_name: "PHISH"
 
 # ========================================
 # ALBUMS SECTION

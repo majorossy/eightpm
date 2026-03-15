@@ -23,6 +23,7 @@ artist:
   name: "Max Creek"
   collection_id: "MaxCreek"
   url_key: "max-creek"
+  short_name: "max-creek"
 
 # ========================================
 # ALBUMS SECTION

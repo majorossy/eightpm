@@ -23,6 +23,7 @@ artist:
   name: "John Mayer"
   collection_id: "JohnMayerMusic"
   url_key: "john-mayer"
+  short_name: "Mayer"
 
 # ========================================
 # ALBUMS SECTION

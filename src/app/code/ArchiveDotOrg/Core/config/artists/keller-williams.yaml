@@ -23,6 +23,7 @@ artist:
   name: "Keller Williams"
   collection_id: "KellerWilliams"
   url_key: "keller-williams"
+  short_name: "Keller"
 
 # ========================================
 # ALBUMS SECTION

@@ -23,6 +23,7 @@ artist:
   name: "STS9"
   collection_id: "STS9"
   url_key: "sts9"
+  short_name: "STS9"
 
 # ========================================
 # ALBUMS SECTION

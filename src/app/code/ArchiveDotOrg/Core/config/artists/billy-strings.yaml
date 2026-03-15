@@ -23,6 +23,7 @@ artist:
   name: "Billy Strings"
   collection_id: "BillyStrings"
   url_key: "billy-strings"
+  short_name: "Billy"
 
 # ========================================
 # ALBUMS SECTION

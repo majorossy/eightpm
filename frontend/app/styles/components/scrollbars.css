@@ -3,6 +3,11 @@
    Custom scrollbars, thin scrollbars, hidden scrollbars
    ======================================== */
 
+/* Global scrollbar — secondary color thumb */
+html {
+  scrollbar-color: var(--secondary) var(--bg);
+}
+
 /* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 8px;
@@ -14,12 +19,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-elevated);
+  background: var(--secondary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary);
+  background: color-mix(in srgb, var(--secondary) 80%, white);
 }
 
 /* Recording scroll container */

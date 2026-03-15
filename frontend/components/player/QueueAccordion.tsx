@@ -56,7 +56,7 @@ interface StripGroup {
 const COLLAPSED_W = 94;
 const COLLAPSED_W_COMPACT = 71;
 const CHIP_STRIDE = 345; // 337px chip + 8px gap
-const CHIP_STRIDE_COMPACT = 238; // 230px chip + 8px gap
+const CHIP_STRIDE_COMPACT = 242; // 230px chip + 12px gap
 
 // ─── Props ───────────────────────────────────────────────────────────
 
@@ -503,7 +503,7 @@ export default function QueueAccordion({
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
-          <div ref={scrollContainerRef} className="relative z-[2] flex gap-2 overflow-x-auto queue-scrollbar pb-1 pt-6 items-center">
+          <div ref={scrollContainerRef} className={`relative z-[2] flex ${compact ? 'gap-3' : 'gap-2'} overflow-x-auto queue-scrollbar pb-1 pt-6 items-center`}>
             {/* History toggle button — temporarily hidden */}
             {/* {historyChips.length > 0 && (
               <HistoryToggleButton
@@ -518,7 +518,7 @@ export default function QueueAccordion({
             {historyChips.length > 0 && (
               <div
                 ref={historyContainerRef}
-                className="flex gap-2 items-center flex-shrink-0 overflow-hidden"
+                className={`flex ${compact ? 'gap-3' : 'gap-2'} items-center flex-shrink-0 overflow-hidden`}
                 style={{
                   maxWidth: historyOpen ? `${historyChips.length * CHIP_STRIDE + 40}px` : '0px',
                   opacity: historyOpen ? 1 : 0,
@@ -822,7 +822,7 @@ function AlbumGroupSection({
 
       {/* Expanded chips section */}
       {isExpanded && (
-        <div className={`flex gap-2 ${compact ? 'pl-1.5 items-center' : 'pl-2 py-1.5 items-center'}`}>
+        <div className={`flex ${compact ? 'gap-3 pl-1.5 items-center' : 'gap-2 pl-2 py-1.5 items-center'}`}>
           {group.chips.map((chipEntry) => {
             const globalIdx = chipGlobalIndexMap.get(chipEntry.item.queueId) ?? -1;
             const isActive = !chipEntry.isPlayed && globalIdx === playedCount;

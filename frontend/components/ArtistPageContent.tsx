@@ -38,9 +38,9 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
   const isFollowed = isArtistFollowed(artist.slug);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: artist.name, type: 'artist' }]);
+    setBreadcrumbs([{ label: artist.name, shortLabel: artist.shortName, type: 'artist' }]);
     return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs, artist.name]);
+  }, [setBreadcrumbs, artist.name, artist.shortName]);
 
   // Track artist page view (once per mount)
   useEffect(() => {

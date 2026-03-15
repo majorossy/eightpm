@@ -31,11 +31,12 @@ export function AddToMiniDiscModal({ isOpen, onClose, song, onAdded }: AddToMini
     addToMiniDisc(id, song);
     onClose();
     onAdded?.();
-    toast.showSuccess(`Added to MiniDisc ${disc?.name ?? ''}`.trimEnd(), {
+    toast.showSuccess('Added to', {
       bg: 'color-mix(in srgb, var(--action-frame) 12%, transparent)',
       border: 'color-mix(in srgb, var(--action-frame) 25%, transparent)',
       text: 'var(--cream)',
       icon: 'var(--action-frame)',
+      link: { href: `/my-library/minidiscs/${id}`, label: disc?.name ?? 'MiniDisc' },
     });
   };
 
@@ -51,11 +52,12 @@ export function AddToMiniDiscModal({ isOpen, onClose, song, onAdded }: AddToMini
     setShowCreateForm(false);
     onClose();
     onAdded?.();
-    toast.showSuccess(`Added to MiniDisc ${discName}`, {
+    toast.showSuccess('Added to', {
       bg: 'color-mix(in srgb, var(--action-frame) 12%, transparent)',
       border: 'color-mix(in srgb, var(--action-frame) 25%, transparent)',
       text: 'var(--cream)',
       icon: 'var(--action-frame)',
+      link: { href: `/my-library/minidiscs/${disc.id}`, label: discName },
     });
   };
 

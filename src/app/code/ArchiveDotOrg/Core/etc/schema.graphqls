@@ -75,6 +75,7 @@ interface ProductInterface {
 }
 
 interface CategoryInterface {
+    band_short_name: String @doc(description: "Short abbreviation code (e.g., GD, RRE, SCI)")
     wikipedia_artwork_url: String @doc(description: "Wikipedia artwork URL for album categories")
     band_extended_bio: String @doc(description: "Extended biography text from Wikipedia")
     band_image_url: String @doc(description: "Band/artist image URL from Wikipedia/Wikimedia (hotlinked)")

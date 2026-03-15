@@ -23,6 +23,7 @@ artist:
   name: "Cabinet"
   collection_id: "Cabinet"
   url_key: "cabinet"
+  short_name: "CAB"
 
 # ========================================
 # ALBUMS SECTION

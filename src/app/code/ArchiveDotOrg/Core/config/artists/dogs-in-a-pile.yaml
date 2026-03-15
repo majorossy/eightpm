@@ -23,6 +23,7 @@ artist:
   name: "Dogs in a Pile"
   collection_id: "DogsinaPile"
   url_key: "dogs-in-a-pile"
+  short_name: "DogPile"
 
 # ========================================
 # ALBUMS SECTION

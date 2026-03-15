@@ -56,7 +56,7 @@ export const TrackRow = React.memo(function TrackRow({
           border: '1px solid color-mix(in srgb, var(--text) 6%, transparent)',
         }}
       >
-        <div style={{ padding: '14px 20px', opacity: 0.45 }}>
+        <div className="px-2 sm:px-[10px] py-3.5" style={{ opacity: 0.45 }}>
           <div className="flex items-baseline gap-1.5 mb-1">
             <span className="font-jb-mono text-[11px] font-medium flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>{displayIndex}</span>
             <span className="text-[13.5px] font-serif font-semibold truncate" style={{ color: 'var(--text-tertiary)', lineHeight: '1.3' }}>{track.title}</span>
@@ -128,8 +128,8 @@ export const TrackRow = React.memo(function TrackRow({
               : 'color-mix(in srgb, var(--text) 2%, transparent)'
             : 'transparent',
           transition: 'all 0.2s',
-          padding: '14px 20px',
         }}
+        className="px-2 sm:px-[10px] py-3.5"
       >
         {/* Row 1: track number/play + title + versions pill + time */}
         <div className="flex items-baseline gap-1.5 mb-1">

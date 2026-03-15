@@ -27,6 +27,15 @@ class VenueMapService
         return $this->map[$key] ?? null;
     }
 
+    /**
+     * Reset the in-memory alias map so the next resolve() reloads from DB.
+     * Call after venue merges.
+     */
+    public function invalidate(): void
+    {
+        $this->map = null;
+    }
+
     private function loadMap(): void
     {
         if ($this->map !== null) {
