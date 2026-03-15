@@ -3,57 +3,74 @@
 import { useState, useEffect, useRef } from 'react';
 
 const STORAGE_KEY = '8pm-early-access';
-const CREDENTIALS_KEY = '8pm-early-access-creds';
-const VALID_USERNAME = 'phish';
-const VALID_PASSWORD = 'phish';
 
 export default function EarlyAccessGate({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [shaking, setShaking] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Check localStorage on mount — restore saved credentials if any
+  // Check auth on mount — use localStorage as fast cache, verify with server
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    setIsAuthenticated(stored === 'true');
-
-    const savedCreds = localStorage.getItem(CREDENTIALS_KEY);
-    if (savedCreds) {
-      try {
-        const { u, p } = JSON.parse(savedCreds);
-        setUsername(u ?? '');
-        setPassword(p ?? '');
-        setRememberMe(true);
-      } catch { /* ignore corrupt data */ }
+    if (stored === 'true') {
+      // Fast path: trust localStorage cache, verify in background
+      setIsAuthenticated(true);
+      fetch('/api/auth/early-access')
+        .then(r => r.json())
+        .then(data => {
+          if (!data.authenticated) {
+            localStorage.removeItem(STORAGE_KEY);
+            setIsAuthenticated(false);
+          }
+        })
+        .catch(() => {}); // keep cached state on network error
+    } else {
+      // No cache: check server
+      fetch('/api/auth/early-access')
+        .then(r => r.json())
+        .then(data => {
+          if (data.authenticated) {
+            localStorage.setItem(STORAGE_KEY, 'true');
+          }
+          setIsAuthenticated(data.authenticated);
+        })
+        .catch(() => setIsAuthenticated(false));
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
 
-    const trimmedUsername = username.trim();
+    try {
+      const res = await fetch('/api/auth/early-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password }),
+      });
 
-    if (
-      trimmedUsername.toLowerCase() === VALID_USERNAME &&
-      password.toLowerCase() === VALID_PASSWORD
-    ) {
-      localStorage.setItem(STORAGE_KEY, 'true');
-      if (rememberMe) {
-        localStorage.setItem(CREDENTIALS_KEY, JSON.stringify({ u: trimmedUsername, p: password }));
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem(STORAGE_KEY, 'true');
+        setIsAuthenticated(true);
       } else {
-        localStorage.removeItem(CREDENTIALS_KEY);
+        setError('Invalid credentials');
+        setShaking(true);
+        setTimeout(() => setShaking(false), 600);
       }
-      setIsAuthenticated(true);
-    } else {
-      setError('Invalid credentials');
+    } catch {
+      setError('Connection error. Please try again.');
       setShaking(true);
       setTimeout(() => setShaking(false), 600);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -169,25 +186,16 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded border-default bg-surface-base accent-accent cursor-pointer"
-            />
-            <span className="text-sm text-secondary">Remember me</span>
-          </label>
-
           {error && (
             <p className="text-red-400 text-sm text-center">{error}</p>
           )}
 
           <button
             type="submit"
-            className="w-full py-3 bg-accent hover:bg-accent-hover text-inverse font-bold rounded-lg transition-colors"
+            disabled={isSubmitting}
+            className="w-full py-3 bg-accent hover:bg-accent-hover text-inverse font-bold rounded-lg transition-colors disabled:opacity-60"
           >
-            Enter
+            {isSubmitting ? 'Entering...' : 'Enter'}
           </button>
         </form>
 

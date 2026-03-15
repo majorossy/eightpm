@@ -361,6 +361,14 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
           Studio compositions with live recording versions
         </p>
         <SongsTable artistSlug={artist.slug} />
+        <div className="text-center mt-4">
+          <a
+            href={`/artists/${artist.slug}/songs`}
+            className="text-sm text-[var(--tertiary)] hover:underline"
+          >
+            View All Songs &rarr;
+          </a>
+        </div>
       </section>
 
       {/* Two column: content left, images right */}

@@ -200,10 +200,10 @@ const nextConfig = {
               // Default: only allow same-origin (fallback for unspecified directives)
               "default-src 'self'",
 
-              // Scripts: self, inline/eval (Next.js requires these), Google Analytics
+              // Scripts: self, inline (Next.js requires these), Google Analytics
               // 'unsafe-inline' needed for Next.js inline scripts
-              // 'unsafe-eval' needed for development hot reload and some runtime evaluation
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
+              // 'unsafe-eval' only in development for hot reload (HMR)
+              `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com`,
 
               // Styles: self + inline (styled-jsx, Tailwind, Next.js requires inline styles)
               "style-src 'self' 'unsafe-inline'",
@@ -267,8 +267,8 @@ const nextConfig = {
               "object-src 'none'",
 
               // Upgrade insecure requests: Automatically upgrade HTTP to HTTPS
-              // Uncomment for production when HTTPS is fully deployed
-              // "upgrade-insecure-requests",
+              // Only enabled in production (breaks local dev with self-signed certs)
+              ...(process.env.NODE_ENV === 'production' ? ["upgrade-insecure-requests"] : []),
             ].join('; '),
           },
         ],

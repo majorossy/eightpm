@@ -8,7 +8,9 @@ use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Magento\Framework\GraphQl\Exception\GraphQlInputException;
+use Magento\Framework\GraphQl\Exception\GraphQlAuthorizationException;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use ArchiveDotOrg\Core\Logger\Logger;
 
@@ -20,15 +22,18 @@ class SetArtworkOverride implements ResolverInterface
     private ResourceConnection $resourceConnection;
     private CategoryRepositoryInterface $categoryRepository;
     private Logger $logger;
+    private ScopeConfigInterface $scopeConfig;
 
     public function __construct(
         ResourceConnection $resourceConnection,
         CategoryRepositoryInterface $categoryRepository,
-        Logger $logger
+        Logger $logger,
+        ScopeConfigInterface $scopeConfig
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->categoryRepository = $categoryRepository;
         $this->logger = $logger;
+        $this->scopeConfig = $scopeConfig;
     }
 
     public function resolve(
@@ -39,6 +44,13 @@ class SetArtworkOverride implements ResolverInterface
         array $args = null
     ) {
         $input = $args['input'] ?? [];
+
+        $apiKey = $input['api_key'] ?? '';
+        $configuredKey = $this->scopeConfig->getValue('archivedotorg/security/artwork_api_key');
+        if (empty($configuredKey) || !hash_equals($configuredKey, $apiKey)) {
+            throw new GraphQlAuthorizationException(__('Invalid or missing API key.'));
+        }
+
         $categoryId = (int)($input['category_id'] ?? 0);
         $artworkUrl = trim($input['artwork_url'] ?? '');
         $type = $input['type'] ?? '';
@@ -134,7 +146,7 @@ class SetArtworkOverride implements ResolverInterface
                 'success' => false,
                 'artwork_url' => null,
                 'is_locked' => false,
-                'message' => 'Failed: ' . $e->getMessage(),
+                'message' => 'An internal error occurred while setting the artwork override.',
             ];
         }
     }

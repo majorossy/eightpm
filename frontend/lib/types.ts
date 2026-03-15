@@ -372,6 +372,28 @@ export interface SongItem {
   artistName: string;
   artistSlug: string;
   avgDuration: number | null;
+  firstPlayed: string | null;
+  lastPlayed: string | null;
+  avgRating: number | null;
+  totalDownloads: number | null;
+}
+
+// Detailed stats for a single song (songDetail query)
+export interface SongDetailData {
+  categoryId: number;
+  title: string;
+  urlKey: string;
+  artistName: string;
+  artistSlug: string;
+  versionCount: number;
+  avgDuration: number | null;
+  firstPlayed: string | null;
+  lastPlayed: string | null;
+  avgRating: number | null;
+  totalDownloads: number | null;
+  longestDuration: number | null;
+  shortestDuration: number | null;
+  yearsPlayed: string[];
 }
 
 export interface SongsResult {

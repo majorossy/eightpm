@@ -1,6 +1,6 @@
 // API layer - Magento 2 GraphQL integration
 import { unstable_cache } from 'next/cache';
-import { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount, Podcast, PodcastEpisode, PodcastDetail, SongItem, SongsResult } from './types';
+import { Song, Artist, ArtistDetail, Album, Track, VenueDetail, VenueShow, VenueArtist, ArtistVenueCount, Podcast, PodcastEpisode, PodcastDetail, SongItem, SongsResult, SongDetailData } from './types';
 import { fetchWikipediaSummary } from './wikipedia';
 import { applyFilters, getAvailableYears, hasActiveFilters } from './filters';
 import type { VersionFilters } from './filters';
@@ -1842,6 +1842,10 @@ const SONGS_QUERY = `
         artist_name
         artist_slug
         avg_duration
+        first_played
+        last_played
+        avg_rating
+        total_downloads
       }
       total_count
       page_info {
@@ -1853,10 +1857,31 @@ const SONGS_QUERY = `
   }
 `;
 
+const SONG_DETAIL_QUERY = `
+  query GetSongDetail($artistSlug: String!, $songSlug: String!) {
+    songDetail(artistSlug: $artistSlug, songSlug: $songSlug) {
+      category_id
+      title
+      url_key
+      artist_name
+      artist_slug
+      version_count
+      avg_duration
+      first_played
+      last_played
+      avg_rating
+      total_downloads
+      longest_duration
+      shortest_duration
+      years_played
+    }
+  }
+`;
+
 export async function getTrackCatalog(params: {
   artistSlug?: string;
   search?: string;
-  sortBy?: 'VERSION_COUNT' | 'TITLE' | 'ALBUM' | 'ARTIST';
+  sortBy?: 'VERSION_COUNT' | 'TITLE' | 'ALBUM' | 'ARTIST' | 'AVG_RATING' | 'TOTAL_DOWNLOADS' | 'LAST_PLAYED';
   sortDir?: 'ASC' | 'DESC';
   pageSize?: number;
   currentPage?: number;
@@ -1876,6 +1901,10 @@ export async function getTrackCatalog(params: {
           artist_name: string;
           artist_slug: string;
           avg_duration: number | null;
+          first_played: string | null;
+          last_played: string | null;
+          avg_rating: number | null;
+          total_downloads: number | null;
         }>;
         total_count: number;
         page_info: { page_size: number; current_page: number; total_pages: number };
@@ -1903,6 +1932,10 @@ export async function getTrackCatalog(params: {
         artistName: item.artist_name,
         artistSlug: item.artist_slug,
         avgDuration: item.avg_duration ?? null,
+        firstPlayed: item.first_played ?? null,
+        lastPlayed: item.last_played ?? null,
+        avgRating: item.avg_rating ?? null,
+        totalDownloads: item.total_downloads ?? null,
       })),
       totalCount: songs.total_count,
       pageInfo: {
@@ -1914,6 +1947,50 @@ export async function getTrackCatalog(params: {
   } catch (error) {
     console.error('[getSongs] Failed:', error);
     return { items: [], totalCount: 0, pageInfo: { pageSize: 50, currentPage: 1, totalPages: 0 } };
+  }
+}
+
+export async function getSongDetail(artistSlug: string, songSlug: string): Promise<SongDetailData | null> {
+  try {
+    const data = await graphqlFetch<{
+      songDetail: {
+        category_id: number;
+        title: string;
+        url_key: string;
+        artist_name: string;
+        artist_slug: string;
+        version_count: number;
+        avg_duration: number | null;
+        first_played: string | null;
+        last_played: string | null;
+        avg_rating: number | null;
+        total_downloads: number | null;
+        longest_duration: number | null;
+        shortest_duration: number | null;
+        years_played: string[] | null;
+      };
+    }>(SONG_DETAIL_QUERY, { artistSlug, songSlug });
+
+    const d = data.songDetail;
+    return {
+      categoryId: d.category_id,
+      title: d.title,
+      urlKey: d.url_key,
+      artistName: d.artist_name,
+      artistSlug: d.artist_slug,
+      versionCount: d.version_count,
+      avgDuration: d.avg_duration,
+      firstPlayed: d.first_played,
+      lastPlayed: d.last_played,
+      avgRating: d.avg_rating,
+      totalDownloads: d.total_downloads,
+      longestDuration: d.longest_duration,
+      shortestDuration: d.shortest_duration,
+      yearsPlayed: d.years_played || [],
+    };
+  } catch (error) {
+    console.error('[getSongDetail] Failed:', error);
+    return null;
   }
 }
 

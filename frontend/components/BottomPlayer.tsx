@@ -70,6 +70,10 @@ export default function BottomPlayer() {
   // Detect iOS — programmatic volume control doesn't work on iOS Safari
   const isIOS = useMemo(() => typeof navigator !== 'undefined' && (/(iPad|iPhone|iPod)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)), []);
 
+  // Hydration guard: server renders null, first client render also null, then mount triggers re-render
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   // Image loading state for lazy loading
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -240,6 +244,9 @@ export default function BottomPlayer() {
     setShowQueuePreview(false);
     toggleQueue();
   }, [vibrate, BUTTON_PRESS, toggleQueue]);
+
+  // Wait for client mount to avoid hydration mismatch (server has no player state)
+  if (!mounted) return null;
 
   // Show resume UI when there's saved progress but no current song
   if (!currentSong && savedProgress) {

@@ -25,7 +25,7 @@ export default function SignInPage() {
   if (!isLoading && isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-surface-base flex items-center justify-center px-4">
+    <div className="min-h-[calc(100dvh-3.5rem-50px)] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <SignInForm
           initialMode="signin"

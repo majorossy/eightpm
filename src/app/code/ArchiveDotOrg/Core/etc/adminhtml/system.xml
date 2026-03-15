@@ -203,6 +203,16 @@
                 </field>
             </group>
 
+            <!-- Security Settings -->
+            <group id="security" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Security</label>
+                <field id="artwork_api_key" translate="label comment" type="obscure" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Artwork Mutation API Key</label>
+                    <comment>Shared API key required for GraphQL artwork mutations. Generate a random string.</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+            </group>
+
             <!-- Performance Settings -->
             <group id="performance" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Performance Settings</label>

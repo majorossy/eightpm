@@ -7,6 +7,7 @@ namespace ArchiveDotOrg\Core\Model\Resolver;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
+use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Framework\App\ResourceConnection;
 
 /**
@@ -42,6 +43,9 @@ class Songs implements ResolverInterface
     ) {
         $artistSlug = $args['artistSlug'] ?? null;
         $search = $args['search'] ?? null;
+        if ($search !== null && mb_strlen($search) > 200) {
+            throw new GraphQlInputException(__('Search term must be 200 characters or fewer.'));
+        }
         $sortBy = $args['sortBy'] ?? 'VERSION_COUNT';
         $sortDir = strtoupper($args['sortDir'] ?? 'DESC');
         $pageSize = max(1, min((int)($args['pageSize'] ?? 20), 100));
@@ -59,6 +63,9 @@ class Songs implements ResolverInterface
         $catVarcharTable = $connection->getTableName('catalog_category_entity_varchar');
         $catProductTable = $connection->getTableName('catalog_category_product');
         $prodVarcharTable = $connection->getTableName('catalog_product_entity_varchar');
+        $prodDatetimeTable = $connection->getTableName('catalog_product_entity_datetime');
+        $prodDecimalTable = $connection->getTableName('catalog_product_entity_decimal');
+        $prodIntTable = $connection->getTableName('catalog_product_entity_int');
         $studioAlbumsTable = $connection->getTableName('archivedotorg_studio_albums');
 
         // EAV join conditions
@@ -173,6 +180,38 @@ class Songs implements ResolverInterface
                     $catProductTable,
                     $prodVarcharTable
                 )),
+                // Earliest show_date across all versions (attribute 248, datetime)
+                'first_played' => new \Zend_Db_Expr(sprintf(
+                    '(SELECT MIN(pd.value) FROM %s AS cp3 '
+                    . 'INNER JOIN %s AS pd ON pd.entity_id = cp3.product_id AND pd.attribute_id = 248 AND pd.store_id = 0 '
+                    . 'WHERE cp3.category_id = MIN(song.entity_id) AND pd.value IS NOT NULL)',
+                    $catProductTable,
+                    $prodDatetimeTable
+                )),
+                // Most recent show_date
+                'last_played' => new \Zend_Db_Expr(sprintf(
+                    '(SELECT MAX(pd.value) FROM %s AS cp4 '
+                    . 'INNER JOIN %s AS pd ON pd.entity_id = cp4.product_id AND pd.attribute_id = 248 AND pd.store_id = 0 '
+                    . 'WHERE cp4.category_id = MIN(song.entity_id) AND pd.value IS NOT NULL)',
+                    $catProductTable,
+                    $prodDatetimeTable
+                )),
+                // Average Archive.org rating (attribute 260, decimal)
+                'avg_rating' => new \Zend_Db_Expr(sprintf(
+                    '(SELECT AVG(pdc.value) FROM %s AS cp5 '
+                    . 'INNER JOIN %s AS pdc ON pdc.entity_id = cp5.product_id AND pdc.attribute_id = 260 AND pdc.store_id = 0 '
+                    . 'WHERE cp5.category_id = MIN(song.entity_id) AND pdc.value IS NOT NULL AND pdc.value > 0)',
+                    $catProductTable,
+                    $prodDecimalTable
+                )),
+                // Sum of downloads (attribute 262, int)
+                'total_downloads' => new \Zend_Db_Expr(sprintf(
+                    '(SELECT SUM(pi.value) FROM %s AS cp6 '
+                    . 'INNER JOIN %s AS pi ON pi.entity_id = cp6.product_id AND pi.attribute_id = 262 AND pi.store_id = 0 '
+                    . 'WHERE cp6.category_id = MIN(song.entity_id) AND pi.value IS NOT NULL)',
+                    $catProductTable,
+                    $prodIntTable
+                )),
             ]);
 
         $baseConditions($dataSelect);
@@ -193,6 +232,15 @@ class Songs implements ResolverInterface
             case 'ARTIST':
                 $dataSelect->order("artist_name $sortDir");
                 $dataSelect->order("song_name.value ASC");
+                break;
+            case 'AVG_RATING':
+                $dataSelect->order("avg_rating $sortDir");
+                break;
+            case 'TOTAL_DOWNLOADS':
+                $dataSelect->order("total_downloads $sortDir");
+                break;
+            case 'LAST_PLAYED':
+                $dataSelect->order("last_played $sortDir");
                 break;
             default:
                 $dataSelect->order("version_count $sortDir");
@@ -218,6 +266,10 @@ class Songs implements ResolverInterface
                 'artist_name' => $row['artist_name'],
                 'artist_slug' => $row['artist_slug'] ?? '',
                 'avg_duration' => $row['avg_duration'] !== null ? (float)$row['avg_duration'] : null,
+                'first_played' => $row['first_played'] ? substr($row['first_played'], 0, 10) : null,
+                'last_played' => $row['last_played'] ? substr($row['last_played'], 0, 10) : null,
+                'avg_rating' => $row['avg_rating'] !== null ? round((float)$row['avg_rating'], 2) : null,
+                'total_downloads' => $row['total_downloads'] !== null ? (int)$row['total_downloads'] : null,
             ];
         }
 

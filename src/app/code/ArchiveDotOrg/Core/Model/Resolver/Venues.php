@@ -6,6 +6,7 @@ namespace ArchiveDotOrg\Core\Model\Resolver;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
+use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Framework\App\ResourceConnection;
 
 /**
@@ -28,6 +29,9 @@ class Venues implements ResolverInterface
         array $args = null
     ) {
         $search = $args['search'] ?? null;
+        if ($search !== null && mb_strlen($search) > 200) {
+            throw new GraphQlInputException(__('Search term must be 200 characters or fewer.'));
+        }
         $city = $args['city'] ?? null;
         $state = $args['state'] ?? null;
         $pageSize = max(1, min((int)($args['pageSize'] ?? 20), 100));

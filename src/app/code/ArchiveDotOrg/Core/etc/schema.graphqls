@@ -122,6 +122,10 @@ type Query {
         pageSize: Int = 50 @doc(description: "Number of results per page (max 100)")
         currentPage: Int = 1 @doc(description: "Current page number")
     ): SongsOutput @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\Songs") @doc(description: "Browse songs (studio compositions) with version counts")
+    songDetail(
+        artistSlug: String! @doc(description: "Artist URL key")
+        songSlug: String! @doc(description: "Song URL key")
+    ): SongDetail @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SongDetail") @doc(description: "Get detailed stats for a single song")
     venue(
         slug: String! @doc(description: "Venue URL slug")
     ): Venue @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\Venue") @doc(description: "Get a single venue by slug")
@@ -157,6 +161,7 @@ input ArtworkOverrideInput {
     artwork_url: String! @doc(description: "New artwork URL")
     type: String! @doc(description: "Override type: album_artwork or band_image")
     notes: String @doc(description: "Optional notes about this override")
+    api_key: String! @doc(description: "API key for mutation authorization")
 }
 
 type ArtworkOverrideOutput {
@@ -170,7 +175,7 @@ type Mutation {
     setArtworkOverride(input: ArtworkOverrideInput!): ArtworkOverrideOutput
         @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\SetArtworkOverride")
         @doc(description: "Set a manual artwork override and lock it against auto-update")
-    removeArtworkOverride(category_id: Int!, type: String!): ArtworkOverrideOutput
+    removeArtworkOverride(category_id: Int!, type: String!, api_key: String!): ArtworkOverrideOutput
         @resolver(class: "ArchiveDotOrg\\Core\\Model\\Resolver\\RemoveArtworkOverride")
         @doc(description: "Remove artwork lock to allow auto-update again")
 }
@@ -295,6 +300,9 @@ enum SongSortField {
     TITLE
     ALBUM
     ARTIST
+    AVG_RATING
+    TOTAL_DOWNLOADS
+    LAST_PLAYED
 }
 
 type SongItem {
@@ -309,10 +317,31 @@ type SongItem {
     artist_name: String! @doc(description: "Grandparent artist name")
     artist_slug: String! @doc(description: "Grandparent artist URL key")
     avg_duration: Float @doc(description: "Average track duration in seconds across live recordings")
+    first_played: String @doc(description: "Earliest show_date for this song")
+    last_played: String @doc(description: "Most recent show_date for this song")
+    avg_rating: Float @doc(description: "Average Archive.org rating across all versions")
+    total_downloads: Int @doc(description: "Sum of downloads across all versions")
 }
 
 type SongsOutput {
     items: [SongItem]! @doc(description: "List of songs")
     total_count: Int! @doc(description: "Total number of matching songs")
     page_info: SearchResultPageInfo @doc(description: "Pagination info")
+}
+
+type SongDetail {
+    category_id: Int! @doc(description: "Song category entity ID")
+    title: String! @doc(description: "Song title")
+    url_key: String! @doc(description: "URL slug for routing")
+    artist_name: String! @doc(description: "Artist name")
+    artist_slug: String! @doc(description: "Artist URL key")
+    version_count: Int! @doc(description: "Number of live recordings")
+    avg_duration: Float @doc(description: "Average duration in seconds")
+    first_played: String @doc(description: "Earliest show date")
+    last_played: String @doc(description: "Most recent show date")
+    avg_rating: Float @doc(description: "Average Archive.org rating across versions")
+    total_downloads: Int @doc(description: "Sum of downloads across versions")
+    longest_duration: Float @doc(description: "Longest version duration in seconds")
+    shortest_duration: Float @doc(description: "Shortest version duration in seconds")
+    years_played: [String] @doc(description: "List of distinct years this song was performed")
 }
