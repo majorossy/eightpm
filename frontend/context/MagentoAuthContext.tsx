@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { MagentoCustomer, MagentoCustomerCreateInput } from '@/lib/types';
 import {
   generateCustomerToken,
@@ -105,19 +105,28 @@ export function MagentoAuthProvider({ children }: { children: React.ReactNode })
     }
   }, []);
 
+  const contextValue = useMemo<MagentoAuthContextType>(() => ({
+    customer,
+    isAuthenticated,
+    isLoading,
+    error,
+    signIn,
+    signUp,
+    signOut,
+    refreshCustomer,
+  }), [
+    customer,
+    isAuthenticated,
+    isLoading,
+    error,
+    signIn,
+    signUp,
+    signOut,
+    refreshCustomer,
+  ]);
+
   return (
-    <MagentoAuthContext.Provider
-      value={{
-        customer,
-        isAuthenticated,
-        isLoading,
-        error,
-        signIn,
-        signUp,
-        signOut,
-        refreshCustomer,
-      }}
-    >
+    <MagentoAuthContext.Provider value={contextValue}>
       {children}
     </MagentoAuthContext.Provider>
   );

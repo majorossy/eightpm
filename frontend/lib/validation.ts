@@ -251,22 +251,6 @@ export function validateHexColor(hex: string): string | undefined {
   return undefined;
 }
 
-// ============================================
-// Sanitization Functions
-// ============================================
-
-/**
- * Sanitizes input for display (prevents XSS)
- * Note: React already escapes output, this is for extra safety
- */
-export function sanitizeForDisplay(input: string): string {
-  return input
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
-}
-
 /**
  * Truncates a string to a maximum length with ellipsis
  */

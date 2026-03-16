@@ -90,7 +90,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const toast = useToast();
 
   // Build legacy queue from QueueContext for compatibility
-  const legacyQueue: Song[] = queueContext.queue.items.map(item => item.song);
+  const legacyQueue = useMemo(
+    () => queueContext.queue.items.map(item => item.song),
+    [queueContext.queue.items],
+  );
   const legacyQueueIndex = queueContext.queue.cursorIndex;
 
   // Load crossfade duration from localStorage
@@ -1028,38 +1031,70 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     onSeek: seek,
   });
 
+  // Memoize savedProgress projection to avoid new object per render
+  const savedProgressProjection = useMemo(
+    () => savedProgress ? {
+      songId: savedProgress.songId,
+      position: savedProgress.position,
+      title: savedProgress.title,
+      artistName: savedProgress.artistName,
+    } : null,
+    [savedProgress],
+  );
+
+  // Memoize context value to prevent re-renders from parent state changes.
+  // Note: still re-renders consumers when `state` changes (includes currentTime).
+  // Full fix (separate currentTime context) is a future refactor.
+  const contextValue = useMemo<PlayerContextType>(() => ({
+    ...state,
+    currentSong,
+    playSong,
+    togglePlay,
+    pause,
+    setVolume,
+    seek,
+    playNext: playNextHandler,
+    playPrev,
+    toggleQueue,
+    closeQueue,
+    playFromQueue,
+    playAlbum,
+    playAlbumFromTrack,
+    setCrossfadeDuration,
+    analyzerData,
+    audioRef: crossfade.activeAudioRef,
+    queue: legacyQueue,
+    queueIndex: legacyQueueIndex,
+    savedProgress: savedProgressProjection,
+    resumeSavedProgress,
+    clearSavedProgress: clearPlaybackProgress,
+  }), [
+    state,
+    currentSong,
+    playSong,
+    togglePlay,
+    pause,
+    setVolume,
+    seek,
+    playNextHandler,
+    playPrev,
+    toggleQueue,
+    closeQueue,
+    playFromQueue,
+    playAlbum,
+    playAlbumFromTrack,
+    setCrossfadeDuration,
+    analyzerData,
+    crossfade.activeAudioRef,
+    legacyQueue,
+    legacyQueueIndex,
+    savedProgressProjection,
+    resumeSavedProgress,
+    clearPlaybackProgress,
+  ]);
+
   return (
-    <PlayerContext.Provider
-      value={{
-        ...state,
-        currentSong,
-        playSong,
-        togglePlay,
-        pause,
-        setVolume,
-        seek,
-        playNext: playNextHandler,
-        playPrev,
-        toggleQueue,
-        closeQueue,
-        playFromQueue,
-        playAlbum,
-        playAlbumFromTrack,
-        setCrossfadeDuration,
-        analyzerData,
-        audioRef: crossfade.activeAudioRef,
-        queue: legacyQueue,
-        queueIndex: legacyQueueIndex,
-        savedProgress: savedProgress ? {
-          songId: savedProgress.songId,
-          position: savedProgress.position,
-          title: savedProgress.title,
-          artistName: savedProgress.artistName,
-        } : null,
-        resumeSavedProgress,
-        clearSavedProgress: clearPlaybackProgress,
-      }}
-    >
+    <PlayerContext.Provider value={contextValue}>
       {/* ARIA live region for screen reader announcements */}
       <div
         role="status"

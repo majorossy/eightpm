@@ -3,7 +3,7 @@
 // CollectionContext — Unified context for Cassettes and MiniDiscs
 // Uses localStorage for persistence with Magento sync for logged-in users.
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Song, SyncStatus } from '@/lib/types';
 import { Cassette } from '@/lib/cassetteTypes';
 import { MiniDisc } from '@/lib/minidiscTypes';
@@ -220,10 +220,10 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
 
         // Push local-only items to server
         if (cassetteMerge.toSync.length > 0) {
-          await syncCassettes(cassetteMerge.toSync).catch(() => {});
+          await syncCassettes(cassetteMerge.toSync).catch(e => handleSyncError(e, 'push local cassettes to server'));
         }
         if (miniDiscMerge.toSync.length > 0) {
-          await syncMiniDiscs(miniDiscMerge.toSync).catch(() => {});
+          await syncMiniDiscs(miniDiscMerge.toSync).catch(e => handleSyncError(e, 'push local minidiscs to server'));
         }
 
         setSyncStatus('synced');
@@ -563,33 +563,54 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
   // Render
   // ======================================================================
 
+  const contextValue = useMemo<CollectionContextType>(() => ({
+    minidiscs,
+    createMiniDisc,
+    deleteMiniDisc,
+    deleteMiniDiscs,
+    addToMiniDisc,
+    removeFromMiniDisc,
+    updateMiniDisc,
+    reorderMiniDisc,
+    getMiniDisc,
+    cloneMiniDisc,
+
+    cassettes,
+    saveCassette,
+    deleteCassette,
+    deleteCassettes,
+    updateCassette,
+    getCassette,
+    getCassettesForAlbum,
+
+    isLoading,
+    syncStatus,
+    forceSync,
+  }), [
+    minidiscs,
+    createMiniDisc,
+    deleteMiniDisc,
+    deleteMiniDiscs,
+    addToMiniDisc,
+    removeFromMiniDisc,
+    updateMiniDisc,
+    reorderMiniDisc,
+    getMiniDisc,
+    cloneMiniDisc,
+    cassettes,
+    saveCassette,
+    deleteCassette,
+    deleteCassettes,
+    updateCassette,
+    getCassette,
+    getCassettesForAlbum,
+    isLoading,
+    syncStatus,
+    forceSync,
+  ]);
+
   return (
-    <CollectionContext.Provider
-      value={{
-        minidiscs,
-        createMiniDisc,
-        deleteMiniDisc,
-        deleteMiniDiscs,
-        addToMiniDisc,
-        removeFromMiniDisc,
-        updateMiniDisc,
-        reorderMiniDisc,
-        getMiniDisc,
-        cloneMiniDisc,
-
-        cassettes,
-        saveCassette,
-        deleteCassette,
-        deleteCassettes,
-        updateCassette,
-        getCassette,
-        getCassettesForAlbum,
-
-        isLoading,
-        syncStatus,
-        forceSync,
-      }}
-    >
+    <CollectionContext.Provider value={contextValue}>
       {children}
     </CollectionContext.Provider>
   );

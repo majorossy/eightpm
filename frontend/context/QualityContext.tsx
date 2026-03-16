@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { AudioQuality, Song } from '@/lib/types';
 import { sanitizeStreamUrl } from '@/lib/urlUtils';
 import { trackQualityChange } from '@/lib/analytics';
@@ -117,14 +117,22 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     return null;
   }, []);
 
+  const contextValue = useMemo<QualityContextType>(() => ({
+    preferredQuality,
+    setPreferredQuality,
+    getStreamUrl,
+    getQualityLabel,
+    getLowerQualityUrl,
+  }), [
+    preferredQuality,
+    setPreferredQuality,
+    getStreamUrl,
+    getQualityLabel,
+    getLowerQualityUrl,
+  ]);
+
   return (
-    <QualityContext.Provider value={{
-      preferredQuality,
-      setPreferredQuality,
-      getStreamUrl,
-      getQualityLabel,
-      getLowerQualityUrl,
-    }}>
+    <QualityContext.Provider value={contextValue}>
       {children}
     </QualityContext.Provider>
   );

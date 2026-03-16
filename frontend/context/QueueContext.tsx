@@ -29,6 +29,7 @@ import type { ChipGlow, ChipGlowType } from '@/lib/chipGlow';
 import { sanitizeStreamUrl } from '@/lib/urlUtils';
 import { trackAddToQueue, trackPlayNext, trackQueueReorder, trackVersionChange, trackRepeatChange } from '@/lib/analytics';
 import { useMagentoAuth } from '@/context/MagentoAuthContext';
+import { useToast } from '@/hooks/useToast';
 import { saveQueueSnapshot, mergeQueueSnapshot, AuthExpiredError } from '@/lib/magentoSync';
 import { getStoredToken } from '@/lib/magentoAuth';
 
@@ -574,12 +575,7 @@ export function flushQueueToStorage(
     if (queue.items.length === 0) {
       localStorage.removeItem(QUEUE_STORAGE_KEY);
     } else {
-      const snapshot = {
-        items: queue.items.map(({ availableVersions, played, ...rest }) => rest),
-        cursorIndex: queue.cursorIndex,
-        repeat: queue.repeat,
-        savedAt: Date.now(),
-      };
+      const snapshot = buildServerSnapshot(queue, Date.now());
       localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(snapshot));
     }
   } catch (e) {
@@ -645,12 +641,29 @@ function getInitialState(): UnifiedQueue {
 }
 
 // =============================================================================
+// Snapshot builder — strips runtime-only fields for server/localStorage sync
+// =============================================================================
+
+function buildServerSnapshot(q: UnifiedQueue, savedAt: number) {
+  if (q.items.length === 0) {
+    return { items: [], cursorIndex: -1, repeat: q.repeat, savedAt };
+  }
+  return {
+    items: q.items.map(({ availableVersions, played, ...rest }) => rest),
+    cursorIndex: q.cursorIndex,
+    repeat: q.repeat,
+    savedAt,
+  };
+}
+
+// =============================================================================
 // Provider
 // =============================================================================
 
 export function QueueProvider({ children }: { children: React.ReactNode }) {
   const [queue, dispatch] = useReducer(queueReducer, null, getInitialState);
-  const { isAuthenticated } = useMagentoAuth();
+  const { isAuthenticated, signOut } = useMagentoAuth();
+  const { showWarning } = useToast();
 
   // Ref that always holds the latest queue state (stale closure fix)
   const queueRef = useRef(queue);
@@ -659,6 +672,13 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
   // Track whether component has hydrated (prevents clearing localStorage on mount)
   const hasHydrated = useRef(false);
   useEffect(() => { hasHydrated.current = true; }, []);
+
+  // Surface localStorage quota errors as a toast
+  useEffect(() => {
+    const handler = () => showWarning('Storage full. Some changes may not be saved locally.');
+    window.addEventListener('8pm:storage-error', handler);
+    return () => window.removeEventListener('8pm:storage-error', handler);
+  }, [showWarning]);
 
   // When true, the debounced effect should skip (a sync flush already handled it)
   const skipDebounceRef = useRef(false);
@@ -699,28 +719,64 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     if (serverSyncTimerRef.current) clearTimeout(serverSyncTimerRef.current);
 
     serverSyncTimerRef.current = setTimeout(() => {
-      const q = queueRef.current;
       const savedAt = Date.now();
-      if (q.items.length === 0) {
-        // Sync empty queue so server knows it was cleared
-        saveQueueSnapshot(JSON.stringify({ items: [], cursorIndex: -1, repeat: q.repeat, savedAt }), savedAt)
-          .catch(() => {}); // fire-and-forget
-      } else {
-        const snapshot = {
-          items: q.items.map(({ availableVersions, played, ...rest }) => rest),
-          cursorIndex: q.cursorIndex,
-          repeat: q.repeat,
-          savedAt,
-        };
-        saveQueueSnapshot(JSON.stringify(snapshot), savedAt)
-          .catch(() => {}); // fire-and-forget
-      }
+      const snapshot = buildServerSnapshot(queueRef.current, savedAt);
+      saveQueueSnapshot(JSON.stringify(snapshot), savedAt)
+        .catch(() => {}); // fire-and-forget
     }, 5000);
 
     return () => {
       if (serverSyncTimerRef.current) clearTimeout(serverSyncTimerRef.current);
     };
   }, [queue, isAuthenticated]);
+
+  // ---------------------------------------------------------------------------
+  // Flush pending server sync on tab hide / page close
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const flushServerSync = () => {
+      if (!isAuthenticated || !hasHydrated.current) return;
+      // Cancel pending debounce — we're flushing now
+      if (serverSyncTimerRef.current) {
+        clearTimeout(serverSyncTimerRef.current);
+        serverSyncTimerRef.current = null;
+      }
+      const savedAt = Date.now();
+      const snapshot = buildServerSnapshot(queueRef.current, savedAt);
+      const token = getStoredToken();
+      if (token) {
+        // keepalive: true keeps request alive after page unload
+        fetch('/api/graphql', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            query: `mutation SaveQueueSnapshot($input: QueueSnapshotInput!) {
+              saveQueueSnapshot(input: $input) {
+                queue_snapshot { entity_id }
+              }
+            }`,
+            variables: { input: { snapshot_data: JSON.stringify(snapshot), saved_at: String(savedAt) } },
+          }),
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flushServerSync();
+    };
+    const handlePageHide = () => flushServerSync();
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [isAuthenticated]);
 
   // ---------------------------------------------------------------------------
   // Fetch server snapshot on login
@@ -772,14 +828,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
           }
         } else if (!useServer && queueRef.current.items.length > 0) {
           // Local is newer — push to server (fire-and-forget)
-          const q = queueRef.current;
           const savedAt = Date.now();
-          const snapshot = {
-            items: q.items.map(({ availableVersions, played, ...rest }) => rest),
-            cursorIndex: q.cursorIndex,
-            repeat: q.repeat,
-            savedAt,
-          };
+          const snapshot = buildServerSnapshot(queueRef.current, savedAt);
           saveQueueSnapshot(JSON.stringify(snapshot), savedAt, token).catch(() => {});
         }
 
@@ -787,6 +837,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         if (error instanceof AuthExpiredError) {
           console.warn('[QueueContext] Auth expired during queue sync');
+          signOut();
         } else {
           console.error('[QueueContext] Failed to sync queue from server:', error);
         }

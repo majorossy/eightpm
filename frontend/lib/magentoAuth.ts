@@ -41,8 +41,13 @@ export function getStoredToken(): string | null {
 
 export function setStoredToken(token: string): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(TOKEN_EXPIRY_KEY, String(Date.now() + TOKEN_DURATION_MS));
+  try {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(TOKEN_EXPIRY_KEY, String(Date.now() + TOKEN_DURATION_MS));
+  } catch {
+    // QuotaExceededError — token lives in memory for this session only
+    console.error('[magentoAuth] Failed to persist auth token to localStorage');
+  }
 }
 
 export function clearStoredToken(): void {

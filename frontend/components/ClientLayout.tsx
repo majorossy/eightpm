@@ -171,7 +171,9 @@ function InnerLayout({ children }: { children: ReactNode }) {
       <EightPmMobileNav />
 
       {/* Mini player (mobile) or full player bar (desktop) */}
-      <BottomPlayer />
+      <ErrorBoundary fallback={null}>
+        <BottomPlayer />
+      </ErrorBoundary>
 
       {/* Mobile: Full-screen player (expands from mini player) */}
       {isMobile && <EightPmFullPlayer />}

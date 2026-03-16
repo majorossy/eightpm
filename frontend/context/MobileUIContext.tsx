@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 
 interface MobileUIState {
@@ -161,9 +161,11 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
   }, [isMobile, isPlayerExpanded]);
 
   // SSR: default to desktop (isMobile = false) until hydrated
-  const value: MobileUIContextType = {
+  const resolvedIsMobile = isHydrated ? isMobile : false;
+
+  const value = useMemo<MobileUIContextType>(() => ({
     isSidebarOpen,
-    isMobile: isHydrated ? isMobile : false,
+    isMobile: resolvedIsMobile,
     isPlayerExpanded,
     isPlayerMinimized,
     isTransitioning,
@@ -177,7 +179,23 @@ export function MobileUIProvider({ children }: { children: ReactNode }) {
     minimizePlayer,
     restorePlayer,
     setDragOffset,
-  };
+  }), [
+    isSidebarOpen,
+    resolvedIsMobile,
+    isPlayerExpanded,
+    isPlayerMinimized,
+    isTransitioning,
+    dragOffset,
+    toggleSidebar,
+    closeSidebar,
+    openSidebar,
+    expandPlayer,
+    collapsePlayer,
+    togglePlayer,
+    minimizePlayer,
+    restorePlayer,
+    setDragOffset,
+  ]);
 
   return (
     <MobileUIContext.Provider value={value}>

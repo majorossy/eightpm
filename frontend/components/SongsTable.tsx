@@ -18,23 +18,32 @@ import RecordingRowActions from '@/components/version-row/atoms/RecordingRowActi
 import { usePlayer } from '@/context/PlayerContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
-/** Grid cell that measures its own width via ResizeObserver and sets an explicit
- *  pixel width on an inner wrapper. This forces text to wrap within the column
- *  without needing overflow:hidden (which breaks overflow-y:visible). */
+/** Shared ResizeObserver for all GridCells — one observer instead of 240 */
+const gridCellObserver = typeof window !== 'undefined' ? new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    const el = entry.target as HTMLElement;
+    const w = el.offsetWidth;
+    const inner = el.firstElementChild as HTMLElement | null;
+    if (inner) inner.style.width = w ? `${w}px` : '';
+  }
+}) : null;
+
+/** Grid cell that measures its own width and sets an explicit pixel width on an
+ *  inner wrapper. Uses a single shared ResizeObserver for all cells. */
 function GridCell({ className, style, children }: { className?: string; style?: React.CSSProperties; children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [w, setW] = useState(0);
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setW(el.offsetWidth));
-    ro.observe(el);
-    setW(el.offsetWidth);
-    return () => ro.disconnect();
+    if (!el || !gridCellObserver) return;
+    gridCellObserver.observe(el);
+    // Set initial width
+    const inner = el.firstElementChild as HTMLElement | null;
+    if (inner) inner.style.width = el.offsetWidth ? `${el.offsetWidth}px` : '';
+    return () => gridCellObserver.unobserve(el);
   }, []);
   return (
     <div ref={ref} className={className} style={style}>
-      <div style={{ width: w || undefined, overflowWrap: 'anywhere' }}>
+      <div style={{ overflowWrap: 'anywhere' }}>
         {children}
       </div>
     </div>

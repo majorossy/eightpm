@@ -3,7 +3,7 @@
 // WishlistContext = Favorites (Magento Wishlist)
 // Uses localStorage for persistence with Magento sync for logged-in users.
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Song, Wishlist, WishlistItem, SyncStatus } from '@/lib/types';
 import { useMagentoAuth } from '@/context/MagentoAuthContext';
 import { trackLike, trackUnlike, trackFollowArtist, trackUnfollowArtist } from '@/lib/analytics';
@@ -120,35 +120,50 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   // Save wishlist to localStorage whenever it changes
   useEffect(() => {
     if (!isLoading) {
-      if (items.length > 0) {
-        localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(items));
-      } else {
-        localStorage.removeItem(WISHLIST_STORAGE_KEY);
+      try {
+        if (items.length > 0) {
+          localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(items));
+        } else {
+          localStorage.removeItem(WISHLIST_STORAGE_KEY);
+        }
+      } catch (e) {
+        console.error('[WishlistContext] Failed to save wishlist:', e);
+        showWarning('Storage full. Some changes may not be saved locally.');
       }
     }
-  }, [items, isLoading]);
+  }, [items, isLoading, showWarning]);
 
   // Save followed artists to localStorage
   useEffect(() => {
     if (!isLoading) {
-      if (followedArtists.length > 0) {
-        localStorage.setItem(FOLLOWED_ARTISTS_STORAGE_KEY, JSON.stringify(followedArtists));
-      } else {
-        localStorage.removeItem(FOLLOWED_ARTISTS_STORAGE_KEY);
+      try {
+        if (followedArtists.length > 0) {
+          localStorage.setItem(FOLLOWED_ARTISTS_STORAGE_KEY, JSON.stringify(followedArtists));
+        } else {
+          localStorage.removeItem(FOLLOWED_ARTISTS_STORAGE_KEY);
+        }
+      } catch (e) {
+        console.error('[WishlistContext] Failed to save followed artists:', e);
+        showWarning('Storage full. Some changes may not be saved locally.');
       }
     }
-  }, [followedArtists, isLoading]);
+  }, [followedArtists, isLoading, showWarning]);
 
   // Save followed albums to localStorage
   useEffect(() => {
     if (!isLoading) {
-      if (followedAlbums.length > 0) {
-        localStorage.setItem(FOLLOWED_ALBUMS_STORAGE_KEY, JSON.stringify(followedAlbums));
-      } else {
-        localStorage.removeItem(FOLLOWED_ALBUMS_STORAGE_KEY);
+      try {
+        if (followedAlbums.length > 0) {
+          localStorage.setItem(FOLLOWED_ALBUMS_STORAGE_KEY, JSON.stringify(followedAlbums));
+        } else {
+          localStorage.removeItem(FOLLOWED_ALBUMS_STORAGE_KEY);
+        }
+      } catch (e) {
+        console.error('[WishlistContext] Failed to save followed albums:', e);
+        showWarning('Storage full. Some changes may not be saved locally.');
       }
     }
-  }, [followedAlbums, isLoading]);
+  }, [followedAlbums, isLoading, showWarning]);
 
   // ---------- Sync error handler ----------
   const handleSyncError = useCallback((error: unknown, action: string) => {
@@ -188,17 +203,17 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
         // Push local-only items to server
         if (likedMerge.toSync.length > 0) {
-          await syncLikedSongs(likedMerge.toSync).catch(() => {});
+          await syncLikedSongs(likedMerge.toSync).catch(e => handleSyncError(e, 'push local liked songs to server'));
         }
         if (artistMerge.toSync.length > 0) {
-          await syncFollowedArtists(artistMerge.toSync).catch(() => {});
+          await syncFollowedArtists(artistMerge.toSync).catch(e => handleSyncError(e, 'push local followed artists to server'));
         }
         if (albumMerge.toSync.length > 0) {
           const albumsToSync = albumMerge.toSync.map(id => {
             const [artist_slug, album_title] = id.split('::');
             return { artist_slug, album_title };
           });
-          await syncFollowedAlbums(albumsToSync).catch(() => {});
+          await syncFollowedAlbums(albumsToSync).catch(e => handleSyncError(e, 'push local followed albums to server'));
         }
 
         setSyncStatus('synced');
@@ -348,27 +363,44 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, items, followedArtists, followedAlbums, handleSyncError]);
 
+  const contextValue = useMemo<WishlistContextType>(() => ({
+    wishlist,
+    isLoading,
+    syncStatus,
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    isAuthenticated,
+    followedArtists,
+    followedAlbums,
+    followArtist,
+    unfollowArtist,
+    isArtistFollowed,
+    followAlbum,
+    unfollowAlbum,
+    isAlbumFollowed,
+    forceSync,
+  }), [
+    wishlist,
+    isLoading,
+    syncStatus,
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    isAuthenticated,
+    followedArtists,
+    followedAlbums,
+    followArtist,
+    unfollowArtist,
+    isArtistFollowed,
+    followAlbum,
+    unfollowAlbum,
+    isAlbumFollowed,
+    forceSync,
+  ]);
+
   return (
-    <WishlistContext.Provider
-      value={{
-        wishlist,
-        isLoading,
-        syncStatus,
-        addToWishlist,
-        removeFromWishlist,
-        isInWishlist,
-        isAuthenticated,
-        followedArtists,
-        followedAlbums,
-        followArtist,
-        unfollowArtist,
-        isArtistFollowed,
-        followAlbum,
-        unfollowAlbum,
-        isAlbumFollowed,
-        forceSync,
-      }}
-    >
+    <WishlistContext.Provider value={contextValue}>
       {children}
     </WishlistContext.Provider>
   );

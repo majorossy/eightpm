@@ -274,31 +274,45 @@ interface PaginatedResponse<T> {
   total_count: number;
 }
 
-export async function fetchCustomerCollections(token?: string): Promise<CustomerCollections> {
-  const data = await magentoAuthFetch<{
-    customer: {
-      cassettes: PaginatedResponse<ServerCassette>;
-      minidiscs: PaginatedResponse<ServerMiniDisc>;
-      liked_songs: { items: ServerLikedSong[]; total_count: number };
-      followed_artists: string[];
-      followed_albums: ServerFollowedAlbum[];
-      queue_snapshot: ServerQueueSnapshot | null;
-    };
-  }>(
-    FETCH_COLLECTIONS_QUERY,
-    undefined,
-    token,
-  );
+// In-flight promise guard: when multiple contexts call fetchCustomerCollections
+// in the same React commit (login), they share a single request.
+let _inflightCollections: Promise<CustomerCollections> | null = null;
 
-  // Unwrap paginated items so merge functions receive flat arrays
-  return {
-    cassettes: data.customer.cassettes.items,
-    minidiscs: data.customer.minidiscs.items,
-    liked_songs: data.customer.liked_songs,
-    followed_artists: data.customer.followed_artists,
-    followed_albums: data.customer.followed_albums,
-    queue_snapshot: data.customer.queue_snapshot,
-  };
+export async function fetchCustomerCollections(token?: string): Promise<CustomerCollections> {
+  if (_inflightCollections) return _inflightCollections;
+
+  _inflightCollections = (async () => {
+    const data = await magentoAuthFetch<{
+      customer: {
+        cassettes: PaginatedResponse<ServerCassette>;
+        minidiscs: PaginatedResponse<ServerMiniDisc>;
+        liked_songs: { items: ServerLikedSong[]; total_count: number };
+        followed_artists: string[];
+        followed_albums: ServerFollowedAlbum[];
+        queue_snapshot: ServerQueueSnapshot | null;
+      };
+    }>(
+      FETCH_COLLECTIONS_QUERY,
+      undefined,
+      token,
+    );
+
+    // Unwrap paginated items so merge functions receive flat arrays
+    return {
+      cassettes: data.customer.cassettes.items,
+      minidiscs: data.customer.minidiscs.items,
+      liked_songs: data.customer.liked_songs,
+      followed_artists: data.customer.followed_artists,
+      followed_albums: data.customer.followed_albums,
+      queue_snapshot: data.customer.queue_snapshot,
+    };
+  })();
+
+  try {
+    return await _inflightCollections;
+  } finally {
+    _inflightCollections = null;
+  }
 }
 
 // ============================================================================
