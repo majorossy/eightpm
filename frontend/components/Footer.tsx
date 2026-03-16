@@ -3,12 +3,16 @@ import Link from 'next/link';
 import ThemeToggle from './ThemeToggle';
 
 const aboutLinks = [
-  { href: '/about', label: 'About' },
-  { href: '/how-it-works', label: 'How It Works' },
+  { href: '/attribution', label: 'Attribution' },
+  { href: '/how-it-works', label: 'Directions' },
   { href: '/faq', label: 'FAQ' },
   { href: '/dmca', label: 'DMCA' },
-  { href: '/contact', label: 'Contact' },
+];
+
+const secondaryLinks = [
   { href: '/tapers', label: 'Tapers' },
+  { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 const legalLinks = [
@@ -30,7 +34,7 @@ export default function Footer() {
       className="mb-[60px] md:mb-0"
     >
       <div className="max-w-[1200px] mx-auto pt-8 pb-6 px-4 md:px-8 text-center space-y-4">
-        {/* Row 1: About Links */}
+        {/* Row 1: Primary Links */}
         <nav
           aria-label="About navigation"
           className="flex flex-wrap justify-center items-center gap-y-1"
@@ -49,7 +53,23 @@ export default function Footer() {
           ))}
         </nav>
 
-        {/* Row 2: Legal Links */}
+        {/* Row 2: Secondary Links */}
+        <div className="flex flex-wrap justify-center items-center gap-y-1">
+          {secondaryLinks.map((link, i) => (
+            <React.Fragment key={link.href}>
+              {i > 0 && (
+                <span aria-hidden="true" className="text-[var(--text-subdued)] mx-2">
+                  ·
+                </span>
+              )}
+              <Link href={link.href} className={linkClass}>
+                {link.label}
+              </Link>
+            </React.Fragment>
+          ))}
+        </div>
+
+        {/* Row 3: Legal Links */}
         <div className="flex flex-wrap justify-center items-center gap-y-1">
           {legalLinks.map((link, i) => (
             <React.Fragment key={link.href}>

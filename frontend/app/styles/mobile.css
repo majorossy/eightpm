@@ -106,30 +106,6 @@ html, body {
     opacity: 0.5;
   }
 
-  /* Ensure touch targets are large enough (44px minimum) */
-  button,
-  [role="button"],
-  a {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Allow smaller inline buttons/links and recording row action buttons */
-  .inline,
-  .inline-flex,
-  .text-xs,
-  .text-sm,
-  p a,
-  span a,
-  nav[aria-label="Breadcrumb"] a,
-  .recording-actions button,
-  .recording-actions span,
-  .version-picker button,
-  .version-picker a,
-  .version-picker span {
-    min-height: auto;
-    min-width: auto;
-  }
 
 }
 

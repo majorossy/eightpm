@@ -22,7 +22,7 @@ export default function DesktopMinimizedTag({
         animation: reducedMotion ? 'none' : 'minimizedTagSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards',
       }}
     >
-      <div className="pointer-events-auto flex items-center gap-1 rounded-t-xl bg-surface-elevated border border-b-0 border-accent/30 hover:border-accent shadow-lg shadow-black/40 transition-colors">
+      <div className={`pointer-events-auto flex items-center gap-1 rounded-t-xl border border-b-0 border-accent/30 hover:border-accent shadow-lg shadow-black/40 transition-colors ${isPlaying ? 'bg-secondary' : 'bg-quinary'}`}>
         {/* Restore area — click to expand */}
         <button
           onClick={onRestore}

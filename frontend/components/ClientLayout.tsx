@@ -28,6 +28,7 @@ import Footer from '@/components/Footer';
 import StarField from '@/components/StarField';
 import WebVitalsMonitor from '@/components/WebVitalsMonitor';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
+import EarlyAccessGate from '@/components/EarlyAccessGate';
 
 // Lazy load heavy components that aren't immediately visible
 const Queue = dynamic(() => import('@/components/Queue'), { ssr: false });
@@ -232,7 +233,9 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <LayoutContent>{children}</LayoutContent>
+        <EarlyAccessGate>
+          <LayoutContent>{children}</LayoutContent>
+        </EarlyAccessGate>
       </ThemeProvider>
     </ErrorBoundary>
   );

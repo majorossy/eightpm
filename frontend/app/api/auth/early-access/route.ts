@@ -5,19 +5,15 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const { password } = await request.json();
 
-    const validUsername = process.env.EARLY_ACCESS_USERNAME || '';
-    const validPassword = process.env.EARLY_ACCESS_PASSWORD || '';
+    const passwords = (process.env.EARLY_ACCESS_PASSWORDS || process.env.EARLY_ACCESS_PASSWORD || '').split(',').map(p => p.trim().toLowerCase()).filter(Boolean);
 
-    if (!validUsername || !validPassword) {
+    if (passwords.length === 0) {
       return NextResponse.json({ success: false, error: 'Auth not configured' }, { status: 500 });
     }
 
-    if (
-      username?.trim().toLowerCase() === validUsername.toLowerCase() &&
-      password?.toLowerCase() === validPassword.toLowerCase()
-    ) {
+    if (passwords.includes(password?.trim().toLowerCase())) {
       const response = NextResponse.json({ success: true });
       response.cookies.set(COOKIE_NAME, 'true', {
         httpOnly: true,
@@ -29,7 +25,7 @@ export async function POST(request: NextRequest) {
       return response;
     }
 
-    return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
+    return NextResponse.json({ success: false, error: 'Invalid password' }, { status: 401 });
   } catch {
     return NextResponse.json({ success: false, error: 'Invalid request' }, { status: 400 });
   }

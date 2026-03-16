@@ -31,12 +31,21 @@ export interface ServerFollowedAlbum {
   followed_at: string;
 }
 
+export interface ServerQueueSnapshot {
+  entity_id: number;
+  snapshot_data: string | null; // JSON string of { items, cursorIndex, repeat }
+  saved_at: string | null; // ms since epoch as string
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CustomerCollections {
   cassettes: ServerCassette[];
   minidiscs: ServerMiniDisc[];
   liked_songs: { items: ServerLikedSong[]; total_count: number };
   followed_artists: string[];
   followed_albums: ServerFollowedAlbum[];
+  queue_snapshot: ServerQueueSnapshot | null;
 }
 
 export interface ServerCassette {
@@ -250,6 +259,12 @@ const FETCH_COLLECTIONS_QUERY = `
         album_title
         followed_at
       }
+      queue_snapshot {
+        entity_id
+        snapshot_data
+        saved_at
+        updated_at
+      }
     }
   }
 `;
@@ -267,6 +282,7 @@ export async function fetchCustomerCollections(token?: string): Promise<Customer
       liked_songs: { items: ServerLikedSong[]; total_count: number };
       followed_artists: string[];
       followed_albums: ServerFollowedAlbum[];
+      queue_snapshot: ServerQueueSnapshot | null;
     };
   }>(
     FETCH_COLLECTIONS_QUERY,
@@ -281,6 +297,7 @@ export async function fetchCustomerCollections(token?: string): Promise<Customer
     liked_songs: data.customer.liked_songs,
     followed_artists: data.customer.followed_artists,
     followed_albums: data.customer.followed_albums,
+    queue_snapshot: data.customer.queue_snapshot,
   };
 }
 
@@ -1000,4 +1017,85 @@ export function mergeFollowedAlbums(
   }
 
   return { merged, toSync };
+}
+
+// ============================================================================
+// Queue Snapshot Sync
+// ============================================================================
+
+export async function saveQueueSnapshot(
+  snapshotData: string,
+  savedAt: number,
+  token?: string,
+): Promise<SaveResult> {
+  const query = `
+    mutation SaveQueueSnapshot($input: QueueSnapshotInput!) {
+      saveQueueSnapshot(input: $input) {
+        queue_snapshot { entity_id saved_at }
+        user_errors { message path }
+      }
+    }
+  `;
+
+  const data = await magentoAuthFetch<{
+    saveQueueSnapshot: { queue_snapshot: { entity_id: number } | null; user_errors: Array<{ message: string; path?: string[] }> };
+  }>(query, {
+    input: {
+      snapshot_data: snapshotData,
+      saved_at: String(savedAt),
+    },
+  }, token);
+
+  return {
+    success: data.saveQueueSnapshot.user_errors.length === 0,
+    user_errors: data.saveQueueSnapshot.user_errors,
+  };
+}
+
+/** Parse server queue snapshot JSON, returning null if invalid */
+export function parseServerQueueSnapshot(
+  server: ServerQueueSnapshot | null,
+): { items: unknown[]; cursorIndex: number; repeat: string; savedAt: number } | null {
+  if (!server?.snapshot_data) return null;
+  try {
+    const parsed = JSON.parse(server.snapshot_data);
+    if (!parsed || !Array.isArray(parsed.items)) return null;
+    return {
+      items: parsed.items,
+      cursorIndex: typeof parsed.cursorIndex === 'number' ? parsed.cursorIndex : -1,
+      repeat: parsed.repeat || 'off',
+      savedAt: parsed.savedAt || (server.saved_at ? Number(server.saved_at) : 0),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Merge queue snapshots: most recent wins (by savedAt timestamp).
+ * Returns which snapshot to use and whether the local needs syncing.
+ */
+export function mergeQueueSnapshot(
+  localSavedAt: number,
+  server: ServerQueueSnapshot | null,
+): { useServer: boolean; serverSnapshot: ReturnType<typeof parseServerQueueSnapshot> } {
+  const serverSnapshot = parseServerQueueSnapshot(server);
+
+  if (!serverSnapshot) {
+    // No server snapshot — keep local, sync it up
+    return { useServer: false, serverSnapshot: null };
+  }
+
+  if (localSavedAt === 0) {
+    // No local queue — use server
+    return { useServer: true, serverSnapshot };
+  }
+
+  // Both exist — most recent wins
+  if (serverSnapshot.savedAt > localSavedAt) {
+    return { useServer: true, serverSnapshot };
+  }
+
+  // Local is newer or same — keep local, sync it up
+  return { useServer: false, serverSnapshot: null };
 }

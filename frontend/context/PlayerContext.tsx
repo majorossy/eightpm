@@ -685,6 +685,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [currentSong, state.isPlaying, savePlaybackProgress]);
 
   // Fix ghost playback: pause audio when queue is cleared or nothing is current
+  const prevHasItemsRef = useRef(queueContext.hasItems);
   useEffect(() => {
     if ((!queueContext.hasItems || !currentSong) && state.isPlaying) {
       const audio = getAudio();
@@ -694,7 +695,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }
       setState(prev => ({ ...prev, isPlaying: false }));
     }
-  }, [queueContext.hasItems, currentSong]);
+    // Clear saved progress when queue transitions from non-empty to empty
+    if (prevHasItemsRef.current && !queueContext.hasItems) {
+      setSavedProgress(null);
+      clearPlaybackProgress();
+    }
+    prevHasItemsRef.current = queueContext.hasItems;
+  }, [queueContext.hasItems, currentSong, clearPlaybackProgress]);
+
+  // Show toast when queue localStorage write fails (e.g. QuotaExceededError)
+  // Throttled to once per 30s so persistent failures don't spam the UI
+  const storageErrorLastRef = useRef(0);
+  useEffect(() => {
+    const handler = () => {
+      const now = Date.now();
+      if (now - storageErrorLastRef.current < 30_000) return;
+      storageErrorLastRef.current = now;
+      if (toast) toast.showWarning('Storage full — queue changes may not be saved.');
+    };
+    window.addEventListener('8pm:storage-error', handler);
+    return () => window.removeEventListener('8pm:storage-error', handler);
+  }, [toast]);
 
   const playSong = useCallback((song: Song) => {
     userInitiatedRef.current = true;

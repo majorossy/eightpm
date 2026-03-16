@@ -132,6 +132,25 @@
         </constraint>
     </table>
 
+    <!-- Queue Snapshot (singleton per customer — stores entire queue as JSON) -->
+    <table name="archivedotorg_queue_snapshot" resource="default" engine="innodb" comment="Customer Queue Snapshot">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Customer ID"/>
+        <column xsi:type="mediumtext" name="snapshot_data" nullable="true" comment="JSON snapshot of queue state"/>
+        <column xsi:type="bigint" name="saved_at" unsigned="true" nullable="true" comment="Client-side timestamp (ms since epoch)"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="ARCHIVEDOTORG_QUEUE_SNAPSHOT_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID"
+                    table="archivedotorg_queue_snapshot" column="customer_id"
+                    referenceTable="customer_entity" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="ARCHIVEDOTORG_QUEUE_SNAPSHOT_CUSTOMER_ID">
+            <column name="customer_id"/>
+        </constraint>
+    </table>
+
     <!-- Followed Albums -->
     <table name="archivedotorg_followed_album" resource="default" engine="innodb" comment="Customer Followed Albums">
         <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>

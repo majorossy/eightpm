@@ -181,8 +181,9 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
                      flex items-center gap-2 px-2.5 z-50 pointer-events-auto
                      transition-all"
           style={{
-            backgroundColor: 'var(--secondary)',
-            color: 'white',
+            backgroundColor: 'var(--player-surface-deep)',
+            color: 'var(--secondary)',
+            border: '1.5px solid var(--secondary)',
             borderBottom: 'none',
           }}
           aria-label="Restore player"
@@ -213,8 +214,9 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
             onClick={onMinimize}
             className="w-8 h-7 rounded-t-lg flex items-center justify-center transition-colors"
             style={{
-              backgroundColor: 'var(--secondary)',
-              color: 'white',
+              backgroundColor: 'var(--player-surface-deep)',
+              color: 'var(--secondary)',
+              border: '1.5px solid var(--secondary)',
               borderBottom: 'none',
               borderTopRightRadius: isPlayerMinimized && summaryDismissed ? 0 : undefined,
             }}
@@ -230,8 +232,9 @@ export default function DesktopPlayerBar(props: DesktopPlayerBarProps) {
               onClick={() => setSummaryDismissed(false)}
               className="h-7 px-1.5 flex items-center justify-center rounded-tr-lg transition-colors hover:brightness-110"
               style={{
-                backgroundColor: 'var(--secondary)',
-                color: 'white',
+                backgroundColor: 'var(--player-surface-deep)',
+                color: 'var(--secondary)',
+                border: '1.5px solid var(--secondary)',
                 borderBottom: 'none',
               }}
               aria-label="Show song summary"

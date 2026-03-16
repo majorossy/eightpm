@@ -163,6 +163,24 @@ input LikedSongInput {
     song_data_snapshot: String @doc(description: "JSON snapshot of song data")
 }
 
+type CustomerQueueSnapshot {
+    entity_id: Int! @doc(description: "Queue snapshot entity ID")
+    snapshot_data: String @doc(description: "JSON snapshot of queue state (items, cursorIndex, repeat)")
+    saved_at: String @doc(description: "Client-side timestamp when snapshot was saved (ms since epoch)")
+    created_at: String @doc(description: "Created timestamp")
+    updated_at: String @doc(description: "Updated timestamp")
+}
+
+type SaveQueueSnapshotOutput {
+    queue_snapshot: CustomerQueueSnapshot @doc(description: "The saved queue snapshot")
+    user_errors: [UserError!]! @doc(description: "Errors that occurred")
+}
+
+input QueueSnapshotInput {
+    snapshot_data: String! @doc(description: "JSON snapshot of queue state")
+    saved_at: String @doc(description: "Client-side timestamp (ms since epoch)")
+}
+
 input FollowedAlbumInput {
     artist_slug: String! @doc(description: "Artist URL slug")
     album_title: String! @doc(description: "Album title")
@@ -178,6 +196,7 @@ type Customer {
     liked_songs(pageSize: Int = 100, currentPage: Int = 1): CustomerLikedSongsOutput! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerLikedSongs") @cache(cacheable: false) @doc(description: "Customer's liked songs")
     followed_artists: [String!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerFollowedArtists") @cache(cacheable: false) @doc(description: "Slugs of followed artists")
     followed_albums: [FollowedAlbumOutput!]! @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerFollowedAlbums") @cache(cacheable: false) @doc(description: "Followed albums")
+    queue_snapshot: CustomerQueueSnapshot @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\CustomerQueueSnapshot") @cache(cacheable: false) @doc(description: "Customer's saved queue state")
 }
 
 type FollowedAlbumOutput {
@@ -203,4 +222,5 @@ type Mutation {
     syncFollowedArtists(artist_slugs: [String!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncFollowedArtists") @doc(description: "Batch sync followed artists")
     syncFollowedAlbums(input: [FollowedAlbumInput!]!): SyncOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SyncFollowedAlbums") @doc(description: "Batch sync followed albums")
     toggleCassettePublic(client_id: String!, is_public: Boolean!): SaveCassetteOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\ToggleCassettePublic") @doc(description: "Toggle cassette public/private visibility")
+    saveQueueSnapshot(input: QueueSnapshotInput!): SaveQueueSnapshotOutput @resolver(class: "ArchiveDotOrg\\Customer\\Model\\Resolver\\SaveQueueSnapshot") @doc(description: "Save customer queue state")
 }

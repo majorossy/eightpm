@@ -28,6 +28,9 @@ import {
 import type { ChipGlow, ChipGlowType } from '@/lib/chipGlow';
 import { sanitizeStreamUrl } from '@/lib/urlUtils';
 import { trackAddToQueue, trackPlayNext, trackQueueReorder, trackVersionChange, trackRepeatChange } from '@/lib/analytics';
+import { useMagentoAuth } from '@/context/MagentoAuthContext';
+import { saveQueueSnapshot, mergeQueueSnapshot, AuthExpiredError } from '@/lib/magentoSync';
+import { getStoredToken } from '@/lib/magentoAuth';
 
 // =============================================================================
 // Action Types (discriminated union)
@@ -554,6 +557,38 @@ const QueueContext = createContext<QueueContextType | null>(null);
 // =============================================================================
 
 const QUEUE_STORAGE_KEY = '8pm_queue_snapshot';
+const PROGRESS_STORAGE_KEY = '8pm_playback_progress';
+
+/**
+ * Synchronously flush queue state to localStorage.
+ * Used for destructive operations (clear, advance-to-empty) to avoid
+ * the 500ms debounce race condition where unmount cancels the pending write.
+ */
+export function flushQueueToStorage(
+  queue: UnifiedQueue,
+  hasHydrated: boolean,
+): void {
+  if (typeof window === 'undefined') return;
+  if (!hasHydrated) return;
+  try {
+    if (queue.items.length === 0) {
+      localStorage.removeItem(QUEUE_STORAGE_KEY);
+    } else {
+      const snapshot = {
+        items: queue.items.map(({ availableVersions, played, ...rest }) => rest),
+        cursorIndex: queue.cursorIndex,
+        repeat: queue.repeat,
+        savedAt: Date.now(),
+      };
+      localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(snapshot));
+    }
+  } catch (e) {
+    console.error('[QueueContext] Failed to flush queue to storage:', e);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('8pm:storage-error', { detail: 'queue' }));
+    }
+  }
+}
 
 /** Sanitize an optional URL, returning undefined if input is falsy */
 function sanitizeOptionalUrl(url: string | undefined): string | undefined {
@@ -580,6 +615,14 @@ function getInitialState(): UnifiedQueue {
     const saved = localStorage.getItem(QUEUE_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
+      // Discard snapshots older than 30 days (Archive.org stream URLs go stale)
+      if (parsed?.savedAt) {
+        const ageInDays = (Date.now() - parsed.savedAt) / (1000 * 60 * 60 * 24);
+        if (ageInDays > 30) {
+          localStorage.removeItem(QUEUE_STORAGE_KEY);
+          return initialQueueState;
+        }
+      }
       if (parsed && Array.isArray(parsed.items)) {
         const items: QueueItem[] = parsed.items.map((item: QueueItem) => ({
           ...item,
@@ -607,6 +650,7 @@ function getInitialState(): UnifiedQueue {
 
 export function QueueProvider({ children }: { children: React.ReactNode }) {
   const [queue, dispatch] = useReducer(queueReducer, null, getInitialState);
+  const { isAuthenticated } = useMagentoAuth();
 
   // Ref that always holds the latest queue state (stale closure fix)
   const queueRef = useRef(queue);
@@ -616,6 +660,9 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
   const hasHydrated = useRef(false);
   useEffect(() => { hasHydrated.current = true; }, []);
 
+  // When true, the debounced effect should skip (a sync flush already handled it)
+  const skipDebounceRef = useRef(false);
+
   // ---------------------------------------------------------------------------
   // Debounced localStorage save
   // ---------------------------------------------------------------------------
@@ -623,28 +670,132 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // A synchronous flush already handled this state change — skip the debounce
+    if (skipDebounceRef.current) {
+      skipDebounceRef.current = false;
+      return;
+    }
+
     const timer = setTimeout(() => {
-      try {
-        if (queue.items.length === 0) {
-          // Only clear storage if we've hydrated — prevents nuking saved queue on mount
-          if (hasHydrated.current) {
-            localStorage.removeItem(QUEUE_STORAGE_KEY);
-          }
-          return;
-        }
-        const snapshot = {
-          items: queue.items,
-          cursorIndex: queue.cursorIndex,
-          repeat: queue.repeat,
-        };
-        localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(snapshot));
-      } catch (e) {
-        console.error('[QueueContext] Failed to save queue:', e);
-      }
+      flushQueueToStorage(queue, hasHydrated.current);
     }, 500);
 
     return () => clearTimeout(timer);
   }, [queue]);
+
+  // ---------------------------------------------------------------------------
+  // Debounced server sync (5s after last queue change)
+  // ---------------------------------------------------------------------------
+
+  const serverSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevAuthRef = useRef(false);
+  const hasFetchedFromServerRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!isAuthenticated) return;
+    if (!hasHydrated.current) return;
+
+    if (serverSyncTimerRef.current) clearTimeout(serverSyncTimerRef.current);
+
+    serverSyncTimerRef.current = setTimeout(() => {
+      const q = queueRef.current;
+      const savedAt = Date.now();
+      if (q.items.length === 0) {
+        // Sync empty queue so server knows it was cleared
+        saveQueueSnapshot(JSON.stringify({ items: [], cursorIndex: -1, repeat: q.repeat, savedAt }), savedAt)
+          .catch(() => {}); // fire-and-forget
+      } else {
+        const snapshot = {
+          items: q.items.map(({ availableVersions, played, ...rest }) => rest),
+          cursorIndex: q.cursorIndex,
+          repeat: q.repeat,
+          savedAt,
+        };
+        saveQueueSnapshot(JSON.stringify(snapshot), savedAt)
+          .catch(() => {}); // fire-and-forget
+      }
+    }, 5000);
+
+    return () => {
+      if (serverSyncTimerRef.current) clearTimeout(serverSyncTimerRef.current);
+    };
+  }, [queue, isAuthenticated]);
+
+  // ---------------------------------------------------------------------------
+  // Fetch server snapshot on login
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    const justLoggedIn = isAuthenticated && !prevAuthRef.current;
+    prevAuthRef.current = isAuthenticated;
+
+    if (!justLoggedIn || hasFetchedFromServerRef.current) return;
+
+    const fetchAndMerge = async () => {
+      try {
+        const token = getStoredToken();
+        if (!token) return;
+
+        const { fetchCustomerCollections } = await import('@/lib/magentoSync');
+        const collections = await fetchCustomerCollections(token);
+
+        // Determine local savedAt from localStorage
+        let localSavedAt = 0;
+        try {
+          const saved = localStorage.getItem(QUEUE_STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            localSavedAt = parsed?.savedAt || 0;
+          }
+        } catch {}
+
+        const { useServer, serverSnapshot } = mergeQueueSnapshot(localSavedAt, collections.queue_snapshot);
+
+        if (useServer && serverSnapshot) {
+          // Server has a more recent queue — restore it
+          const items: QueueItem[] = (serverSnapshot.items as QueueItem[]).map(item => ({
+            ...item,
+            song: item.song ? sanitizeSongUrls(item.song) : item.song,
+            availableVersions: item.song ? [item.song] : [],
+            played: false,
+          }));
+
+          dispatch({
+            type: 'LOAD_ITEMS',
+            items,
+            cursorIndex: serverSnapshot.cursorIndex,
+          });
+
+          if (serverSnapshot.repeat && serverSnapshot.repeat !== 'off') {
+            dispatch({ type: 'SET_REPEAT', mode: serverSnapshot.repeat as 'off' | 'all' | 'one' });
+          }
+        } else if (!useServer && queueRef.current.items.length > 0) {
+          // Local is newer — push to server (fire-and-forget)
+          const q = queueRef.current;
+          const savedAt = Date.now();
+          const snapshot = {
+            items: q.items.map(({ availableVersions, played, ...rest }) => rest),
+            cursorIndex: q.cursorIndex,
+            repeat: q.repeat,
+            savedAt,
+          };
+          saveQueueSnapshot(JSON.stringify(snapshot), savedAt, token).catch(() => {});
+        }
+
+        hasFetchedFromServerRef.current = true;
+      } catch (error) {
+        if (error instanceof AuthExpiredError) {
+          console.warn('[QueueContext] Auth expired during queue sync');
+        } else {
+          console.error('[QueueContext] Failed to sync queue from server:', error);
+        }
+      }
+    };
+
+    fetchAndMerge();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   // ---------------------------------------------------------------------------
   // Computed values
@@ -759,7 +910,15 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
   }, [triggerChipGlow]);
 
   const removeItem = useCallback((queueId: string) => {
+    const q = queueRef.current;
     dispatch({ type: 'REMOVE_ITEM', queueId });
+    // If this removal empties the queue, flush synchronously (same race fix as clearQueue)
+    const idx = q.items.findIndex(item => item.queueId === queueId);
+    if (idx !== -1 && q.items.length === 1) {
+      flushQueueToStorage({ ...initialQueueState, repeat: q.repeat }, hasHydrated.current);
+      skipDebounceRef.current = true;
+      try { localStorage.removeItem(PROGRESS_STORAGE_KEY); } catch {}
+    }
   }, []);
 
   const moveItem = useCallback((fromIndex: number, toIndex: number) => {
@@ -801,6 +960,18 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     // Dispatch the state change
     dispatch({ type: 'ADVANCE_CURSOR' });
 
+    // Detect if advance empties the queue (repeat=off, past end)
+    const willEmpty =
+      q.repeat === 'off' &&
+      q.cursorIndex + 1 >= q.items.length;
+
+    if (willEmpty) {
+      const emptyState: UnifiedQueue = { ...initialQueueState, repeat: q.repeat };
+      flushQueueToStorage(emptyState, hasHydrated.current);
+      skipDebounceRef.current = true;
+      try { localStorage.removeItem(PROGRESS_STORAGE_KEY); } catch {}
+    }
+
     return nextItem;
   }, []); // Empty deps -- uses ref
 
@@ -830,10 +1001,27 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 
   const clearQueue = useCallback(() => {
     dispatch({ type: 'CLEAR_QUEUE' });
+    // Synchronously flush empty state — don't rely on the 500ms debounce
+    const emptyState: UnifiedQueue = { ...initialQueueState, repeat: queueRef.current.repeat };
+    flushQueueToStorage(emptyState, hasHydrated.current);
+    skipDebounceRef.current = true;
+    // Clear playback progress so ResumeBar doesn't resurrect a ghost song
+    try { localStorage.removeItem(PROGRESS_STORAGE_KEY); } catch {}
   }, []);
 
   const clearUpcoming = useCallback(() => {
+    const q = queueRef.current;
     dispatch({ type: 'CLEAR_UPCOMING' });
+    // If items will actually be removed, flush synchronously
+    if (q.cursorIndex >= 0 && q.cursorIndex < q.items.length - 1) {
+      const kept: UnifiedQueue = {
+        items: q.items.slice(0, q.cursorIndex + 1),
+        cursorIndex: q.cursorIndex,
+        repeat: q.repeat,
+      };
+      flushQueueToStorage(kept, hasHydrated.current);
+      skipDebounceRef.current = true;
+    }
   }, []);
 
   const removeBatch = useCallback((batchId: string) => {

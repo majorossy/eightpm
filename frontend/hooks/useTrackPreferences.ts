@@ -16,11 +16,15 @@ function readStorage(albumId: string): Prefs {
 }
 
 function writeStorage(albumId: string, prefs: Prefs) {
-  const key = STORAGE_PREFIX + albumId;
-  if (Object.keys(prefs).length === 0) {
-    localStorage.removeItem(key);
-  } else {
-    localStorage.setItem(key, JSON.stringify(prefs));
+  try {
+    const key = STORAGE_PREFIX + albumId;
+    if (Object.keys(prefs).length === 0) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, JSON.stringify(prefs));
+    }
+  } catch {
+    // Quota exceeded — preference lives in React state for this session
   }
 }
 

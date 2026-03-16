@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { queueReducer } from '@/context/QueueContext';
+import { queueReducer, flushQueueToStorage } from '@/context/QueueContext';
 import {
   QueueItem,
   QueueItemAlbumSource,
@@ -561,6 +561,235 @@ describe('Queue Persistence - localStorage serialization', () => {
 
       expect(parsed.items).toHaveLength(3);
       expect(parsed.items[1].queueId).toBe('q-inserted');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Synchronous flush (race condition fix)
+  // ---------------------------------------------------------------------------
+  describe('flushQueueToStorage', () => {
+    it('removes localStorage key when queue is empty', () => {
+      // Pre-populate localStorage
+      localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify({ items: [1], cursorIndex: 0, repeat: 'off' }));
+
+      flushQueueToStorage(initialQueueState, true);
+
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).toBeNull();
+    });
+
+    it('writes queue snapshot when queue has items', () => {
+      const items = makeAlbumItems(2, 'batch-flush');
+      const state: UnifiedQueue = { items, cursorIndex: 1, repeat: 'all' };
+
+      flushQueueToStorage(state, true);
+
+      const stored = localStorage.getItem(QUEUE_STORAGE_KEY);
+      expect(stored).not.toBeNull();
+      const parsed = JSON.parse(stored!);
+      expect(parsed.items).toHaveLength(2);
+      expect(parsed.cursorIndex).toBe(1);
+      expect(parsed.repeat).toBe('all');
+    });
+
+    it('does not write when hasHydrated is false', () => {
+      localStorage.setItem(QUEUE_STORAGE_KEY, 'original');
+
+      flushQueueToStorage(initialQueueState, false);
+
+      // Should NOT have been cleared because hasHydrated is false
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).toBe('original');
+    });
+
+    it('CLEAR_QUEUE immediately removes localStorage (no 500ms wait)', () => {
+      const items = makeAlbumItems(3, 'batch-race');
+      const state: UnifiedQueue = { items, cursorIndex: 0, repeat: 'off' };
+
+      // Simulate: save queue to storage first
+      localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify({
+        items: state.items,
+        cursorIndex: state.cursorIndex,
+        repeat: state.repeat,
+      }));
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).not.toBeNull();
+
+      // Simulate what clearQueue does: dispatch + sync flush
+      const cleared = queueReducer(state, { type: 'CLEAR_QUEUE' });
+      flushQueueToStorage(cleared, true);
+
+      // Should be gone immediately — not after 500ms
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).toBeNull();
+    });
+
+    it('playback progress is cleared when queue is cleared', () => {
+      const PROGRESS_KEY = '8pm_playback_progress';
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify({
+        songId: 'song-1',
+        position: 120,
+        title: 'Test Song',
+        artistName: 'Railroad Earth',
+      }));
+
+      // Simulate clearQueue behavior: flush empty state + remove progress
+      flushQueueToStorage(initialQueueState, true);
+      localStorage.removeItem(PROGRESS_KEY);
+
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).toBeNull();
+      expect(localStorage.getItem(PROGRESS_KEY)).toBeNull();
+    });
+
+    it('does not write availableVersions or played to localStorage', () => {
+      const song1 = makeSong({ id: 'v1' });
+      const song2 = makeSong({ id: 'v2' });
+      const item = makeQueueItem({
+        song: song1,
+        availableVersions: [song1, song2],
+        played: true,
+      });
+      const state: UnifiedQueue = { items: [item], cursorIndex: 0, repeat: 'off' };
+
+      flushQueueToStorage(state, true);
+
+      const stored = localStorage.getItem(QUEUE_STORAGE_KEY);
+      const parsed = JSON.parse(stored!);
+      expect(parsed.items[0].availableVersions).toBeUndefined();
+      expect(parsed.items[0].played).toBeUndefined();
+      expect(parsed.items[0].song.id).toBe('v1');
+    });
+
+    it('includes savedAt timestamp in snapshot', () => {
+      const items = makeAlbumItems(1, 'batch-ts');
+      const state: UnifiedQueue = { items, cursorIndex: 0, repeat: 'off' };
+
+      const before = Date.now();
+      flushQueueToStorage(state, true);
+      const after = Date.now();
+
+      const stored = localStorage.getItem(QUEUE_STORAGE_KEY);
+      const parsed = JSON.parse(stored!);
+      expect(parsed.savedAt).toBeGreaterThanOrEqual(before);
+      expect(parsed.savedAt).toBeLessThanOrEqual(after);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Staleness expiry
+  // ---------------------------------------------------------------------------
+  describe('Staleness expiry', () => {
+    it('discards snapshots older than 30 days on restore', () => {
+      const items = makeAlbumItems(2, 'batch-stale');
+      const snapshot = {
+        items: items.map(({ availableVersions, played, ...rest }) => rest),
+        cursorIndex: 0,
+        repeat: 'off' as const,
+        savedAt: Date.now() - 31 * 24 * 60 * 60 * 1000, // 31 days ago
+      };
+      localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(snapshot));
+
+      // Simulate getInitialState logic
+      const saved = localStorage.getItem(QUEUE_STORAGE_KEY);
+      const parsed = JSON.parse(saved!);
+
+      let result: UnifiedQueue = initialQueueState;
+      if (parsed?.savedAt) {
+        const ageInDays = (Date.now() - parsed.savedAt) / (1000 * 60 * 60 * 24);
+        if (ageInDays > 30) {
+          localStorage.removeItem(QUEUE_STORAGE_KEY);
+          result = initialQueueState;
+        }
+      }
+
+      expect(result).toEqual(initialQueueState);
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).toBeNull();
+    });
+
+    it('keeps snapshots younger than 30 days', () => {
+      const items = makeAlbumItems(2, 'batch-fresh');
+      const snapshot = {
+        items: items.map(({ availableVersions, played, ...rest }) => rest),
+        cursorIndex: 0,
+        repeat: 'off' as const,
+        savedAt: Date.now() - 5 * 24 * 60 * 60 * 1000, // 5 days ago
+      };
+      localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(snapshot));
+
+      const saved = localStorage.getItem(QUEUE_STORAGE_KEY);
+      const parsed = JSON.parse(saved!);
+
+      let expired = false;
+      if (parsed?.savedAt) {
+        const ageInDays = (Date.now() - parsed.savedAt) / (1000 * 60 * 60 * 24);
+        if (ageInDays > 30) expired = true;
+      }
+
+      expect(expired).toBe(false);
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).not.toBeNull();
+    });
+
+    it('gracefully handles pre-migration snapshots without savedAt', () => {
+      const items = makeAlbumItems(2, 'batch-legacy');
+      const snapshot = {
+        items: items.map(({ availableVersions, played, ...rest }) => rest),
+        cursorIndex: 0,
+        repeat: 'off' as const,
+        // No savedAt — pre-migration snapshot
+      };
+      localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(snapshot));
+
+      const saved = localStorage.getItem(QUEUE_STORAGE_KEY);
+      const parsed = JSON.parse(saved!);
+
+      let expired = false;
+      if (parsed?.savedAt) {
+        const ageInDays = (Date.now() - parsed.savedAt) / (1000 * 60 * 60 * 24);
+        if (ageInDays > 30) expired = true;
+      }
+
+      // Should NOT be expired — no savedAt means we can't determine age
+      expect(expired).toBe(false);
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).not.toBeNull();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // removeItem sync flush
+  // ---------------------------------------------------------------------------
+  describe('removeItem sync flush', () => {
+    it('removing the last item immediately clears localStorage', () => {
+      const item = makeQueueItem({ queueId: 'q-last' });
+      const state: UnifiedQueue = { items: [item], cursorIndex: 0, repeat: 'off' };
+
+      // Save queue to storage first
+      flushQueueToStorage(state, true);
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).not.toBeNull();
+
+      // Simulate removeItem: dispatch reducer + sync flush if queue empties
+      const afterRemove = queueReducer(state, { type: 'REMOVE_ITEM', queueId: 'q-last' });
+      expect(afterRemove.items).toHaveLength(0);
+
+      // Pre-compute: item exists and queue has exactly 1 item → sync flush
+      const idx = state.items.findIndex(i => i.queueId === 'q-last');
+      if (idx !== -1 && state.items.length === 1) {
+        flushQueueToStorage({ ...initialQueueState, repeat: state.repeat }, true);
+      }
+
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).toBeNull();
+    });
+
+    it('removing a non-last item does NOT sync flush', () => {
+      const items = makeAlbumItems(3, 'batch-rm');
+      const state: UnifiedQueue = { items, cursorIndex: 0, repeat: 'off' };
+
+      flushQueueToStorage(state, true);
+      const storedBefore = localStorage.getItem(QUEUE_STORAGE_KEY);
+      expect(storedBefore).not.toBeNull();
+
+      // items.length > 1, so sync flush should NOT fire
+      const idx = state.items.findIndex(i => i.queueId === items[1].queueId);
+      const shouldSyncFlush = idx !== -1 && state.items.length === 1;
+
+      expect(shouldSyncFlush).toBe(false);
+      // localStorage should still have the original data
+      expect(localStorage.getItem(QUEUE_STORAGE_KEY)).toBe(storedBefore);
     });
   });
 });

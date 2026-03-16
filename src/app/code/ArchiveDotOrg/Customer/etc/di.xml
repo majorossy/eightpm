@@ -17,4 +17,7 @@
     <preference for="ArchiveDotOrg\Customer\Api\FollowedAlbumRepositoryInterface"
                 type="ArchiveDotOrg\Customer\Model\FollowedAlbumRepository"/>
 
+    <preference for="ArchiveDotOrg\Customer\Api\QueueSnapshotRepositoryInterface"
+                type="ArchiveDotOrg\Customer\Model\QueueSnapshotRepository"/>
+
 </config>
