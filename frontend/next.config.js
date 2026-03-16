@@ -228,7 +228,7 @@ const nextConfig = {
               // - archive.org: Metadata API and audio streaming
               // - google-analytics.com: Analytics beacons
               // - ws/wss localhost: Next.js hot reload WebSocket (dev only)
-              "connect-src 'self' https://magento.test https://magento.8pm.me https://localhost:* https://*.archive.org https://archive.org https://www.google-analytics.com https://analytics.google.com wss://localhost:* ws://localhost:*",
+              `connect-src 'self' https://magento.test https://magento.8pm.me https://*.archive.org https://archive.org https://www.google-analytics.com https://analytics.google.com${process.env.NODE_ENV === 'development' ? ' https://localhost:* wss://localhost:* ws://localhost:*' : ''}`,
 
               // Media (audio/video): Archive.org streaming and blob URLs
               // - archive.org: Audio files from ia*.us.archive.org subdomains

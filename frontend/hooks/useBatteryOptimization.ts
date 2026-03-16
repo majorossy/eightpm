@@ -72,6 +72,8 @@ export function useBatteryOptimization(): BatteryOptimizationState {
     }
 
     let battery: BatteryManager | null = null;
+    let handleLevelChange: (() => void) | null = null;
+    let handleChargingChange: (() => void) | null = null;
 
     const updateBatteryStatus = (batt: BatteryManager) => {
       const level = batt.level * 100; // Convert to percentage
@@ -85,20 +87,11 @@ export function useBatteryOptimization(): BatteryOptimizationState {
         battery = batt;
         updateBatteryStatus(batt);
 
-        // Listen for battery changes
-        const handleLevelChange = () => updateBatteryStatus(batt);
-        const handleChargingChange = () => updateBatteryStatus(batt);
+        handleLevelChange = () => updateBatteryStatus(batt);
+        handleChargingChange = () => updateBatteryStatus(batt);
 
         batt.addEventListener('levelchange', handleLevelChange);
         batt.addEventListener('chargingchange', handleChargingChange);
-
-        // Cleanup stored for return
-        return () => {
-          if (battery) {
-            battery.removeEventListener('levelchange', handleLevelChange);
-            battery.removeEventListener('chargingchange', handleChargingChange);
-          }
-        };
       })
       .catch(() => {
         // Battery API failed - assume device is charging
@@ -106,7 +99,12 @@ export function useBatteryOptimization(): BatteryOptimizationState {
         setIsLowBattery(false);
       });
 
-    // No cleanup needed here (handled in promise)
+    return () => {
+      if (battery) {
+        if (handleLevelChange) battery.removeEventListener('levelchange', handleLevelChange);
+        if (handleChargingChange) battery.removeEventListener('chargingchange', handleChargingChange);
+      }
+    };
   }, []);
 
   // Calculate reducedMotion flag

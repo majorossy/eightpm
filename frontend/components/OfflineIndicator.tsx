@@ -10,11 +10,13 @@ export default function OfflineIndicator() {
     // Check initial state
     setIsOffline(!navigator.onLine);
 
+    let reconnectTimer: ReturnType<typeof setTimeout>;
+
     const handleOnline = () => {
       setIsOffline(false);
       setShowReconnected(true);
       // Hide reconnected message after 3 seconds
-      setTimeout(() => setShowReconnected(false), 3000);
+      reconnectTimer = setTimeout(() => setShowReconnected(false), 3000);
     };
 
     const handleOffline = () => {
@@ -26,6 +28,7 @@ export default function OfflineIndicator() {
     window.addEventListener('offline', handleOffline);
 
     return () => {
+      clearTimeout(reconnectTimer);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };

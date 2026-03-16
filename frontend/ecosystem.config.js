@@ -6,7 +6,6 @@ module.exports = {
     cwd: '/var/www/eightpm/frontend',
     env: {
       NODE_ENV: 'production',
-      NODE_TLS_REJECT_UNAUTHORIZED: '0'
     },
     // Restart settings
     max_restarts: 10,

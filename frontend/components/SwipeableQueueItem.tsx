@@ -18,16 +18,21 @@ export default function SwipeableQueueItem({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const SWIPE_THRESHOLD = 80; // 80px to reveal delete button
   const VELOCITY_THRESHOLD = 0.3; // Lower threshold for faster swipes
   const { vibrate, SWIPE_COMPLETE, DELETE_ACTION } = useHaptic();
+
+  useEffect(() => {
+    return () => clearTimeout(deleteTimerRef.current);
+  }, []);
 
   const handleDelete = () => {
     // Simple confirmation for mobile
     vibrate(DELETE_ACTION);
     setIsDeleting(true);
     // Wait for animation before calling onDelete
-    setTimeout(() => {
+    deleteTimerRef.current = setTimeout(() => {
       onDelete();
     }, 300);
   };
