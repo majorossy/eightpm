@@ -131,7 +131,7 @@ export function trackPlayNext(song: Song): void {
  * Track version change in queue
  */
 export function trackVersionChange(trackTitle: string, newVersionId: string): void {
-  trackEvent('version_change', 'Engagement', trackTitle);
+  trackEvent('version_change', 'Engagement', `${trackTitle}|${newVersionId}`);
 }
 
 /**
@@ -614,6 +614,158 @@ export function trackPWAInstall(): void {
  */
 export function trackPWAInstallDismissed(): void {
   trackEvent('pwa_install_dismissed', 'PWA');
+}
+
+// ============================================
+// Playback Control Events
+// ============================================
+
+/**
+ * Track skip (next track)
+ */
+export function trackSkip(song: Song, percentPlayed: number): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'track_skip', {
+      event_category: 'Audio',
+      artist_name: song.artistName,
+      track_title: song.trackTitle,
+      percent_played: Math.round(percentPlayed),
+    });
+  }
+}
+
+/**
+ * Track previous (restart or actual prev)
+ */
+export function trackPrevious(song: Song, percentPlayed: number, wasRestart: boolean): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'track_previous', {
+      event_category: 'Audio',
+      artist_name: song.artistName,
+      track_title: song.trackTitle,
+      percent_played: Math.round(percentPlayed),
+      was_restart: wasRestart,
+    });
+  }
+}
+
+/**
+ * Track shuffle toggle
+ */
+export function trackShuffleToggle(enabled: boolean, queueSize: number): void {
+  trackEvent(enabled ? 'shuffle_on' : 'shuffle_off', 'Audio', undefined, queueSize);
+}
+
+/**
+ * Track buffering events (non-interaction)
+ */
+export function trackBuffer(song: Song, bufferDurationMs: number): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    const conn = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection;
+    window.gtag('event', 'audio_buffer', {
+      event_category: 'Audio',
+      artist_name: song.artistName,
+      track_title: song.trackTitle,
+      buffer_duration_ms: bufferDurationMs,
+      connection_type: conn?.effectiveType || 'unknown',
+      non_interaction: true,
+    });
+  }
+}
+
+/**
+ * Track listening session summary (fired on page unload)
+ */
+export function trackListeningSession(tracksPlayed: number, totalSeconds: number, uniqueArtists: number): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'listening_session_end', {
+      event_category: 'Audio',
+      tracks_played: tracksPlayed,
+      total_listening_seconds: totalSeconds,
+      unique_artists: uniqueArtists,
+      non_interaction: true,
+    });
+  }
+}
+
+// ============================================
+// Feature Adoption Events
+// ============================================
+
+export function trackSleepTimerStart(preset: string): void {
+  trackEvent('sleep_timer_start', 'Feature', preset);
+}
+
+export function trackSleepTimerCancel(): void {
+  trackEvent('sleep_timer_cancel', 'Feature');
+}
+
+export function trackSleepTimerComplete(): void {
+  trackEvent('sleep_timer_complete', 'Feature');
+}
+
+export function trackThemeChange(fromTheme: string, toTheme: string): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'theme_change', {
+      event_category: 'Feature',
+      from_theme: fromTheme,
+      to_theme: toTheme,
+    });
+  }
+}
+
+export function trackKeyboardShortcut(key: string, action: string): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'keyboard_shortcut', {
+      event_category: 'Feature',
+      key,
+      action,
+    });
+  }
+}
+
+export function trackVenueClick(venueName: string, venueSlug: string): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'venue_click', {
+      event_category: 'Discovery',
+      venue_name: venueName,
+      venue_slug: venueSlug,
+    });
+  }
+}
+
+export function trackResumeBar(action: 'shown' | 'clicked' | 'dismissed'): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', `resume_bar_${action}`, {
+      event_category: 'Engagement',
+      non_interaction: action === 'shown',
+    });
+  }
+}
+
+export function trackCrossfadeChange(durationSeconds: number): void {
+  trackEvent('crossfade_change', 'Feature', durationSeconds === 0 ? 'off' : `${durationSeconds}s`);
+}
+
+export function trackSharedCassetteImport(cassetteName: string, sharedBy: string, artistName: string): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'shared_cassette_import', {
+      event_category: 'Social',
+      cassette_name: cassetteName,
+      shared_by: sharedBy,
+      artist_name: artistName,
+    });
+  }
+}
+
+// ============================================
+// User Properties
+// ============================================
+
+export function setUserProperties(properties: Record<string, string | number>): void {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('set', 'user_properties', properties);
+  }
 }
 
 // ============================================

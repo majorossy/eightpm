@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
+# Stop frontend (if running) then Docker containers
+bin/frontend-stop 2>/dev/null || true
 bin/docker-compose stop "$@"

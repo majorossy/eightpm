@@ -101,15 +101,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${orbitron.variable} ${spaceMono.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} ${caveat.variable} ${dmSerifDisplay.variable} theme-lot`}>
       <head>
-        {/* Preconnect hints for critical resources - improves LCP */}
-        <link rel="preconnect" href="https://magento.test" />
-        <link rel="dns-prefetch" href="https://magento.test" />
-        <link rel="preconnect" href="https://archive.org" crossOrigin="anonymous" />
+        {/* DNS prefetch for Archive.org audio CDN — used during playback */}
         <link rel="dns-prefetch" href="https://archive.org" />
-        {/* Archive.org uses dynamic CDN subdomains like ia800200.us.archive.org */}
-        <link rel="preconnect" href="https://ia800200.us.archive.org" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://ia800200.us.archive.org" />
-        <link rel="preconnect" href="https://ia600200.us.archive.org" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://ia600200.us.archive.org" />
 
         {/* PWA Meta Tags */}
@@ -121,7 +115,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="8pm.me" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
         {/* Favicons */}
         <link rel="icon" href="/favicon.ico" sizes="32x32" />

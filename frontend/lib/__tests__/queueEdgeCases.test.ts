@@ -134,17 +134,17 @@ describe('Empty queue operations', () => {
     expect(state).toBe(initialQueueState);
   });
 
-  it('INSERT_AFTER_CURSOR on empty queue (cursor -1) puts item at index 0', () => {
+  it('INSERT_AFTER_CURSOR on empty queue (cursor -1) appends and auto-starts', () => {
     const item = makeQueueItem({ queueId: 'q-first' });
     const state = queueReducer(initialQueueState, {
       type: 'INSERT_AFTER_CURSOR',
       items: item,
     });
-    // insertAt = cursorIndex + 1 = -1 + 1 = 0
+    // Empty queue triggers append + auto-start
     expect(state.items).toHaveLength(1);
     expect(state.items[0].queueId).toBe('q-first');
-    // Cursor should still be -1 (INSERT_AFTER_CURSOR does not change cursor)
-    expect(state.cursorIndex).toBe(-1);
+    // Cursor auto-starts at 0
+    expect(state.cursorIndex).toBe(0);
   });
 
   it('REMOVE_ITEM with non-existent queueId returns state unchanged', () => {
@@ -176,11 +176,12 @@ describe('Single item queue', () => {
     ]);
   });
 
-  it('ADVANCE_CURSOR with repeat=off goes past end', () => {
+  it('ADVANCE_CURSOR with repeat=off clears queue entirely', () => {
     const state = queueReducer(singleItemState, { type: 'ADVANCE_CURSOR' });
     // nextIdx = 0 + 1 = 1, which is >= items.length (1), repeat=off
-    // so cursor goes to items.length = 1 (past end)
-    expect(state.cursorIndex).toBe(1);
+    // clears queue entirely
+    expect(state.items).toHaveLength(0);
+    expect(state.cursorIndex).toBe(-1);
   });
 
   it('ADVANCE_CURSOR with repeat=one stays at 0', () => {
@@ -761,7 +762,7 @@ describe('SELECT_VERSION with same song', () => {
 // 9. Rapid ADVANCE_CURSOR calls
 // ---------------------------------------------------------------------------
 describe('Rapid ADVANCE_CURSOR calls', () => {
-  it('5-item queue, 10 ADVANCE calls with repeat=off -- cursor at items.length', () => {
+  it('5-item queue, 10 ADVANCE calls with repeat=off -- queue clears', () => {
     const items = makeAlbumItems(5, 'batch-rapid');
     let state = runActions(initialQueueState, [
       { type: 'LOAD_ITEMS', items, cursorIndex: 0 },
@@ -771,12 +772,10 @@ describe('Rapid ADVANCE_CURSOR calls', () => {
       state = queueReducer(state, { type: 'ADVANCE_CURSOR' });
     }
 
-    // After advancing past the end with repeat=off, cursor = items.length = 5
-    // But note: once cursor is at 5 (past end), ADVANCE_CURSOR still runs
-    // because items.length > 0. nextIdx = 5 + 1 = 6, which is >= 5.
-    // repeat=off => cursor = items.length = 5.
-    // So even after 10 calls, cursor stabilizes at 5.
-    expect(state.cursorIndex).toBe(5);
+    // After advancing past end with repeat=off, queue clears entirely.
+    // Subsequent ADVANCE_CURSOR on empty queue returns state unchanged.
+    expect(state.items).toHaveLength(0);
+    expect(state.cursorIndex).toBe(-1);
   });
 
   it('5-item queue, 10 ADVANCE calls with repeat=all -- wraps correctly (cursor at 0)', () => {
@@ -848,7 +847,7 @@ describe('INSERT_AFTER_CURSOR with empty array', () => {
 // 11. APPEND_ITEMS to queue with cursor at -1
 // ---------------------------------------------------------------------------
 describe('APPEND_ITEMS to queue with cursor at -1', () => {
-  it('Start empty, APPEND 3 items -- cursor stays -1 (user has not started playing)', () => {
+  it('Start empty, APPEND 3 items -- cursor auto-starts at 0', () => {
     const items = makeAlbumItems(3, 'batch-append-no-play');
 
     const state = queueReducer(initialQueueState, {
@@ -857,20 +856,21 @@ describe('APPEND_ITEMS to queue with cursor at -1', () => {
     });
 
     expect(state.items).toHaveLength(3);
-    // APPEND_ITEMS does not touch cursorIndex
-    expect(state.cursorIndex).toBe(-1);
+    // Empty queue triggers auto-start at index 0
+    expect(state.cursorIndex).toBe(0);
   });
 
-  it('APPEND then SET_CURSOR to start playing', () => {
+  it('APPEND auto-starts, SET_CURSOR to 0 is redundant', () => {
     const items = makeAlbumItems(3, 'batch-append-then-play');
 
     let state = runActions(initialQueueState, [
       { type: 'APPEND_ITEMS', items },
     ]);
 
-    expect(state.cursorIndex).toBe(-1);
+    // Auto-start already set cursor to 0
+    expect(state.cursorIndex).toBe(0);
 
-    // Now user starts playing
+    // SET_CURSOR to 0 is a no-op (already there)
     state = queueReducer(state, { type: 'SET_CURSOR', index: 0 });
     expect(state.cursorIndex).toBe(0);
     expect(state.items[0].queueId).toBe(items[0].queueId);
@@ -1044,18 +1044,20 @@ describe('RETREAT_CURSOR edge cases', () => {
 });
 
 describe('MARK_PLAYED edge cases', () => {
-  it('MARK_PLAYED when cursor is past end (cursorIndex >= items.length) -- no crash', () => {
+  it('MARK_PLAYED after queue clears from ADVANCE_CURSOR -- no crash', () => {
     const items = makeAlbumItems(2, 'batch-mark-oob');
     let state = runActions(initialQueueState, [
       { type: 'LOAD_ITEMS', items, cursorIndex: 0 },
     ]);
 
-    // Advance past end
+    // Advance: cursor 0 → 1
     state = queueReducer(state, { type: 'ADVANCE_CURSOR' });
+    // Advance past end: clears queue entirely
     state = queueReducer(state, { type: 'ADVANCE_CURSOR' });
-    expect(state.cursorIndex).toBe(2); // past end
+    expect(state.items).toHaveLength(0);
+    expect(state.cursorIndex).toBe(-1);
 
-    // MARK_PLAYED should be a no-op since cursor is out of bounds
+    // MARK_PLAYED on empty queue is a no-op
     const result = queueReducer(state, { type: 'MARK_PLAYED' });
     expect(result).toBe(state);
   });

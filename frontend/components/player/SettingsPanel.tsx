@@ -3,6 +3,7 @@
 import React from 'react';
 import { SleepTimerPreset } from '@/hooks/useSleepTimer';
 import { useBackToClose } from '@/hooks/useBackToClose';
+import { trackSleepTimerStart, trackSleepTimerCancel, trackCrossfadeChange } from '@/lib/analytics';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -73,6 +74,7 @@ export function SettingsPanel({
                 onClick={() => {
                   vibrate(BUTTON_PRESS);
                   sleepTimer.cancelTimer();
+                  trackSleepTimerCancel();
                 }}
                 className="px-4 py-2 bg-secondary/20 text-white rounded-full text-sm font-medium hover:bg-secondary/30"
               >
@@ -99,9 +101,10 @@ export function SettingsPanel({
                 onClick={() => {
                   vibrate(BUTTON_PRESS);
                   sleepTimer.startTimer(preset);
+                  trackSleepTimerStart(preset);
                   onClose();
                 }}
-                className="w-full px-4 py-3 bg-border hover:bg-border text-white rounded-lg text-left font-medium transition-colors"
+                className="w-full px-4 py-3 bg-border hover:bg-border/80 text-white rounded-lg text-left font-medium transition-colors"
               >
                 {labels[preset]}
               </button>
@@ -128,6 +131,8 @@ export function SettingsPanel({
               step="1"
               value={crossfadeDuration}
               onChange={(e) => setCrossfadeDuration(Number(e.target.value))}
+              onMouseUp={(e) => trackCrossfadeChange(Number((e.target as HTMLInputElement).value))}
+              onTouchEnd={(e) => trackCrossfadeChange(Number((e.target as HTMLInputElement).value))}
               className="w-full h-1 bg-border rounded-lg appearance-none cursor-pointer"
               style={{
                 background: `linear-gradient(to right, var(--secondary) 0%, var(--secondary) ${(crossfadeDuration / 12) * 100}%, var(--border-color, #3a3632) ${(crossfadeDuration / 12) * 100}%, var(--border-color, #3a3632) 100%)`

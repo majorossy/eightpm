@@ -87,26 +87,41 @@ restart_service_group() {
 }
 
 # Restart frontend (Next.js on host port 3001)
+# Detects PM2 (production) vs nohup (development) automatically
 restart_frontend() {
   echo -e "${CYAN}🔄 Restarting frontend...${NC}"
 
-  # Kill process on port 3001
-  echo -e "${BLUE}  → Stopping dev server on port 3001...${NC}"
-  lsof -ti:3001 | xargs kill -9 2>/dev/null || echo "    (no process found)"
+  # Detect mode: if PM2 is managing 8pm-frontend, use frontend-prod (handles build + restart)
+  if command -v pm2 &> /dev/null && pm2 list 2>/dev/null | grep -q '8pm-frontend'; then
+    echo -e "${BLUE}  → Production mode detected — rebuilding and restarting...${NC}"
+    "$SCRIPT_DIR/frontend-prod"
+  else
+    # Dev mode: stop, clean caches, restart dev server
+    echo -e "${BLUE}  → Stopping frontend on port 3001...${NC}"
+    "$SCRIPT_DIR/frontend-stop" 2>/dev/null || echo "    (no process found)"
 
-  # Clean caches
-  echo -e "${BLUE}  → Cleaning caches...${NC}"
-  cd "$PROJECT_DIR/frontend"
-  rm -rf .next tsconfig.tsbuildinfo node_modules/.cache 2>/dev/null || true
+    echo -e "${BLUE}  → Cleaning caches...${NC}"
+    cd "$PROJECT_DIR/frontend"
+    rm -rf .next tsconfig.tsbuildinfo node_modules/.cache 2>/dev/null || true
 
-  # Start dev server in background
-  echo -e "${BLUE}  → Starting dev server...${NC}"
-  nohup npm run dev > /dev/null 2>&1 &
-
-  sleep 2
+    echo -e "${BLUE}  → Starting dev server...${NC}"
+    nohup npm run dev > /dev/null 2>&1 &
+    sleep 2
+  fi
 
   echo -e "${GREEN}✅ Frontend restarted on port 3001${NC}"
   echo -e "${YELLOW}   View at: http://localhost:3001${NC}"
+}
+
+# Stop all services (frontend + Docker)
+stop_all() {
+  echo -e "${CYAN}Stopping all services...${NC}"
+  echo -e "${BLUE}  → Stopping frontend...${NC}"
+  "$SCRIPT_DIR/frontend-stop" 2>/dev/null || echo "    (no frontend process found)"
+  echo -e "${BLUE}  → Stopping Docker containers...${NC}"
+  check_docker_running
+  "$SCRIPT_DIR/docker-compose" stop
+  echo -e "${GREEN}✅ All services stopped${NC}"
 }
 
 # Restart all backend services
@@ -271,7 +286,7 @@ magento_config_export() {
 docker_rebuild() {
   echo -e "${CYAN}🔄 Rebuilding Docker containers...${NC}"
   check_docker_running
-  "$SCRIPT_DIR/docker-compose" down
+  "$SCRIPT_DIR/docker-compose" down --remove-orphans
   "$SCRIPT_DIR/docker-compose" build --no-cache
   "$SCRIPT_DIR/docker-compose" up -d
   echo -e "${GREEN}✅ Containers rebuilt${NC}"
@@ -291,11 +306,17 @@ docker_logs() {
 }
 
 docker_clean() {
-  echo -e "${CYAN}🔄 Cleaning Docker volumes and orphans...${NC}"
-  check_docker_running
-  "$SCRIPT_DIR/docker-compose" down -v --remove-orphans
-  docker system prune -f
-  echo -e "${GREEN}✅ Docker cleanup complete${NC}"
+  echo -e "${RED}⚠️  WARNING: This will remove all 8pm containers/volumes AND prune unused Docker resources system-wide.${NC}"
+  read -p "Are you sure? (yes/no): " confirm
+  if [ "$confirm" = "yes" ]; then
+    echo -e "${CYAN}🔄 Cleaning Docker volumes and orphans...${NC}"
+    check_docker_running
+    "$SCRIPT_DIR/docker-compose" down -v --remove-orphans
+    docker system prune -f
+    echo -e "${GREEN}✅ Docker cleanup complete${NC}"
+  else
+    echo -e "${YELLOW}Docker cleanup cancelled${NC}"
+  fi
 }
 
 docker_reset_db() {
@@ -548,6 +569,11 @@ execute_command() {
       restart_frontend
       ;;
 
+    # Stop
+    stop)
+      stop_all
+      ;;
+
     # Service groups
     backend)
       restart_backend
@@ -710,7 +736,8 @@ show_help() {
   echo "  bin/rs <command>       Run command directly"
   echo "  bin/rs help            Show this help"
   echo ""
-  echo -e "${YELLOW}RESTART SERVICES:${NC}"
+  echo -e "${YELLOW}STOP / RESTART SERVICES:${NC}"
+  echo "  stop                   Stop everything (frontend + Docker)"
   echo "  app, phpfpm, db, redis, opensearch, rabbitmq, mailcatcher, phpmyadmin"
   echo "  frontend               Next.js (clears .next cache)"
   echo "  backend                All Docker services"
@@ -777,7 +804,8 @@ show_help() {
 # Menu items array
 declare -a MENU_ITEMS=(
   # Category headers (will be skipped in navigation)
-  "HEADER:RESTART SERVICES"
+  "HEADER:STOP / RESTART SERVICES"
+  "stop:Stop everything (frontend + Docker)"
   "app:Nginx"
   "phpfpm:PHP-FPM"
   "db:MariaDB"
@@ -925,8 +953,9 @@ show_menu() {
   # Hide cursor
   tput civis
 
-  # Trap to restore cursor on exit
+  # Trap to restore cursor on exit and on signals
   trap 'tput cnorm' EXIT
+  trap 'tput cnorm; exit' INT TERM
 
   while true; do
     display_menu $selected
@@ -939,13 +968,13 @@ show_menu() {
       read -rsn2 key
       case "$key" in
         '[A') # Up arrow
-          ((selected--))
+          selected=$((selected - 1))
           if [ $selected -lt 0 ]; then
             selected=$max_items
           fi
           ;;
         '[B') # Down arrow
-          ((selected++))
+          selected=$((selected + 1))
           if [ $selected -gt $max_items ]; then
             selected=0
           fi

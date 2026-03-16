@@ -172,7 +172,7 @@ export default function FAQPage() {
 
       {/* Still have questions section */}
       <div className="mt-12 pt-8 border-t border-default/30">
-        <h2 className="text-2xl font-semibold text-accent mb-4">
+        <h2 className="text-2xl font-semibold text-white mb-4">
           Still have questions?
         </h2>
         <p className="text-secondary mb-6">
@@ -180,7 +180,7 @@ export default function FAQPage() {
         </p>
         <Link
           href="/contact"
-          className="inline-block px-6 py-3 bg-accent text-inverse font-semibold rounded hover:bg-accent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
+          className="inline-block px-6 py-3 bg-accent text-white font-semibold rounded hover:bg-accent-hover transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
         >
           Contact Us
         </Link>

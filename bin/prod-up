@@ -20,22 +20,26 @@ if [ "$PURGE" = true ]; then
   echo "Purge mode: clearing caches and forcing rebuild..."
   echo ""
 
-  # Stop everything first
-  echo "  Stopping services..."
-  bin/stop 2>/dev/null || true
+  # Stop everything first (frontend + Docker)
+  echo "  Stopping frontend..."
+  bin/frontend-stop 2>/dev/null || true
+  echo "  Stopping Docker containers..."
+  bin/docker-compose --no-dev stop 2>/dev/null || true
 
   # Clear Redis cache
   echo "  Clearing Redis cache..."
-  docker exec 8pm-redis-1 redis-cli FLUSHALL 2>/dev/null || true
+  bin/docker-compose --no-dev exec -T redis redis-cli FLUSHALL 2>/dev/null || true
 
   # Clear frontend build
   echo "  Clearing frontend build cache..."
   rm -rf frontend/.next frontend/node_modules/.cache
 
-  # Clear Magento generated files
+  # Clear Magento generated files and static assets
   echo "  Clearing Magento generated files..."
-  docker exec 8pm-phpfpm-1 rm -rf /var/www/html/generated/* 2>/dev/null || true
-  docker exec 8pm-phpfpm-1 rm -rf /var/www/html/var/cache/* 2>/dev/null || true
+  bin/docker-compose --no-dev exec -T phpfpm rm -rf /var/www/html/generated/* 2>/dev/null || true
+  bin/docker-compose --no-dev exec -T phpfpm rm -rf /var/www/html/var/cache/* 2>/dev/null || true
+  bin/docker-compose --no-dev exec -T phpfpm rm -rf /var/www/html/var/view_preprocessed/* 2>/dev/null || true
+  bin/docker-compose --no-dev exec -T phpfpm rm -rf /var/www/html/pub/static/_cache/* 2>/dev/null || true
 
   echo ""
   echo "Caches cleared. Starting fresh..."
@@ -54,6 +58,12 @@ echo ""
 echo "Site not fully operational. Starting services..."
 echo ""
 
+# Step 0: Ensure Docker daemon is running
+if ! docker info > /dev/null 2>&1; then
+  echo "Docker not running, starting..."
+  bin/docker-start
+fi
+
 # Step 1: Start Docker
 echo "Step 1/4: Starting Docker containers..."
 bin/start --no-dev
@@ -63,6 +73,18 @@ echo ""
 echo "Step 2/4: Waiting for containers to be healthy..."
 bin/wait-containers --no-dev --timeout=90
 
+# Step 2.5: Recompile DI after purge cleared generated/
+if [ "$PURGE" = true ]; then
+  echo ""
+  echo "  Running setup:upgrade..."
+  bin/magento setup:upgrade
+  echo "  Recompiling DI..."
+  bin/magento setup:di:compile
+  echo "  Deploying static content..."
+  bin/magento setup:static-content:deploy -f
+  bin/magento cache:flush
+fi
+
 # Step 3: Wait for GraphQL
 echo ""
 echo "Step 3/4: Waiting for GraphQL API..."
@@ -71,7 +93,7 @@ bin/wait-graphql --timeout=120
 # Step 4: Start frontend
 echo ""
 echo "Step 4/4: Starting frontend..."
-if [ -f frontend/.next/prerender-manifest.json ]; then
+if [ -f frontend/.next/BUILD_ID ] && [ ! "$PURGE" = true ]; then
   echo "  Using existing build..."
   bin/frontend-prod --skip-build
 else

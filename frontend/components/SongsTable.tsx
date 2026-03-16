@@ -585,7 +585,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                 style={{ display: 'grid', gridTemplateColumns: DESKTOP_GRID, gap: DESKTOP_GAP }}
               >
                 {/* Album art */}
-                <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} className="w-[42px] h-[42px] rounded-md overflow-hidden bg-[var(--primary)] cursor-pointer">
+                <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} aria-label={`Pick version for ${song.title}`} className="w-[42px] h-[42px] rounded-md overflow-hidden bg-[var(--primary)] cursor-pointer">
                   {song.albumArtworkUrl ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={song.albumArtworkUrl} alt="" width={42} height={42} loading="lazy" className="object-cover w-full h-full" />
@@ -607,7 +607,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                     )}
                   </div>
                   <div className="text-xs text-[var(--text-subdued)] truncate">{song.albumName}</div>
-                  <div className="text-[10px] text-[var(--text-subdued)] truncate opacity-60">{song.artistName}</div>
+                  <div className="text-[10px] text-[var(--text-subdued)] truncate">{song.artistName}</div>
                 </button>
 
                 {/* Length / Duration */}
@@ -684,7 +684,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                       <circle cx="12" cy="12" r="10" />
                       <path strokeLinecap="round" d="M12 8v8m-4-4h8" />
                     </svg>
-                    <span className="relative text-[11px] tracking-wide transition-all duration-300" style={{ color: 'color-mix(in srgb, var(--quaternary) 45%, transparent)' }}>
+                    <span className="relative text-[11px] tracking-wide transition-all duration-300" style={{ color: 'var(--text-secondary)' }}>
                       pick a version
                     </span>
                     <style>{`
@@ -710,7 +710,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
             >
               {/* Row 1: Track info */}
               <div className="flex items-center gap-3">
-                <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} className="w-[36px] h-[36px] rounded-md overflow-hidden shrink-0 bg-[var(--primary)] cursor-pointer">
+                <button onClick={() => openPicker(song)} disabled={song.versionCount === 0} aria-label={`Pick version for ${song.title}`} className="w-[36px] h-[36px] rounded-md overflow-hidden shrink-0 bg-[var(--primary)] cursor-pointer">
                   {song.albumArtworkUrl ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={song.albumArtworkUrl} alt="" width={36} height={36} loading="lazy" className="object-cover w-full h-full" />
@@ -730,7 +730,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                     )}
                   </div>
                   <div className="text-xs text-[var(--text-subdued)] truncate">{song.albumName}</div>
-                  <div className="text-[10px] text-[var(--text-subdued)] truncate opacity-60">{song.artistName}</div>
+                  <div className="text-[10px] text-[var(--text-subdued)] truncate">{song.artistName}</div>
                 </button>
                 <div className="w-10 shrink-0 text-center">
                   {saved ? (
@@ -757,7 +757,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
                     {saved.showVenue && (
                       <>
                         <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>·</span>
-                        <span className="text-[10px] truncate" style={{ color: 'var(--text-subdued)' }}>{saved.showVenue}</span>
+                        <span className="text-[10px] truncate" style={{ color: 'var(--text-secondary)' }}>{saved.showVenue}</span>
                       </>
                     )}
                     {saved.showLocation && (
@@ -793,6 +793,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage <= 1}
+            aria-label="Previous page"
             className="px-2 py-1 text-xs font-medium rounded-md text-[var(--text)] disabled:opacity-25 hover:bg-[var(--surface-card)] transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -822,6 +823,7 @@ export default function SongsTable({ artistSlug, initialData }: SongsTableProps)
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={currentPage >= totalPages}
+            aria-label="Next page"
             className="px-2 py-1 text-xs font-medium rounded-md text-[var(--text)] disabled:opacity-25 hover:bg-[var(--surface-card)] transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>

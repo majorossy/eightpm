@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { trackThemeChange, setUserProperties } from '@/lib/analytics';
 
 // Three themes: Camp (dark), Lot (blue-gray), Shore (white)
 export type ThemeType = 'camp' | 'lot' | 'shore';
@@ -91,7 +92,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [mounted, theme]);
 
+  const themeRef = useRef(theme);
+  useEffect(() => { themeRef.current = theme; }, [theme]);
+
   const setTheme = useCallback((newTheme: ThemeType) => {
+    trackThemeChange(themeRef.current, newTheme);
+    setUserProperties({ preferred_theme: newTheme });
     setThemeState(newTheme);
     localStorage.setItem('8pm-theme', newTheme);
   }, []);

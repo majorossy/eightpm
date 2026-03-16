@@ -55,8 +55,10 @@ export default function VenueCloud({ artistId, artistName }: VenueCloudProps) {
     if (maxCount === minCount) return 'var(--secondary)';
     const ratio = (count - minCount) / (maxCount - minCount);
     // Use opacity to create a gradient effect from subdued to bright
-    const opacity = 0.5 + ratio * 0.5;
-    return `color-mix(in srgb, var(--secondary) ${Math.round(opacity * 100)}%, var(--text-subdued, #8a7a68))`;
+    // Mix secondary with white for WCAG contrast against dark bg
+    // 40% secondary (light pink, ~5.5:1) → 55% secondary (saturated, ~4.7:1)
+    const pct = 40 + Math.round(ratio * 15);
+    return `color-mix(in srgb, var(--secondary) ${pct}%, white)`;
   }
 
   return (

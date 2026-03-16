@@ -73,8 +73,8 @@ const TimelineMember = ({ member }: { member: TimelineMember }) => {
         className={`
           w-8 h-8 rounded-full flex items-center justify-center font-bold z-10 shadow-lg flex-shrink-0
           ${member.isCurrent
-            ? 'bg-gradient-to-br from-accent to-[#a07030] text-surface-sunken'
-            : 'bg-gradient-to-br from-[#5a5550] to-[#3a3530] text-surface-sunken'
+            ? 'bg-gradient-to-br from-accent to-[#a07030] text-white'
+            : 'bg-gradient-to-br from-[#5a5550] to-[#3a3530] text-white'
           }
         `}
       >
@@ -93,9 +93,9 @@ const TimelineMember = ({ member }: { member: TimelineMember }) => {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h4 className={`font-bold ${member.isCurrent ? 'text-white' : 'text-secondary'}`}>
+            <h3 className={`font-bold ${member.isCurrent ? 'text-white' : 'text-secondary'}`}>
               {member.name}
-            </h4>
+            </h3>
             <p className={`text-sm ${member.isCurrent ? 'text-accent' : 'text-[#6a6560]'}`}>
               {member.instruments.join(' • ')}
             </p>
@@ -122,14 +122,14 @@ const TimelineMarker = ({ year, label, isHighlight = false }: { year: number; la
       className={`
         w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs z-10 shadow-lg
         ${isHighlight
-          ? 'bg-accent text-surface-sunken'
-          : 'bg-border text-secondary border border-accent/30'
+          ? 'bg-accent text-white'
+          : 'bg-border text-white border border-accent/30'
         }
       `}
     >
       '{String(year).slice(-2)}
     </div>
-    <span className={`text-sm ${isHighlight ? 'text-accent font-bold' : 'text-secondary'}`}>
+    <span className={`text-sm ${isHighlight ? 'text-white font-bold' : 'text-secondary'}`}>
       {label}
     </span>
   </div>

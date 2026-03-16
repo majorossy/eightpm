@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { venueSlug } from '@/lib/api';
+import { trackVenueClick } from '@/lib/analytics';
 
 interface VenueLinkProps {
   venueName?: string;
@@ -28,7 +29,10 @@ export default function VenueLink({ venueName, slug, className, truncateLength }
   return (
     <Link
       href={`/venues/${resolvedSlug}`}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        trackVenueClick(venueName, resolvedSlug);
+      }}
       className={className || 'hover:underline'}
       title={venueName}
     >

@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
-set -o errexit
-mkdir -p tmpupdate && cd "$_"
-curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
-rm -rf .git
-rsync -av --checksum ./ ../
-cd ..
-rm -rf tmpupdate
-echo "docker-magento has been updated, run bin/restart to apply the updates"
+# DISABLED: This script previously pulled the upstream markshust/docker-magento
+# template and rsynced it over the entire project, overwriting all customizations.
+# This project has extensive customizations (75+ bin scripts, custom compose files,
+# custom Magento modules) that would be destroyed by running this.
+#
+# If you need to pull specific upstream changes, do it manually and selectively.
+
+echo "ERROR: bin/update is disabled."
+echo ""
+echo "This script would overwrite all project customizations by pulling the"
+echo "upstream markshust/docker-magento template. This project has diverged"
+echo "significantly from that template."
+echo ""
+echo "To update specific upstream changes, cherry-pick them manually."
+exit 1

@@ -189,7 +189,7 @@ export default function ExpandedBiography({
       {/* Browse all shows CTA */}
       {totalShows && totalShows > 0 && (
         <div className="mt-4 pt-4 border-t border-default/30">
-          <p className="text-sm text-tertiary">
+          <p className="text-sm text-secondary">
             Browse all {totalShows.toLocaleString()} {artistName} live recordings in the archive above.
           </p>
         </div>

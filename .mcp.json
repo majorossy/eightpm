@@ -48,6 +48,24 @@
       "args": [
         "mcp/filesystem-8pm/bundle.cjs"
       ]
+    },
+    "ga4-8pm": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp/ga4-8pm/bundle.cjs"
+      ],
+      "env": {
+        "GA4_PROPERTY_ID": "",
+        "GA4_CREDENTIALS_PATH": ""
+      }
+    },
+    "lighthouse-8pm": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp/lighthouse-8pm/bundle.mjs"
+      ]
     }
   }
 }

@@ -44,7 +44,7 @@ export default function InstallPrompt() {
               <h3 className="text-sm font-medium text-primary">
                 Install 8pm.me
               </h3>
-              <p className="text-xs text-secondary mt-0.5">
+              <p className="text-xs text-primary mt-0.5">
                 Add to your home screen for the best experience
               </p>
             </div>
@@ -63,13 +63,13 @@ export default function InstallPrompt() {
             <button
               onClick={handleInstall}
               disabled={isInstalling}
-              className="flex-1 py-2 bg-accent hover:bg-accent-hover text-inverse text-sm font-medium rounded-md transition-colors disabled:opacity-50"
+              className="flex-1 py-2 bg-accent hover:bg-accent-hover text-white text-sm font-medium rounded-md transition-colors disabled:opacity-50"
             >
               {isInstalling ? 'Installing...' : isIOS ? 'How to Install' : 'Install'}
             </button>
             <button
               onClick={handleDismiss}
-              className="px-4 py-2 text-secondary hover:text-primary text-sm transition-colors"
+              className="px-4 py-2 text-primary hover:text-white text-sm transition-colors"
             >
               Not now
             </button>

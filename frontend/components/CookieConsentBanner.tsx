@@ -79,7 +79,7 @@ function CategoryToggle({ label, description, checked, onChange, disabled }: Cat
           {label}
           {disabled && <span className="ml-2 text-xs text-tertiary">(Required)</span>}
         </div>
-        <div className="text-xs text-secondary mt-0.5">{description}</div>
+        <div className="text-xs text-primary mt-0.5">{description}</div>
       </div>
     </label>
   );
@@ -157,7 +157,7 @@ export default function CookieConsentBanner() {
                   Analytics cookies help us improve 8pm.me.{' '}
                   <Link
                     href="/cookie-policy"
-                    className="text-accent hover:underline focus:outline-none focus:ring-2 focus:ring-accent rounded"
+                    className="text-white underline hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-accent rounded"
                   >
                     Learn more
                   </Link>
@@ -167,7 +167,7 @@ export default function CookieConsentBanner() {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     onClick={acceptAll}
-                    className="flex-1 px-4 py-2.5 bg-accent text-inverse font-medium rounded-lg hover:bg-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-card"
+                    className="flex-1 px-4 py-2.5 bg-accent text-white font-medium rounded-lg hover:bg-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-card"
                   >
                     Accept All
                   </button>
@@ -181,6 +181,7 @@ export default function CookieConsentBanner() {
                     onClick={() => setShowCustomize(true)}
                     className="flex items-center justify-center gap-2 px-4 py-2.5 border border-default text-secondary font-medium rounded-lg hover:border-accent hover:text-accent transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-card"
                     aria-expanded={showCustomize}
+                    aria-label="Customize cookie preferences"
                   >
                     <SettingsIcon className="w-4 h-4" />
                     <span className="hidden sm:inline">Customize</span>
@@ -232,7 +233,7 @@ export default function CookieConsentBanner() {
                   </button>
                   <button
                     onClick={handleCustomSave}
-                    className="flex-1 px-4 py-2.5 bg-accent text-inverse font-medium rounded-lg hover:bg-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-card"
+                    className="flex-1 px-4 py-2.5 bg-accent text-white font-medium rounded-lg hover:bg-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-card"
                   >
                     Save Preferences
                   </button>

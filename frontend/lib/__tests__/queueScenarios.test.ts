@@ -385,7 +385,7 @@ describe('Queue Integration Scenarios', () => {
       expect(state.items[state.cursorIndex].queueId).toBe(nextItemId);
     });
 
-    it('clamps cursor to last item when removing at end', () => {
+    it('sets cursor to -1 when removing at end (nothing upcoming)', () => {
       const tracks = makeAlbumItems(3, 'batch-remove-end');
 
       let state = runActions(initialQueueState, [
@@ -398,9 +398,9 @@ describe('Queue Integration Scenarios', () => {
         queueId: tracks[2].queueId,
       });
 
-      // Cursor should clamp to new last index (1)
+      // Nothing upcoming — stop playback
       expect(state.items.length).toBe(2);
-      expect(state.cursorIndex).toBe(1);
+      expect(state.cursorIndex).toBe(-1);
     });
 
     it('sets cursor to -1 when removing last item', () => {

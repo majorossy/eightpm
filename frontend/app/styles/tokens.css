@@ -34,7 +34,7 @@
   /* Text */
   --text-primary: color-mix(in srgb, white 95%, var(--primary));
   --text-secondary: color-mix(in srgb, white 55%, var(--primary));
-  --text-tertiary: color-mix(in srgb, white 40%, var(--primary));
+  --text-tertiary: color-mix(in srgb, white 50%, var(--primary));
   --text-inverse: var(--primary);
 
   /* Accents */

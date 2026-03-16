@@ -74,13 +74,14 @@ export function Accordion({
       value={itemValue}
       className="border border-default rounded-lg overflow-hidden bg-surface-card"
     >
-      <AccordionPrimitive.Header>
+      <AccordionPrimitive.Header asChild>
+        <h2>
         <AccordionPrimitive.Trigger
           className="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-surface-elevated transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset group"
         >
           <div className="flex items-center gap-3">
             {icon && <span className="text-accent flex-shrink-0">{icon}</span>}
-            <h3 className="text-lg font-semibold text-quinary">{title}</h3>
+            <span className="text-lg font-semibold text-quinary">{title}</span>
           </div>
           <svg
             className="w-5 h-5 text-secondary transition-transform duration-200 group-data-[state=open]:rotate-180"
@@ -91,6 +92,7 @@ export function Accordion({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
           </svg>
         </AccordionPrimitive.Trigger>
+        </h2>
       </AccordionPrimitive.Header>
       <AccordionPrimitive.Content
         className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up"

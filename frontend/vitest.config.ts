@@ -20,6 +20,17 @@ export default defineConfig({
           name: 'unit',
           environment: 'jsdom',
           include: ['**/__tests__/**/*.test.{ts,tsx}'],
+          exclude: ['**/__tests__/integration/**', '**/node_modules/**'],
+        },
+      },
+      // Integration tests (jsdom + full provider tree)
+      {
+        extends: true,
+        test: {
+          name: 'integration',
+          environment: 'jsdom',
+          include: ['**/__tests__/integration/**/*.test.{ts,tsx}'],
+          setupFiles: ['./test/setup.ts'],
         },
       },
       // Storybook integration tests (browser)

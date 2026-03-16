@@ -151,10 +151,8 @@ describe('getBestVersion', () => {
     expect(getBestVersion([unrated, low, high])).toBe(high);
   });
 
-  it('throws on empty array', () => {
-    expect(() => getBestVersion([])).toThrow(
-      'Cannot get best version from empty songs array',
-    );
+  it('returns undefined on empty array', () => {
+    expect(getBestVersion([])).toBeUndefined();
   });
 
   it('does not mutate the original array', () => {

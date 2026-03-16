@@ -172,7 +172,7 @@ export default function HowItWorksPage() {
       <div className="text-center pt-4">
         <Link
           href="/faq"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-inverse font-semibold rounded hover:bg-accent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-white font-semibold rounded hover:bg-accent-hover transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
         >
           <QuestionIcon className="w-5 h-5" />
           Read the FAQ

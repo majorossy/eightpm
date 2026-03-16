@@ -36,6 +36,15 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // Allow Lighthouse / dev bypass via ?_lh=1
+    if (process.env.NODE_ENV === 'development') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('_lh') === '1') {
+        setIsAuthenticated(true);
+        return;
+      }
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === 'true') {
       setIsAuthenticated(true);
@@ -139,7 +148,8 @@ export default function EarlyAccessGate({ children }: { children: React.ReactNod
   // Still checking
   if (isAuthenticated === null) {
     return (
-      <div className="fixed inset-0 bg-[#111d2e] z-[99999] flex items-center justify-center">
+      <div className="fixed inset-0 bg-[#111d2e] z-[99999] flex flex-col items-center justify-center gap-4">
+        <h1 className="text-2xl font-bold text-white/80 tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>8pm.me</h1>
         <div className="w-8 h-8 border-2 border-[#5ab8a0] border-t-transparent rounded-full animate-spin" />
       </div>
     );

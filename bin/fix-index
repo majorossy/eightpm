@@ -9,7 +9,7 @@
 
 echo "Rebuilding product indexes..."
 
-docker-compose exec -T db mysql -u magento -pmagento magento << 'SQL'
+bin/docker-compose exec -T db mysql -u magento -pmagento magento << 'SQL'
 
 -- Step 1: Sync direct assignments (is_parent=0) into base index
 -- Add any missing direct entries, remove any that no longer exist in CCP
@@ -104,5 +104,5 @@ SQL
 
 echo ""
 echo "Flushing cache..."
-docker-compose exec -T phpfpm bin/magento cache:flush > /dev/null
+bin/docker-compose exec -T phpfpm bin/magento cache:flush > /dev/null
 echo "Done!"

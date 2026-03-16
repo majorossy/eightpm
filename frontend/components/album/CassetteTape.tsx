@@ -1,13 +1,18 @@
 'use client';
 
 import { useState, memo } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Album } from '@/lib/api';
 import { Track } from '@/lib/types';
 import { usePlayer } from '@/context/PlayerContext';
-import { VUMeter } from '@/components/AudioVisualizations';
 import VenueLink from '@/components/VenueLink';
 import { getCassetteTint } from '@/components/MiniCassette';
+
+const VUMeter = dynamic(
+  () => import('@/components/AudioVisualizations').then(m => ({ default: m.VUMeter })),
+  { ssr: false }
+);
 
 interface AlbumWithTracks extends Album {
   tracks: Track[];

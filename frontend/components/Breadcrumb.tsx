@@ -93,7 +93,7 @@ export default function Breadcrumb() {
             d="M9 5l7 7-7 7"
           />
         </svg>
-        <Link href="/" className="shrink-0 flex items-center hover:brightness-110 transition-all">
+        <Link href="/" aria-label="8pm.me home" className="shrink-0 flex items-center hover:brightness-110 transition-all">
           <EightPmLogo size={16} />
         </Link>
       </nav>
@@ -121,6 +121,7 @@ export default function Breadcrumb() {
         <li className="flex items-center shrink-0 self-center">
           <Link
             href="/"
+            aria-label="8pm.me home"
             className="flex items-center hover:brightness-110 transition-all opacity-70 hover:opacity-100"
           >
             <EightPmLogo size={14} />

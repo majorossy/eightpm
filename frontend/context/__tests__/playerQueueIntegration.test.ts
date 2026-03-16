@@ -248,14 +248,16 @@ describe('Player-Queue Integration', () => {
       expect(state.cursorIndex).toBe(1);
     });
 
-    it('repeat=off goes past end when at last item', () => {
+    it('repeat=off clears queue entirely when at last item', () => {
       const items = makeAlbumItems(3, 'batch-off');
       let state = runActions(initialQueueState, [
         { type: 'LOAD_ITEMS', items, cursorIndex: 2 },
       ]);
 
       state = queueReducer(state, { type: 'ADVANCE_CURSOR' });
-      expect(state.cursorIndex).toBe(3); // past end
+      // Queue clears entirely when advancing past end with repeat=off
+      expect(state.items).toHaveLength(0);
+      expect(state.cursorIndex).toBe(-1);
 
       // currentItem should be null
       const currentItem =

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { AudioQuality, Song } from '@/lib/types';
 import { sanitizeStreamUrl } from '@/lib/urlUtils';
-import { trackQualityChange } from '@/lib/analytics';
+import { trackQualityChange, setUserProperties } from '@/lib/analytics';
 
 interface NetworkInformation {
   effectiveType?: string;
@@ -42,11 +42,9 @@ function getDefaultQuality(): AudioQuality {
 
 export function QualityProvider({ children }: { children: React.ReactNode }) {
   const [preferredQuality, setPreferredQualityState] = useState<AudioQuality>(getDefaultQuality);
-  const [isClient, setIsClient] = useState(false);
 
   // Initialize from localStorage on client mount
   useEffect(() => {
-    setIsClient(true);
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('audioQuality');
       if (saved && ['high', 'medium', 'low'].includes(saved)) {
@@ -65,6 +63,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('audioQuality', quality);
     }
     trackQualityChange(quality, previousQuality);
+    setUserProperties({ preferred_quality: quality });
   }, []);
 
   const getStreamUrl = useCallback((song: Song): string => {

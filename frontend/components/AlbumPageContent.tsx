@@ -11,7 +11,7 @@ import { useWishlist } from '@/context/WishlistContext';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useToast } from '@/hooks/useToast';
 import { useTrackPreferences } from '@/hooks/useTrackPreferences';
-import { trackAlbumView, trackCassetteSave } from '@/lib/analytics';
+import { trackAlbumView, trackCassetteSave, trackSharedCassetteImport } from '@/lib/analytics';
 import { useCassettes } from '@/context/CollectionContext';
 import { useMagentoAuth } from '@/context/MagentoAuthContext';
 import { useSharedCassettes } from '@/hooks/useSharedCassettes';
@@ -292,9 +292,8 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
 
   const handleLoadSharedCassette = (shared: SharedCassette) => {
     vibrate(BUTTON_PRESS);
-    const overrides: Record<string, string> = shared.version_overrides
-      ? JSON.parse(shared.version_overrides)
-      : {};
+    let overrides: Record<string, string> = {};
+    try { if (shared.version_overrides) overrides = JSON.parse(shared.version_overrides); } catch { /* malformed */ }
     setSelectedCassetteId(null);
     setLoadedSharedCassette(shared);
     setAll(overrides);
@@ -303,9 +302,8 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
   const handleSaveSharedToMine = () => {
     if (!loadedSharedCassette) return;
     vibrate(BUTTON_PRESS);
-    const overrides: Record<string, string> = loadedSharedCassette.version_overrides
-      ? JSON.parse(loadedSharedCassette.version_overrides)
-      : {};
+    let overrides: Record<string, string> = {};
+    try { if (loadedSharedCassette.version_overrides) overrides = JSON.parse(loadedSharedCassette.version_overrides); } catch { /* malformed */ }
     const cloned = saveCassette({
       name: `${loadedSharedCassette.name} (via ${loadedSharedCassette.created_by_username})`.slice(0, 33),
       albumIdentifier: album.identifier,
@@ -319,6 +317,7 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
       versionOverrides: overrides,
       colorIndex: savedCassettes.length % CASSETTE_COLOR_COUNT,
     });
+    trackSharedCassetteImport(loadedSharedCassette.name, loadedSharedCassette.created_by_username, album.artistName);
     setLoadedSharedCassette(null);
     setSelectedCassetteId(cloned.id);
     toast.showSuccess('Cassette saved to your collection', {
@@ -719,9 +718,8 @@ export default function AlbumPageContent({ album, moreFromVenue = [], artistAlbu
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {sharedCassettes.map((sc) => {
-                const picks = sc.version_overrides
-                  ? Object.keys(JSON.parse(sc.version_overrides)).length
-                  : 0;
+                let picks = 0;
+                try { if (sc.version_overrides) picks = Object.keys(JSON.parse(sc.version_overrides)).length; } catch { /* malformed */ }
                 const isLoaded = loadedSharedCassette?.client_id === sc.client_id;
                 return (
                   <button

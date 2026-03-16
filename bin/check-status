@@ -88,7 +88,7 @@ done
 # NOTE: Artists are at level=3 in this Magento instance (level=2 is "Artists" parent)
 # Albums (shows) are at level=4, tracks are at level=5
 # collection_id mapping comes from archivedotorg_artist_status table
-docker-compose exec -T db mysql -u magento -pmagento magento -N 2>/dev/null << 'SQL' > "$tmp_all_data"
+bin/docker-compose exec -T db mysql -u magento -pmagento magento -N 2>/dev/null << 'SQL' > "$tmp_all_data"
 SELECT
     artist.entity_id AS cat_id,
     COALESCE(artist_name.value, 'Unknown') AS artist_name,
@@ -167,7 +167,7 @@ get_metadata_count() {
 # Function to query GraphQL for product count
 query_graphql() {
     local cat_id="$1"
-    local result=$(curl -s -k -X POST https://magento.8pm.me/graphql \
+    local result=$(curl -s -k -X POST https://magento.test/graphql \
         -H "Content-Type: application/json" \
         -d "{\"query\": \"{ products(filter: {category_id: {eq: \\\"${cat_id}\\\"}}, pageSize: 1) { total_count } }\"}" \
         2>/dev/null | grep -o '"total_count":[0-9]*' | cut -d':' -f2)
@@ -388,10 +388,10 @@ if [ "$error_count" -gt 0 ] || [ "$idx_mismatch_count" -gt 0 ]; then
 
     # Populate needed artists (up to 5)
     if [ "$populate_count" -gt 0 ]; then
-        echo -e "$populate_needed" | grep -v '^$' | head -5 | while read -r artist; do
+        while read -r artist; do
             printf "  %d. bin/magento archive:populate \"%s\"\n" "$action_num" "$artist"
             action_num=$((action_num + 1))
-        done
+        done < <(echo -e "$populate_needed" | grep -v '^$' | head -5)
     fi
 
     # Fix index if IDX_STALE (CCP ≠ IDX)

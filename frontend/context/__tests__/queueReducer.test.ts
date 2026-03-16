@@ -170,7 +170,7 @@ describe('queueReducer', () => {
       expect(result.cursorIndex).toBe(0);
     });
 
-    it('inserts at position 0 when cursor is -1 (empty queue)', () => {
+    it('appends and auto-starts when cursor is -1', () => {
       const state: UnifiedQueue = {
         items: [mockItem({ queueId: 'existing' })],
         cursorIndex: -1,
@@ -183,9 +183,10 @@ describe('queueReducer', () => {
         items: newItem,
       });
 
-      // cursorIndex is -1, so insertAt = 0
-      expect(result.items[0].queueId).toBe('inserted');
-      expect(result.items[1].queueId).toBe('existing');
+      // cursor < 0 triggers append + auto-start
+      expect(result.items[0].queueId).toBe('existing');
+      expect(result.items[1].queueId).toBe('inserted');
+      expect(result.cursorIndex).toBe(1);
     });
 
     it('returns same state when inserting empty array', () => {
@@ -315,7 +316,7 @@ describe('queueReducer', () => {
       expect(result.cursorIndex).toBe(1);
     });
 
-    it('clamps cursor when removing item AT cursor (last item)', () => {
+    it('sets cursor to -1 when removing item AT cursor (last item)', () => {
       const items = [
         mockItem({ queueId: 'a' }),
         mockItem({ queueId: 'b' }),
@@ -328,8 +329,8 @@ describe('queueReducer', () => {
         queueId: 'c',
       });
 
-      // cursor was 2, now only 2 items remain (indices 0,1), so clamp to 1
-      expect(result.cursorIndex).toBe(1);
+      // cursor was at last item, nothing upcoming — stop playback
+      expect(result.cursorIndex).toBe(-1);
     });
 
     it('keeps cursor when removing item AT cursor that is not the last', () => {
@@ -746,11 +747,12 @@ describe('queueReducer', () => {
       expect(result.cursorIndex).toBe(1);
     });
 
-    it('goes past end (cursor = items.length) when repeat is "off" and at last item', () => {
+    it('clears queue entirely when repeat is "off" and at last item', () => {
       const state = makeState(3, { cursorIndex: 2, repeat: 'off' });
       const result = queueReducer(state, { type: 'ADVANCE_CURSOR' });
 
-      expect(result.cursorIndex).toBe(3); // past end
+      expect(result.items).toHaveLength(0);
+      expect(result.cursorIndex).toBe(-1);
     });
 
     it('returns same state for empty queue', () => {

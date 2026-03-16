@@ -46,7 +46,7 @@ export default function ProfileMenu() {
         <button
           className="flex items-center gap-2 p-1 rounded-full hover:bg-surface-elevated transition-colors"
         >
-          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-inverse text-sm font-medium">
+          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white text-sm font-medium">
             {initials}
           </div>
           <svg

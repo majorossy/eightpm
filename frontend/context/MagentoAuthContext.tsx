@@ -10,6 +10,7 @@ import {
   getStoredToken,
   usernameToEmail,
 } from '@/lib/magentoAuth';
+import { setUserProperties } from '@/lib/analytics';
 
 interface MagentoAuthContextType {
   customer: MagentoCustomer | null;
@@ -57,7 +58,12 @@ export function MagentoAuthProvider({ children }: { children: React.ReactNode })
       const email = usernameToEmail(username);
       const token = await generateCustomerToken(email, password);
       const customerData = await getCustomer(token);
+      if (!customerData) {
+        setError('Failed to retrieve account details');
+        return false;
+      }
       setCustomer(customerData);
+      setUserProperties({ auth_status: 'logged_in' });
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
@@ -89,6 +95,7 @@ export function MagentoAuthProvider({ children }: { children: React.ReactNode })
       await revokeCustomerToken();
     } finally {
       setCustomer(null);
+      setUserProperties({ auth_status: 'anonymous' });
       setIsLoading(false);
     }
   }, []);

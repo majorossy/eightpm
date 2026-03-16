@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
+import { trackKeyboardShortcut } from '@/lib/analytics';
 
 interface KeyboardShortcutsConfig {
   // Playback controls
@@ -120,53 +121,63 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig) {
       case ' ':
         e.preventDefault();
         onPlayPause();
+        trackKeyboardShortcut('space', 'play_pause');
         break;
 
       case 'n':
       case 'arrowright':
         e.preventDefault();
         onNext();
+        trackKeyboardShortcut(e.key.toLowerCase(), 'next');
         break;
 
       case 'p':
       case 'arrowleft':
         e.preventDefault();
         onPrevious();
+        trackKeyboardShortcut(e.key.toLowerCase(), 'previous');
         break;
 
       case 'arrowup':
         e.preventDefault();
         onVolumeUp();
+        trackKeyboardShortcut('arrowup', 'volume_up');
         break;
 
       case 'arrowdown':
         e.preventDefault();
         onVolumeDown();
+        trackKeyboardShortcut('arrowdown', 'volume_down');
         break;
 
       case 'r':
         e.preventDefault();
         onCycleRepeat();
+        trackKeyboardShortcut('r', 'cycle_repeat');
         break;
 
       case 'l':
         e.preventDefault();
         onToggleLike();
+        trackKeyboardShortcut('l', 'toggle_like');
         break;
 
       case 'q':
         e.preventDefault();
         onToggleQueue();
+        trackKeyboardShortcut('q', 'toggle_queue');
         break;
 
       case '?':
         e.preventDefault();
         onShowHelp?.();
+        trackKeyboardShortcut('?', 'show_help');
         break;
 
       case 'm':
         e.preventDefault();
         onToggleMinimize?.();
+        trackKeyboardShortcut('m', 'toggle_minimize');
         break;
     }
   }, [

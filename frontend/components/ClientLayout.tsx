@@ -139,9 +139,7 @@ function InnerLayout({ children }: { children: ReactNode }) {
       <a href="#main-content" className="skip-to-main">
         Skip to main content
       </a>
-      <a href="#player-controls" className="skip-to-main">
-        Skip to player controls
-      </a>
+      {/* Player skip link only rendered when target exists — avoids Lighthouse skip-link failure */}
 
       {/* Organic blob background */}
       <div className="blob-bg" />

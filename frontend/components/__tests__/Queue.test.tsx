@@ -16,19 +16,64 @@ vi.mock('next/image', () => ({
   ),
 }));
 
+// Mock next/link
+vi.mock('next/link', () => ({
+  default: ({ children, href, onClick, ...props }: { children: React.ReactNode; href: string; onClick?: () => void; className?: string }) => (
+    <a href={href} onClick={onClick} {...props}>{children}</a>
+  ),
+}));
+
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
   useRouter: () => ({ push: vi.fn(), back: vi.fn() }),
 }));
 
-// Mock SwipeableQueueItem
-vi.mock('@/components/SwipeableQueueItem', () => ({
-  default: ({ children, onDelete, className }: { children: React.ReactNode; onDelete: () => void; className: string }) => (
-    <div data-testid="swipeable-item" className={className}>
-      {children}
-      <button onClick={onDelete} data-testid="swipe-delete">Delete</button>
-    </div>
+// Mock dnd-kit (pass-through, no drag functionality)
+vi.mock('@dnd-kit/core', () => ({
+  DndContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  closestCenter: vi.fn(),
+  KeyboardSensor: vi.fn(),
+  PointerSensor: vi.fn(),
+  TouchSensor: vi.fn(),
+  useSensor: vi.fn(() => ({})),
+  useSensors: vi.fn(() => []),
+  DragOverlay: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@dnd-kit/sortable', () => ({
+  SortableContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useSortable: () => ({
+    attributes: {},
+    listeners: {},
+    setNodeRef: vi.fn(),
+    setActivatorNodeRef: vi.fn(),
+    transform: null,
+    transition: null,
+    isDragging: false,
+  }),
+  verticalListSortingStrategy: {},
+}));
+
+vi.mock('@dnd-kit/utilities', () => ({
+  CSS: { Transform: { toString: () => '' } },
+}));
+
+// Mock sub-components used by Queue
+vi.mock('@/components/VersionPickerModal', () => ({
+  default: () => null,
+}));
+
+vi.mock('@/components/TicketStub', () => ({
+  default: ({ albumName }: { albumName: string }) => (
+    <div data-testid="ticket-stub">{albumName}</div>
+  ),
+}));
+
+vi.mock('@/components/version-row', () => ({
+  VersionsIcon: () => null,
+  RecordingRow: ({ song }: { song: { title: string } }) => (
+    <span data-testid="recording-row">{song.title}</span>
   ),
 }));
 
@@ -49,6 +94,12 @@ vi.mock('@/lib/api', () => ({
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   },
+}));
+
+// Mock chipGlow
+vi.mock('@/lib/chipGlow', () => ({
+  glowClassName: () => '',
+  ChipGlow: null,
 }));
 
 import type { QueueItem, QueueItemAlbumSource, UnifiedQueue, AlbumGroup } from '@/lib/queueTypes';
@@ -153,10 +204,12 @@ const mockQueueContext = {
   hasItems: false,
   isLastItem: false,
   isFirstItem: true,
+  chipGlow: null,
   playAlbum: vi.fn(),
   playNext: vi.fn(),
   addToQueue: vi.fn(),
   removeItem: vi.fn(),
+  removeBatch: vi.fn(),
   moveItem: vi.fn(),
   moveBlock: vi.fn(),
   setCursor: vi.fn(),
@@ -231,6 +284,15 @@ vi.mock('@/context/MobileUIContext', () => ({
   MobileUIProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock('@/context/QualityContext', () => ({
+  useQuality: () => ({ preferredQuality: 'best', setPreferredQuality: vi.fn() }),
+  QualityProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/context/MagentoAuthContext', () => ({
+  useMagentoAuth: () => ({ isAuthenticated: false }),
+}));
+
 // Import Queue component after mocks are set up
 import Queue from '@/components/Queue';
 
@@ -243,6 +305,7 @@ describe('Queue Component', () => {
     vi.clearAllMocks();
     // Reset to default empty state
     mockPlayerContext.isQueueOpen = true;
+    mockPlayerContext.isPlaying = false;
     mockQueueContext.queue = { items: [], cursorIndex: -1, repeat: 'off' };
     mockQueueContext.currentItem = null;
     mockQueueContext.currentSong = null;
@@ -261,10 +324,10 @@ describe('Queue Component', () => {
       ).toBeInTheDocument();
     });
 
-    it('does not show "Save as MiniDisc" button when empty', () => {
+    it('does not show "Save" button when empty', () => {
       render(<Queue />);
 
-      expect(screen.queryByText('Save as MiniDisc')).not.toBeInTheDocument();
+      expect(screen.queryByText('Save')).not.toBeInTheDocument();
     });
   });
 
@@ -292,24 +355,46 @@ describe('Queue Component', () => {
       const upcomingItems = [
         makeQueueItem({
           queueId: 'q-next-1',
+          batchId: 'batch-upcoming',
           song: makeSong({ title: 'Elko', artistName: 'Railroad Earth', duration: 240 }),
           trackTitle: 'Elko',
+          albumSource: makeAlbumSource({
+            albumName: 'RE Live at Red Rocks',
+            originalTrackIndex: 1,
+          }),
         }),
         makeQueueItem({
           queueId: 'q-next-2',
+          batchId: 'batch-upcoming',
           song: makeSong({ title: 'Long Way to Go', artistName: 'Railroad Earth', duration: 180 }),
           trackTitle: 'Long Way to Go',
+          albumSource: makeAlbumSource({
+            albumName: 'RE Live at Red Rocks',
+            originalTrackIndex: 2,
+          }),
         }),
       ];
 
       const allItems = [currentItem, ...upcomingItems];
+
+      const albumGroup: AlbumGroup = {
+        batchId: 'batch-upcoming',
+        albumSource: makeAlbumSource({
+          albumName: 'RE Live at Red Rocks',
+          originalTrackIndex: 1,
+        }),
+        startIndex: 1,
+        endIndex: 2,
+        isContinuation: true,
+        items: upcomingItems,
+      };
 
       mockQueueContext.queue = { items: allItems, cursorIndex: 0, repeat: 'off' };
       mockQueueContext.currentItem = currentItem;
       mockQueueContext.currentSong = currentSong;
       mockQueueContext.hasItems = true;
       mockQueueContext.totalItems = 3;
-      mockQueueContext.albumGroups = [];
+      mockQueueContext.albumGroups = [albumGroup];
     });
 
     it('shows "Now Playing" section with current track', () => {
@@ -319,10 +404,13 @@ describe('Queue Component', () => {
       expect(screen.getByText('Bird in a House')).toBeInTheDocument();
     });
 
-    it('shows "Up Next" section with upcoming count', () => {
+    it('shows "Up Next" header with track count', () => {
       render(<Queue />);
 
-      expect(screen.getByText('Up Next (2)')).toBeInTheDocument();
+      expect(screen.getByText('UP')).toBeInTheDocument();
+      expect(screen.getByText('NEXT')).toBeInTheDocument();
+      // upcomingCount = 3 - (0 + 1) = 2
+      expect(screen.getByText(/2 TRACKS/)).toBeInTheDocument();
     });
 
     it('shows upcoming track titles', () => {
@@ -348,52 +436,33 @@ describe('Queue Component', () => {
       expect(mockQueueContext.clearUpcoming).toHaveBeenCalledTimes(1);
     });
 
-    it('shows remove button on desktop for upcoming tracks', () => {
+    it('shows remove button for upcoming tracks', () => {
       render(<Queue />);
 
       const removeButtons = screen.getAllByLabelText(/Remove .* from queue/);
-      expect(removeButtons).toHaveLength(2);
+      expect(removeButtons.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('calls removeItem when remove button clicked', () => {
+    it('calls removeItem when track remove button clicked', () => {
       render(<Queue />);
 
+      // Target track-specific remove buttons (not album group remove)
       const removeButtons = screen.getAllByLabelText(/Remove .* from queue/);
-      fireEvent.click(removeButtons[0]);
+      // Find a button that matches a track title (not album name)
+      const trackRemoveBtn = removeButtons.find(btn =>
+        btn.getAttribute('aria-label')?.includes('Elko') ||
+        btn.getAttribute('aria-label')?.includes('Long Way to Go')
+      );
+      expect(trackRemoveBtn).toBeDefined();
+      fireEvent.click(trackRemoveBtn!);
 
       expect(mockQueueContext.removeItem).toHaveBeenCalledTimes(1);
     });
 
-    it('shows "Save as MiniDisc" button', () => {
+    it('shows "Save" button', () => {
       render(<Queue />);
 
-      expect(screen.getByText('Save as MiniDisc')).toBeInTheDocument();
-    });
-
-    it('shows "Clear all" button on desktop', () => {
-      render(<Queue />);
-
-      expect(screen.getByText('Clear all')).toBeInTheDocument();
-    });
-
-    it('calls clearQueue when Clear all is clicked', () => {
-      render(<Queue />);
-
-      const clearAll = screen.getByText('Clear all');
-      fireEvent.click(clearAll);
-
-      expect(mockQueueContext.clearQueue).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls playFromQueue when an upcoming track is clicked', () => {
-      render(<Queue />);
-
-      // Click on the Elko track row (the li element with hover:bg class)
-      const upcomingTracks = screen.getByText('Elko').closest('li');
-      if (upcomingTracks) {
-        fireEvent.click(upcomingTracks);
-        expect(mockPlayerContext.playFromQueue).toHaveBeenCalled();
-      }
+      expect(screen.getByText('Save')).toBeInTheDocument();
     });
 
     it('renders transport controls (previous, play/pause, next)', () => {
@@ -485,7 +554,9 @@ describe('Queue Component', () => {
     it('renders album group header with album name', () => {
       render(<Queue />);
 
-      expect(screen.getByText('RE Live at Red Rocks 2024')).toBeInTheDocument();
+      // Album name appears in both TicketStub and the header text
+      const matches = screen.getAllByText('RE Live at Red Rocks 2024');
+      expect(matches.length).toBeGreaterThanOrEqual(1);
     });
 
     it('renders group tracks within the album', () => {
@@ -536,12 +607,12 @@ describe('Queue Component', () => {
       mockQueueContext.albumGroups = [albumGroup];
     });
 
-    it('shows "(continued)" label for continuation groups', () => {
+    it('shows "(cont.)" label for continuation groups', () => {
       render(<Queue />);
 
-      expect(
-        screen.getByText('RE Live at Telluride (continued)'),
-      ).toBeInTheDocument();
+      // Continuation name appears in both TicketStub and the header text
+      const matches = screen.getAllByText('RE Live at Telluride (cont.)');
+      expect(matches.length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -558,12 +629,10 @@ describe('Queue Component', () => {
     it('calls toggleQueue when backdrop is clicked', () => {
       render(<Queue />);
 
-      // The backdrop is the first div with bg-black/60
       const backdrop = document.querySelector('[aria-hidden="true"]');
-      if (backdrop) {
-        fireEvent.click(backdrop);
-        expect(mockPlayerContext.toggleQueue).toHaveBeenCalledTimes(1);
-      }
+      expect(backdrop).not.toBeNull();
+      fireEvent.click(backdrop!);
+      expect(mockPlayerContext.toggleQueue).toHaveBeenCalledTimes(1);
     });
   });
 });

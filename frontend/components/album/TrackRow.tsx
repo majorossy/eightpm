@@ -1,12 +1,20 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Track, Song, formatDuration } from '@/lib/api';
 import { useQueue } from '@/context/QueueContext';
-import { Waveform } from '@/components/AudioVisualizations';
 import { getBestVersion } from '@/lib/queueTypes';
-import VersionPickerModal from '@/components/VersionPickerModal';
 import { RecordingRow } from '@/components/version-row';
+
+const Waveform = dynamic(
+  () => import('@/components/AudioVisualizations').then(m => ({ default: m.Waveform })),
+  { ssr: false }
+);
+const VersionPickerModal = dynamic(
+  () => import('@/components/VersionPickerModal'),
+  { ssr: false }
+);
 
 interface TrackRowProps {
   track: Track;

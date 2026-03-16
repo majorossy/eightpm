@@ -13,7 +13,7 @@ import { useMediaSession } from '@/hooks/useMediaSession';
 import { useCrossfade } from '@/hooks/useCrossfade';
 import { useToast } from '@/hooks/useToast';
 import { useAudioAnalyzer, AudioAnalyzerData } from '@/hooks/useAudioAnalyzer';
-import { trackSongPlay, trackSongComplete, trackPlaybackError, trackSeek } from '@/lib/analytics';
+import { trackSongPlay, trackSongComplete, trackPlaybackError, trackSeek, trackSkip, trackPrevious, trackBuffer, trackListeningSession } from '@/lib/analytics';
 
 interface PlayerState {
   isPlaying: boolean;
@@ -85,6 +85,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const { getStreamUrl, getLowerQualityUrl } = useQuality();
   const trackedSongsRef = useRef<Set<string>>(new Set()); // Track which songs we've already counted
   const completedSongsRef = useRef<Set<string>>(new Set()); // Track which songs completed (>90%)
+  const currentSongIdRef = useRef<string | null>(null); // Stable ref for retry stale-closure checks
 
   // Toast notifications for playback errors
   const toast = useToast();
@@ -195,6 +196,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const stallTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const waitingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Buffer duration tracking for analytics
+  const bufferStartRef = useRef(0);
+
+  // Listening session tracking for analytics
+  const sessionTracksPlayedRef = useRef(0);
+  const sessionTotalSecondsRef = useRef(0);
+  const sessionArtistsRef = useRef<Set<string>>(new Set());
+  const lastTimeUpdateRef = useRef(0);
+
   const clearStallTimers = useCallback(() => {
     if (stallTimeoutRef.current) {
       clearTimeout(stallTimeoutRef.current);
@@ -219,6 +229,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   // Single source of truth for current song from QueueContext
   const currentSong = queueContext.currentSong;
+  currentSongIdRef.current = currentSong?.id ?? null;
 
   // Crossfade hook setup
   const crossfade = useCrossfade({
@@ -321,7 +332,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
       const songIdAtRetry = currentSong?.id;
       setTimeout(() => {
-        if (currentSong?.id !== songIdAtRetry) return;
+        if (currentSongIdRef.current !== songIdAtRetry) return;
         const currentAudio = getAudio();
         if (!currentAudio) return;
         const url = currentAudio.src || getStreamUrl(failedSong);
@@ -344,7 +355,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
         const songIdAtRetry2 = currentSong?.id;
         setTimeout(() => {
-          if (currentSong?.id !== songIdAtRetry2) return;
+          if (currentSongIdRef.current !== songIdAtRetry2) return;
           const currentAudio = getAudio();
           if (!currentAudio) return;
           currentAudio.src = '';
@@ -366,6 +377,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [queueContext, toast, getStreamUrl, getLowerQualityUrl, clearStallTimers, skipToNextTrack]);
 
   // Initialize audio element event handlers
+  // Destructure stable queue functions to avoid re-attaching listeners on every queue state change
+  const { advanceCursor, markPlayed } = queueContext;
   useEffect(() => {
     const audio = getAudio();
     if (!audio) return;
@@ -389,7 +402,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       // Clear saved progress - track completed normally
       clearPlaybackProgress();
 
-      const nextItem = queueContext.advanceCursor();
+      const nextItem = advanceCursor();
       if (nextItem && nextItem.song.isStreamable !== false) {
         const currentAudio = getAudio();
         if (currentAudio) {
@@ -399,9 +412,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       } else if (nextItem) {
         // Skip unavailable - advance again with safety limit
         let skipped = 0;
-        let item: ReturnType<typeof queueContext.advanceCursor> = nextItem;
+        let item: ReturnType<typeof advanceCursor> = nextItem;
         while (item && item.song.isStreamable === false && skipped < 20) {
-          item = queueContext.advanceCursor();
+          item = advanceCursor();
           skipped++;
         }
         if (item && item.song.isStreamable !== false) {
@@ -451,6 +464,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     // Handle waiting (buffering) - show UI + start 15s timeout
     const handleWaiting = () => {
+      bufferStartRef.current = Date.now();
       setState(prev => ({ ...prev, isBuffering: true }));
       clearStallTimers();
       waitingTimeoutRef.current = setTimeout(() => {
@@ -465,10 +479,18 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     };
 
     const handlePlay = () => {
+      // Track buffer duration if we were waiting
+      if (bufferStartRef.current > 0 && currentSong) {
+        const elapsed = Date.now() - bufferStartRef.current;
+        if (elapsed > 500) {
+          trackBuffer(currentSong, elapsed);
+        }
+        bufferStartRef.current = 0;
+      }
       retryCountRef.current = 0;
       retryingSongIdRef.current = null;
       clearStallTimers();
-      queueContext.markPlayed(); // Mark current item as played (locks version)
+      markPlayed(); // Mark current item as played (locks version)
       setState(prev => ({ ...prev, isPlaying: true, isBuffering: false }));
     };
 
@@ -492,7 +514,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener('play', handlePlay);
       clearStallTimers();
     };
-  }, [crossfade.state.activeElement, currentSong, handlePlaybackError, clearPlaybackProgress, clearStallTimers, queueContext]);
+  }, [crossfade.state.activeElement, currentSong, handlePlaybackError, clearPlaybackProgress, clearStallTimers, advanceCursor, markPlayed]);
 
   // When currentSong changes (from QueueContext), update audio
   const prevCurrentSongRef = useRef<Song | null>(null);
@@ -706,6 +728,58 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     prevHasItemsRef.current = queueContext.hasItems;
   }, [queueContext.hasItems, currentSong, clearPlaybackProgress]);
 
+  // Increment session tracks when a new song starts playing
+  useEffect(() => {
+    if (currentSong && state.isPlaying) {
+      sessionArtistsRef.current.add(currentSong.artistName);
+    }
+  }, [currentSong?.id]);
+
+  // Accumulate session listening time from timeupdate ticks
+  useEffect(() => {
+    if (state.isPlaying && state.currentTime > 0) {
+      const delta = state.currentTime - lastTimeUpdateRef.current;
+      // Only count forward ticks of 0-2 seconds (filters seeks, backwards, stalls)
+      if (delta > 0 && delta < 2) {
+        sessionTotalSecondsRef.current += delta;
+      }
+      lastTimeUpdateRef.current = state.currentTime;
+    }
+  }, [state.currentTime, state.isPlaying]);
+
+  // Reset last time ref when song changes
+  useEffect(() => {
+    lastTimeUpdateRef.current = 0;
+    if (currentSong) {
+      sessionTracksPlayedRef.current += 1;
+    }
+  }, [currentSong?.id]);
+
+  // Fire listening session event on page unload
+  useEffect(() => {
+    const handleUnload = () => {
+      if (sessionTracksPlayedRef.current > 0) {
+        trackListeningSession(
+          sessionTracksPlayedRef.current,
+          Math.round(sessionTotalSecondsRef.current),
+          sessionArtistsRef.current.size,
+        );
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') handleUnload();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handleUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handleUnload);
+    };
+  }, []);
+
   // Show toast when queue localStorage write fails (e.g. QuotaExceededError)
   // Throttled to once per 30s so persistent failures don't spam the UI
   const storageErrorLastRef = useRef(0);
@@ -822,8 +896,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [crossfade, currentSong, state.duration]);
 
   const playNextHandler = useCallback(() => {
-    let nextItem = queueContext.advanceCursor();
     const audio = getAudio();
+    // Track skip analytics — read from audio element directly to avoid stale closure
+    if (currentSong && audio && audio.duration > 0) {
+      trackSkip(currentSong, (audio.currentTime / audio.duration) * 100);
+    }
+    let nextItem = queueContext.advanceCursor();
 
     // Skip unavailable tracks
     let skipped = 0;
@@ -841,13 +919,19 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       // Connect analyzer after play
       connectAudioElement(audio);
     }
-  }, [queueContext, crossfade, connectAudioElement, state.volume, getStreamUrl]);
+  }, [queueContext, crossfade, connectAudioElement, state.volume, getStreamUrl, currentSong]);
 
   const playPrev = useCallback(() => {
     const audio = getAudio();
+    const wasRestart = !!audio && audio.currentTime > 3;
+
+    // Track previous analytics — read from audio element directly to avoid stale closure
+    if (currentSong && audio && audio.duration > 0) {
+      trackPrevious(currentSong, (audio.currentTime / audio.duration) * 100, wasRestart);
+    }
 
     // If more than 3 seconds into song, restart it
-    if (audio && audio.currentTime > 3) {
+    if (wasRestart && audio) {
       audio.currentTime = 0;
       return;
     }
@@ -856,7 +940,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     forcePlayRef.current = true;
     queueContext.retreatCursor();
     // After retreat, the currentSong from context will update and trigger the currentSong effect
-  }, [queueContext, crossfade]);
+  }, [queueContext, crossfade, currentSong]);
 
   const toggleQueue = useCallback(() => {
     setState(prev => {

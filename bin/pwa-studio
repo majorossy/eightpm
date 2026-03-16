@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
-set -o errexit
-
-if [ ! -d pwa-studio ]; then
-    echo "PWA studio must first be installed by running bin/setup-pwa-studio"
-    exit
-fi
-
-cd pwa-studio
-NODE_TLS_REJECT_UNAUTHORIZED=0 yarn run watch:all
+# DISABLED: This project uses a custom Next.js frontend, not PWA Studio.
+# This script is a leftover from the markshust/docker-magento template.
+echo "ERROR: bin/pwa-studio is disabled. This project uses Next.js (frontend/)."
+exit 1

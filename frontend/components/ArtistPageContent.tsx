@@ -382,7 +382,7 @@ export default function ArtistPageContent({ artist, bandData }: ArtistPageConten
               <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
                 About {artist.name} - Biography, Band Members &amp; History
               </h2>
-              <p className="text-sm text-tertiary mb-6">
+              <p className="text-sm text-secondary mb-6">
                 {artist.originLocation && `From ${artist.originLocation}`}
                 {artist.originLocation && artist.yearsActive && ' - '}
                 {artist.yearsActive && `Active ${artist.yearsActive}`}

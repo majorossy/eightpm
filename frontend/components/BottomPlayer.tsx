@@ -3,6 +3,7 @@
 // BottomPlayer - orchestrator that routes to sub-components
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { trackResumeBar } from '@/lib/analytics';
 import { usePlayer } from '@/context/PlayerContext';
 import { useQueue } from '@/context/QueueContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -183,11 +184,13 @@ export default function BottomPlayer() {
   // Haptic-wrapped callbacks for sub-components
   const handleResume = useCallback(() => {
     vibrate(BUTTON_PRESS);
+    trackResumeBar('clicked');
     resumeSavedProgress();
   }, [vibrate, BUTTON_PRESS, resumeSavedProgress]);
 
   const handleDismiss = useCallback(() => {
     vibrate(BUTTON_PRESS);
+    trackResumeBar('dismissed');
     clearSavedProgress();
   }, [vibrate, BUTTON_PRESS, clearSavedProgress]);
 
@@ -244,6 +247,13 @@ export default function BottomPlayer() {
     setShowQueuePreview(false);
     toggleQueue();
   }, [vibrate, BUTTON_PRESS, toggleQueue]);
+
+  // Track resume bar shown
+  useEffect(() => {
+    if (mounted && !currentSong && savedProgress) {
+      trackResumeBar('shown');
+    }
+  }, [mounted, currentSong, savedProgress]);
 
   // Wait for client mount to avoid hydration mismatch (server has no player state)
   if (!mounted) return null;

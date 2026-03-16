@@ -52,6 +52,10 @@ var/log/
 mcp/*/node_modules/
 mcp/*/dist/
 
+# Google service account credentials (never commit)
+*-credentials.json
+*-service-account.json
+
 *storybook.log
 storybook-static
 

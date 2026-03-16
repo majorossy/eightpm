@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { trackSleepTimerComplete } from '@/lib/analytics';
 
 export type SleepTimerPreset = '5min' | '15min' | '30min' | '1hr' | 'end-of-track';
 
@@ -91,6 +92,7 @@ export function useSleepTimer(options: SleepTimerOptions) {
             clearInterval(timerIntervalRef.current);
             timerIntervalRef.current = null;
           }
+          trackSleepTimerComplete();
           onTimerComplete();
           return {
             isActive: false,
